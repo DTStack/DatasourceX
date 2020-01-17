@@ -1,9 +1,8 @@
 package com.dtstack.dtcenter.common.loader.rdbms.mysql;
 
-import com.dtstack.dtcenter.loader.enums.DataBaseType;
-import com.dtstack.dtcenter.loader.service.IRdbmsClient;
-import com.dtstack.dtcenter.rdbms.common.ConnFactory;
-import com.dtstack.dtcenter.rdbms.common.RdbmsClient;
+import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
+import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
+import com.dtstack.dtcenter.common.enums.DataBaseType;
 
 /**
  * @company: www.dtstack.com
@@ -11,7 +10,7 @@ import com.dtstack.dtcenter.rdbms.common.RdbmsClient;
  * @Date ：Created in 17:18 2020/1/3
  * @Description：Mysql 客户端
  */
-public class MysqlClient extends RdbmsClient implements IRdbmsClient {
+public class MysqlClient extends AbsRdbmsClient {
     public MysqlClient() {
         this.dbType = DataBaseType.MySql.getTypeName();
     }

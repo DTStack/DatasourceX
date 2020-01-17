@@ -6,6 +6,7 @@ dependency-reduced-pom.xml
 .settings/
 conf/
 target/
+pluginLibs
 
 lib/*
 run/*

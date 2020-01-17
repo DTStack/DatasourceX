@@ -1,0 +1,23 @@
+package com.dtstack.dtcenter.common.loader.rdbms.impala;
+
+import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
+import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import org.junit.Test;
+
+public class ImpalaClientTest {
+    private static AbsRdbmsClient rdbsClient = new ImpalaClient();
+
+    @Test
+    public void getConnFactory() throws ClassNotFoundException {
+        SourceDTO source = new SourceDTO.SourceDTOBuilder()
+                .setUrl("jdbc:impala://cdh-impala1:21050;AuthMech=3")
+                .setUsername("root")
+                .setPassword("abc123")
+                .builder();
+        Boolean isConnected = rdbsClient.testCon(source);
+        if (!isConnected) {
+            throw new DtCenterDefException("数据源连接异常");
+        }
+    }
+}

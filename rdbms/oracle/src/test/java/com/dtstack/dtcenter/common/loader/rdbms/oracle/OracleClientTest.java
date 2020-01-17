@@ -1,14 +1,9 @@
 package com.dtstack.dtcenter.common.loader.rdbms.oracle;
 
-import com.dtstack.dtcenter.loader.constant.ConfigConstant;
-import com.dtstack.dtcenter.rdbms.common.RdbmsClient;
+import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
+import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Properties;
 
 /**
  * @company: www.dtstack.com
@@ -17,29 +12,18 @@ import java.util.Properties;
  * @Description：TODO
  */
 public class OracleClientTest {
-    private static final Logger logger = LoggerFactory.getLogger(OracleClientTest.class);
-    private static RdbmsClient rdbsClient = new OracleClient();
+    private static AbsRdbmsClient rdbsClient = new OracleClient();
 
     @Test
-    public void getConnFactory() {
-        Connection con = null;
-        try {
-            String url = "jdbc:oracle:thin:@172.16.8.178:1521:xe";
-            Properties properties = new Properties();
-            properties.setProperty(ConfigConstant.USER_NAME, "dtstack");
-            properties.setProperty(ConfigConstant.PWD, "abc123");
-            con = rdbsClient.getCon(url, properties);
-            if (con == null) {
-                logger.error("false");
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        } finally {
-            try {
-                con.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+    public void testConnection() throws ClassNotFoundException {
+        SourceDTO source = new SourceDTO.SourceDTOBuilder()
+                .setUrl("jdbc:oracle:thin:@172.16.8.178:1521:xe")
+                .setUsername("dtstack")
+                .setPassword("abc123")
+                .builder();
+        Boolean isConnected = rdbsClient.testCon(source);
+        if (!isConnected) {
+            throw new DtCenterDefException("数据源连接异常");
         }
     }
 }

@@ -1,0 +1,23 @@
+package com.dtstack.dtcenter.common.loader.rdbms.drds;
+
+import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
+import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import org.junit.Test;
+
+public class DrdsClientTest {
+    private static AbsRdbmsClient rdbsClient = new DrdsClient();
+
+    @Test
+    public void getConnFactory() throws ClassNotFoundException {
+        SourceDTO source = new SourceDTO.SourceDTOBuilder()
+                .setUrl("jdbc:mysql://172.16.8.109:3306/ide")
+                .setUsername("dtstack")
+                .setPassword("abc123")
+                .builder();
+        Boolean isConnected = rdbsClient.testCon(source);
+        if (!isConnected) {
+            throw new DtCenterDefException("数据源连接异常");
+        }
+    }
+}

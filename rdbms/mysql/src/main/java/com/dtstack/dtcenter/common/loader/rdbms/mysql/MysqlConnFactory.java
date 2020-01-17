@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.rdbms.mysql;
 
-import com.dtstack.dtcenter.loader.enums.DataBaseType;
-import com.dtstack.dtcenter.rdbms.common.ConnFactory;
+import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
+import com.dtstack.dtcenter.common.enums.DataBaseType;
 
 /**
  * @company: www.dtstack.com
@@ -12,6 +12,5 @@ import com.dtstack.dtcenter.rdbms.common.ConnFactory;
 public class MysqlConnFactory extends ConnFactory {
     public MysqlConnFactory() {
         driverName = DataBaseType.MySql.getDriverClassName();
-        testSql = DataBaseType.MySql.getTestSql();
     }
 }

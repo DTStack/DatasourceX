@@ -27,66 +27,12 @@
 
         <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
-            <artifactId>common.loader.rdbms.common</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>hive-shade</artifactId>
-                    <groupId>dtstack.hive</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>calcite-core</artifactId>
-                    <groupId>org.apache.calcite</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>calcite-server</artifactId>
-                    <groupId>org.apache.calcite</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>gbase</artifactId>
-                    <groupId>com.esen.jdbc</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>druid</artifactId>
-                    <groupId>com.alibaba</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jedis</artifactId>
-                    <groupId>redis.clients</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>error_prone_annotations</artifactId>
-                    <groupId>com.google.errorprone</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>animal-sniffer-annotations</artifactId>
-                    <groupId>org.codehaus.mojo</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
+            <artifactId>common.loader.core</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
-            <artifactId>common.loader.core</artifactId>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>hive-shade</artifactId>
-                    <groupId>dtstack.hive</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>calcite-core</artifactId>
-                    <groupId>org.apache.calcite</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>calcite-server</artifactId>
-                    <groupId>org.apache.calcite</groupId>
-                </exclusion>
-            </exclusions>
+            <artifactId>common.loader.rdbms.common</artifactId>
         </dependency>
 
         <dependency>
