@@ -15,7 +15,7 @@ public class OracleClientTest {
     private static AbsRdbmsClient rdbsClient = new OracleClient();
 
     @Test
-    public void testConnection() throws ClassNotFoundException {
+    public void testConnection() throws Exception {
         SourceDTO source = new SourceDTO.SourceDTOBuilder()
                 .setUrl("jdbc:oracle:thin:@172.16.8.178:1521:xe")
                 .setUsername("dtstack")

@@ -9,7 +9,7 @@ public class HiveClientTest {
     private static AbsRdbmsClient rdbsClient = new HiveClient();
 
     @Test
-    public void getConnFactory() throws ClassNotFoundException {
+    public void getConnFactory() throws Exception {
         SourceDTO source = new SourceDTO.SourceDTOBuilder()
                 .setUrl("jdbc:hive2://cdh-impala2:10000")
                 .setUsername("root")

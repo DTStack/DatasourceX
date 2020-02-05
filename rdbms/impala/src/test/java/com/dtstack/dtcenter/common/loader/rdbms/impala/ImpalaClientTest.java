@@ -9,7 +9,7 @@ public class ImpalaClientTest {
     private static AbsRdbmsClient rdbsClient = new ImpalaClient();
 
     @Test
-    public void getConnFactory() throws ClassNotFoundException {
+    public void getConnFactory() throws Exception {
         SourceDTO source = new SourceDTO.SourceDTOBuilder()
                 .setUrl("jdbc:impala://cdh-impala1:21050;AuthMech=3")
                 .setUsername("root")

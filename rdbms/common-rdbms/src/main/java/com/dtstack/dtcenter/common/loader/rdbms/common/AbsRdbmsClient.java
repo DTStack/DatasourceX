@@ -41,7 +41,7 @@ public abstract class AbsRdbmsClient implements IClient {
     }
 
     @Override
-    public Boolean testCon(SourceDTO source) throws ClassNotFoundException {
+    public Boolean testCon(SourceDTO source) throws Exception {
         connFactory = getConnFactory();
         connFactory.init(source.getUrl(), source.getProperties());
         return connFactory.testConn();

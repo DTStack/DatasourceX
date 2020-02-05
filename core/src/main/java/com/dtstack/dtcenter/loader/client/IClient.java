@@ -28,7 +28,7 @@ public interface IClient {
      * @param source
      * @return
      */
-    Boolean testCon(SourceDTO source) throws ClassNotFoundException;
+    Boolean testCon(SourceDTO source) throws Exception;
 
     /**
      * 执行查询

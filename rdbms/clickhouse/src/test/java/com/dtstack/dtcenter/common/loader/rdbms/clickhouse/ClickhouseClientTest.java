@@ -9,7 +9,7 @@ public class ClickhouseClientTest {
     private static AbsRdbmsClient rdbsClient = new ClickhouseClient();
 
     @Test
-    public void getConnFactory() throws ClassNotFoundException {
+    public void getConnFactory() throws Exception {
         SourceDTO source = new SourceDTO.SourceDTOBuilder()
                 .setUrl("jdbc:clickhouse://172.16.10.168:8123/mqTest")
                 .setUsername("dtstack")

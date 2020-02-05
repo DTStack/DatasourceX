@@ -10,7 +10,7 @@ public class SqlServerClientTest {
     private static AbsRdbmsClient rdbsClient = new SqlServerClient();
 
     @Test
-    public void testConnection() throws ClassNotFoundException {
+    public void testConnection() throws Exception {
         SourceDTO source = new SourceDTO.SourceDTOBuilder()
                 .setUrl("jdbc:jtds:sqlserver://172.16.8.149:1433;DatabaseName=DTstack")
                 .setUsername("sa")

@@ -9,7 +9,7 @@ public class KylinClientTest {
     private static AbsRdbmsClient rdbsClient = new KylinClient();
 
     @Test
-    public void getConnFactory() throws ClassNotFoundException {
+    public void getConnFactory() throws Exception {
         SourceDTO source = new SourceDTO.SourceDTOBuilder()
                 .setUrl("jdbc:kylin://172.16.100.105:7070/yctest")
                 .setUsername("ADMIN")

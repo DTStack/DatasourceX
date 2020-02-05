@@ -9,7 +9,7 @@ public class Db2ClientTest {
     private static AbsRdbmsClient rdbsClient = new Db2Client();
 
     @Test
-    public void getConnFactory() throws ClassNotFoundException {
+    public void getConnFactory() throws Exception {
         SourceDTO source = new SourceDTO.SourceDTOBuilder()
                 .setUrl("jdbc:db2://kudu4:50000/dtstack")
                 .setUsername("db2inst1")

@@ -9,7 +9,7 @@ public class GbaseClientTest {
     private static AbsRdbmsClient rdbsClient = new GbaseClient();
 
     @Test
-    public void getConnFactory() throws ClassNotFoundException {
+    public void getConnFactory() throws Exception {
         SourceDTO source = new SourceDTO.SourceDTOBuilder()
                 .setUrl("jdbc:gbase://172.16.8.193:5258/dtstack")
                 .setUsername("root")

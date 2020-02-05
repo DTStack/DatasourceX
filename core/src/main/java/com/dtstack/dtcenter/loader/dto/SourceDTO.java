@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.dto;
 
 import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.loader.constant.ConfigConstant;
+import com.dtstack.dtcenter.loader.enums.RedisMode;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Properties;
@@ -14,15 +15,33 @@ import java.util.Properties;
  */
 public class SourceDTO {
 
+    /**
+     * 数据源类型
+     */
     private DataSourceType sourceType;
 
+    /**
+     * URL 地址，如果为 master slave 的则为所有的地址
+     */
     private String url;
+
+    /**
+     * 如果为 master slave 的则为 master 的地址
+     */
+    private String master;
+
+    /**
+     * 端口号
+     */
+    private String hostPort;
 
     private String schema;
 
     private String username;
 
     private String password;
+
+    private RedisMode redisMode;
 
     public DataSourceType getSourceType() {
         return sourceType;
@@ -38,6 +57,22 @@ public class SourceDTO {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getMaster() {
+        return master;
+    }
+
+    public void setMaster(String master) {
+        this.master = master;
+    }
+
+    public String getHostPort() {
+        return hostPort;
+    }
+
+    public void setHostPort(String hostPort) {
+        this.hostPort = hostPort;
     }
 
     public String getSchema() {
@@ -64,6 +99,14 @@ public class SourceDTO {
         this.password = password;
     }
 
+    public RedisMode getRedisMode() {
+        return redisMode;
+    }
+
+    public void setRedisMode(RedisMode redisMode) {
+        this.redisMode = redisMode;
+    }
+
     public static class SourceDTOBuilder {
         private SourceDTO source = new SourceDTO();
 
@@ -74,6 +117,16 @@ public class SourceDTO {
 
         public SourceDTOBuilder setUrl(String url) {
             source.setUrl(url);
+            return this;
+        }
+
+        public SourceDTOBuilder setMaster(String master) {
+            source.setMaster(master);
+            return this;
+        }
+
+        public SourceDTOBuilder setHostPort(String hostPort) {
+            source.setHostPort(hostPort);
             return this;
         }
 
@@ -89,6 +142,11 @@ public class SourceDTO {
 
         public SourceDTOBuilder setPassword(String password) {
             source.setPassword(password);
+            return this;
+        }
+
+        public SourceDTOBuilder setRedisMode(RedisMode redisMode) {
+            source.setRedisMode(redisMode);
             return this;
         }
 

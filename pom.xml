@@ -55,6 +55,18 @@
 
             <dependency>
                 <groupId>com.dtstack.dtcenter</groupId>
+                <artifactId>common.loader.nosql.common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mongodb</groupId>
+                <artifactId>mongodb-driver</artifactId>
+                <version>3.4.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.dtstack.dtcenter</groupId>
                 <artifactId>common.loader.rdbms.common</artifactId>
                 <version>${project.version}</version>
             </dependency>

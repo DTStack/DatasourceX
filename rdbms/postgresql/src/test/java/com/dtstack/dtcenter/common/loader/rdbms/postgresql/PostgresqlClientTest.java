@@ -10,7 +10,7 @@ public class PostgresqlClientTest {
     private static AbsRdbmsClient rdbsClient = new PostgresqlClient();
 
     @Test
-    public void testConnection() throws ClassNotFoundException {
+    public void testConnection() throws Exception {
         SourceDTO source = new SourceDTO.SourceDTOBuilder()
                 .setUrl("jdbc:postgresql://172.16.8.193:5432/DTstack?currentSchema=public")
                 .setUsername("root")

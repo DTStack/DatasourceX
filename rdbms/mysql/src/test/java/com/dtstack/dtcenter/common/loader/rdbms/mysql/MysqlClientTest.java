@@ -9,7 +9,7 @@ public class MysqlClientTest {
     private static AbsRdbmsClient rdbsClient = new MysqlClient();
 
     @Test
-    public void getConnFactory() throws ClassNotFoundException {
+    public void getConnFactory() throws Exception {
         SourceDTO source = new SourceDTO.SourceDTOBuilder()
                 .setUrl("jdbc:mysql://172.16.8.109:3306/ide")
                 .setUsername("dtstack")
