@@ -33,17 +33,37 @@
 ---
 ## 四、已支持方法
 
-| 方法           | 入参                    | 出参                        | 备注       |
-|--------------|-----------------------|---------------------------|----------|
+| 方法           | 入参                    | 出参                        | 备注  |
+|---------------|------------------------|-----------------------------|------|
 | getConn      | SourceDTO             | Connection                | 获取 连接    |
 | testConn     | SourceDTO             | Boolean                   | 校验 连接    |
 | executeQuery | SourceDTO,SqlQueryDTO | List<Map<String, Object>> | 执行查询     |
+| executeSqlWithoutResultSet | SourceDTO,SqlQueryDTO | Boolean | 执行查询，无需结果集     |
 | getTableList | SourceDTO,SqlQueryDTO | List<String>              | 获取数据库表名称 |
+| getColumnClassInfo | SourceDTO,SqlQueryDTO | List<String>              | 返回字段 Java 类的标准名称,字段名若不填则默认全部 |
+| getColumnMetaData | SourceDTO,SqlQueryDTO | List<ColumnMetaDTO>              | 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤 |
+| getAllBrokersAddress | SourceDTO | String | 获取所有 Brokers 的地址 |
+| getTopicList | SourceDTO | List<String> | 获取所有 Topic 信息 |
+| createTopic | SourceDTO,KafkaTopicDTO | Boolean | 创建 Topic |
+| getAllPartitions | SourceDTO,String | List<ColumnMetaDTO>              | 获取特定 Topic 分区信息 |
+| getColumnMetaData | SourceDTO,SqlQueryDTO | List<MetadataResponse.PartitionMetadata>| 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤 |
+| getOffset | SourceDTO,String | KafkaOffsetDTO | 获取特定 Topic 位移量|
+
+**备注**
+[SourceDTO](http://git.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/SourceDTO.java)
+
+[SqlQueryDTO](http://git.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/SqlQueryDTO.java)
+
+[ColumnMetaDTO](http://git.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/ColumnMetaDTO.java)
+
+[KafkaTopicDTO](http://git.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/KafkaTopicDTO.java)
+
+[KafkaOffsetDTO](http://git.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/KafkaOffsetDTO.java)
 
 ---
 ## 五、后续开发计划
-1. IClient DTO 优化，为 Kerberos 和 复用 Connection 准备
-2. Kerberos 支持，需要支持注解、支持 Start & Close
+1. IClient DTO 优化，为 Kerberos 和 复用 Connection 准备 【已完成 200226】
+2. Kerberos 支持，需要支持注解、支持 Start & Close【已完成部分，分析发现直接在 SourceDTO 中设置效果更佳 200226】
 3. SQLServer 分版本支持，支持 SQLServer 2012、2008、2017&Later
 4. Mysql 分版本支持，支持 Mysql 5 及 Mysql 8、TiDB 兼容，使用 Mysql 支持
 5. Phoenix 常用版本支持
@@ -94,30 +114,28 @@
 
     @Test
     public void getMysqlConnection() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySQL.name());
-        SourceDTO source = new SourceDTO.SourceDTOBuilder()
-                .setUrl("jdbc:mysql://172.16.8.109:3306/ide")
-                .setUsername("dtstack")
-                .setPassword("abc123")
-                .builder();
+    IClient client = clientCache.getClient(DataSourceType.MySQL.name());
+        SourceDTO source = SourceDTO.builder()
+            .url("jdbc:mysql://172.16.8.109:3306/ide")
+            .username("dtstack")
+            .password("abc123")
+            .build();
         Connection clientCon = client.getCon(source);
     }
 ```
 
 2. 直接使用工具封装的方法，具体见第四点
-
 ```$java
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     @Test
     public void getMysqlConnection() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL.name());
-        SourceDTO source = new SourceDTO.SourceDTOBuilder()
-                .setUrl("jdbc:mysql://172.16.8.109:3306/ide")
-                .setUsername("dtstack")
-                .setPassword("abc123")
-                .builder();
+        SourceDTO source = SourceDTO.builder()
+            .url("jdbc:mysql://172.16.8.109:3306/ide")
+            .username("dtstack")
+            .password("abc123")
+            .build();
         Boolean isConnect = client.testConn(source);
     }
-
 ```

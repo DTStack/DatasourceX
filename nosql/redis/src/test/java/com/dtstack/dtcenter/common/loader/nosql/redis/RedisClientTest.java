@@ -9,11 +9,11 @@ public class RedisClientTest {
 
     @org.junit.Test
     public void testCon() throws Exception {
-        SourceDTO source = new SourceDTO.SourceDTOBuilder()
-                .setUrl("172.16.10.61:6379")
-                .setPassword("abc123")
-                .setSchema("5")
-                .builder();
+        SourceDTO source = SourceDTO.builder()
+                .url("172.16.10.61:6379")
+                .password("abc123")
+                .schema("5")
+                .build();
         Boolean isConnected = nosqlClient.testCon(source);
         if (!isConnected) {
             throw new DtCenterDefException("数据源连接异常");

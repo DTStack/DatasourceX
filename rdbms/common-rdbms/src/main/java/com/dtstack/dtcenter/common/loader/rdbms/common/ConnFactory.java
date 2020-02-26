@@ -32,8 +32,6 @@ public class ConnFactory {
 
     protected String testSql;
 
-    private static final String METHOD_NOT_SUPPORTED = "Method not supported";
-
     private AtomicBoolean isFirstLoaded = new AtomicBoolean(true);
 
     public void init(String url, Properties properties) throws ClassNotFoundException {
@@ -49,7 +47,6 @@ public class ConnFactory {
         dbURL = url;
 
         Preconditions.checkNotNull(url, "db url can't be null");
-//        testConn();
     }
 
     public Connection getConn() throws SQLException {

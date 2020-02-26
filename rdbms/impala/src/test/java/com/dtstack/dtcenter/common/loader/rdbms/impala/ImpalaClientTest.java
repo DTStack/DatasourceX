@@ -10,11 +10,11 @@ public class ImpalaClientTest {
 
     @Test
     public void getConnFactory() throws Exception {
-        SourceDTO source = new SourceDTO.SourceDTOBuilder()
-                .setUrl("jdbc:impala://cdh-impala1:21050;AuthMech=3")
-                .setUsername("root")
-                .setPassword("abc123")
-                .builder();
+        SourceDTO source = SourceDTO.builder()
+                .url("jdbc:impala://cdh-impala1:21050;AuthMech=3")
+                .username("root")
+                .password("abc123")
+                .build();
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {
             throw new DtCenterDefException("数据源连接异常");

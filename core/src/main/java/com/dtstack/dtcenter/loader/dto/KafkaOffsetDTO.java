@@ -1,0 +1,22 @@
+package com.dtstack.dtcenter.loader.dto;
+
+import lombok.Data;
+
+/**
+ * @company: www.dtstack.com
+ * @Author ：Nanqi
+ * @Date ：Created in 17:22 2020/2/26
+ * @Description：Kafka 偏移量
+ */
+@Data
+public class KafkaOffsetDTO {
+    /**
+     * 最新的偏移量
+     */
+    private Long lastOffset;
+
+    /**
+     * 最早的偏移量
+     */
+    private Long firstOffset;
+}

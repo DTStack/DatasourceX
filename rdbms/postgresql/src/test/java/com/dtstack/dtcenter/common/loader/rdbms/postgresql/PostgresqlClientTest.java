@@ -11,11 +11,11 @@ public class PostgresqlClientTest {
 
     @Test
     public void testConnection() throws Exception {
-        SourceDTO source = new SourceDTO.SourceDTOBuilder()
-                .setUrl("jdbc:postgresql://172.16.8.193:5432/DTstack?currentSchema=public")
-                .setUsername("root")
-                .setPassword("abc123")
-                .builder();
+        SourceDTO source = SourceDTO.builder()
+                .url("jdbc:postgresql://172.16.8.193:5432/DTstack?currentSchema=public")
+                .username("root")
+                .password("abc123")
+                .build();
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {
             throw new DtCenterDefException("数据源连接异常");
