@@ -6,6 +6,8 @@ import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.*;
 import org.apache.kafka.common.requests.MetadataResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.util.List;
@@ -18,6 +20,8 @@ import java.util.Map;
  * @Description 代理实现
  */
 public class DataSourceClientProxy implements IClient {
+    private static final Logger LOG = LoggerFactory.getLogger(DataSourceClientProxy.class);
+
     private IClient targetClient;
 
     public DataSourceClientProxy(IClient targetClient) {
@@ -35,9 +39,14 @@ public class DataSourceClientProxy implements IClient {
     }
 
     @Override
-    public Boolean testCon(SourceDTO source) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.testCon(source),
-                targetClient.getClass().getClassLoader(), true);
+    public Boolean testCon(SourceDTO source) {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.testCon(source),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+            return false;
+        }
     }
 
     @Override
@@ -46,9 +55,9 @@ public class DataSourceClientProxy implements IClient {
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(SourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+    public Boolean executeSqlWithoutResultSet(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
 
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeSqlWithoutResultSet(sourceDTO,
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeSqlWithoutResultSet(source,
                 queryDTO), targetClient.getClass().getClassLoader(), true);
     }
 
@@ -95,7 +104,7 @@ public class DataSourceClientProxy implements IClient {
     }
 
     @Override
-    public KafkaOffsetDTO getOffset(SourceDTO source, String topic) throws Exception {
+    public List<KafkaOffsetDTO> getOffset(SourceDTO source, String topic) throws Exception {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getOffset(source, topic),
                 targetClient.getClass().getClassLoader(), true);
     }

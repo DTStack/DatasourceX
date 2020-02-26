@@ -3,26 +3,26 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>common.loader.nosql</artifactId>
+        <artifactId>common.loader.kafkas</artifactId>
         <groupId>com.dtstack.dtcenter</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
-    <artifactId>common.loader.nosql.redis</artifactId>
+    <artifactId>common.loader.kafkas.kafka</artifactId>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <jar.package.name>redis</jar.package.name>
-        <jar.name>dtRedis</jar.name>
+        <jar.package.name>kafka</jar.package.name>
+        <jar.name>dtKafka</jar.name>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>com.dtstack.dtcenter</groupId>
+            <artifactId>common.loader.kafkas.common</artifactId>
+            <version>${parent.version}</version>
         </dependency>
 
         <dependency>
@@ -31,8 +31,19 @@
         </dependency>
 
         <dependency>
-            <groupId>com.dtstack.dtcenter</groupId>
-            <artifactId>common.loader.nosql.common</artifactId>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.11</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
@@ -88,7 +99,7 @@
                         <configuration>
                             <tasks>
                                 <move file="${basedir}/target/${project.name}-${project.version}.jar"
-                                      tofile="${basedir}/target/${jar.name}.jar" />
+                                      tofile="${basedir}/target/${jar.name}.jar"/>
                                 <copy todir="${basedir}/target/../../../core/pluginLibs/${jar.package.name}/"
                                       file="${basedir}/target/${jar.name}.jar"/>
                                 <delete>

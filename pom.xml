@@ -11,6 +11,7 @@
         <module>core</module>
         <module>rdbms</module>
         <module>nosql</module>
+        <module>kafkas</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -148,6 +149,18 @@
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka_2.11</artifactId>
                 <version>0.11.0.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.6</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.kerby</groupId>
+                <artifactId>kerb-util</artifactId>
+                <version>2.0.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -29,6 +29,7 @@
 ### 3.2 非关系型数据库
 * Redis
 * MongoDB
+* Kafka 0.9、0.10、0.11、1.x版本
 
 ---
 ## 四、已支持方法
@@ -63,12 +64,13 @@
 ---
 ## 五、后续开发计划
 1. IClient DTO 优化，为 Kerberos 和 复用 Connection 准备 【已完成 200226】
-2. Kerberos 支持，需要支持注解、支持 Start & Close【已完成部分，分析发现直接在 SourceDTO 中设置效果更佳 200226】
-3. SQLServer 分版本支持，支持 SQLServer 2012、2008、2017&Later
-4. Mysql 分版本支持，支持 Mysql 5 及 Mysql 8、TiDB 兼容，使用 Mysql 支持
-5. Phoenix 常用版本支持
-6. 复用 Connection 支持，需要支持注解、支持 Start & Close
-7. 其他非关系型数据库支持、关系型数据库支持、不同版本支持，根据项目需要支持
+2. Kerberos 支持，需要支持注解、支持 Start & Close【已完成Kafka、Hive，分析发现直接在 SourceDTO 中设置效果更佳 200226】
+3. 支持 HDFS、Kudu、ES 这三个数据源
+4. SQLServer 分版本支持，支持 SQLServer 2012、2008、2017&Later
+5. Mysql 分版本支持，支持 Mysql 5 及 Mysql 8、TiDB 兼容，使用 Mysql 支持
+6. Phoenix 常用版本支持
+7. 复用 Connection 支持，需要支持注解、支持 Start & Close
+8. 其他非关系型数据库支持、关系型数据库支持、不同版本支持，根据项目需要支持
 
 ---
 

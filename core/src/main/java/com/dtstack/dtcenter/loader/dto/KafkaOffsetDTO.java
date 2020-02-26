@@ -11,6 +11,11 @@ import lombok.Data;
 @Data
 public class KafkaOffsetDTO {
     /**
+     * 分区编号
+     */
+    private Integer partition;
+
+    /**
      * 最新的偏移量
      */
     private Long lastOffset;

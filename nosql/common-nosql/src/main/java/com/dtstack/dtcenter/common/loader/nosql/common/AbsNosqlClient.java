@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public abstract class AbsNosqlClient implements IClient {
     @Override
-    public abstract Boolean testCon(SourceDTO source) throws Exception;
+    public abstract Boolean testCon(SourceDTO source);
 
     /********************************* 非关系型数据库无需实现的方法 ******************************************/
     @Override
@@ -71,7 +71,7 @@ public abstract class AbsNosqlClient implements IClient {
     }
 
     @Override
-    public KafkaOffsetDTO getOffset(SourceDTO source, String topic) throws Exception {
+    public List<KafkaOffsetDTO> getOffset(SourceDTO source, String topic) throws Exception {
         throw new DtLoaderException("Not Support " + source.getSourceType().name());
     }
 }

@@ -42,33 +42,31 @@ public abstract class AbsRdbmsClient implements IClient {
         logger.info("-------get {} connection success-----", dbType);
 
         connFactory = getConnFactory();
-        connFactory.init(source.getUrl(), source.getProperties());
-        return connFactory.getConn();
+        return connFactory.getConn(source);
     }
 
     @Override
-    public Boolean testCon(SourceDTO source) throws Exception {
+    public Boolean testCon(SourceDTO source) {
         connFactory = getConnFactory();
-        connFactory.init(source.getUrl(), source.getProperties());
-        return connFactory.testConn();
+        return connFactory.testConn(source);
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(SourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
-        Boolean closeQuery = beforeQuery(sourceDTO, queryDTO, true);
+    public List<Map<String, Object>> executeQuery(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Boolean closeQuery = beforeQuery(source, queryDTO, true);
 
         // 如果当前 connection 已关闭，直接返回空列表
-        if (sourceDTO.getConnection().isClosed()) {
+        if (source.getConnection().isClosed()) {
             return Lists.newArrayList();
         }
 
-        return DBUtil.executeQuery(sourceDTO.getConnection(), queryDTO.getSql(), closeQuery);
+        return DBUtil.executeQuery(source.getConnection(), queryDTO.getSql(), closeQuery);
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(SourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
-        DBUtil.executeSqlWithoutResultSet(sourceDTO.getConnection(), queryDTO.getSql(),
-                beforeQuery(sourceDTO, queryDTO, true));
+    public Boolean executeSqlWithoutResultSet(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        DBUtil.executeSqlWithoutResultSet(source.getConnection(), queryDTO.getSql(),
+                beforeQuery(source, queryDTO, true));
         return true;
     }
 
@@ -232,7 +230,7 @@ public abstract class AbsRdbmsClient implements IClient {
     }
 
     @Override
-    public KafkaOffsetDTO getOffset(SourceDTO source, String topic) throws Exception {
+    public List<KafkaOffsetDTO> getOffset(SourceDTO source, String topic) throws Exception {
         return null;
     }
 }
