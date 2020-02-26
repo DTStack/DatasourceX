@@ -80,6 +80,12 @@
 
 1. 类似于 DriverManger.getConnection 类似，直接使用 Connection 去做二次开发使用
 ```$Java
+    // 历史方法
+    prop 封装
+    Class.forName(dataBaseType.getDriverClassName());
+    return DriverManager.getConnection(url, prop);
+
+    // 改为
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     @Test
@@ -95,3 +101,19 @@
 ```
 
 2. 直接使用工具封装的方法，具体见第四点
+
+```$java
+    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
+
+    @Test
+    public void getMysqlConnection() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.MySQL.name());
+        SourceDTO source = new SourceDTO.SourceDTOBuilder()
+                .setUrl("jdbc:mysql://172.16.8.109:3306/ide")
+                .setUsername("dtstack")
+                .setPassword("abc123")
+                .builder();
+        Boolean isConnect = client.testConn(source);
+    }
+
+```
