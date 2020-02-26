@@ -53,12 +53,45 @@
 ---
 
 ## 六、开发步骤说明
-### 6.1 增加支持方法
+### 6.1 自身优化
+#### 6.1.1 增加支持方法
 1. com.dtstack.dtcenter.loader.client.IClient 中增加对应的方法
 2. com.dtstack.dtcenter.loader.client.sql.DataSourceClientProxy 中增加代理实现
 3. 对应的抽象类和具体实现类补充对应的方法实现
 
-### 6.2 增加支持的数据源
+#### 6.1.2 增加支持的数据源
 1. 在对应的关系型数据库模块或者非关系型模块增加子模块并按照其他模块修改对应的pom
 2. 继承对应抽象类并重写对应方法
 3. 在Resources/META-INF/services 下增加文件com.dtstack.dtcenter.loader.client.IClient，并在里面补充实现类的引用地址：例如：com.dtstack.dtcenter.common.loader.rdbms.db2.Db2Client
+
+### 6.2 二次开发使用
+
+#### 6.2.1 配置 maven
+```$xml
+<dependency>
+    <groupId>com.dtstack.dtcenter</groupId>
+    <artifactId>common.loader.core</artifactId>
+    <version>1.0-SNAPSHOT</version>
+</dependency>
+```
+
+#### 6.2.2 具体使用
+分为两种方案：
+
+1. 类似于 DriverManger.getConnection 类似，直接使用 Connection 去做二次开发使用
+```$Java
+    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
+
+    @Test
+    public void getMysqlConnection() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.MySQL.name());
+        SourceDTO source = new SourceDTO.SourceDTOBuilder()
+                .setUrl("jdbc:mysql://172.16.8.109:3306/ide")
+                .setUsername("dtstack")
+                .setPassword("abc123")
+                .builder();
+        Connection clientCon = client.getCon(source);
+    }
+```
+
+2. 直接使用工具封装的方法，具体见第四点
