@@ -10,11 +10,11 @@ public class KylinClientTest {
 
     @Test
     public void getConnFactory() throws Exception {
-        SourceDTO source = new SourceDTO.SourceDTOBuilder()
-                .setUrl("jdbc:kylin://172.16.100.105:7070/yctest")
-                .setUsername("ADMIN")
-                .setPassword("KYLIN")
-                .builder();
+        SourceDTO source = SourceDTO.builder()
+                .url("jdbc:kylin://172.16.100.105:7070/yctest")
+                .username("ADMIN")
+                .password("KYLIN")
+                .build();
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {
             throw new DtCenterDefException("数据源连接异常");

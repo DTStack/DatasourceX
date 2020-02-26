@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.client;
 
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.*;
+import org.apache.kafka.common.requests.MetadataResponse;
 
 import java.sql.Connection;
 import java.util.List;
@@ -27,26 +28,106 @@ public interface IClient {
      *
      * @param source
      * @return
+     * @throws Exception
      */
     Boolean testCon(SourceDTO source) throws Exception;
 
     /**
      * 执行查询
      *
-     * @param conn
-     * @param sql
+     * @param sourceDTO
+     * @param queryDTO  必填项 sql
      * @return
      * @throws Exception
      */
-    List<Map<String, Object>> executeQuery(Connection conn, String sql) throws Exception;
+    List<Map<String, Object>> executeQuery(SourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception;
 
     /**
-     * 执行查询
+     * 执行查询，无需结果集
      *
-     * @param source
-     * @param sql
+     * @param sourceDTO
+     * @param queryDTO  必填项 sql
      * @return
      * @throws Exception
      */
-    List<Map<String, Object>> executeQuery(SourceDTO source, String sql) throws Exception;
+    Boolean executeSqlWithoutResultSet(SourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception;
+
+    /**
+     * 返回所有的表字段名称
+     * 是否视图表，默认不过滤
+     *
+     * @param source
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
+    List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+
+    /**
+     * 返回字段 Java 类的标准名称
+     * 字段名若不填则默认全部
+     *
+     * @param source
+     * @param queryDTO 必填项 表名
+     * @return
+     * @throws Exception
+     */
+    List<String> getColumnClassInfo(SourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+
+    /**
+     * 获取表字段属性
+     * 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤
+     *
+     * @param source
+     * @param queryDTO 必填项 表名
+     * @return
+     * @throws Exception
+     */
+    List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+
+    /****************************************** Kafka 定制 ******************************************************/
+
+    /**
+     * 获取所有 Brokers 的地址
+     * @param source
+     * @return
+     * @throws Exception
+     */
+    String getAllBrokersAddress(SourceDTO source) throws Exception;
+
+    /**
+     * 获取 所有 Topic 信息
+     *
+     * @param source
+     * @return
+     * @throws Exception
+     */
+    List<String> getTopicList(SourceDTO source) throws Exception;
+
+    /**
+     * 创建 Topic
+     * @param source
+     * @param kafkaTopic
+     * @return
+     * @throws Exception
+     */
+    Boolean createTopic (SourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception;
+
+    /**
+     * 获取特定 Topic 分区信息
+     * @param source
+     * @param topic
+     * @return
+     * @throws Exception
+     */
+    List<MetadataResponse.PartitionMetadata> getAllPartitions(SourceDTO source, String topic) throws Exception;
+
+    /**
+     * 获取特定 Topic 位移量
+     * @param source
+     * @param topic
+     * @return
+     * @throws Exception
+     */
+    KafkaOffsetDTO getOffset(SourceDTO source, String topic) throws Exception;
 }

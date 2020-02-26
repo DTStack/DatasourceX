@@ -10,11 +10,11 @@ public class HiveClientTest {
 
     @Test
     public void getConnFactory() throws Exception {
-        SourceDTO source = new SourceDTO.SourceDTOBuilder()
-                .setUrl("jdbc:hive2://cdh-impala2:10000")
-                .setUsername("root")
-                .setPassword("abc123")
-                .builder();
+        SourceDTO source = SourceDTO.builder()
+                .url("jdbc:hive2://cdh-impala2:10000")
+                .username("root")
+                .password("abc123")
+                .build();
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {
             throw new DtCenterDefException("数据源连接异常");

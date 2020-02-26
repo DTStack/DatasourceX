@@ -10,11 +10,11 @@ public class ClickhouseClientTest {
 
     @Test
     public void getConnFactory() throws Exception {
-        SourceDTO source = new SourceDTO.SourceDTOBuilder()
-                .setUrl("jdbc:clickhouse://172.16.10.168:8123/mqTest")
-                .setUsername("dtstack")
-                .setPassword("abc123")
-                .builder();
+        SourceDTO source = SourceDTO.builder()
+                .url("jdbc:clickhouse://172.16.10.168:8123/mqTest")
+                .username("dtstack")
+                .password("abc123")
+                .build();
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {
             throw new DtCenterDefException("数据源连接异常");

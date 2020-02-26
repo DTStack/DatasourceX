@@ -11,11 +11,11 @@ public class SqlServerClientTest {
 
     @Test
     public void testConnection() throws Exception {
-        SourceDTO source = new SourceDTO.SourceDTOBuilder()
-                .setUrl("jdbc:jtds:sqlserver://172.16.8.149:1433;DatabaseName=DTstack")
-                .setUsername("sa")
-                .setPassword("Dtstack2018")
-                .builder();
+        SourceDTO source = SourceDTO.builder()
+                .url("jdbc:jtds:sqlserver://172.16.8.149:1433;DatabaseName=DTstack")
+                .username("sa")
+                .password("Dtstack2018")
+                .build();
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {
             throw new DtCenterDefException("数据源连接异常");

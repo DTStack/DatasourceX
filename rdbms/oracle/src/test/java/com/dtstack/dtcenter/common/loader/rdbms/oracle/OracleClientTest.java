@@ -9,18 +9,18 @@ import org.junit.Test;
  * @company: www.dtstack.com
  * @Author ：Nanqi
  * @Date ：Created in 13:54 2020/1/6
- * @Description：TODO
+ * @Description：Oracle 客户端测试
  */
 public class OracleClientTest {
     private static AbsRdbmsClient rdbsClient = new OracleClient();
 
     @Test
     public void testConnection() throws Exception {
-        SourceDTO source = new SourceDTO.SourceDTOBuilder()
-                .setUrl("jdbc:oracle:thin:@172.16.8.178:1521:xe")
-                .setUsername("dtstack")
-                .setPassword("abc123")
-                .builder();
+        SourceDTO source = SourceDTO.builder()
+                .url("jdbc:oracle:thin:@172.16.8.178:1521:xe")
+                .username("dtstack")
+                .password("abc123")
+                .build();
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {
             throw new DtCenterDefException("数据源连接异常");

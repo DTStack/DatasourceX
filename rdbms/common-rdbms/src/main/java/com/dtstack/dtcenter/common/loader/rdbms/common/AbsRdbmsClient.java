@@ -3,16 +3,20 @@ package com.dtstack.dtcenter.common.loader.rdbms.common;
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.IClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.*;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.utils.CollectionUtil;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.kafka.common.requests.MetadataResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -31,9 +35,11 @@ public abstract class AbsRdbmsClient implements IClient {
 
     protected abstract ConnFactory getConnFactory();
 
+    private static final String DONT_EXIST = "doesn't exist";
+
     @Override
     public Connection getCon(SourceDTO source) throws Exception {
-        logger.warn("-------get {} connection success-----", dbType);
+        logger.info("-------get {} connection success-----", dbType);
 
         connFactory = getConnFactory();
         connFactory.init(source.getUrl(), source.getProperties());
@@ -48,44 +54,185 @@ public abstract class AbsRdbmsClient implements IClient {
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(Connection connection, String sql) throws Exception {
-        if (connection == null || connection.isClosed()) {
+    public List<Map<String, Object>> executeQuery(SourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+        Boolean closeQuery = beforeQuery(sourceDTO, queryDTO, true);
+
+        // 如果当前 connection 已关闭，直接返回空列表
+        if (sourceDTO.getConnection().isClosed()) {
             return Lists.newArrayList();
         }
 
-        List<Map<String, Object>> result = Lists.newArrayList();
-        ResultSet res = null;
-        Statement statement = null;
-        try {
-            statement = connection.createStatement();
-            res = statement.executeQuery(sql);
-            int columns = res.getMetaData().getColumnCount();
-            List<String> columnName = Lists.newArrayList();
-            for (int i = 0; i < columns; i++) {
-                columnName.add(res.getMetaData().getColumnName(i + 1));
-            }
-
-            while (res.next()) {
-                Map<String, Object> row = Maps.newLinkedHashMap();
-                ;
-                for (int i = 0; i < columns; i++) {
-                    row.put(columnName.get(i), res.getObject(i + 1));
-                }
-                result.add(row);
-            }
-        } catch (Exception e) {
-            throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
-        } finally {
-            if (res != null) {
-                res.close();
-            }
-            DBUtil.closeDBResources(res, statement, null);
-        }
-        return result;
+        return DBUtil.executeQuery(sourceDTO.getConnection(), queryDTO.getSql(), closeQuery);
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(SourceDTO source, String sql) throws Exception {
-        return executeQuery(getCon(source), sql);
+    public Boolean executeSqlWithoutResultSet(SourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+        DBUtil.executeSqlWithoutResultSet(sourceDTO.getConnection(), queryDTO.getSql(),
+                beforeQuery(sourceDTO, queryDTO, true));
+        return true;
+    }
+
+    /**
+     * 执行查询前的操作
+     *
+     * @param sourceDTO
+     * @param queryDTO
+     * @return 是否需要自动关闭连接
+     * @throws Exception
+     */
+    private Boolean beforeQuery(SourceDTO sourceDTO, SqlQueryDTO queryDTO, boolean query) throws Exception {
+        // 查询 SQL 不能为空
+        if (query && StringUtils.isBlank(queryDTO.getSql())) {
+            throw new DtLoaderException("查询 SQL 不能为空");
+        }
+
+        // 设置 connection
+        boolean closeConn = false;
+        if (sourceDTO.getConnection() == null) {
+            sourceDTO.setConnection(getCon(sourceDTO));
+            closeConn = true;
+        }
+        return closeConn;
+    }
+
+    /**
+     * 执行字段处理前的操作
+     *
+     * @param sourceDTO
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
+    private Boolean beforeColumnQuery(SourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+        Boolean closeQuery = beforeQuery(sourceDTO, queryDTO, false);
+        if (StringUtils.isBlank(queryDTO.getTableName())) {
+            throw new DtLoaderException("查询 表名称 不能为空");
+        }
+
+        queryDTO.setColumns(CollectionUtils.isEmpty(queryDTO.getColumns()) ? Collections.singletonList("*") :
+                queryDTO.getColumns());
+        return closeQuery;
+    }
+
+    @Override
+    public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Boolean closeQuery = beforeQuery(source, queryDTO, false);
+        ResultSet rs = null;
+        List<String> tableList = new ArrayList<>();
+        try {
+            DatabaseMetaData meta = source.getConnection().getMetaData();
+            rs = meta.getTables(null,
+                    StringUtils.isBlank(queryDTO.getSchemaPattern()) ? queryDTO.getSchemaPattern() :
+                            queryDTO.getSchema(),
+                    StringUtils.isBlank(queryDTO.getTableNamePattern()) ? queryDTO.getTableNamePattern() :
+                            queryDTO.getTableName(),
+                    DBUtil.getTableTypes(queryDTO));
+            while (rs.next()) {
+                tableList.add(rs.getString(3));
+            }
+        } catch (Exception e) {
+            throw new DtLoaderException("获取数据库表异常", e);
+        } finally {
+            DBUtil.closeDBResources(rs, null, closeQuery ? source.getConnection() : null);
+        }
+        return tableList;
+    }
+
+    @Override
+    public List<String> getColumnClassInfo(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Boolean closeQuery = beforeColumnQuery(source, queryDTO);
+
+        Statement stmt = null;
+        try {
+            stmt = source.getConnection().createStatement();
+            String queryColumnSql =
+                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + queryDTO.getTableName()
+                            + " where 1=2";
+
+            ResultSetMetaData rsmd = stmt.executeQuery(queryColumnSql).getMetaData();
+            int cnt = rsmd.getColumnCount();
+            List<String> columnClassNameList = Lists.newArrayList();
+
+            for (int i = 0; i < cnt; i++) {
+                String columnClassName = rsmd.getColumnClassName(i + 1);
+                columnClassNameList.add(columnClassName);
+            }
+
+            return columnClassNameList;
+        } finally {
+            DBUtil.closeDBResources(null, stmt, closeQuery ? source.getConnection() : null);
+        }
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Boolean closeQuery = beforeColumnQuery(source, queryDTO);
+        Statement statement = null;
+        ResultSet rs = null;
+
+        List<ColumnMetaDTO> columns = new ArrayList<>();
+        try {
+            statement = source.getConnection().createStatement();
+            String queryColumnSql =
+                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + queryDTO.getTableName() + " where 1=2";
+
+            rs = statement.executeQuery(queryColumnSql);
+            ResultSetMetaData rsMetaData = rs.getMetaData();
+            for (int i = 0, len = rsMetaData.getColumnCount(); i < len; i++) {
+                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+                columnMetaDTO.setKey(rsMetaData.getColumnName(i + 1));
+                columnMetaDTO.setType(rsMetaData.getColumnTypeName(i + 1));
+                columnMetaDTO.setIsPart(false);
+
+                // 获取字段精度
+                if (columnMetaDTO.getType().equalsIgnoreCase("decimal")
+                        || columnMetaDTO.getType().equalsIgnoreCase("float")
+                        || columnMetaDTO.getType().equalsIgnoreCase("double")
+                        || columnMetaDTO.getType().equalsIgnoreCase("numeric")) {
+                    columnMetaDTO.setScale(rsMetaData.getScale(i + 1));
+                    columnMetaDTO.setPrecision(rsMetaData.getPrecision(i + 1));
+                }
+
+                columns.add(columnMetaDTO);
+            }
+            return columns;
+
+        } catch (SQLException e) {
+            if (e.getMessage().contains(DONT_EXIST)) {
+                throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
+            } else {
+                throw new DtCenterDefException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
+                        queryDTO.getTableName()),
+                        DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            }
+        } finally {
+            DBUtil.closeDBResources(rs, statement, closeQuery ? source.getConnection() : null);
+        }
+    }
+
+    /********************************* 关系型数据库无需实现的方法 ******************************************/
+    @Override
+    public String getAllBrokersAddress(SourceDTO source) throws Exception {
+        return null;
+    }
+
+    @Override
+    public List<String> getTopicList(SourceDTO source) throws Exception {
+        return null;
+    }
+
+    @Override
+    public Boolean createTopic(SourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception {
+        return null;
+    }
+
+    @Override
+    public List<MetadataResponse.PartitionMetadata> getAllPartitions(SourceDTO source, String topic) throws Exception {
+        return null;
+    }
+
+    @Override
+    public KafkaOffsetDTO getOffset(SourceDTO source, String topic) throws Exception {
+        return null;
     }
 }

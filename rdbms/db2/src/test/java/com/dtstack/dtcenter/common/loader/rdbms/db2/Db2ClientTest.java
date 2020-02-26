@@ -10,11 +10,11 @@ public class Db2ClientTest {
 
     @Test
     public void getConnFactory() throws Exception {
-        SourceDTO source = new SourceDTO.SourceDTOBuilder()
-                .setUrl("jdbc:db2://kudu4:50000/dtstack")
-                .setUsername("db2inst1")
-                .setPassword("abc123")
-                .builder();
+        SourceDTO source = SourceDTO.builder()
+                .url("jdbc:db2://kudu4:50000/dtstack")
+                .username("db2inst1")
+                .password("abc123")
+                .build();
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {
             throw new DtCenterDefException("数据源连接异常");
