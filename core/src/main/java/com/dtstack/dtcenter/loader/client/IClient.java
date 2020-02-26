@@ -30,27 +30,27 @@ public interface IClient {
      * @return
      * @throws Exception
      */
-    Boolean testCon(SourceDTO source) throws Exception;
+    Boolean testCon(SourceDTO source);
 
     /**
      * 执行查询
      *
-     * @param sourceDTO
+     * @param source
      * @param queryDTO  必填项 sql
      * @return
      * @throws Exception
      */
-    List<Map<String, Object>> executeQuery(SourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception;
+    List<Map<String, Object>> executeQuery(SourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
     /**
      * 执行查询，无需结果集
      *
-     * @param sourceDTO
+     * @param source
      * @param queryDTO  必填项 sql
      * @return
      * @throws Exception
      */
-    Boolean executeSqlWithoutResultSet(SourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception;
+    Boolean executeSqlWithoutResultSet(SourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
     /**
      * 返回所有的表字段名称
@@ -123,11 +123,11 @@ public interface IClient {
     List<MetadataResponse.PartitionMetadata> getAllPartitions(SourceDTO source, String topic) throws Exception;
 
     /**
-     * 获取特定 Topic 位移量
+     * 获取特定 Topic 所有分区的偏移量
      * @param source
      * @param topic
      * @return
      * @throws Exception
      */
-    KafkaOffsetDTO getOffset(SourceDTO source, String topic) throws Exception;
+    List<KafkaOffsetDTO> getOffset(SourceDTO source, String topic) throws Exception;
 }

@@ -11,7 +11,7 @@ import com.dtstack.dtcenter.loader.dto.SourceDTO;
  */
 public class RedisClient extends AbsNosqlClient {
     @Override
-    public Boolean testCon(SourceDTO source) throws Exception {
+    public Boolean testCon(SourceDTO source) {
         return RedisUtils.checkConnection(source);
     }
 }
