@@ -81,9 +81,13 @@
 1. 类似于 DriverManger.getConnection 类似，直接使用 Connection 去做二次开发使用
 ```$Java
     // 历史方法
-    prop 封装
+    String url = "jdbc:mysql://172.16.8.109:3306/ide";
+    Properties prop = new Properties();
+    prop.put("user", "dtstack");
+    prop.put("password", "abc123");
+
     Class.forName(dataBaseType.getDriverClassName());
-    return DriverManager.getConnection(url, prop);
+    Connection clientCon = DriverManager.getConnection(url, prop);
 
     // 改为
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
