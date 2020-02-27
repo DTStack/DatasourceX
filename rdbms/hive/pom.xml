@@ -283,8 +283,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.kerby</groupId>
-            <artifactId>kerb-util</artifactId>
+            <groupId>com.dtstack.dtcenter</groupId>
+            <artifactId>common.hadoop</artifactId>
         </dependency>
     </dependencies>
 

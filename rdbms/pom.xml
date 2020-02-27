@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
     <modules>
-        <module>mysql</module>
+        <module>mysql5</module>
         <module>oracle</module>
         <module>sqlserver</module>
         <module>postgresql</module>
@@ -19,6 +19,13 @@
         <module>hive1</module>
         <module>drds</module>
         <module>common-rdbms</module>
+        <module>mysql8</module>
+        <module>sqlserver2017</module>
+        <module>phoenixs</module>
+        <module>hdfs</module>
+        <module>hbase</module>
+        <module>es</module>
+        <module>kudu</module>
     </modules>
 
     <parent>

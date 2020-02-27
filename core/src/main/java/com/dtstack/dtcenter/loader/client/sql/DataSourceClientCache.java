@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.enums.DataSourceClientType;
 import com.dtstack.dtcenter.loader.exception.ClientAccessException;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
@@ -69,7 +70,7 @@ public class DataSourceClientCache extends AbsClientCache {
             return;
         }
 
-        String plugin = String.format("%s/pluginLibs/%s", userDir, DataSourceType.getBaseType(sourceType).getTypeName());
+        String plugin = String.format("%s/pluginLibs/%s", userDir, DataSourceClientType.getPluginNameByType(sourceType.getVal()));
         File finput = new File(plugin);
         if (!finput.exists()) {
             throw new Exception(String.format("%s directory not found", plugin));

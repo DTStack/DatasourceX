@@ -9,7 +9,17 @@ import java.util.regex.Pattern;
  * @Description：常量
  */
 public interface DtClassConsistent {
-    public static class PublicConsistent {
+    class PublicConsistent {
+        /**
+         * 用户名
+         */
+        public static final String USER_NAME = "userName";
+
+        /**
+         * 密码
+         */
+        public static final String PWD = "pwd";
+
         /**
          * URL
          */
@@ -31,7 +41,7 @@ public interface DtClassConsistent {
         public static final String PARAM_KEY = "param";
     }
 
-    public static class PatternConsistent {
+    class PatternConsistent {
         /**
          * HIVE_JDBC_URL 正则解析
          */
@@ -39,32 +49,21 @@ public interface DtClassConsistent {
                 ":(?<port>\\d+)(/(?<db>[0-9a-z_%]+)*(?<param>[\\?;#].*)*)*");
     }
 
-    public static class HadoopConfConsistent {
+    class HadoopConfConsistent {
+        public static final String HADOOP_CONFIG = "hadoopConfig";
+
+        public static final String DEFAULT_FS_REGEX = "hdfs://.*";
+    }
+
+    class HBaseConsistent {
         /**
-         * Hadoop principal
+         * HBase 集群 根目录
          */
-        public final static String PRINCIPAL = "principal";
+        public static final String KEY_ZOOKEEPER_ZNODE_PARENT = "zookeeper.znode.parent";
 
         /**
-         * Hadoop principalFile
+         * HBase 集群地址 KEY
          */
-        public final static String PRINCIPAL_FILE = "principalFile";
-
-        /**
-         * Hadoop 是否开启鉴权
-         */
-        public static final String IS_HADOOP_AUTHORIZATION = "hadoop.security.authorization";
-
-        public final static String KEY_HBASE_MASTER_KERBEROS_PRINCIPAL = "hbase.master.kerberos.principal";
-
-        public final static String KEY_HBASE_MASTER_KEYTAB_FILE = "hbase.master.keytab.file";
-
-        public final static String KEY_JAVA_SECURITY_KRB5_CONF = "java.security.krb5.conf";
-
-        public static final String DFS_NAMENODE_KEYTAB_FILE = "dfs.namenode.keytab.file";
-
-        public static final String DFS_NAMENODE_KERBEROS_PRINCIPAL = "dfs.namenode.kerberos.principal";
-
-        public final static String KEYTAB_PATH = "keytabPath";
+        public static final String KEY_HBASE_ZOOKEEPER_QUORUM = "hbase.zookeeper.quorum";
     }
 }

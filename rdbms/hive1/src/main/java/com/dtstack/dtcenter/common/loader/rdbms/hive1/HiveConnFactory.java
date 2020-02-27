@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.rdbms.hive1;
 
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
 import com.dtstack.dtcenter.common.enums.DataBaseType;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
@@ -58,7 +59,7 @@ public class HiveConnFactory extends ConnFactory {
         if (StringUtils.isNotEmpty(host) && StringUtils.isNotEmpty(db)) {
             param = param == null ? "" : param;
             String url = String.format("jdbc:hive2://%s:%s/%s", host, port, param);
-            Connection connection = DriverManager.getConnection(url, source.getProperties());
+            Connection connection = DriverManager.getConnection(url, source.getUsername(), source.getPassword());
             if (StringUtils.isNotEmpty(db)) {
                 try {
                     connection.createStatement().execute("use " + db);
