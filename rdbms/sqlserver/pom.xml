@@ -15,7 +15,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <jar.package.name>sqlserver</jar.package.name>
+        <jar.package.name>sqlServer</jar.package.name>
         <jar.name>dtSQLServer</jar.name>
     </properties>
 
@@ -38,6 +38,7 @@
         <dependency>
             <groupId>net.sourceforge.jtds</groupId>
             <artifactId>jtds</artifactId>
+            <version>1.2.4</version>
         </dependency>
     </dependencies>
 

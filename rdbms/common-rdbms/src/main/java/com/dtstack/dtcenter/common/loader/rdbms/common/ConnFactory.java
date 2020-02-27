@@ -44,14 +44,13 @@ public class ConnFactory {
             return DriverManager.getConnection(source.getUrl());
         }
 
-        return DriverManager.getConnection(source.getUrl(), source.getProperties());
+        return DriverManager.getConnection(source.getUrl(), source.getUsername(), source.getPassword());
     }
 
     public Boolean testConn(SourceDTO source) {
         boolean isConnected = false;
         Connection conn = null;
         try {
-            init();
             conn = getConn(source);
             if (StringUtils.isBlank(testSql)) {
                 conn.isValid(5);

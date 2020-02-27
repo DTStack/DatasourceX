@@ -12,6 +12,7 @@
         <module>rdbms</module>
         <module>nosql</module>
         <module>kafkas</module>
+        <module>ftps</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -19,6 +20,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <dtstack.common>4.0.1-SPI-SNAPSHOT</dtstack.common>
     </properties>
 
     <dependencyManagement>
@@ -49,12 +51,6 @@
             </dependency>
 
             <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
-                <version>5.1.20</version>
-            </dependency>
-
-            <dependency>
                 <groupId>com.dtstack.dtcenter</groupId>
                 <artifactId>common.loader.nosql.common</artifactId>
                 <version>${project.version}</version>
@@ -74,6 +70,18 @@
 
             <dependency>
                 <groupId>com.dtstack.dtcenter</groupId>
+                <artifactId>common.base</artifactId>
+                <version>${dtstack.common}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.dtstack.dtcenter</groupId>
+                <artifactId>common.hadoop</artifactId>
+                <version>${dtstack.common}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.dtstack.dtcenter</groupId>
                 <artifactId>common.loader.core</artifactId>
                 <version>${project.version}</version>
                 <scope>provided</scope>
@@ -83,18 +91,6 @@
                 <groupId>com.dtstack.dtcenter</groupId>
                 <artifactId>common.loader.rdbms.common</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.dtstack.dtcenter</groupId>
-                <artifactId>common.base</artifactId>
-                <version>4.0.1-SPI-SNAPSHOT</version>
-            </dependency>
-
-            <dependency>
-                <groupId>net.sourceforge.jtds</groupId>
-                <artifactId>jtds</artifactId>
-                <version>1.2.4</version>
             </dependency>
 
             <dependency>
@@ -125,6 +121,12 @@
                 <groupId>com.esen.jdbc</groupId>
                 <artifactId>gbase</artifactId>
                 <version>8.3.81.53</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hbase</groupId>
+                <artifactId>hbase-client</artifactId>
+                <version>1.3.1</version>
             </dependency>
 
             <dependency>
@@ -161,6 +163,31 @@
                 <groupId>org.apache.kerby</groupId>
                 <artifactId>kerb-util</artifactId>
                 <version>2.0.0</version>
+            </dependency>
+
+            <!-- 默认的 phoenix 版本-->
+            <dependency>
+                <groupId>org.apache.phoenix</groupId>
+                <artifactId>phoenix-core</artifactId>
+                <version>4.12.0-HBase-1.3</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-exec</artifactId>
+                <version>2.1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.dtstack</groupId>
+                <artifactId>shaded-elasticsearch-client</artifactId>
+                <version>6.1.3</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.kudu</groupId>
+                <artifactId>kudu-client</artifactId>
+                <version>1.9.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

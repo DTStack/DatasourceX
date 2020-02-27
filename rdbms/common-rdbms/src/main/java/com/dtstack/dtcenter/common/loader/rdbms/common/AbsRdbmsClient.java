@@ -27,11 +27,9 @@ import java.util.Map;
  * @Description：客户端
  */
 public abstract class AbsRdbmsClient implements IClient {
-    private static final Logger logger = LoggerFactory.getLogger(ConnFactory.class);
+    protected static final Logger logger = LoggerFactory.getLogger(ConnFactory.class);
 
-    private ConnFactory connFactory;
-
-    protected String dbType = "rdbms";
+    private ConnFactory connFactory = getConnFactory();
 
     protected abstract ConnFactory getConnFactory();
 
@@ -39,15 +37,13 @@ public abstract class AbsRdbmsClient implements IClient {
 
     @Override
     public Connection getCon(SourceDTO source) throws Exception {
-        logger.info("-------get {} connection success-----", dbType);
-
-        connFactory = getConnFactory();
+        logger.info(String.valueOf(System.identityHashCode(connFactory)));
+        logger.info("-------get {} connection success-----", source.getSourceType().name());
         return connFactory.getConn(source);
     }
 
     @Override
     public Boolean testCon(SourceDTO source) {
-        connFactory = getConnFactory();
         return connFactory.testConn(source);
     }
 
@@ -103,7 +99,7 @@ public abstract class AbsRdbmsClient implements IClient {
      */
     private Boolean beforeColumnQuery(SourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
         Boolean closeQuery = beforeQuery(sourceDTO, queryDTO, false);
-        if (StringUtils.isBlank(queryDTO.getTableName())) {
+        if (queryDTO == null || StringUtils.isBlank(queryDTO.getTableName())) {
             throw new DtLoaderException("查询 表名称 不能为空");
         }
 
@@ -119,12 +115,16 @@ public abstract class AbsRdbmsClient implements IClient {
         List<String> tableList = new ArrayList<>();
         try {
             DatabaseMetaData meta = source.getConnection().getMetaData();
-            rs = meta.getTables(null,
-                    StringUtils.isBlank(queryDTO.getSchemaPattern()) ? queryDTO.getSchemaPattern() :
-                            queryDTO.getSchema(),
-                    StringUtils.isBlank(queryDTO.getTableNamePattern()) ? queryDTO.getTableNamePattern() :
-                            queryDTO.getTableName(),
-                    DBUtil.getTableTypes(queryDTO));
+            if (null == queryDTO) {
+                rs = meta.getTables(null, null, null, null);
+            } else {
+                rs = meta.getTables(null,
+                        StringUtils.isBlank(queryDTO.getSchemaPattern()) ? queryDTO.getSchemaPattern() :
+                                queryDTO.getSchema(),
+                        StringUtils.isBlank(queryDTO.getTableNamePattern()) ? queryDTO.getTableNamePattern() :
+                                queryDTO.getTableName(),
+                        DBUtil.getTableTypes(queryDTO));
+            }
             while (rs.next()) {
                 tableList.add(rs.getString(3));
             }
@@ -211,26 +211,26 @@ public abstract class AbsRdbmsClient implements IClient {
     /********************************* 关系型数据库无需实现的方法 ******************************************/
     @Override
     public String getAllBrokersAddress(SourceDTO source) throws Exception {
-        return null;
+        throw new DtLoaderException("Not Support " + source.getSourceType().name());
     }
 
     @Override
     public List<String> getTopicList(SourceDTO source) throws Exception {
-        return null;
+        throw new DtLoaderException("Not Support " + source.getSourceType().name());
     }
 
     @Override
     public Boolean createTopic(SourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception {
-        return null;
+        throw new DtLoaderException("Not Support " + source.getSourceType().name());
     }
 
     @Override
     public List<MetadataResponse.PartitionMetadata> getAllPartitions(SourceDTO source, String topic) throws Exception {
-        return null;
+        throw new DtLoaderException("Not Support " + source.getSourceType().name());
     }
 
     @Override
     public List<KafkaOffsetDTO> getOffset(SourceDTO source, String topic) throws Exception {
-        return null;
+        throw new DtLoaderException("Not Support " + source.getSourceType().name());
     }
 }
