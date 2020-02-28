@@ -39,9 +39,9 @@ public abstract class AbsClientCache {
     /**
      * 根据特定类型获取对应的客户端
      *
-     * @param typeName
+     * @param sourceType
      * @return
      * @throws ClientAccessException
      */
-    public abstract IClient getClient(String typeName) throws ClientAccessException;
+    public abstract IClient getClient(Integer sourceType) throws ClientAccessException;
 }

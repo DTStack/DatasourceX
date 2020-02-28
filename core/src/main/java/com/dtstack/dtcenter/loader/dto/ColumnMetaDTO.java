@@ -28,7 +28,7 @@ public class ColumnMetaDTO {
     /**
      * 是否分区字段
      */
-    private Boolean isPart;
+    private Boolean isPart = false;
 
     /**
      * 小数点右边的指定列的位数

@@ -17,14 +17,10 @@ import java.util.ServiceLoader;
  * @Description：关系型数据库客户端工厂
  */
 public class DataSourceClientFactory {
-    private static Map<DataSourceType, ClassLoader> pluginClassLoader = Maps.newConcurrentMap();
+    private static Map<Integer, ClassLoader> pluginClassLoader = Maps.newConcurrentMap();
 
-    public static ClassLoader getClassLoader(DataSourceType dataBaseType) {
-        return pluginClassLoader.get(dataBaseType);
-    }
-
-    public static IClient createPluginClass(DataSourceType dataBaseType) throws Exception {
-        ClassLoader classLoader = pluginClassLoader.get(dataBaseType);
+    public static IClient createPluginClass(DataSourceType source) throws Exception {
+        ClassLoader classLoader = pluginClassLoader.get(source.getVal());
         return ClassLoaderCallBackMethod.callbackAndReset(new ClassLoaderCallBack<IClient>() {
 
             @Override
@@ -32,7 +28,7 @@ public class DataSourceClientFactory {
                 ServiceLoader<IClient> iClients = ServiceLoader.load(IClient.class);
                 Iterator<IClient> iClientIterator = iClients.iterator();
                 if (!iClientIterator.hasNext()) {
-                    throw new RuntimeException("not support for source type " + dataBaseType.name());
+                    throw new RuntimeException("not support for source type " + source.name());
                 }
 
                 IClient client = iClientIterator.next();
@@ -41,15 +37,15 @@ public class DataSourceClientFactory {
         }, classLoader, false);
     }
 
-    public static void addClassLoader(DataSourceType sourceType, ClassLoader classLoader) {
-        if (pluginClassLoader.containsKey(sourceType)) {
+    public static void addClassLoader(DataSourceType source, ClassLoader classLoader) {
+        if (pluginClassLoader.containsKey(source.getVal())) {
             return;
         }
 
-        pluginClassLoader.putIfAbsent(sourceType, classLoader);
+        pluginClassLoader.putIfAbsent(source.getVal(), classLoader);
     }
 
-    public static boolean checkContainClassLoader(DataSourceType sourceType) {
-        return pluginClassLoader.containsKey(sourceType);
+    public static boolean checkContainClassLoader(DataSourceType source) {
+        return pluginClassLoader.containsKey(source.getVal());
     }
 }

@@ -22,7 +22,7 @@ import java.util.Map;
 public class DataSourceClientCache extends AbsClientCache {
     private static final Logger LOG = LoggerFactory.getLogger(DataSourceClientCache.class);
 
-    private Map<DataSourceType, IClient> defaultClientMap = Maps.newConcurrentMap();
+    private Map<Integer, IClient> defaultClientMap = Maps.newConcurrentMap();
 
     private static DataSourceClientCache singleton = new DataSourceClientCache();
 
@@ -36,20 +36,20 @@ public class DataSourceClientCache extends AbsClientCache {
     /**
      * 根据数据源类型获取对应的客户端
      *
-     * @param sourceName
+     * @param sourceType
      * @return
      */
     @Override
-    public IClient getClient(String sourceName) throws ClientAccessException {
+    public IClient getClient(Integer sourceType) throws ClientAccessException {
         try {
-            DataSourceType sourceType = DataSourceType.valueOf(sourceName);
-            if (null == sourceType) {
+            DataSourceType source = DataSourceType.getSourceType(sourceType);
+            if (null == source) {
                 throw new DtCenterDefException("数据源类型不存在");
             }
             IClient client = defaultClientMap.get(sourceType);
             if (client == null) {
                 synchronized (defaultClientMap) {
-                    client = buildPluginClient(sourceType);
+                    client = buildPluginClient(source);
                     defaultClientMap.putIfAbsent(sourceType, client);
                 }
             }
@@ -60,22 +60,22 @@ public class DataSourceClientCache extends AbsClientCache {
         }
     }
 
-    private IClient buildPluginClient(DataSourceType sourceType) throws Exception {
-        loadComputerPlugin(sourceType);
-        return DataSourceClientFactory.createPluginClass(sourceType);
+    private IClient buildPluginClient(DataSourceType source) throws Exception {
+        loadComputerPlugin(source);
+        return DataSourceClientFactory.createPluginClass(source);
     }
 
-    private void loadComputerPlugin(DataSourceType sourceType) throws Exception {
-        if (DataSourceClientFactory.checkContainClassLoader(sourceType)) {
+    private void loadComputerPlugin(DataSourceType source) throws Exception {
+        if (DataSourceClientFactory.checkContainClassLoader(source)) {
             return;
         }
 
-        String plugin = String.format("%s/pluginLibs/%s", userDir, DataSourceClientType.getPluginNameByType(sourceType.getVal()));
+        String plugin = String.format("%s/pluginLibs/%s", userDir, DataSourceClientType.getPluginNameByType(source.getVal()));
         File finput = new File(plugin);
         if (!finput.exists()) {
             throw new Exception(String.format("%s directory not found", plugin));
         }
 
-        DataSourceClientFactory.addClassLoader(sourceType, getClassLoad(finput));
+        DataSourceClientFactory.addClassLoader(source, getClassLoad(finput));
     }
 }

@@ -145,31 +145,31 @@ public class EsClient extends AbsRdbmsClient {
     /******************** 未支持的方法 **********************/
     @Override
     public Connection getCon(SourceDTO source) throws Exception {
-        throw new DtLoaderException("Not Support " + source.getSourceType().name());
+        throw new DtLoaderException("Not Support");
     }
 
     @Override
     public List<Map<String, Object>> executeQuery(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support " + source.getSourceType().name());
+        throw new DtLoaderException("Not Support");
     }
 
     @Override
     public Boolean executeSqlWithoutResultSet(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support " + source.getSourceType().name());
+        throw new DtLoaderException("Not Support");
     }
 
     @Override
     public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support " + source.getSourceType().name());
+        throw new DtLoaderException("Not Support");
     }
 
     @Override
     public List<String> getColumnClassInfo(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support " + source.getSourceType().name());
+        throw new DtLoaderException("Not Support");
     }
 
     @Override
     public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support " + source.getSourceType().name());
+        throw new DtLoaderException("Not Support");
     }
 }

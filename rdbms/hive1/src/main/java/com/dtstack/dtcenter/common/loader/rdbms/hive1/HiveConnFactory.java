@@ -56,7 +56,7 @@ public class HiveConnFactory extends ConnFactory {
             param = matcher.group(DtClassConsistent.PublicConsistent.PARAM_KEY);
         }
 
-        if (StringUtils.isNotEmpty(host) && StringUtils.isNotEmpty(db)) {
+        if (StringUtils.isNotEmpty(host)) {
             param = param == null ? "" : param;
             String url = String.format("jdbc:hive2://%s:%s/%s", host, port, param);
             Connection connection = DriverManager.getConnection(url, source.getUsername(), source.getPassword());

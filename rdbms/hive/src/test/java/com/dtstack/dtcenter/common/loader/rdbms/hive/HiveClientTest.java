@@ -1,9 +1,12 @@
 package com.dtstack.dtcenter.common.loader.rdbms.hive;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
+import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import org.junit.Test;
+
+import java.util.List;
 
 public class HiveClientTest {
     private static AbsRdbmsClient rdbsClient = new HiveClient();
@@ -11,13 +14,13 @@ public class HiveClientTest {
     @Test
     public void getConnFactory() throws Exception {
         SourceDTO source = SourceDTO.builder()
-                .url("jdbc:hive2://cdh-impala2:10000")
+                .url("jdbc:hive2://cdh-impala2:10000/ceshis_pri")
                 .username("root")
                 .password("abc123")
                 .build();
-        Boolean isConnected = rdbsClient.testCon(source);
-        if (!isConnected) {
-            throw new DtCenterDefException("数据源连接异常");
-        }
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi200228").filterPartitionColumns(false).build();
+//        List<String> tableList = rdbsClient.getTableList(source, null);
+        List<ColumnMetaDTO> columnMetaData = rdbsClient.getColumnMetaData(source, queryDTO);
+        System.out.println(columnMetaData.size());
     }
 }

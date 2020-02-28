@@ -38,7 +38,7 @@ public abstract class AbsRdbmsClient implements IClient {
     @Override
     public Connection getCon(SourceDTO source) throws Exception {
         logger.info(String.valueOf(System.identityHashCode(connFactory)));
-        logger.info("-------get {} connection success-----", source.getSourceType().name());
+        logger.info("-------get connection success-----");
         return connFactory.getConn(source);
     }
 
@@ -50,7 +50,6 @@ public abstract class AbsRdbmsClient implements IClient {
     @Override
     public List<Map<String, Object>> executeQuery(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         Boolean closeQuery = beforeQuery(source, queryDTO, true);
-
         // 如果当前 connection 已关闭，直接返回空列表
         if (source.getConnection().isClosed()) {
             return Lists.newArrayList();
@@ -61,6 +60,12 @@ public abstract class AbsRdbmsClient implements IClient {
 
     @Override
     public Boolean executeSqlWithoutResultSet(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Boolean closeQuery = beforeQuery(source, queryDTO, true);
+        // 如果当前 connection 已关闭，直接返回空列表
+        if (source.getConnection().isClosed()) {
+            return false;
+        }
+
         DBUtil.executeSqlWithoutResultSet(source.getConnection(), queryDTO.getSql(),
                 beforeQuery(source, queryDTO, true));
         return true;
@@ -74,7 +79,7 @@ public abstract class AbsRdbmsClient implements IClient {
      * @return 是否需要自动关闭连接
      * @throws Exception
      */
-    private Boolean beforeQuery(SourceDTO sourceDTO, SqlQueryDTO queryDTO, boolean query) throws Exception {
+    protected Boolean beforeQuery(SourceDTO sourceDTO, SqlQueryDTO queryDTO, boolean query) throws Exception {
         // 查询 SQL 不能为空
         if (query && StringUtils.isBlank(queryDTO.getSql())) {
             throw new DtLoaderException("查询 SQL 不能为空");
@@ -97,7 +102,7 @@ public abstract class AbsRdbmsClient implements IClient {
      * @return
      * @throws Exception
      */
-    private Boolean beforeColumnQuery(SourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+    protected Boolean beforeColumnQuery(SourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
         Boolean closeQuery = beforeQuery(sourceDTO, queryDTO, false);
         if (queryDTO == null || StringUtils.isBlank(queryDTO.getTableName())) {
             throw new DtLoaderException("查询 表名称 不能为空");
@@ -211,26 +216,26 @@ public abstract class AbsRdbmsClient implements IClient {
     /********************************* 关系型数据库无需实现的方法 ******************************************/
     @Override
     public String getAllBrokersAddress(SourceDTO source) throws Exception {
-        throw new DtLoaderException("Not Support " + source.getSourceType().name());
+        throw new DtLoaderException("Not Support");
     }
 
     @Override
     public List<String> getTopicList(SourceDTO source) throws Exception {
-        throw new DtLoaderException("Not Support " + source.getSourceType().name());
+        throw new DtLoaderException("Not Support");
     }
 
     @Override
     public Boolean createTopic(SourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception {
-        throw new DtLoaderException("Not Support " + source.getSourceType().name());
+        throw new DtLoaderException("Not Support");
     }
 
     @Override
     public List<MetadataResponse.PartitionMetadata> getAllPartitions(SourceDTO source, String topic) throws Exception {
-        throw new DtLoaderException("Not Support " + source.getSourceType().name());
+        throw new DtLoaderException("Not Support");
     }
 
     @Override
     public List<KafkaOffsetDTO> getOffset(SourceDTO source, String topic) throws Exception {
-        throw new DtLoaderException("Not Support " + source.getSourceType().name());
+        throw new DtLoaderException("Not Support");
     }
 }
