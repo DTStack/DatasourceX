@@ -28,7 +28,7 @@ public class HdfsConnFactory extends ConnFactory {
 
     @Override
     public Connection getConn(SourceDTO source) throws Exception {
-        throw new DtLoaderException("Not Support " + source.getSourceType().name());
+        throw new DtLoaderException("Not Support");
     }
 
     @Override

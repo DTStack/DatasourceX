@@ -2,7 +2,9 @@ package com.dtstack.dtcenter.loader.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import org.apache.commons.lang3.ArrayUtils;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -30,7 +32,7 @@ public class SqlQueryDTO {
     private String tableNamePattern;
 
     /**
-     * 模式即 DBName
+     * 模式即 DBName 或者 kylin 的 Project
      */
     private String schema;
 
@@ -40,7 +42,7 @@ public class SqlQueryDTO {
     private String schemaPattern;
 
     /**
-     * 表类型
+     * 表类型 部分支持，建议只使用 view 这个字段
      * {@link java.sql.DatabaseMetaData#getTableTypes()}
      */
     private String[] tableTypes;
@@ -58,5 +60,17 @@ public class SqlQueryDTO {
     /**
      * 是否过滤分区字段，默认 false 不过滤
      */
-    private Boolean filterPartitionColumns = false;
+    private Boolean filterPartitionColumns;
+
+    public Boolean getView() {
+        if (ArrayUtils.isEmpty(getTableTypes())) {
+            return Boolean.TRUE.equals(view);
+        }
+
+        return Arrays.stream(getTableTypes()).filter( type -> "VIEW".equalsIgnoreCase(type)).findFirst().isPresent();
+    }
+
+    public Boolean getFilterPartitionColumns() {
+        return Boolean.TRUE.equals(filterPartitionColumns);
+    }
 }

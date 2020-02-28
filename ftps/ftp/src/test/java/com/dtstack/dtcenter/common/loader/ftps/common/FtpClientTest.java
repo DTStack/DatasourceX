@@ -20,7 +20,7 @@ public class FtpClientTest {
                 .hostPort("22")
                 .username("root")
                 .password("abc123")
-                .protocol("sfttp")
+                .protocol("sftp")
                 .build();
         Boolean isConnected = ftpClient.testCon(source);
         if (!isConnected) {

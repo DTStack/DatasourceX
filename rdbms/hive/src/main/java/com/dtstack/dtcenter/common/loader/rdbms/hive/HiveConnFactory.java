@@ -34,6 +34,7 @@ public class HiveConnFactory extends ConnFactory {
 
     @Override
     public Connection getConn(SourceDTO source) throws Exception {
+        init();
         Configuration conf = null;
         if (MapUtils.isNotEmpty(source.getKerberosConfig())) {
             String principalFile = (String) source.getKerberosConfig().get("principalFile");
@@ -56,7 +57,7 @@ public class HiveConnFactory extends ConnFactory {
             param = matcher.group(DtClassConsistent.PublicConsistent.PARAM_KEY);
         }
 
-        if (StringUtils.isNotEmpty(host) && StringUtils.isNotEmpty(db)) {
+        if (StringUtils.isNotEmpty(host)) {
             param = param == null ? "" : param;
             String url = String.format("jdbc:hive2://%s:%s/%s", host, port, param);
             Connection connection = DriverManager.getConnection(url, source.getUsername(), source.getPassword());

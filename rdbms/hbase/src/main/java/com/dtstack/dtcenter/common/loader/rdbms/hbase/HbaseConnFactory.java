@@ -38,7 +38,7 @@ public class HbaseConnFactory extends ConnFactory {
             ClusterStatus clusterStatus = hConn.getAdmin().getClusterStatus();
             check = true;
         } catch(Exception e) {
-            LOG.error("{}", e);
+            LOG.error(e.getMessage(), e);
         } finally {
             try {
                 hConn.close();
@@ -108,6 +108,6 @@ public class HbaseConnFactory extends ConnFactory {
 
     @Override
     public Connection getConn(SourceDTO source) throws Exception {
-        throw new DtLoaderException("Not Support " + source.getSourceType().name());
+        throw new DtLoaderException("Not Support");
     }
 }

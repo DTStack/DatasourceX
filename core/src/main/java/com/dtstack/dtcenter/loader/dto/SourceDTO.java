@@ -1,10 +1,8 @@
 package com.dtstack.dtcenter.loader.dto;
 
-import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.loader.enums.RedisMode;
 import lombok.Builder;
 import lombok.Data;
-import org.apache.commons.lang.StringUtils;
 
 import java.sql.Connection;
 import java.util.Map;
@@ -18,11 +16,6 @@ import java.util.Map;
 @Data
 @Builder
 public class SourceDTO {
-
-    /**
-     * 数据源类型
-     */
-    private DataSourceType sourceType;
 
     /**
      * URL 地址，如果为 master slave 的则为所有的地址

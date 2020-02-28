@@ -78,6 +78,12 @@
                 <groupId>com.dtstack.dtcenter</groupId>
                 <artifactId>common.hadoop</artifactId>
                 <version>${dtstack.common}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>xml-apis</artifactId>
+                        <groupId>xml-apis</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -132,7 +138,7 @@
             <dependency>
                 <groupId>org.apache.kylin</groupId>
                 <artifactId>kylin-jdbc</artifactId>
-                <version>3.0.0-alpha</version>
+                <version>3.0.0</version>
             </dependency>
 
             <dependency>
