@@ -34,6 +34,7 @@ public class HiveConnFactory extends ConnFactory {
 
     @Override
     public Connection getConn(SourceDTO source) throws Exception {
+        init();
         Configuration conf = null;
         if (MapUtils.isNotEmpty(source.getKerberosConfig())) {
             String principalFile = (String) source.getKerberosConfig().get("principalFile");

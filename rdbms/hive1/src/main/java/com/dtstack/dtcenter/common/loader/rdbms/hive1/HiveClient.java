@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
+import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
@@ -26,10 +27,6 @@ import java.util.stream.Collectors;
  * @Description：Hive 连接
  */
 public class HiveClient extends AbsRdbmsClient {
-    private static final String COL_NAME = "col_name";
-    private static final String DATA_TYPE = "data_type";
-    private static final String COMMENT = "comment";
-
     @Override
     protected ConnFactory getConnFactory() {
         return new HiveConnFactory();
@@ -70,8 +67,8 @@ public class HiveClient extends AbsRdbmsClient {
             stmt = source.getConnection().createStatement();
             resultSet = stmt.executeQuery("desc extended " + queryDTO.getTableName());
             while (resultSet.next()) {
-                String dataType = resultSet.getString(DATA_TYPE);
-                String colName = resultSet.getString(COL_NAME);
+                String dataType = resultSet.getString(DtClassConsistent.PublicConsistent.DATA_TYPE);
+                String colName = resultSet.getString(DtClassConsistent.PublicConsistent.COL_NAME);
                 if (StringUtils.isEmpty(dataType) || StringUtils.isBlank(colName)) {
                     break;
                 }
@@ -80,7 +77,7 @@ public class HiveClient extends AbsRdbmsClient {
                 ColumnMetaDTO metaDTO = new ColumnMetaDTO();
                 metaDTO.setType(dataType.trim());
                 metaDTO.setKey(colName);
-                metaDTO.setComment(resultSet.getString(COMMENT));
+                metaDTO.setComment(resultSet.getString(DtClassConsistent.PublicConsistent.COMMENT));
 
                 if (colName.startsWith("#") || "Detailed Table Information".equals(colName)) {
                     break;
@@ -90,7 +87,7 @@ public class HiveClient extends AbsRdbmsClient {
 
             boolean partBegin = false;
             while (resultSet.next()) {
-                String colName = resultSet.getString(COL_NAME).trim();
+                String colName = resultSet.getString(DtClassConsistent.PublicConsistent.COL_NAME).trim();
 
                 if (colName.contains("# Partition Information")) {
                     partBegin = true;
@@ -107,7 +104,7 @@ public class HiveClient extends AbsRdbmsClient {
                 // 处理分区标志
                 if (partBegin && !colName.contains("Partition Type")) {
                     if (columnMap.containsKey(colName.trim())) {
-                        columnMap.get(colName).setIsPart(true);
+                        columnMap.get(colName).setPart(true);
                     }
                 } else if (colName.contains("Partition Type")) {
                     //分区字段结束
@@ -115,7 +112,7 @@ public class HiveClient extends AbsRdbmsClient {
                 }
             }
 
-            return columnMap.values().stream().filter(column -> !queryDTO.getFilterPartitionColumns() || !column.getIsPart()).collect(Collectors.toList());
+            return columnMap.values().stream().filter(column -> !queryDTO.getFilterPartitionColumns() || !column.getPart()).collect(Collectors.toList());
         } catch (SQLException e) {
             throw new DtCenterDefException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
                     queryDTO.getTableName()),

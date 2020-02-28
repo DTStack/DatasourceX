@@ -37,7 +37,6 @@ public abstract class AbsRdbmsClient implements IClient {
 
     @Override
     public Connection getCon(SourceDTO source) throws Exception {
-        logger.info(String.valueOf(System.identityHashCode(connFactory)));
         logger.info("-------get connection success-----");
         return connFactory.getConn(source);
     }
@@ -185,7 +184,7 @@ public abstract class AbsRdbmsClient implements IClient {
                 ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
                 columnMetaDTO.setKey(rsMetaData.getColumnName(i + 1));
                 columnMetaDTO.setType(rsMetaData.getColumnTypeName(i + 1));
-                columnMetaDTO.setIsPart(false);
+                columnMetaDTO.setPart(false);
 
                 // 获取字段精度
                 if (columnMetaDTO.getType().equalsIgnoreCase("decimal")

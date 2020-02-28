@@ -32,7 +32,7 @@ public class SqlQueryDTO {
     private String tableNamePattern;
 
     /**
-     * 模式即 DBName
+     * 模式即 DBName 或者 kylin 的 Project
      */
     private String schema;
 
@@ -64,7 +64,7 @@ public class SqlQueryDTO {
 
     public Boolean getView() {
         if (ArrayUtils.isEmpty(getTableTypes())) {
-            return view;
+            return Boolean.TRUE.equals(view);
         }
 
         return Arrays.stream(getTableTypes()).filter( type -> "VIEW".equalsIgnoreCase(type)).findFirst().isPresent();

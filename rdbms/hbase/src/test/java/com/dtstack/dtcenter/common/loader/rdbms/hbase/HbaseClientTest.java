@@ -17,11 +17,7 @@ public class HbaseClientTest {
     @Test
     public void getConnFactory() throws Exception {
         SourceDTO source = SourceDTO.builder()
-                .url("172-16-8-193:2181")
-                .path("/hbase")
-                .others("{\n" +
-                        "    \"zookeeper.znode.parent\": \"/hbase\"\n" +
-                        "}")
+                .url("node01,node02,node03:2181")
                 .build();
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {

@@ -1,9 +1,12 @@
 package com.dtstack.dtcenter.common.loader.rdbms.clickhouse;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
+import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import org.junit.Test;
+
+import java.util.List;
 
 public class ClickhouseClientTest {
     private static AbsRdbmsClient rdbsClient = new ClickhouseClient();
@@ -15,9 +18,8 @@ public class ClickhouseClientTest {
                 .username("dtstack")
                 .password("abc123")
                 .build();
-        Boolean isConnected = rdbsClient.testCon(source);
-        if (!isConnected) {
-            throw new DtCenterDefException("数据源连接异常");
-        }
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("mqresult2").build();
+        List<ColumnMetaDTO> columnMetaData = rdbsClient.getColumnMetaData(source, queryDTO);
+        System.out.println(columnMetaData.size());
     }
 }

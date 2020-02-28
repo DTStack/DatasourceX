@@ -39,14 +39,33 @@ public interface DtClassConsistent {
          * 其他参数
          */
         public static final String PARAM_KEY = "param";
+
+        /**
+         * 数据库中对应关系字段
+         */
+        public static final String KEY = "key";
+        public static final String NAME = "name";
+        public static final String TYPE = "type";
+        public static final String COMMENT = "comment";
+        public static final String IS_PART = "isPart";
+        public static final String COL_NAME = "col_name";
+        public static final String DATA_TYPE = "data_type";
+        public static final String PRIMARY_KEY = "primary_key";
     }
 
     class PatternConsistent {
+        /**
+         * JDBC 正则
+         */
+        public static Pattern JDBC_PATTERN = Pattern.compile("(?i)jdbc:[a-zA-Z0-9\\.]+://(?<host>[0-9a-zA-Z\\.-]+):(?<port>\\d+)/(?<db>[0-9a-zA-Z_%\\.]+)(?<param>[\\?;#].*)*");
         /**
          * HIVE_JDBC_URL 正则解析
          */
         public static final Pattern HIVE_JDBC_PATTERN = Pattern.compile("(?i)jdbc:hive2://(?<host>[0-9a-zA-Z\\-\\.]+)" +
                 ":(?<port>\\d+)(/(?<db>[0-9a-z_%]+)*(?<param>[\\?;#].*)*)*");
+
+        public static final Pattern IMPALA_JDBC_PATTERN = Pattern.compile("(?i)jdbc:impala://[0-9a-zA-Z\\-\\.]+:[\\d]+/" +
+                "(?<db>[0-9a-zA-Z\\-]+);.*");
     }
 
     class HadoopConfConsistent {

@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms.common;
 
+import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -24,7 +25,7 @@ public class ConnFactory {
 
     private AtomicBoolean isFirstLoaded = new AtomicBoolean(true);
 
-    private void init() throws ClassNotFoundException {
+    protected void init() throws ClassNotFoundException {
         // 减少加锁开销
         if (!isFirstLoaded.get()) {
             return;
@@ -39,6 +40,10 @@ public class ConnFactory {
     }
 
     public Connection getConn(SourceDTO source) throws Exception {
+        if (source == null) {
+            throw new DtCenterDefException("数据源信息为 NULL");
+        }
+
         init();
         if (StringUtils.isBlank(source.getUsername())) {
             return DriverManager.getConnection(source.getUrl());

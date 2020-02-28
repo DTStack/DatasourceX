@@ -38,7 +38,7 @@ public class HbaseConnFactory extends ConnFactory {
             ClusterStatus clusterStatus = hConn.getAdmin().getClusterStatus();
             check = true;
         } catch(Exception e) {
-            LOG.error("{}", e);
+            LOG.error(e.getMessage(), e);
         } finally {
             try {
                 hConn.close();

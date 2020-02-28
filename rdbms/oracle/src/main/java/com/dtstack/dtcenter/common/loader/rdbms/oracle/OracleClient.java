@@ -35,7 +35,7 @@ public class OracleClient extends AbsRdbmsClient {
         ResultSet rs = null;
         List<String> tableList = new ArrayList<>();
         try {
-            String sql = queryDTO.getView() ? ORACLE_ALL_TABLES_SQL + ORACLE_WITH_VIEWS_SQL : ORACLE_ALL_TABLES_SQL;
+            String sql = queryDTO != null && queryDTO.getView() ? ORACLE_ALL_TABLES_SQL + ORACLE_WITH_VIEWS_SQL : ORACLE_ALL_TABLES_SQL;
             statement = source.getConnection().createStatement();
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();

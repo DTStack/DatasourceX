@@ -107,14 +107,9 @@ public class EsClient extends AbsRdbmsClient {
         CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY,
                 new UsernamePasswordCredentials(username, password));
-        List<HttpHost> httpHostList = new ArrayList<>();
-        String[] addr = address.split(",");
-        for (String add : addr) {
-            String[] pair = add.split(":");
-            httpHostList.add(new HttpHost(pair[0], Integer.valueOf(pair[1]), "http"));
-        }
+        List<HttpHost> httpHosts = dealHost(address);
         RestHighLevelClient client =
-                new RestHighLevelClient(RestClient.builder(httpHostList.toArray(new HttpHost[httpHostList.size()]))
+                new RestHighLevelClient(RestClient.builder(httpHosts.toArray(new HttpHost[httpHosts.size()]))
                         .setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
                             @Override
                             public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
@@ -131,15 +126,20 @@ public class EsClient extends AbsRdbmsClient {
      * @return
      */
     private static RestHighLevelClient getClient(String address) {
+        List<HttpHost> httpHosts = dealHost(address);
+        RestHighLevelClient client = new RestHighLevelClient(
+                RestClient.builder(httpHosts.toArray(new HttpHost[httpHosts.size()])));
+        return client;
+    }
+
+    private static List<HttpHost> dealHost(String address) {
         List<HttpHost> httpHostList = new ArrayList<>();
         String[] addr = address.split(",");
         for (String add : addr) {
             String[] pair = add.split(":");
             httpHostList.add(new HttpHost(pair[0], Integer.valueOf(pair[1]), "http"));
         }
-        RestHighLevelClient client = new RestHighLevelClient(
-                RestClient.builder(httpHostList.toArray(new HttpHost[httpHostList.size()])));
-        return client;
+        return httpHostList;
     }
 
     /******************** 未支持的方法 **********************/
