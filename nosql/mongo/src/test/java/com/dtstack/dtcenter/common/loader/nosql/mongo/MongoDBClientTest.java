@@ -11,10 +11,12 @@ public class MongoDBClientTest {
     @Test
     public void testCon() throws Exception {
         SourceDTO source = SourceDTO.builder()
-                .url("172.16.10.61:6379")
-                .password("abc123")
-                .schema("5")
+                .url("kudu5:27107")
+                .schema("admin")
+                .username("admin")
+                .password("123456")
                 .build();
+
         Boolean isConnected = nosqlClient.testCon(source);
         if (!isConnected) {
             throw new DtCenterDefException("数据源连接异常");
