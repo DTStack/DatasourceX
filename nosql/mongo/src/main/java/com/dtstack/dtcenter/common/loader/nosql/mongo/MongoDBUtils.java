@@ -70,7 +70,7 @@ public class MongoDBUtils {
         return check;
     }
 
-    private static List<ServerAddress> getServerAddress(String hostPorts) {
+    protected static List<ServerAddress> getServerAddress(String hostPorts) {
         List<ServerAddress> addresses = Lists.newArrayList();
 
         boolean isTelnet = true;

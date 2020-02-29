@@ -41,7 +41,7 @@ public class RedisUtils {
             port = portStr == null ? DEFAULT_PORT : Integer.parseInt(portStr);
         }
 
-        return checkConnection(host, port, source.getPassword(), db);
+        return checkConnection(source.getUrl(), Integer.valueOf(source.getHostPort()), source.getPassword(), db);
     }
 
     private static boolean checkConnection(String host, int port, String password, int db) {

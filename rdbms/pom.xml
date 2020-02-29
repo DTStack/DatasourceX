@@ -26,6 +26,7 @@
         <module>hbase</module>
         <module>es</module>
         <module>kudu</module>
+        <module>libra</module>
     </modules>
 
     <parent>

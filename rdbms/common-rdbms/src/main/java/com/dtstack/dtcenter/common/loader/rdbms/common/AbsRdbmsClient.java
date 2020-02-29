@@ -176,14 +176,14 @@ public abstract class AbsRdbmsClient implements IClient {
         try {
             statement = source.getConnection().createStatement();
             String queryColumnSql =
-                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + queryDTO.getTableName() + " where 1=2";
+                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferTableName(queryDTO.getTableName()) + " where 1=2";
 
             rs = statement.executeQuery(queryColumnSql);
             ResultSetMetaData rsMetaData = rs.getMetaData();
             for (int i = 0, len = rsMetaData.getColumnCount(); i < len; i++) {
                 ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
                 columnMetaDTO.setKey(rsMetaData.getColumnName(i + 1));
-                columnMetaDTO.setType(rsMetaData.getColumnTypeName(i + 1));
+                columnMetaDTO.setType(doDealType(rsMetaData, i));
                 columnMetaDTO.setPart(false);
 
                 // 获取字段精度
@@ -210,6 +210,22 @@ public abstract class AbsRdbmsClient implements IClient {
         } finally {
             DBUtil.closeDBResources(rs, statement, closeQuery ? source.getConnection() : null);
         }
+    }
+
+    /**
+     * 处理表名
+     * @param tableName
+     * @return
+     */
+    protected String transferTableName(String tableName) {
+        return tableName;
+    }
+
+    /**
+     * 处理字段类型
+     */
+    protected String doDealType(ResultSetMetaData rsMetaData, Integer los) throws SQLException {
+        return rsMetaData.getColumnTypeName(los + 1);
     }
 
     /********************************* 关系型数据库无需实现的方法 ******************************************/

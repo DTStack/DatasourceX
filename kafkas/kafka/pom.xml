@@ -22,7 +22,7 @@
         <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
             <artifactId>common.loader.kafkas.common</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>

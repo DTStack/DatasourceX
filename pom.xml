@@ -59,7 +59,7 @@
             <dependency>
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongodb-driver</artifactId>
-                <version>3.4.1</version>
+                <version>3.12.0</version>
             </dependency>
 
             <dependency>
@@ -91,12 +91,6 @@
                 <artifactId>common.loader.core</artifactId>
                 <version>${project.version}</version>
                 <scope>provided</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>com.dtstack.dtcenter</groupId>
-                <artifactId>common.loader.rdbms.common</artifactId>
-                <version>${project.version}</version>
             </dependency>
 
             <dependency>
@@ -214,6 +208,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+                <version>2.3</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
