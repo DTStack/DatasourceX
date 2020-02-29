@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.common.loader.rdbms.sqlserver;
+package com.dtstack.dtcenter.common.loader.rdbms.postgresql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
+import org.apache.commons.lang.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -15,38 +16,38 @@ import java.util.List;
 /**
  * @company: www.dtstack.com
  * @Author ：Nanqi
- * @Date ：Created in 15:30 2020/1/7
- * @Description：SqlServer 客户端
+ * @Date ：Created in 11:54 2020/2/29
+ * @Description：Libra 客户端
  */
-public class SqlServerClient extends AbsRdbmsClient {
-    private static final String TABLE_QUERY_ALL = "select * from sys.objects where type='U' or type='V'";
-    private static final String TABLE_QUERY = "select * from sys.objects where type='U'";
-
+public class LibraClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
-        return new SQLServerConnFactory();
+        return new LibraConnFactory();
     }
 
     @Override
     public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         Boolean closeQuery = beforeQuery(source, queryDTO, false);
+        if (queryDTO == null || StringUtils.isBlank(queryDTO.getSchema())) {
+            return super.getTableList(source, queryDTO);
+        }
 
         Statement statement = null;
         ResultSet rs = null;
-        List<String> tableList = new ArrayList<>();
         try {
-            String sql = queryDTO.getView() ? TABLE_QUERY_ALL : TABLE_QUERY;
             statement = source.getConnection().createStatement();
-            rs = statement.executeQuery(sql);
-            int columnSize = rs.getMetaData().getColumnCount();
+            //大小写区分
+            rs = statement.executeQuery(String.format("select table_name from information_schema.tables WHERE " +
+                    "table_schema in ( '%s' )", queryDTO.getSchema()));
+            List<String> tableList = new ArrayList<>();
             while (rs.next()) {
                 tableList.add(rs.getString(1));
             }
+            return tableList;
         } catch (Exception e) {
             throw new DtCenterDefException("获取表异常", e);
         } finally {
             DBUtil.closeDBResources(rs, statement, closeQuery ? source.getConnection() : null);
         }
-        return tableList;
     }
 }

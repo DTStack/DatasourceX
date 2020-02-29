@@ -9,10 +9,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import org.apache.commons.lang.StringUtils;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -26,9 +23,11 @@ import java.util.regex.Matcher;
  * @Description：Postgresql 客户端
  */
 public class PostgresqlClient extends AbsRdbmsClient {
+    private static final String BIGSERIAL = "bigserial";
+
     @Override
     protected ConnFactory getConnFactory() {
-        return new PostgresqlCoonFactory();
+        return new PostgresqlConnFactory();
     }
 
     @Override
@@ -62,6 +61,18 @@ public class PostgresqlClient extends AbsRdbmsClient {
         } finally {
             DBUtil.closeDBResources(rs, statement, closeQuery ? source.getConnection() : null);
         }
+    }
+
+    @Override
+    protected String doDealType(ResultSetMetaData rsMetaData, Integer los) throws SQLException {
+        String type = super.doDealType(rsMetaData, los);
+
+        // bigserial 需要转换
+        if (BIGSERIAL.equalsIgnoreCase(type)) {
+            return "int8";
+        }
+
+        return type;
     }
 
     /**

@@ -66,13 +66,15 @@ public class SQLServer2017Test {
         IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList.size());
+        for (String table : tableList) {
+            System.out.println(table);
+        }
     }
 
     @Test
     public void getColumnClassInfo() throws Exception{
         IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("change_tables").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("kudu").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -80,7 +82,7 @@ public class SQLServer2017Test {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("change_tables").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("kudu").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }

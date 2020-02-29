@@ -3,19 +3,19 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>common.loader.ftps</artifactId>
+        <artifactId>common.loader.rdbms</artifactId>
         <groupId>com.dtstack.dtcenter</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>common.loader.ftps.ftp</artifactId>
+    <artifactId>common.loader.rdbms.libra</artifactId>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <jar.package.name>ftp</jar.package.name>
-        <jar.name>dtFtp</jar.name>
+        <jar.package.name>libra</jar.package.name>
+        <jar.name>dtLibra</jar.name>
     </properties>
 
     <dependencies>
@@ -26,13 +26,12 @@
 
         <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
-            <artifactId>common.loader.ftps.common</artifactId>
-            <version>${project.parent.version}</version>
+            <artifactId>common.loader.rdbms.common</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
         </dependency>
     </dependencies>
 
@@ -52,7 +51,6 @@
                             <shadedArtifactAttached>false</shadedArtifactAttached>
                             <createDependencyReducedPom>true</createDependencyReducedPom>
                             <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
-
                             <artifactSet>
                                 <excludes>
                                     <exclude>org.slf4j:slf4j-log4j12</exclude>
@@ -88,7 +86,7 @@
                         <configuration>
                             <tasks>
                                 <move file="${basedir}/target/${project.name}-${project.version}.jar"
-                                      tofile="${basedir}/target/${jar.name}.jar"/>
+                                      tofile="${basedir}/target/${jar.name}.jar" />
                                 <copy todir="${basedir}/target/../../../core/pluginLibs/${jar.package.name}/"
                                       file="${basedir}/target/${jar.name}.jar"/>
                                 <delete>
