@@ -25,6 +25,7 @@ import scala.collection.JavaConversions;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -273,7 +274,7 @@ public class KakfaUtil {
                 kafkaOffsetDTOMap.put(entry.getKey().partition(), offsetDTO);
             }
 
-            return (List<KafkaOffsetDTO>) kafkaOffsetDTOMap.values();
+            return kafkaOffsetDTOMap.values().stream().collect(Collectors.toList());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
         } finally {

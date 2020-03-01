@@ -19,11 +19,11 @@ import java.util.List;
  * @Date ：Created in 13:04 2020/2/29
  * @Description：Kafka 测试类
  */
-public class KafkaTTest {
+public class KafkaTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     SourceDTO source = SourceDTO.builder()
-            .url("kudu1:2181/kafka")
+            .url("192.168.99.5:2181")
             .build();
 
     @Test
@@ -53,7 +53,7 @@ public class KafkaTTest {
     public void createTopic() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.KAFKA_09.getVal());
         KafkaTopicDTO topicDTO = KafkaTopicDTO.builder().partitions(1).replicationFactor(1).topicName(
-                "nanqi_200229").build();
+                "nanqi05").build();
         Boolean clientTopic = client.createTopic(source, topicDTO);
         System.out.println(clientTopic);
     }
@@ -61,14 +61,14 @@ public class KafkaTTest {
     @Test
     public void getAllPartitions() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.KAFKA_09.getVal());
-        List<MetadataResponse.PartitionMetadata> allPartitions = client.getAllPartitions(source, "es_teset");
+        List<MetadataResponse.PartitionMetadata> allPartitions = client.getAllPartitions(source, "nanqi05");
         System.out.println(allPartitions.size());
     }
 
     @Test
     public void getOffset() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.KAFKA_09.getVal());
-        List<KafkaOffsetDTO> offset = client.getOffset(source, "es_teset");
+        List<KafkaOffsetDTO> offset = client.getOffset(source, "nanqi");
         System.out.println(offset.size());
     }
 }
