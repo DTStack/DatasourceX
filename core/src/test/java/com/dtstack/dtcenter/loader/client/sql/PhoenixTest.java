@@ -68,7 +68,7 @@ public class PhoenixTest {
     }
 
     @Test
-    public void getColumnClassInfo() throws Exception{
+    public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Phoenix.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("PERSON").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
@@ -81,5 +81,13 @@ public class PhoenixTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("PERSON").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
+    }
+
+    @Test
+    public void getTableMetaComment() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.Phoenix.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("PERSON").build();
+        String metaComment = client.getTableMetaComment(source, queryDTO);
+        System.out.println(metaComment);
     }
 }

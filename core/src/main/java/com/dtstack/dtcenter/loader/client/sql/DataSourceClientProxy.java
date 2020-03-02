@@ -80,6 +80,12 @@ public class DataSourceClientProxy implements IClient {
     }
 
     @Override
+    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableMetaComment(source, queryDTO),
+                targetClient.getClass().getClassLoader(), true);
+    }
+
+    @Override
     public String getAllBrokersAddress(SourceDTO source) throws Exception {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getAllBrokersAddress(source),
                 targetClient.getClass().getClassLoader(), true);

@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms.db2;
 
+import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
@@ -47,5 +48,28 @@ public class Db2Client extends AbsRdbmsClient {
             DBUtil.closeDBResources(rs, statement, closeQuery ? source.getConnection() : null);
         }
         return tableList;
+    }
+
+    @Override
+    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Boolean closeQuery = beforeColumnQuery(source, queryDTO);
+
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = source.getConnection().createStatement();
+            resultSet = statement.executeQuery(String.format("select remarks from syscat.tables where tabname = '%s'"
+                    , queryDTO.getTableName()));
+            while (resultSet.next()) {
+                return resultSet.getString("REMARKS");
+            }
+        } catch (Exception e) {
+            throw new DtCenterDefException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+                    queryDTO.getTableName()),
+                    DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+        } finally {
+            DBUtil.closeDBResources(resultSet, statement, closeQuery ? source.getConnection() : null);
+        }
+        return null;
     }
 }

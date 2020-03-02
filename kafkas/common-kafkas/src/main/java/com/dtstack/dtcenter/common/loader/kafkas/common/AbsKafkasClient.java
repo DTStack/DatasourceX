@@ -88,4 +88,9 @@ public abstract class AbsKafkasClient implements IClient {
     public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
+
+    @Override
+    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
 }

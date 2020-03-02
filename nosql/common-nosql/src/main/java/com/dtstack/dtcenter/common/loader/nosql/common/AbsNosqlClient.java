@@ -55,6 +55,11 @@ public abstract class AbsNosqlClient implements IClient {
     }
 
     @Override
+    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
     public String getAllBrokersAddress(SourceDTO source) throws Exception {
         throw new DtLoaderException("Not Support");
     }

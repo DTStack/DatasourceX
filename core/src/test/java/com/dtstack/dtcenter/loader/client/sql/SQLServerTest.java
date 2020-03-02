@@ -70,7 +70,7 @@ public class SQLServerTest {
     }
 
     @Test
-    public void getColumnClassInfo() throws Exception{
+    public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.SQLServer.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("TempTable0").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
@@ -83,5 +83,13 @@ public class SQLServerTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("TempTable0").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
+    }
+
+    @Test
+    public void getTableMetaComment() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.SQLServer.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("TempTable0").build();
+        String metaComment = client.getTableMetaComment(source, queryDTO);
+        System.out.println(metaComment);
     }
 }

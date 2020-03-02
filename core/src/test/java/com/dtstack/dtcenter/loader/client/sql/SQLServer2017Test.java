@@ -86,4 +86,12 @@ public class SQLServer2017Test {
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
+
+    @Test
+    public void getTableMetaComment() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("kudu").build();
+        String metaComment = client.getTableMetaComment(source, queryDTO);
+        System.out.println(metaComment);
+    }
 }
