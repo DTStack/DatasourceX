@@ -36,7 +36,7 @@ public interface IClient {
      * 执行查询
      *
      * @param source
-     * @param queryDTO  必填项 sql
+     * @param queryDTO 必填项 sql
      * @return
      * @throws Exception
      */
@@ -46,7 +46,7 @@ public interface IClient {
      * 执行查询，无需结果集
      *
      * @param source
-     * @param queryDTO  必填项 sql
+     * @param queryDTO 必填项 sql
      * @return
      * @throws Exception
      */
@@ -85,10 +85,21 @@ public interface IClient {
      */
     List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
+    /**
+     * 获取表注释
+     *
+     * @param source
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
+    String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+
     /****************************************** Kafka 定制 ******************************************************/
 
     /**
      * 获取所有 Brokers 的地址
+     *
      * @param source
      * @return
      * @throws Exception
@@ -106,15 +117,17 @@ public interface IClient {
 
     /**
      * 创建 Topic
+     *
      * @param source
      * @param kafkaTopic
      * @return
      * @throws Exception
      */
-    Boolean createTopic (SourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception;
+    Boolean createTopic(SourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception;
 
     /**
      * 获取特定 Topic 分区信息
+     *
      * @param source
      * @param topic
      * @return
@@ -124,6 +137,7 @@ public interface IClient {
 
     /**
      * 获取特定 Topic 所有分区的偏移量
+     *
      * @param source
      * @param topic
      * @return

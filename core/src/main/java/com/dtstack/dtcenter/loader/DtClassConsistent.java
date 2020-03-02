@@ -40,6 +40,8 @@ public interface DtClassConsistent {
          */
         public static final String PARAM_KEY = "param";
 
+        public static final String LINE_SEPARATOR = "\n";
+
         /**
          * 数据库中对应关系字段
          */
@@ -51,6 +53,7 @@ public interface DtClassConsistent {
         public static final String COL_NAME = "col_name";
         public static final String DATA_TYPE = "data_type";
         public static final String PRIMARY_KEY = "primary_key";
+        public static final String REMARKS = "REMARKS";
     }
 
     class PatternConsistent {
@@ -72,6 +75,12 @@ public interface DtClassConsistent {
         public static final String HADOOP_CONFIG = "hadoopConfig";
 
         public static final String DEFAULT_FS_REGEX = "hdfs://.*";
+
+        public static final String TABLE_INFORMATION = "# Detailed Table Information";
+
+        public static final String COMMENT = "Comment:";
+
+        public static final String DESCRIBE_EXTENDED = "describe extended %s";
     }
 
     class HBaseConsistent {

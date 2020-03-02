@@ -121,4 +121,40 @@ public class HiveClient extends AbsRdbmsClient {
             DBUtil.closeDBResources(resultSet, stmt, closeQuery ? source.getConnection() : null);
         }
     }
+
+    @Override
+    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Boolean closeQuery = beforeColumnQuery(source, queryDTO);
+
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = source.getConnection().createStatement();
+            if (StringUtils.isNotEmpty(source.getSchema())) {
+                statement.execute("use " + source.getSchema());
+            }
+            resultSet = statement.executeQuery(String.format(DtClassConsistent.HadoopConfConsistent.DESCRIBE_EXTENDED
+                    , queryDTO.getTableName()));
+            while (resultSet.next()) {
+                String columnName = resultSet.getString(1);
+                if (StringUtils.isNotEmpty(columnName) && DtClassConsistent.HadoopConfConsistent.TABLE_INFORMATION.equalsIgnoreCase(columnName)) {
+                    String string = resultSet.getString(2);
+                    if (StringUtils.isNotEmpty(string) && string.contains(DtClassConsistent.HadoopConfConsistent.COMMENT)) {
+                        String[] split = string.split(DtClassConsistent.HadoopConfConsistent.COMMENT);
+                        if (split.length > 1) {
+                            return split[1].split(DtClassConsistent.PublicConsistent.LINE_SEPARATOR)[0].replace(" ",
+                                    "");
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DtCenterDefException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+                    queryDTO.getTableName()),
+                    DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+        } finally {
+            DBUtil.closeDBResources(resultSet, statement, closeQuery ? source.getConnection() : null);
+        }
+        return null;
+    }
 }

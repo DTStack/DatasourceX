@@ -70,7 +70,7 @@ public class PostgreSQLTest {
     }
 
     @Test
-    public void getColumnClassInfo() throws Exception{
+    public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.PostgreSQL.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("employee").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
@@ -83,5 +83,13 @@ public class PostgreSQLTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("employee").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
+    }
+
+    @Test
+    public void getTableMetaComment() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.PostgreSQL.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("employee").build();
+        String metaComment = client.getTableMetaComment(source, queryDTO);
+        System.out.println(metaComment);
     }
 }

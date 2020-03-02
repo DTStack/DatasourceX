@@ -84,4 +84,12 @@ public class HiveTest {
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
+
+    @Test
+    public void getTableMetaComment() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi200228").build();
+        String metaComment = client.getTableMetaComment(source, queryDTO);
+        System.out.println(metaComment);
+    }
 }

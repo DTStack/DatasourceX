@@ -70,7 +70,7 @@ public class OracleTest {
     }
 
     @Test
-    public void getColumnClassInfo() throws Exception{
+    public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("MUYUN1226").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
@@ -83,5 +83,13 @@ public class OracleTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("MUYUN1226").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
+    }
+
+    @Test
+    public void getTableMetaComment() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.Oracle.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("MUYUN1226").build();
+        String metaComment = client.getTableMetaComment(source, queryDTO);
+        System.out.println(metaComment);
     }
 }

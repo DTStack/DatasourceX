@@ -18,6 +18,7 @@
 * Oracle
 * SQLServer2012、2017
 * PostgreSQL
+* Libra
 * MaxComputer
 * DB2
 * HDFS
@@ -49,8 +50,9 @@
 | executeQuery | SourceDTO,SqlQueryDTO | List<Map<String, Object>> | 执行查询     |
 | executeSqlWithoutResultSet | SourceDTO,SqlQueryDTO | Boolean | 执行查询，无需结果集     |
 | getTableList | SourceDTO,SqlQueryDTO | List<String>              | 获取数据库表名称 |
-| getColumnClassInfo | SourceDTO,SqlQueryDTO | List<String>              | 返回字段 Java 类的标准名称,字段名若不填则默认全部 |
-| getColumnMetaData | SourceDTO,SqlQueryDTO | List<ColumnMetaDTO>              | 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤 |
+| getColumnClassInfo | SourceDTO,SqlQueryDTO | List<String>              | 获取字段 Java 类的标准名称,字段名若不填则默认全部 |
+| getColumnMetaData | SourceDTO,SqlQueryDTO | List<ColumnMetaDTO>              | 获取字段属性 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤 |
+| getTableMetaComment | SourceDTO,SqlQueryDTO | List<ColumnMetaDTO>              | 获取表备注信息 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤 |
 | getAllBrokersAddress | SourceDTO | String | 获取所有 Brokers 的地址 |
 | getTopicList | SourceDTO | List<String> | 获取所有 Topic 信息 |
 | createTopic | SourceDTO,KafkaTopicDTO | Boolean | 创建 Topic |
