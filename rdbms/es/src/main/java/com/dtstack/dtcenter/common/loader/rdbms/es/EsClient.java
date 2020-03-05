@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms.es;
 
+import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -33,6 +34,11 @@ public class EsClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
         return null;
+    }
+
+    @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.ES;
     }
 
     @Override

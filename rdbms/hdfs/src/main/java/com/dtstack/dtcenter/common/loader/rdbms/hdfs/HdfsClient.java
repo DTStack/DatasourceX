@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms.hdfs;
 
+import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -21,6 +22,11 @@ public class HdfsClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
         return new HdfsConnFactory();
+    }
+
+    @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.HDFS;
     }
 
     /************************************** 不支持的方法 *****************************************/

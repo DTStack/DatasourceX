@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.rdbms.kudu;
 
 import com.alibaba.fastjson.JSONObject;
+import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
@@ -116,6 +117,11 @@ public class KuduClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
         return null;
+    }
+
+    @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.Kudu;
     }
 
     private static org.apache.kudu.client.KuduClient getConnection(SourceDTO source) {

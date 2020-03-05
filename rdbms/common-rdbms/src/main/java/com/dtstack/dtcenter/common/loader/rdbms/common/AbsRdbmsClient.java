@@ -1,7 +1,9 @@
 package com.dtstack.dtcenter.common.loader.rdbms.common;
 
+import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.cache.connection.CacheConnectionHelper;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.*;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -33,12 +35,24 @@ public abstract class AbsRdbmsClient implements IClient {
 
     protected abstract ConnFactory getConnFactory();
 
+    protected abstract DataSourceType getSourceType();
+
     private static final String DONT_EXIST = "doesn't exist";
 
     @Override
     public Connection getCon(SourceDTO source) throws Exception {
         logger.info("-------get connection success-----");
-        return connFactory.getConn(source);
+        if (!CacheConnectionHelper.isStart()) {
+            return connFactory.getConn(source);
+        }
+
+        return CacheConnectionHelper.getConnection(getSourceType().getVal(), con -> {
+            try {
+                return connFactory.getConn(source);
+            } catch (Exception e) {
+                throw new DtCenterDefException("获取连接异常", e);
+            }
+        });
     }
 
     @Override

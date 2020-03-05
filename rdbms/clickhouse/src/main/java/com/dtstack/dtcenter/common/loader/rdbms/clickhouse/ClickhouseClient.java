@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms.clickhouse;
 
+import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
@@ -23,6 +24,11 @@ public class ClickhouseClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
         return new ClickhouseConnFactory();
+    }
+
+    @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.Clickhouse;
     }
 
     @Override

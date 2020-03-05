@@ -34,6 +34,11 @@ public class ImpalaClient extends AbsRdbmsClient {
     }
 
     @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.IMPALA;
+    }
+
+    @Override
     public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         Boolean closeQuery = beforeQuery(source, queryDTO, false);
         //impala db写在jdbc连接中无效，必须手动切换库

@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms.hbase;
 
+import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -25,6 +26,11 @@ public class HbaseClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
         return new HbaseConnFactory();
+    }
+
+    @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.HBASE;
     }
 
     @Override

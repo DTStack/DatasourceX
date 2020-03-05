@@ -1,5 +1,6 @@
-package com.dtstack.dtcenter.common.loader.rdbms.postgresql;
+package com.dtstack.dtcenter.common.loader.rdbms.libra;
 
+import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
@@ -23,6 +24,11 @@ public class LibraClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
         return new LibraConnFactory();
+    }
+
+    @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.LIBRA;
     }
 
     @Override
