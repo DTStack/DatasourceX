@@ -3,8 +3,7 @@ package com.dtstack.dtcenter.loader.cache.connection;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import lombok.Builder;
 import lombok.Data;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -17,8 +16,8 @@ import java.sql.SQLException;
  */
 @Data
 @Builder
+@Slf4j
 public class DataSourceCacheNode {
-    private static final Logger LOG = LoggerFactory.getLogger(DataSourceCacheNode.class);
     /**
      * 数据源类型
      */
@@ -35,7 +34,7 @@ public class DataSourceCacheNode {
     public void close() {
         if (connection != null) {
             try {
-                LOG.info("close connection DataBaseType = {}", sourceType);
+                log.info("close connection sourceType = {}", sourceType);
                 connection.close();
             } catch (SQLException e) {
                 throw new DtCenterDefException("缓存连接关闭失败", e);

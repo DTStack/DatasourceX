@@ -1,9 +1,8 @@
 package com.dtstack.dtcenter.loader.cache.connection;
 
 import com.dtstack.dtcenter.common.thread.RdosThreadFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -18,9 +17,8 @@ import java.util.concurrent.TimeUnit;
  * @Date ：Created in 13:49 2020/3/4
  * @Description：缓存超时处理中心
  */
+@Slf4j
 public class HashCacheConnectionKey {
-    private static final Logger LOG = LoggerFactory.getLogger(HashCacheConnectionKey.class);
-
     private static final Map<String, DataSourceConnection> sessionConnMap = new ConcurrentHashMap<>();
 
     private static final ScheduledExecutorService scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1,
@@ -82,7 +80,7 @@ public class HashCacheConnectionKey {
      * @param isCheck    是否需要校验，false 则不校验，直接删除整个节点
      */
     public static void clearKey(String sessionKey, Integer sourceType, Boolean isCheck) {
-        LOG.info("关闭连接 sessionKey: {} sourceType: {} isCheck: {}", sessionKey, sourceType, isCheck);
+        log.info("关闭连接 sessionKey: {} sourceType: {} isCheck: {}", sessionKey, sourceType, isCheck);
         DataSourceConnection dataNode = sessionConnMap.get(sessionKey);
         if (dataNode == null) {
             sessionConnMap.remove(sessionKey);

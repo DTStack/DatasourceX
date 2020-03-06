@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
-import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.loader.ClassLoaderCallBack;
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -17,35 +16,43 @@ import java.util.ServiceLoader;
  * @Description：关系型数据库客户端工厂
  */
 public class DataSourceClientFactory {
-    private static Map<Integer, ClassLoader> pluginClassLoader = Maps.newConcurrentMap();
+    /**
+     * 存储 插件名称 - ClassLoader 键值对信息
+     */
+    private static Map<String, ClassLoader> pluginClassLoader = Maps.newConcurrentMap();
 
-    public static IClient createPluginClass(DataSourceType source) throws Exception {
-        ClassLoader classLoader = pluginClassLoader.get(source.getVal());
-        return ClassLoaderCallBackMethod.callbackAndReset(new ClassLoaderCallBack<IClient>() {
+    /**
+     * 去除特定的插件缓存
+     *
+     * @param pluginName
+     */
+    public static void removePlugin(String pluginName) {
+        pluginClassLoader.remove(pluginName);
+    }
 
-            @Override
-            public IClient execute() throws Exception {
-                ServiceLoader<IClient> iClients = ServiceLoader.load(IClient.class);
-                Iterator<IClient> iClientIterator = iClients.iterator();
-                if (!iClientIterator.hasNext()) {
-                    throw new RuntimeException("not support for source type " + source.name());
-                }
-
-                IClient client = iClientIterator.next();
-                return new DataSourceClientProxy(client);
+    public static IClient createPluginClass(String pluginName) throws Exception {
+        ClassLoader classLoader = pluginClassLoader.get(pluginName);
+        return ClassLoaderCallBackMethod.callbackAndReset((ClassLoaderCallBack<IClient>) () -> {
+            ServiceLoader<IClient> iClients = ServiceLoader.load(IClient.class);
+            Iterator<IClient> iClientIterator = iClients.iterator();
+            if (!iClientIterator.hasNext()) {
+                throw new RuntimeException("暂不支持该插件类型: " + pluginName);
             }
+
+            IClient client = iClientIterator.next();
+            return new DataSourceClientProxy(client);
         }, classLoader, false);
     }
 
-    public static void addClassLoader(DataSourceType source, ClassLoader classLoader) {
-        if (pluginClassLoader.containsKey(source.getVal())) {
+    public static void addClassLoader(String pluginName, ClassLoader classLoader) {
+        if (pluginClassLoader.containsKey(pluginName)) {
             return;
         }
 
-        pluginClassLoader.putIfAbsent(source.getVal(), classLoader);
+        pluginClassLoader.put(pluginName, classLoader);
     }
 
-    public static boolean checkContainClassLoader(DataSourceType source) {
-        return pluginClassLoader.containsKey(source.getVal());
+    public static boolean checkContainClassLoader(String pluginName) {
+        return pluginClassLoader.containsKey(pluginName);
     }
 }

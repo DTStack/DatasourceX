@@ -2,10 +2,9 @@ package com.dtstack.dtcenter.common.loader.nosql.redis;
 
 import com.dtstack.dtcenter.common.util.AddressUtil;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
@@ -18,9 +17,8 @@ import java.util.regex.Pattern;
  * @Date ：Created in 16:38 2020/2/4
  * @Description：Redis 工具类
  */
+@Slf4j
 public class RedisUtils {
-    private final static Logger LOGGER = LoggerFactory.getLogger(RedisUtils.class);
-
     private static Pattern HOST_PORT_PATTERN = Pattern.compile("(?<host>(.*)):((?<port>\\d+))*");
 
     public static final int DEFAULT_PORT = 6379;
@@ -62,7 +60,7 @@ public class RedisUtils {
 
             check = true;
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         } finally {
             if (jedis != null) {
                 jedis.close();

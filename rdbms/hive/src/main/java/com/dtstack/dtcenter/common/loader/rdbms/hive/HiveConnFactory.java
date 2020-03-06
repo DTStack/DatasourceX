@@ -7,11 +7,10 @@ import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -24,13 +23,11 @@ import java.util.regex.Matcher;
  * @Date ：Created in 17:07 2020/1/7
  * @Description：Hive 连接池工厂
  */
+@Slf4j
 public class HiveConnFactory extends ConnFactory {
-    private static final Logger LOG = LoggerFactory.getLogger(HiveConnFactory.class);
-
     public HiveConnFactory() {
         this.driverName = DataBaseType.HIVE.getDriverClassName();
     }
-
 
     @Override
     public Connection getConn(SourceDTO source) throws Exception {
@@ -38,11 +35,9 @@ public class HiveConnFactory extends ConnFactory {
         Configuration conf = null;
         if (MapUtils.isNotEmpty(source.getKerberosConfig())) {
             String principalFile = (String) source.getKerberosConfig().get("principalFile");
-            LOG.info("getHiveConnection principalFile:{}", principalFile);
+            log.info("getHiveConnection principalFile:{}", principalFile);
 
             conf = DtKerberosUtils.loginKerberos(source.getKerberosConfig());
-            //拼接URL
-            //url = concatHiveJdbcUrl(conf, url);
         }
 
         Matcher matcher = DtClassConsistent.PatternConsistent.HIVE_JDBC_PATTERN.matcher(source.getUrl());

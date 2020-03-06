@@ -7,6 +7,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -30,6 +31,7 @@ import java.util.Map;
  * @Date ：Created in 21:46 2020/2/27
  * @Description：ES 客户端
  */
+@Slf4j
 public class EsClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
@@ -66,13 +68,13 @@ public class EsClient extends AbsRdbmsClient {
             client.info();
             check = true;
         } catch (Exception e) {
-            logger.error("", e);
+            log.error("", e);
         } finally {
             if (client != null) {
                 try {
                     client.close();
                 } catch (IOException e) {
-                    logger.error("", e);
+                    log.error("", e);
                 }
             }
         }
@@ -81,6 +83,7 @@ public class EsClient extends AbsRdbmsClient {
 
     /**
      * 根据地址确认连接性
+     *
      * @param address
      * @return
      */
@@ -91,6 +94,7 @@ public class EsClient extends AbsRdbmsClient {
 
     /**
      * 根据用户名密码确认连接性
+     *
      * @param address
      * @param username
      * @param password

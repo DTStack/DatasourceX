@@ -4,8 +4,6 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.*;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.kafka.common.requests.MetadataResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.util.List;
@@ -18,8 +16,6 @@ import java.util.Map;
  * @Description：非关系型数据库
  */
 public abstract class AbsNosqlClient implements IClient {
-    protected static final Logger LOG = LoggerFactory.getLogger(AbsNosqlClient.class);
-
     @Override
     public abstract Boolean testCon(SourceDTO source);
 

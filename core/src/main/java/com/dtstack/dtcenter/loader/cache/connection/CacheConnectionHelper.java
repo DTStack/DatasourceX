@@ -1,10 +1,9 @@
 package com.dtstack.dtcenter.loader.cache.connection;
 
 import com.dtstack.dtcenter.common.Callback;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -17,10 +16,11 @@ import java.util.Random;
  * @Description：缓存连接池配置 使用步骤：
  * 1. 先使用 start 开启缓存连接池配置，如果有要求多次请求复用，请传入唯一 sessionKey
  * 2. 使用完请使用 stop 关闭缓存，如果使用了 start 则必须使用 stop 关闭线程池，否则会存储到缓存池中，轮询超时销毁
+ * 3. 如果 VertX 等服务有线程池的情况，需要再请求技术之后，不管有没有 stop 都需要一次 removeCacheConnection()
  */
+@Slf4j
 public class CacheConnectionHelper {
     private static Random random = new Random();
-    private static final Logger LOG = LoggerFactory.getLogger(CacheConnectionHelper.class);
 
     /**
      * 线程级连接信息 用于处理单次单线程隔离 connection，每个线程都初始化
@@ -61,7 +61,7 @@ public class CacheConnectionHelper {
 
     public static void closeCacheConnection() {
         if (StringUtils.isBlank(getSessionKey())) {
-            LOG.info("当前不存在缓存连接，无需关闭：" + Thread.currentThread().getName());
+            log.info("当前不存在缓存连接，无需关闭：" + Thread.currentThread().getName());
             removeCacheConnection();
             return;
         }
@@ -110,7 +110,7 @@ public class CacheConnectionHelper {
         if (StringUtils.isBlank(sessionKey)) {
             return startCacheConnection();
         }
-        LOG.info("start connection ,sessionKey = {}", sessionKey);
+        log.info("start connection ,sessionKey = {}", sessionKey);
         // 稳一手，不管第三方是否使用缓存，重置一次并开启缓存标志
         LOCAL_CON.remove();
         START_CACHE.set(Boolean.TRUE);

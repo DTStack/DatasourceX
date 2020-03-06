@@ -7,6 +7,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
@@ -22,6 +23,7 @@ import java.util.Map;
  * @Date ：Created in 19:59 2020/2/27
  * @Description：Hbase 客户端
  */
+@Slf4j
 public class HbaseClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
@@ -61,7 +63,7 @@ public class HbaseClient extends AbsRdbmsClient {
             try {
                 hConn.close();
             } catch (IOException e) {
-                logger.error("hbase 关闭连接异常", e);
+                log.error("hbase 关闭连接异常", e);
             }
         }
     }
@@ -71,7 +73,7 @@ public class HbaseClient extends AbsRdbmsClient {
             try {
                 admin.close();
             } catch (IOException e) {
-                logger.error("hbase 关闭连接异常", e);
+                log.error("hbase 关闭连接异常", e);
             }
         }
     }

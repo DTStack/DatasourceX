@@ -9,6 +9,7 @@ import kafka.admin.RackAwareMode;
 import kafka.cluster.Broker;
 import kafka.cluster.EndPoint;
 import kafka.utils.ZkUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
@@ -18,8 +19,6 @@ import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.requests.MetadataResponse;
 import org.apache.kafka.common.security.JaasUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import scala.collection.JavaConversions;
 
 import java.io.File;
@@ -33,9 +32,8 @@ import java.util.stream.Collectors;
  * @Date ：Created in 22:46 2020/2/26
  * @Description：Kafka 工具类
  */
+@Slf4j
 public class KakfaUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(KakfaUtil.class);
-
     public static boolean checkConnection(String zkUrls, String brokerUrls, Map<String, Object> kerberosConfig) {
         ZkUtils zkUtils = null;
         try {
@@ -45,7 +43,7 @@ public class KakfaUtil {
 
             return StringUtils.isNotBlank(brokerUrls) ? checkKafkaConnection(brokerUrls, kerberosConfig) : false;
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             return false;
         } finally {
             if (zkUtils != null) {
@@ -112,7 +110,7 @@ public class KakfaUtil {
                 results.addAll(topics.keySet());
             }
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         } finally {
             if (consumer != null) {
                 consumer.close();
@@ -138,7 +136,7 @@ public class KakfaUtil {
                 topics.remove(KafkaConsistent.KAFKA_DEFAULT_CREATE_TOPIC);
             }
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         } finally {
             if (zkUtils != null) {
                 zkUtils.close();
@@ -224,7 +222,7 @@ public class KakfaUtil {
             List<MetadataResponse.PartitionMetadata> partitionMetadata = topicMetadata.partitionMetadata();
             return partitionMetadata;
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             throw new RuntimeException(e.getMessage());
         } finally {
             if (zkUtils != null) {
@@ -301,7 +299,7 @@ public class KakfaUtil {
             consumer.listTopics();
             check = true;
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         } finally {
             if (consumer != null) {
                 consumer.close();
@@ -361,7 +359,7 @@ public class KakfaUtil {
         } catch (IOException e) {
             throw new DtCenterDefException("写入kafka配置文件异常", e);
         }
-        LOG.info("Init Kafka Kerberos:login-conf:{}\n --sasl.kerberos.service.name:{}",
+        log.info("Init Kafka Kerberos:login-conf:{}\n --sasl.kerberos.service.name:{}",
                 keytabConf, kafkaKbrServiceName);
         // kerberos 相关设置
         props.put("security.protocol", "SASL_PLAINTEXT");

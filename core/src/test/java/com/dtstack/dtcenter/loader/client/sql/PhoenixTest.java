@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
-import com.dtstack.dtcenter.common.enums.DataSourceType;
+import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -29,7 +29,7 @@ public class PhoenixTest {
 
     @Test
     public void getCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Phoenix.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.Phoenix.getPluginName());
         Connection con = client.getCon(source);
         con.createStatement().close();
         con.close();
@@ -37,7 +37,7 @@ public class PhoenixTest {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Phoenix.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.Phoenix.getPluginName());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtCenterDefException("连接异常");
@@ -46,7 +46,7 @@ public class PhoenixTest {
 
     @Test
     public void executeQuery() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Phoenix.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.Phoenix.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from PERSON").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
@@ -54,14 +54,14 @@ public class PhoenixTest {
 
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Phoenix.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.Phoenix.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from PERSON").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Phoenix.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.Phoenix.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList.size());
@@ -69,7 +69,7 @@ public class PhoenixTest {
 
     @Test
     public void getColumnClassInfo() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Phoenix.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.Phoenix.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("PERSON").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
@@ -77,7 +77,7 @@ public class PhoenixTest {
 
     @Test
     public void getColumnMetaData() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Phoenix.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.Phoenix.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("PERSON").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
@@ -85,7 +85,7 @@ public class PhoenixTest {
 
     @Test
     public void getTableMetaComment() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Phoenix.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.Phoenix.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("PERSON").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);

@@ -11,9 +11,8 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -25,9 +24,8 @@ import java.util.regex.Pattern;
  * @Date ：Created in 15:28 2020/2/5
  * @Description：MongoDB 工具类
  */
+@Slf4j
 public class MongoDBUtils {
-    private final static Logger LOGGER = LoggerFactory.getLogger(MongoDBUtils.class);
-
     private static final String HOST_SPLIT_REGEX = ",\\s*";
 
     private static Pattern HOST_PORT_PATTERN = Pattern.compile("(?<host>(.*)):((?<port>\\d+))*");
@@ -61,7 +59,7 @@ public class MongoDBUtils {
             mongoIterable.iterator().next();
             check = true;
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         } finally {
             if (mongoClient != null) {
                 mongoClient.close();

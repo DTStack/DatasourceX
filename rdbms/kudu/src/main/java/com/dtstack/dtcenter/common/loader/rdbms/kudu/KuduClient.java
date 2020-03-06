@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.common.loader.rdbms.kudu;
 
-import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
@@ -9,6 +8,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kudu.ColumnSchema;
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
  * @Date ：Created in 22:00 2020/2/27
  * @Description：Kudu 客户端
  */
+@Slf4j
 public class KuduClient extends AbsRdbmsClient {
 
     public static final int TIME_OUT = 5 * 1000;
@@ -45,14 +46,14 @@ public class KuduClient extends AbsRdbmsClient {
                 client.getTablesList();
                 check = true;
             } catch (KuduException e) {
-                logger.error(e.getMessage(), e);
+                log.error(e.getMessage(), e);
             }
         } finally {
             if (null != client) {
                 try {
                     client.close();
                 } catch (KuduException e) {
-                    logger.error(e.getMessage(), e);
+                    log.error(e.getMessage(), e);
                 }
             }
         }
@@ -66,7 +67,7 @@ public class KuduClient extends AbsRdbmsClient {
         try {
             tableList = getConnection(source).getTablesList().getTablesList();
         } catch (KuduException e) {
-            logger.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         }
         return tableList;
     }

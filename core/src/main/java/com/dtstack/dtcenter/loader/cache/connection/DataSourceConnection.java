@@ -1,9 +1,8 @@
 package com.dtstack.dtcenter.loader.cache.connection;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -16,8 +15,8 @@ import java.util.Optional;
  * @Date ：Created in 13:52 2020/3/4
  * @Description：缓存连接信息
  */
+@Slf4j
 public class DataSourceConnection {
-    private static final Logger LOG = LoggerFactory.getLogger(DataSourceConnection.class);
     /**
      * 默认过期时间
      */
@@ -125,13 +124,13 @@ public class DataSourceConnection {
      * 关闭之前存在的数据库连接
      */
     public void close() {
-        LOG.info("close connection SessionKey = {}", this.getSessionKey());
+        log.info("close connection SessionKey = {}", this.getSessionKey());
         sourceNodes.forEach(node -> node.close());
         sourceNodes.clear();
     }
 
     public void close(Integer sourceType) {
-        LOG.info("close connection SessionKey = {}", this.getSessionKey());
+        log.info("close connection SessionKey = {}", this.getSessionKey());
         Optional<DataSourceCacheNode> cacheNode =
                 sourceNodes.stream().filter(node -> node.getSourceType().equals(sourceType)).findFirst();
 
