@@ -134,6 +134,35 @@ public class ImpalaClient extends AbsRdbmsClient {
         return columnList;
     }
 
+    @Override
+    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Boolean closeQuery = beforeColumnQuery(source, queryDTO);
+
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = source.getConnection().createStatement();
+            if (StringUtils.isNotEmpty(source.getSchema())) {
+                statement.execute("use " + source.getSchema());
+            }
+            resultSet = statement.executeQuery(String.format(DtClassConsistent.HadoopConfConsistent.DESCRIBE_EXTENDED
+                    , queryDTO.getTableName()));
+            while (resultSet.next()) {
+                String columnType = resultSet.getString(2);
+                if (StringUtils.isNotBlank(columnType) && columnType.contains("comment")) {
+                    return StringUtils.isBlank(resultSet.getString(3)) ? "" : resultSet.getString(3).trim();
+                }
+            }
+        } catch (Exception e) {
+            throw new DtCenterDefException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+                    queryDTO.getTableName()),
+                    DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+        } finally {
+            DBUtil.closeDBResources(resultSet, statement, closeQuery ? source.getConnection() : null);
+        }
+        return null;
+    }
+
     private static ColumnMetaDTO dealResult(ResultSet resultSet, Object part) throws SQLException {
         ColumnMetaDTO metaDTO = new ColumnMetaDTO();
         metaDTO.setKey(resultSet.getString(DtClassConsistent.PublicConsistent.NAME).trim());
