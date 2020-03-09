@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms.sqlserver;
 
+import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
@@ -27,6 +28,11 @@ public class SqlServerClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
         return new SQLServerConnFactory();
+    }
+
+    @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.SQLSERVER_2017_LATER;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms.postgresql;
 
+import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
@@ -29,6 +30,11 @@ public class PostgresqlClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
         return new PostgresqlConnFactory();
+    }
+
+    @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.PostgreSQL;
     }
 
     @Override

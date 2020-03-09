@@ -7,14 +7,13 @@ import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.utils.JSONUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.ClusterStatus;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -27,8 +26,8 @@ import java.util.Map;
  * @Date ：Created in 20:00 2020/2/27
  * @Description：Hbase 连接工厂
  */
+@Slf4j
 public class HbaseConnFactory extends ConnFactory {
-    private static final Logger LOG = LoggerFactory.getLogger(HbaseConnFactory.class);
     @Override
     public Boolean testConn(SourceDTO source) {
         boolean check = false;
@@ -37,13 +36,13 @@ public class HbaseConnFactory extends ConnFactory {
             hConn = getHbaseConn(source);
             ClusterStatus clusterStatus = hConn.getAdmin().getClusterStatus();
             check = true;
-        } catch(Exception e) {
-            LOG.error(e.getMessage(), e);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         } finally {
             try {
                 hConn.close();
             } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
+                log.error(e.getMessage(), e);
             }
         }
         return check;

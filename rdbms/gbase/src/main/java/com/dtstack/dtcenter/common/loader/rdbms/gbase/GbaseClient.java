@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms.gbase;
 
+import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
 
@@ -13,5 +14,10 @@ public class GbaseClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
         return new GbaseConnFactory();
+    }
+
+    @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.GBase_8a;
     }
 }

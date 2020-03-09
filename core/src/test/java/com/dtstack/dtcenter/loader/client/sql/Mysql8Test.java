@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
-import com.dtstack.dtcenter.common.enums.DataSourceType;
+import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -31,7 +31,7 @@ public class Mysql8Test {
 
     @Test
     public void getCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySQL8.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.MySql8.getPluginName());
         Connection con = client.getCon(source);
         con.createStatement().close();
         con.close();
@@ -39,7 +39,7 @@ public class Mysql8Test {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySQL8.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.MySql8.getPluginName());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtCenterDefException("连接异常");
@@ -48,7 +48,7 @@ public class Mysql8Test {
 
     @Test
     public void executeQuery() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySQL8.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.MySql8.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
@@ -56,14 +56,14 @@ public class Mysql8Test {
 
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySQL8.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.MySql8.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySQL8.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.MySql8.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList.size());
@@ -71,7 +71,7 @@ public class Mysql8Test {
 
     @Test
     public void getColumnClassInfo() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySQL8.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.MySql8.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_batch_job_backup").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
@@ -79,7 +79,7 @@ public class Mysql8Test {
 
     @Test
     public void getColumnMetaData() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySQL8.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.MySql8.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_batch_job_backup").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
@@ -87,7 +87,7 @@ public class Mysql8Test {
 
     @Test
     public void getTableMetaComment() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySQL8.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.MySql8.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_batch_job_backup").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);

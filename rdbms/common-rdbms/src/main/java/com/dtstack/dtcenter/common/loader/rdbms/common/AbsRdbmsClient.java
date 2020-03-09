@@ -1,18 +1,19 @@
 package com.dtstack.dtcenter.common.loader.rdbms.common;
 
+import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.cache.connection.CacheConnectionHelper;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.*;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.utils.CollectionUtil;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.kafka.common.requests.MetadataResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -26,19 +27,30 @@ import java.util.Map;
  * @Date ：Created in 15:59 2020/1/3
  * @Description：客户端
  */
+@Slf4j
 public abstract class AbsRdbmsClient implements IClient {
-    protected static final Logger logger = LoggerFactory.getLogger(ConnFactory.class);
-
     private ConnFactory connFactory = getConnFactory();
 
     protected abstract ConnFactory getConnFactory();
+
+    protected abstract DataSourceType getSourceType();
 
     private static final String DONT_EXIST = "doesn't exist";
 
     @Override
     public Connection getCon(SourceDTO source) throws Exception {
-        logger.info("-------get connection success-----");
-        return connFactory.getConn(source);
+        log.info("-------get connection success-----");
+        if (!CacheConnectionHelper.isStart()) {
+            return connFactory.getConn(source);
+        }
+
+        return CacheConnectionHelper.getConnection(getSourceType().getVal(), con -> {
+            try {
+                return connFactory.getConn(source);
+            } catch (Exception e) {
+                throw new DtCenterDefException("获取连接异常", e);
+            }
+        });
     }
 
     @Override

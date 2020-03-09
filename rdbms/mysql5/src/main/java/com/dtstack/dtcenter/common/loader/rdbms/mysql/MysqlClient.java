@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms.mysql;
 
+import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
@@ -21,6 +22,11 @@ public class MysqlClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
         return new MysqlConnFactory();
+    }
+
+    @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.MySQL;
     }
 
     @Override

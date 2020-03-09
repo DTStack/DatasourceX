@@ -10,6 +10,7 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.List;
  * @Date ：Created in 15:24 2020/2/5
  * @Description：MongoDB 客户端
  */
+@Slf4j
 public class MongoDBClient extends AbsNosqlClient {
     @Override
     public Boolean testCon(SourceDTO source) {
@@ -54,7 +56,7 @@ public class MongoDBClient extends AbsNosqlClient {
                 tableList.add(s);
             }
         } catch (Exception e) {
-            LOG.error(e.getMessage());
+            log.error(e.getMessage());
         } finally {
             if (mongoClient != null) {
                 mongoClient.close();

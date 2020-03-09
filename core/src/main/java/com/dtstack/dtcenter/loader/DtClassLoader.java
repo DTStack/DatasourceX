@@ -1,7 +1,6 @@
 package com.dtstack.dtcenter.loader;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import sun.misc.CompoundEnumeration;
 
 import java.io.IOException;
@@ -18,9 +17,8 @@ import java.util.LinkedHashSet;
  * @Date ：Created in 15:38 2020/1/6
  * @Description：loader 加载器
  */
+@Slf4j
 public class DtClassLoader extends URLClassLoader {
-    private static Logger log = LoggerFactory.getLogger(DtClassLoader.class);
-
     private static final String CLASS_FILE_SUFFIX = ".class";
 
     /**
@@ -39,6 +37,23 @@ public class DtClassLoader extends URLClassLoader {
         super(urls);
     }
 
+    /**
+     * Constructs a new URLClassLoader for the given URLs
+     * 并且将他的父亲设置为当前这个 ClassLoader
+     *
+     * @param urls
+     * @param parent
+     */
+
+    /**
+     * Constructs a new URLClassLoader for the given URLs
+     * parent 将他的父亲设置为当前这个 ClassLoader
+     * factory URL流协议处理程序定义工厂
+     *
+     * @param urls
+     * @param parent
+     * @param factory
+     */
     public DtClassLoader(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
         super(urls, parent, factory);
     }
@@ -51,7 +66,7 @@ public class DtClassLoader extends URLClassLoader {
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         synchronized (getClassLoadingLock(name)) {
-            if (log.isDebugEnabled()){
+            if (log.isDebugEnabled()) {
                 log.debug("loadClass(" + name + ", " + resolve + ")");
             }
             Class<?> clazz = null;
@@ -59,26 +74,26 @@ public class DtClassLoader extends URLClassLoader {
             // (0.1) Check our previously loaded class cache
             clazz = findLoadedClass(name);
             if (clazz != null) {
-                if (log.isDebugEnabled()){
+                if (log.isDebugEnabled()) {
                     log.debug("  Returning class from cache");
                 }
-                if (resolve){
+                if (resolve) {
                     resolveClass(clazz);
                 }
                 return (clazz);
             }
 
             // (2) Search local repositories
-            if (log.isDebugEnabled()){
+            if (log.isDebugEnabled()) {
                 log.debug("  Searching local repositories");
             }
             try {
                 clazz = findClass(name);
                 if (clazz != null) {
-                    if (log.isDebugEnabled()){
+                    if (log.isDebugEnabled()) {
                         log.debug("  Loading class from local repository");
                     }
-                    if (resolve){
+                    if (resolve) {
                         resolveClass(clazz);
                     }
                     return (clazz);
@@ -87,17 +102,17 @@ public class DtClassLoader extends URLClassLoader {
                 // Ignore
             }
 
-            if (log.isDebugEnabled()){
+            if (log.isDebugEnabled()) {
                 log.debug("  Delegating to parent classloader at end: " + parent);
             }
 
             try {
                 clazz = Class.forName(name, false, parent);
                 if (clazz != null) {
-                    if (log.isDebugEnabled()){
+                    if (log.isDebugEnabled()) {
                         log.debug("  Loading class from parent");
                     }
-                    if (resolve){
+                    if (resolve) {
                         resolveClass(clazz);
                     }
                     return (clazz);
@@ -114,7 +129,7 @@ public class DtClassLoader extends URLClassLoader {
     @Override
     public URL getResource(String name) {
 
-        if (log.isDebugEnabled()){
+        if (log.isDebugEnabled()) {
             log.debug("getResource(" + name + ")");
         }
 
@@ -123,7 +138,7 @@ public class DtClassLoader extends URLClassLoader {
         // (2) Search local repositories
         url = findResource(name);
         if (url != null) {
-            if (log.isDebugEnabled()){
+            if (log.isDebugEnabled()) {
                 log.debug("  --> Returning '" + url.toString() + "'");
             }
             return (url);
@@ -132,14 +147,14 @@ public class DtClassLoader extends URLClassLoader {
         // (3) Delegate to parent unconditionally if not already attempted
         url = parent.getResource(name);
         if (url != null) {
-            if (log.isDebugEnabled()){
+            if (log.isDebugEnabled()) {
                 log.debug("  --> Returning '" + url.toString() + "'");
             }
             return (url);
         }
 
         // (4) Resource was not found
-        if (log.isDebugEnabled()){
+        if (log.isDebugEnabled()) {
             log.debug("  --> Resource not found, returning null");
         }
         return (null);
@@ -153,6 +168,7 @@ public class DtClassLoader extends URLClassLoader {
 
     /**
      * FIXME 需要测试
+     *
      * @param name
      * @return
      * @throws IOException
@@ -161,9 +177,11 @@ public class DtClassLoader extends URLClassLoader {
     public Enumeration<URL> getResources(String name) throws IOException {
         @SuppressWarnings("unchecked")
         Enumeration<URL>[] tmp = (Enumeration<URL>[]) new Enumeration<?>[1];
-        tmp[0] = findResources(name);//优先使用当前类的资源
+        //优先使用当前类的资源
+        tmp[0] = findResources(name);
 
-        if(!tmp[0].hasMoreElements()){//只有子classLoader找不到任何资源才会调用原生的方法
+        //只有子classLoader找不到任何资源才会调用原生的方法
+        if (!tmp[0].hasMoreElements()) {
             return super.getResources(name);
         }
 
@@ -173,7 +191,7 @@ public class DtClassLoader extends URLClassLoader {
     @Override
     public Enumeration<URL> findResources(String name) throws IOException {
 
-        if (log.isDebugEnabled()){
+        if (log.isDebugEnabled()) {
             log.debug("findResources(" + name + ")");
         }
 
@@ -181,7 +199,7 @@ public class DtClassLoader extends URLClassLoader {
 
         Enumeration<URL> superResource = super.findResources(name);
 
-        while (superResource.hasMoreElements()){
+        while (superResource.hasMoreElements()) {
             result.add(superResource.nextElement());
         }
 

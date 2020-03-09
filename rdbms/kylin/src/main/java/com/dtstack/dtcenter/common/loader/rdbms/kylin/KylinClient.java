@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms.kylin;
 
+import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
 
@@ -13,5 +14,10 @@ public class KylinClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
         return new KylinConnFactory();
+    }
+
+    @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.Kylin;
     }
 }

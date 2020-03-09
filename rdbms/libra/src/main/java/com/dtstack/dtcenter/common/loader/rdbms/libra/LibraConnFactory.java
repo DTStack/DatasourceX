@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.common.loader.rdbms.postgresql;
+package com.dtstack.dtcenter.common.loader.rdbms.libra;
 
 import com.dtstack.dtcenter.common.enums.DataBaseType;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;

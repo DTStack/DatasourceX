@@ -2,9 +2,8 @@ package com.dtstack.dtcenter.common.loader.rdbms.common;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -16,9 +15,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @Date ：Created in 11:22 2020/1/13
  * @Description：连接工厂
  */
+@Slf4j
 public class ConnFactory {
-    private static final Logger logger = LoggerFactory.getLogger(ConnFactory.class);
-
     protected String driverName = null;
 
     protected String testSql;
@@ -65,14 +63,14 @@ public class ConnFactory {
 
             isConnected = true;
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         } finally {
             try {
                 if (conn != null) {
                     conn.close();
                 }
             } catch (Exception e) {
-                logger.error(e.getMessage(), e);
+                log.error(e.getMessage(), e);
             }
         }
         return isConnected;

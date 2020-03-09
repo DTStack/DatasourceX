@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
-import com.dtstack.dtcenter.common.enums.DataSourceType;
+import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -29,7 +29,7 @@ public class MongoTest {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MONGODB.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtCenterDefException("连接异常");
@@ -38,7 +38,7 @@ public class MongoTest {
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MONGODB.getVal());
+        IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("admin").build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList.size());

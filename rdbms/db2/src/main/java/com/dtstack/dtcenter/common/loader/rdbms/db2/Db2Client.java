@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms.db2;
 
+import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
@@ -25,6 +26,11 @@ public class Db2Client extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
         return new Db2ConnFactory();
+    }
+
+    @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.DB2;
     }
 
     @Override

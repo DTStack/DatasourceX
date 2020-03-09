@@ -5,10 +5,9 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -22,9 +21,8 @@ import java.util.Map;
  * @Date ：Created in 11:13 2020/1/13
  * @Description：数据库工具类
  */
+@Slf4j
 public class DBUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(DBUtil.class);
-
     /**
      * 根据 SQL 查询
      *
@@ -103,6 +101,13 @@ public class DBUtil {
         return types;
     }
 
+    /**
+     * 关闭数据库资源信息
+     *
+     * @param rs
+     * @param stmt
+     * @param conn
+     */
     public static void closeDBResources(ResultSet rs, Statement stmt, Connection conn) {
         try {
             if (null != rs) {
@@ -117,7 +122,7 @@ public class DBUtil {
                 conn.close();
             }
         } catch (Throwable e) {
-            LOG.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         }
     }
 }

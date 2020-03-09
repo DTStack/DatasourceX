@@ -5,12 +5,11 @@ import com.dtstack.dtcenter.common.util.AddressUtil;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.*;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.kafka.common.requests.MetadataResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.util.HashMap;
@@ -24,8 +23,8 @@ import java.util.Optional;
  * @Date ：Created in 22:50 2020/2/27
  * @Description：FTP 抽象类
  */
+@Slf4j
 public abstract class AbsFtpClient implements IClient {
-    private static final Logger LOG = LoggerFactory.getLogger(AbsFtpClient.class);
     private static final int TIMEOUT = 60000;
 
     @Override
@@ -51,7 +50,7 @@ public abstract class AbsFtpClient implements IClient {
                         }});
                 check = true;
             } catch (Exception e) {
-                LOG.error("无法通过sftp与服务器建立链接，请检查主机名和用户名是否正确, {}", e);
+                log.error("无法通过sftp与服务器建立链接，请检查主机名和用户名是否正确, {}", e);
             } finally {
                 if (instance != null) {
                     instance.close();
@@ -78,7 +77,7 @@ public abstract class AbsFtpClient implements IClient {
                     ftpClient.disconnect();
                     String message = String.format("与ftp服务器建立连接失败,请检查用户名和密码是否正确: [%s]",
                             "message:host =" + source.getUrl() + ",username = " + source.getUsername() + ",port =" + source.getPassword());
-                    LOG.error(message);
+                    log.error(message);
                 } else {
                     check = true;
                 }
@@ -87,7 +86,7 @@ public abstract class AbsFtpClient implements IClient {
                     ftpClient.disconnect();
                 }
             } catch (Exception e) {
-                LOG.error("无法通过ftp与服务器建立链接，请检查主机名和用户名是否正确");
+                log.error("无法通过ftp与服务器建立链接，请检查主机名和用户名是否正确");
             }
         }
 

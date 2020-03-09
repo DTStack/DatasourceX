@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms.hive1;
 
+import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
@@ -30,6 +31,11 @@ public class HiveClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
         return new HiveConnFactory();
+    }
+
+    @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.HIVE1X;
     }
 
     @Override
