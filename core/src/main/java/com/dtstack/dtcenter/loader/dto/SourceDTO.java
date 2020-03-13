@@ -105,4 +105,20 @@ public class SourceDTO {
      * kerberos 配置信息
      */
     private Map<String, Object> kerberosConfig;
+
+    /**
+     * 获取连接并清除当前对象中的连接
+     *
+     * @param closeQuery
+     * @return
+     */
+    public Connection clearAfterGetConnection(Boolean closeQuery) {
+        if (Boolean.FALSE.equals(closeQuery)) {
+            return null;
+        }
+
+        Connection temp = connection;
+        this.connection = null;
+        return temp;
+    }
 }

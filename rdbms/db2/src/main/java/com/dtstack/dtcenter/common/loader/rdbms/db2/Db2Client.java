@@ -51,7 +51,7 @@ public class Db2Client extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtCenterDefException("获取表异常", e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, closeQuery ? source.getConnection() : null);
+            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(closeQuery));
         }
         return tableList;
     }
@@ -74,7 +74,7 @@ public class Db2Client extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, closeQuery ? source.getConnection() : null);
+            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(closeQuery));
         }
         return null;
     }

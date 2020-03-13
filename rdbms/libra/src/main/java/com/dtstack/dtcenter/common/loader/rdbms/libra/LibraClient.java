@@ -53,7 +53,7 @@ public class LibraClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtCenterDefException("获取表异常", e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, closeQuery ? source.getConnection() : null);
+            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(closeQuery));
         }
     }
 }

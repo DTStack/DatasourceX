@@ -24,7 +24,7 @@ public class ImpalaTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     SourceDTO source = SourceDTO.builder()
-            .url("jdbc:impala://cdh-impala1:21050/ceshis_pri;AuthMech=3")
+            .url("jdbc:impala://cdh-impala1:21050/nanqia_pub;AuthMech=3")
             .username("root")
             .password("abc123")
             .build();
@@ -83,5 +83,13 @@ public class ImpalaTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi200228").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
+    }
+
+    @Test
+    public void getTableMetaComment() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("a00021").build();
+        String tableMetaComment = client.getTableMetaComment(source, queryDTO);
+        System.out.println(tableMetaComment);
     }
 }
