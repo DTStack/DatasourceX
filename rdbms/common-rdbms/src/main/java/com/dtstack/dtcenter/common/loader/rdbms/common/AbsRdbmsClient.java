@@ -147,7 +147,7 @@ public abstract class AbsRdbmsClient implements IClient {
         } catch (Exception e) {
             throw new DtLoaderException("获取数据库表异常", e);
         } finally {
-            DBUtil.closeDBResources(rs, null, closeQuery ? source.getConnection() : null);
+            DBUtil.closeDBResources(rs, null, source.clearAfterGetConnection(closeQuery));
         }
         return tableList;
     }
@@ -174,7 +174,7 @@ public abstract class AbsRdbmsClient implements IClient {
 
             return columnClassNameList;
         } finally {
-            DBUtil.closeDBResources(null, stmt, closeQuery ? source.getConnection() : null);
+            DBUtil.closeDBResources(null, stmt, source.clearAfterGetConnection(closeQuery));
         }
     }
 
@@ -220,7 +220,7 @@ public abstract class AbsRdbmsClient implements IClient {
                         DBErrorCode.GET_COLUMN_INFO_FAILED, e);
             }
         } finally {
-            DBUtil.closeDBResources(rs, statement, closeQuery ? source.getConnection() : null);
+            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(closeQuery));
         }
     }
 
