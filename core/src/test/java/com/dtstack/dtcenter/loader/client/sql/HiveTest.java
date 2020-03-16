@@ -24,9 +24,8 @@ public class HiveTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     SourceDTO source = SourceDTO.builder()
-            .url("jdbc:hive2://cdh-impala2:10000/ceshis_pri")
-            .username("root")
-            .password("abc123")
+            .url("jdbc:hive2://kudu3:10000/default")
+            .schema("dev2")
             .build();
 
     @Test

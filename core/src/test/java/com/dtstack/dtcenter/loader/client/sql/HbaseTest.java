@@ -23,6 +23,7 @@ public class HbaseTest {
     SourceDTO source = SourceDTO.builder()
             .url("node01,node02,node03:2181")
             .path("/hbase")
+            .schema("mqTest")
             .build();
 
     @Test
@@ -37,8 +38,7 @@ public class HbaseTest {
     @Test
     public void getTableList() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.HBASE.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("mqTest").build();
-        List<String> tableList = client.getTableList(source, queryDTO);
+        List<String> tableList = client.getTableList(source, null);
         System.out.println(tableList.size());
     }
 }

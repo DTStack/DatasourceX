@@ -48,6 +48,9 @@ public class HiveClient extends AbsRdbmsClient {
         List<String> tableList = new ArrayList<>();
         try {
             statement = source.getConnection().createStatement();
+            if (StringUtils.isNotEmpty(source.getSchema())) {
+                statement.execute("use " + source.getSchema());
+            }
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
@@ -107,6 +110,9 @@ public class HiveClient extends AbsRdbmsClient {
 
         try {
             stmt = source.getConnection().createStatement();
+            if (StringUtils.isNotEmpty(source.getSchema())) {
+                stmt.execute("use " + source.getSchema());
+            }
             resultSet = stmt.executeQuery("desc extended " + queryDTO.getTableName());
             while (resultSet.next()) {
                 String dataType = resultSet.getString(DtClassConsistent.PublicConsistent.DATA_TYPE);

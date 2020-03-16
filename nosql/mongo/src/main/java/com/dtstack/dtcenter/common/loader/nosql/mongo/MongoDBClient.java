@@ -30,7 +30,7 @@ public class MongoDBClient extends AbsNosqlClient {
 
     @Override
     public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        if (queryDTO == null || StringUtils.isBlank(queryDTO.getSchema())) {
+        if (queryDTO == null || StringUtils.isBlank(source.getSchema())) {
             throw new DtCenterDefException("数据源 DB 不能为空");
         }
 

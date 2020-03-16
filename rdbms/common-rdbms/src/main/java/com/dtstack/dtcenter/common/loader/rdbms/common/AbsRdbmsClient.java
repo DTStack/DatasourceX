@@ -134,9 +134,7 @@ public abstract class AbsRdbmsClient implements IClient {
             if (null == queryDTO) {
                 rs = meta.getTables(null, null, null, null);
             } else {
-                rs = meta.getTables(null,
-                        StringUtils.isBlank(queryDTO.getSchemaPattern()) ? queryDTO.getSchemaPattern() :
-                                queryDTO.getSchema(),
+                rs = meta.getTables(null, source.getSchema(),
                         StringUtils.isBlank(queryDTO.getTableNamePattern()) ? queryDTO.getTableNamePattern() :
                                 queryDTO.getTableName(),
                         DBUtil.getTableTypes(queryDTO));

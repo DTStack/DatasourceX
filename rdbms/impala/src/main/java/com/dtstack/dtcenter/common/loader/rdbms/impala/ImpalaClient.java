@@ -42,8 +42,8 @@ public class ImpalaClient extends AbsRdbmsClient {
     public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         Boolean closeQuery = beforeQuery(source, queryDTO, false);
         //impala db写在jdbc连接中无效，必须手动切换库
-        String db = queryDTO == null || StringUtils.isBlank(queryDTO.getSchema()) ?
-                getImpalaDbFromJdbc(source.getUrl(), DataSourceType.IMPALA) : queryDTO.getSchema();
+        String db = queryDTO == null || StringUtils.isBlank(source.getSchema()) ?
+                getImpalaDbFromJdbc(source.getUrl(), DataSourceType.IMPALA) : source.getSchema();
         // 获取表信息需要通过show tables 语句
         String sql = "show tables";
         Statement statement = null;
