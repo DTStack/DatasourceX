@@ -34,7 +34,7 @@ public class LibraClient extends AbsRdbmsClient {
     @Override
     public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         Boolean closeQuery = beforeQuery(source, queryDTO, false);
-        if (queryDTO == null || StringUtils.isBlank(queryDTO.getSchema())) {
+        if (queryDTO == null || StringUtils.isBlank(source.getSchema())) {
             return super.getTableList(source, queryDTO);
         }
 
@@ -44,7 +44,7 @@ public class LibraClient extends AbsRdbmsClient {
             statement = source.getConnection().createStatement();
             //大小写区分
             rs = statement.executeQuery(String.format("select table_name from information_schema.tables WHERE " +
-                    "table_schema in ( '%s' )", queryDTO.getSchema()));
+                    "table_schema in ( '%s' )", source.getSchema()));
             List<String> tableList = new ArrayList<>();
             while (rs.next()) {
                 tableList.add(rs.getString(1));

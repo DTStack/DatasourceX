@@ -27,6 +27,7 @@ public class ClickHouseTest {
             .url("jdbc:clickhouse://172.16.10.168:8123/mqTest")
             .username("dtstack")
             .password("abc123")
+            .schema("mqTest")
             .build();
 
     @Test
@@ -64,8 +65,7 @@ public class ClickHouseTest {
     @Test
     public void getTableList() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.Clickhouse.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("mqTest").build();
-        List<String> tableList = client.getTableList(source, queryDTO);
+        List<String> tableList = client.getTableList(source, null);
         System.out.println(tableList.size());
     }
 

@@ -27,6 +27,7 @@ public class Db2Test {
             .url("jdbc:clickhouse://172.16.10.168:8123/mqTest")
             .username("dtstack")
             .password("abc123")
+            .schema("mqTest")
             .build();
 
     @Test
@@ -64,8 +65,7 @@ public class Db2Test {
     @Test
     public void getTableList() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("mqTest").build();
-        List<String> tableList = client.getTableList(source, queryDTO);
+        List<String> tableList = client.getTableList(source, null);
         System.out.println(tableList.size());
     }
 

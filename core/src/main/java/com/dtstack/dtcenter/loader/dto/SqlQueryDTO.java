@@ -32,16 +32,6 @@ public class SqlQueryDTO {
     private String tableNamePattern;
 
     /**
-     * 模式即 DBName 或者 kylin 的 Project
-     */
-    private String schema;
-
-    /**
-     * 模式即 DBName(正则)
-     */
-    private String schemaPattern;
-
-    /**
      * 表类型 部分支持，建议只使用 view 这个字段
      * {@link java.sql.DatabaseMetaData#getTableTypes()}
      */

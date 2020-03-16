@@ -39,7 +39,8 @@ public class MongoTest {
     @Test
     public void getTableList() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("admin").build();
+        source.setSchema("admin");
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList.size());
     }
