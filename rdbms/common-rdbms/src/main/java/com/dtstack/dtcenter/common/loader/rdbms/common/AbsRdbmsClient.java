@@ -66,7 +66,7 @@ public abstract class AbsRdbmsClient implements IClient {
             return Lists.newArrayList();
         }
 
-        return DBUtil.executeQuery(source.getConnection(), queryDTO.getSql(), closeQuery);
+        return DBUtil.executeQuery(source.clearAfterGetConnection(closeQuery), queryDTO.getSql(), closeQuery);
     }
 
     @Override
@@ -77,8 +77,7 @@ public abstract class AbsRdbmsClient implements IClient {
             return false;
         }
 
-        DBUtil.executeSqlWithoutResultSet(source.getConnection(), queryDTO.getSql(),
-                beforeQuery(source, queryDTO, true));
+        DBUtil.executeSqlWithoutResultSet(source.clearAfterGetConnection(closeQuery), queryDTO.getSql(), closeQuery);
         return true;
     }
 

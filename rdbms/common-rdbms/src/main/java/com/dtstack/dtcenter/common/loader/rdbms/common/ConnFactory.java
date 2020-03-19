@@ -43,6 +43,7 @@ public class ConnFactory {
         }
 
         init();
+        DriverManager.setLoginTimeout(5);
         if (StringUtils.isBlank(source.getUsername())) {
             return DriverManager.getConnection(source.getUrl());
         }

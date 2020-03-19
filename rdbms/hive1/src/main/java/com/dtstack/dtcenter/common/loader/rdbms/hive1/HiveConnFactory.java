@@ -33,6 +33,7 @@ public class HiveConnFactory extends ConnFactory {
     @Override
     public Connection getConn(SourceDTO source) throws Exception {
         init();
+        DriverManager.setLoginTimeout(30);
         Configuration conf = null;
         if (MapUtils.isNotEmpty(source.getKerberosConfig())) {
             String principalFile = (String) source.getKerberosConfig().get("principalFile");
