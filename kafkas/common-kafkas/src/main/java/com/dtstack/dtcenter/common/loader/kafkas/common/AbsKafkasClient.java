@@ -4,7 +4,6 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.*;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.kafka.common.requests.MetadataResponse;
 
 import java.sql.Connection;
 import java.util.List;
@@ -16,7 +15,7 @@ import java.util.Map;
  * @Date ：Created in 22:39 2020/2/26
  * @Description：Kafka 数据源
  */
-public abstract class AbsKafkasClient implements IClient {
+public abstract class AbsKafkasClient<T> implements IClient<T> {
 
     @Override
     public Boolean testCon(SourceDTO source) {
@@ -46,12 +45,12 @@ public abstract class AbsKafkasClient implements IClient {
     }
 
     @Override
-    public List<MetadataResponse.PartitionMetadata> getAllPartitions(SourceDTO source, String topic) throws Exception {
-        return KakfaUtil.getAllPartitionsFromZk(source.getUrl(), topic);
+    public List<T> getAllPartitions(SourceDTO source, String topic) throws Exception {
+        return (List<T>) KakfaUtil.getAllPartitionsFromZk(source.getUrl(), topic);
     }
 
     @Override
-    public List<KafkaOffsetDTO> getOffset(SourceDTO source, String topic) throws Exception {
+    public List getOffset(SourceDTO source, String topic) throws Exception {
         if (StringUtils.isBlank(source.getBrokerUrls())) {
             source.setBrokerUrls(KakfaUtil.getAllBrokersAddressFromZk(source.getUrl()));
         }

@@ -1,12 +1,10 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.loader.ClassLoaderCallBack;
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.requests.MetadataResponse;
 
 import java.sql.Connection;
 import java.util.List;
@@ -19,7 +17,7 @@ import java.util.Map;
  * @Description 代理实现
  */
 @Slf4j
-public class DataSourceClientProxy implements IClient {
+public class DataSourceClientProxy<T> implements IClient<T> {
     private IClient targetClient;
 
     public DataSourceClientProxy(IClient targetClient) {
@@ -103,7 +101,7 @@ public class DataSourceClientProxy implements IClient {
     }
 
     @Override
-    public List<MetadataResponse.PartitionMetadata> getAllPartitions(SourceDTO source, String topic) throws Exception {
+    public List<T> getAllPartitions(SourceDTO source, String topic) throws Exception {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getAllPartitions(source, topic),
                 targetClient.getClass().getClassLoader(), true);
     }

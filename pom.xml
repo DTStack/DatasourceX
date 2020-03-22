@@ -20,7 +20,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <dtstack.common>4.0.1-SPI-SNAPSHOT</dtstack.common>
+        <dtstack.common>4.0.0-SNAPSHOT</dtstack.common>
     </properties>
 
     <dependencyManagement>
@@ -54,6 +54,12 @@
                 <groupId>com.dtstack.dtcenter</groupId>
                 <artifactId>common.loader.nosql.common</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <artifactId>jedis</artifactId>
+                <groupId>redis.clients</groupId>
+                <version>2.9.0</version>
             </dependency>
 
             <dependency>
@@ -151,6 +157,12 @@
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka_2.11</artifactId>
                 <version>0.11.0.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>4.1.9.RELEASE</version>
             </dependency>
 
             <dependency>

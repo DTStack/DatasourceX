@@ -13,7 +13,6 @@ import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.kafka.common.requests.MetadataResponse;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ import java.util.Map;
  * @Description：客户端
  */
 @Slf4j
-public abstract class AbsRdbmsClient implements IClient {
+public abstract class AbsRdbmsClient<T> implements IClient<T> {
     private ConnFactory connFactory = getConnFactory();
 
     protected abstract ConnFactory getConnFactory();
@@ -260,7 +259,7 @@ public abstract class AbsRdbmsClient implements IClient {
     }
 
     @Override
-    public List<MetadataResponse.PartitionMetadata> getAllPartitions(SourceDTO source, String topic) throws Exception {
+    public List<T> getAllPartitions(SourceDTO source, String topic) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
