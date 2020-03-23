@@ -33,7 +33,7 @@ public class LibraClient extends AbsRdbmsClient {
 
     @Override
     public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Boolean closeQuery = beforeQuery(source, queryDTO, false);
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
         if (queryDTO == null || StringUtils.isBlank(source.getSchema())) {
             return super.getTableList(source, queryDTO);
         }
@@ -53,7 +53,7 @@ public class LibraClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtCenterDefException("获取表异常", e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(closeQuery));
+            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(clearStatus));
         }
     }
 }

@@ -39,7 +39,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
 
     @Override
     public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Boolean closeQuery = beforeQuery(source, queryDTO, false);
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
 
         String database = getPostgreSchema(source.getConnection(), source.getUsername(), source.getUrl(),
                 "currentSchema");
@@ -66,13 +66,13 @@ public class PostgresqlClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtCenterDefException("获取表异常", e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(closeQuery));
+            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(clearStatus));
         }
     }
 
     @Override
     public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Boolean closeQuery = beforeColumnQuery(source, queryDTO);
+        Integer clearStatus = beforeColumnQuery(source, queryDTO);
 
         Statement statement = null;
         ResultSet resultSet = null;
@@ -92,7 +92,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(closeQuery));
+            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
         }
         return null;
     }

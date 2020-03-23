@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.dto;
 
+import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.enums.RedisMode;
 import lombok.Builder;
 import lombok.Data;
@@ -109,16 +110,20 @@ public class SourceDTO {
     /**
      * 获取连接并清除当前对象中的连接
      *
-     * @param closeQuery
+     * @param clearStatus
      * @return
      */
-    public Connection clearAfterGetConnection(Boolean closeQuery) {
-        if (Boolean.FALSE.equals(closeQuery)) {
+    public Connection clearAfterGetConnection(Integer clearStatus) {
+        if (ConnectionClearStatus.NORMAL.getValue().equals(clearStatus)) {
             return this.connection;
         }
 
         Connection temp = connection;
         this.connection = null;
+
+        if (ConnectionClearStatus.CLEAR.getValue().equals(clearStatus)) {
+            return null;
+        }
         return temp;
     }
 }

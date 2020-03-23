@@ -40,7 +40,7 @@ public class HiveClient extends AbsRdbmsClient {
 
     @Override
     public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Boolean closeQuery = beforeQuery(source, queryDTO, false);
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
         // 获取表信息需要通过show tables 语句
         String sql = "show tables";
         Statement statement = null;
@@ -59,14 +59,14 @@ public class HiveClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtCenterDefException("获取表异常", e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(closeQuery));
+            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(clearStatus));
         }
         return tableList;
     }
 
     @Override
     public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Boolean closeQuery = beforeColumnQuery(source, queryDTO);
+        Integer clearStatus = beforeColumnQuery(source, queryDTO);
 
         Statement statement = null;
         ResultSet resultSet = null;
@@ -95,14 +95,14 @@ public class HiveClient extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(closeQuery));
+            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
         }
         return null;
     }
 
     @Override
     public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Boolean closeQuery = beforeColumnQuery(source, queryDTO);
+        Integer clearStatus = beforeColumnQuery(source, queryDTO);
 
         Map<String, ColumnMetaDTO> columnMap = new HashMap<>();
         Statement stmt = null;
@@ -166,7 +166,7 @@ public class HiveClient extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, stmt, source.clearAfterGetConnection(closeQuery));
+            DBUtil.closeDBResources(resultSet, stmt, source.clearAfterGetConnection(clearStatus));
         }
     }
 }
