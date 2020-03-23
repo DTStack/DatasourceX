@@ -23,7 +23,7 @@ public class KafkaTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     SourceDTO source = SourceDTO.builder()
-            .url("192.168.99.5:2181")
+            .url("192.168.99.199:2181")
             .build();
 
     @Test
@@ -39,27 +39,28 @@ public class KafkaTest {
     public void getAllBrokersAddress() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.KAFKA_09.getPluginName());
         String brokersAddress = client.getAllBrokersAddress(source);
-        System.out.println(brokersAddress);
+        assert (null != brokersAddress);
     }
 
     @Test
     public void getTopicList() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.KAFKA_09.getPluginName());
         List<String> topicList = client.getTopicList(source);
-        System.out.println(topicList.size());
+        assert (topicList != null);
     }
 
     @Test
     public void createTopic() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.KAFKA_09.getPluginName());
-        KafkaTopicDTO topicDTO = KafkaTopicDTO.builder().partitions(1).replicationFactor(1).topicName(
-                "nanqi05").build();
+        KafkaTopicDTO topicDTO = KafkaTopicDTO.builder().partitions(3).replicationFactor(2).topicName(
+                "nanqi04").build();
         Boolean clientTopic = client.createTopic(source, topicDTO);
-        System.out.println(clientTopic);
+        assert (Boolean.TRUE.equals(clientTopic));
     }
 
     @Test
     public void getAllPartitions() throws Exception {
+        // 测试的时候需要引进 kafka 包
         IClient client = clientCache.getClient(DataSourceClientType.KAFKA_09.getPluginName());
         List<MetadataResponse.PartitionMetadata> allPartitions = client.getAllPartitions(source, "nanqi05");
         System.out.println(allPartitions.size());
@@ -69,6 +70,6 @@ public class KafkaTest {
     public void getOffset() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.KAFKA_09.getPluginName());
         List<KafkaOffsetDTO> offset = client.getOffset(source, "nanqi");
-        System.out.println(offset.size());
+        assert (offset != null);
     }
 }

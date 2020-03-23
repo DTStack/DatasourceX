@@ -1,7 +1,6 @@
 package com.dtstack.dtcenter.loader.client;
 
 import com.dtstack.dtcenter.loader.dto.*;
-import org.apache.kafka.common.requests.MetadataResponse;
 
 import java.sql.Connection;
 import java.util.List;
@@ -13,7 +12,7 @@ import java.util.Map;
  * @Date ：Created in 09:27 2020/1/13
  * @Description：客户端接口
  */
-public interface IClient {
+public interface IClient<T> {
     /**
      * 获取 连接
      *
@@ -133,7 +132,7 @@ public interface IClient {
      * @return
      * @throws Exception
      */
-    List<MetadataResponse.PartitionMetadata> getAllPartitions(SourceDTO source, String topic) throws Exception;
+    List<T> getAllPartitions(SourceDTO source, String topic) throws Exception;
 
     /**
      * 获取特定 Topic 所有分区的偏移量

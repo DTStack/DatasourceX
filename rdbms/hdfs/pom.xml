@@ -32,8 +32,55 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
             <artifactId>common.hadoop</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>gbase</artifactId>
+                    <groupId>com.esen.jdbc</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jersey-client</artifactId>
+                    <groupId>com.sun.jersey</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jersey-core</artifactId>
+                    <groupId>com.sun.jersey</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jersey-json</artifactId>
+                    <groupId>com.sun.jersey</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jersey-server</artifactId>
+                    <groupId>com.sun.jersey</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jersey-guice</artifactId>
+                    <groupId>com.sun.jersey.contribs</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>calcite-core</artifactId>
+                    <groupId>org.apache.calcite</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>calcite-server</artifactId>
+                    <groupId>org.apache.calcite</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>curator-client</artifactId>
+                    <groupId>org.apache.curator</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>hive-shade</artifactId>
+                    <groupId>dtstack.hive</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -156,6 +203,26 @@
                 <exclusion>
                     <artifactId>guava</artifactId>
                     <groupId>com.google.guava</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>twill-core</artifactId>
+                    <groupId>org.apache.twill</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>twill-zookeeper</artifactId>
+                    <groupId>org.apache.twill</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>twill-common</artifactId>
+                    <groupId>org.apache.twill</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>twill-discovery-api</artifactId>
+                    <groupId>org.apache.twill</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>twill-discovery-core</artifactId>
+                    <groupId>org.apache.twill</groupId>
                 </exclusion>
             </exclusions>
         </dependency>

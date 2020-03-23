@@ -114,7 +114,7 @@ public class SourceDTO {
      */
     public Connection clearAfterGetConnection(Boolean closeQuery) {
         if (Boolean.FALSE.equals(closeQuery)) {
-            return null;
+            return this.connection;
         }
 
         Connection temp = connection;

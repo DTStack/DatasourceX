@@ -3,7 +3,6 @@ package com.dtstack.dtcenter.common.loader.nosql.common;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.*;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import org.apache.kafka.common.requests.MetadataResponse;
 
 import java.sql.Connection;
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.Map;
  * @Date ：Created in 14:52 2020/1/17
  * @Description：非关系型数据库
  */
-public abstract class AbsNosqlClient implements IClient {
+public abstract class AbsNosqlClient<T> implements IClient<T> {
     @Override
     public abstract Boolean testCon(SourceDTO source);
 
@@ -71,7 +70,7 @@ public abstract class AbsNosqlClient implements IClient {
     }
 
     @Override
-    public List<MetadataResponse.PartitionMetadata> getAllPartitions(SourceDTO source, String topic) throws Exception {
+    public List<T> getAllPartitions(SourceDTO source, String topic) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 

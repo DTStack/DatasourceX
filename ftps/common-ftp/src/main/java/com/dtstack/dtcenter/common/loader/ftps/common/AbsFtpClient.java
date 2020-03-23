@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
-import org.apache.kafka.common.requests.MetadataResponse;
 
 import java.sql.Connection;
 import java.util.HashMap;
@@ -145,7 +144,7 @@ public abstract class AbsFtpClient implements IClient {
     }
 
     @Override
-    public List<MetadataResponse.PartitionMetadata> getAllPartitions(SourceDTO source, String topic) throws Exception {
+    public List<Object> getAllPartitions(SourceDTO source, String topic) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
