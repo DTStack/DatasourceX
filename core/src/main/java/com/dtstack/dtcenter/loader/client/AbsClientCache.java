@@ -103,6 +103,14 @@ public abstract class AbsClientCache {
     public static void startCheckFile() {
         checkFile.set(Boolean.TRUE);
     }
+    
+    /**
+     * 修改插件包文件夹路径
+     * @param dir
+     */
+    public static void setUserDir (String dir) {
+        AbsClientCache.userDir = dir;
+    }
 
     /**
      * 根据特定类型获取对应的客户端
