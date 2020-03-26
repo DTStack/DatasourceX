@@ -30,12 +30,12 @@ public class MongoDBClient extends AbsNosqlClient {
 
     @Override
     public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        if (queryDTO == null || StringUtils.isBlank(source.getSchema())) {
+        if (StringUtils.isBlank(source.getSchema())) {
             throw new DtCenterDefException("数据源 DB 不能为空");
         }
 
         List<String> tableList = Lists.newArrayList();
-        List<ServerAddress> serverAddress = MongoDBUtils.getServerAddress(source.getHostPort());
+        List<ServerAddress> serverAddress = MongoDBUtils.getServerAddress(source.getUrl());
         MongoClient mongoClient = null;
         try {
             if (StringUtils.isEmpty(source.getUsername()) || StringUtils.isEmpty(source.getPassword())) {

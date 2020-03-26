@@ -17,7 +17,7 @@ public class HbaseClientTest {
     @Test
     public void getConnFactory() throws Exception {
         SourceDTO source = SourceDTO.builder()
-                .url("node01,node02,node03:2181")
+                .url("172.16.100.105:2181")
                 .build();
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {
