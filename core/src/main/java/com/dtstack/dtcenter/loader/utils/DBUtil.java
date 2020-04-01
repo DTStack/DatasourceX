@@ -30,9 +30,8 @@ public class DBUtil {
      * @param sql
      * @param closeConn 是否关闭连接
      * @return
-     * @throws Exception
      */
-    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Boolean closeConn) throws Exception {
+    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Boolean closeConn) {
         List<Map<String, Object>> result = Lists.newArrayList();
         ResultSet res = null;
         Statement statement = null;
@@ -69,7 +68,7 @@ public class DBUtil {
      * @return
      * @throws Exception
      */
-    public static void executeSqlWithoutResultSet(Connection conn, String sql, Boolean closeConn) throws Exception {
+    public static void executeSqlWithoutResultSet(Connection conn, String sql, Boolean closeConn) {
         Statement statement = null;
         try {
             statement = conn.createStatement();
