@@ -6,6 +6,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,7 +36,7 @@ public class DataSourceConnection {
     /**
      * 数据源节点信息
      */
-    private List<DataSourceCacheNode> sourceNodes = new ArrayList<>();
+    private List<DataSourceCacheNode> sourceNodes = Collections.synchronizedList(new ArrayList<>());
 
     public DataSourceConnection() {
         refreshTimeoutStamp();
@@ -63,11 +64,11 @@ public class DataSourceConnection {
      */
     public DataSourceCacheNode getSourceCacheNode(Integer sourceType) {
         refreshTimeoutStamp();
-        Optional<DataSourceCacheNode> node =
-                sourceNodes.stream().filter(obj -> obj.getSourceType().equals(sourceType)).findFirst();
-
-        if (node.isPresent()) {
-            return node.get();
+        for (DataSourceCacheNode node : sourceNodes) {
+            if (!node.getSourceType().equals(sourceType)) {
+                continue;
+            }
+            return node;
         }
 
         return null;
@@ -131,12 +132,14 @@ public class DataSourceConnection {
 
     public void close(Integer sourceType) {
         log.info("close connection SessionKey = {}", this.getSessionKey());
-        Optional<DataSourceCacheNode> cacheNode =
-                sourceNodes.stream().filter(node -> node.getSourceType().equals(sourceType)).findFirst();
 
-        if (cacheNode.isPresent()) {
-            cacheNode.get().close();
-            sourceNodes.remove(cacheNode);
+        for (DataSourceCacheNode node : sourceNodes) {
+            if (!node.getSourceType().equals(sourceType)) {
+                continue;
+            }
+            node.close();
+            sourceNodes.remove(node);
+            break;
         }
     }
 
