@@ -158,13 +158,14 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         Integer clearStatus = beforeColumnQuery(source, queryDTO);
 
         Statement stmt = null;
+        ResultSet rs = null;
         try {
             stmt = source.getConnection().createStatement();
             String queryColumnSql =
                     "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + queryDTO.getTableName()
                             + " where 1=2";
-
-            ResultSetMetaData rsmd = stmt.executeQuery(queryColumnSql).getMetaData();
+            rs = stmt.executeQuery(queryColumnSql);
+            ResultSetMetaData rsmd = rs.getMetaData();
             int cnt = rsmd.getColumnCount();
             List<String> columnClassNameList = Lists.newArrayList();
 
@@ -175,7 +176,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
             return columnClassNameList;
         } finally {
-            DBUtil.closeDBResources(null, stmt, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, stmt, source.clearAfterGetConnection(clearStatus));
         }
     }
 

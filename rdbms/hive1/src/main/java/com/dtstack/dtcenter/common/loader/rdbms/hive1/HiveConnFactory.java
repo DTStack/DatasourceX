@@ -7,6 +7,7 @@ import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.utils.DBUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
@@ -15,6 +16,7 @@ import org.apache.hadoop.conf.Configuration;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.regex.Matcher;
 
 /**
@@ -61,18 +63,18 @@ public class HiveConnFactory extends ConnFactory {
             String url = String.format("jdbc:hive2://%s:%s/%s", host, port, param);
             Connection connection = DriverManager.getConnection(url, source.getUsername(), source.getPassword());
             if (StringUtils.isNotEmpty(db)) {
+                Statement statement = null;
                 try {
-                    connection.createStatement().execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, db));
+                    statement = connection.createStatement();
+                    statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, db));
                 } catch (SQLException e) {
-                    if (connection != null) {
-                        connection.close();
-                    }
-
                     if (e.getMessage().contains("NoSuchDatabaseException")) {
                         throw new DtCenterDefException(e.getMessage(), DBErrorCode.DB_NOT_EXISTS);
                     } else {
                         throw e;
                     }
+                } finally {
+                    DBUtil.closeDBResources(null, statement, connection);
                 }
             }
 

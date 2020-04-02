@@ -87,7 +87,8 @@ public class ImpalaClient extends AbsRdbmsClient {
                 return columnList;
             }
 
-            //hive表 继续获取分区字段
+            //hive表 继续获取分区字段 先关闭之前的 rs
+            resultSet.close();
             resultSet = stmt.executeQuery("DESCRIBE formatted " + queryDTO.getTableName());
             while (resultSet.next()) {
                 String colName = resultSet.getString(DtClassConsistent.PublicConsistent.NAME).trim();

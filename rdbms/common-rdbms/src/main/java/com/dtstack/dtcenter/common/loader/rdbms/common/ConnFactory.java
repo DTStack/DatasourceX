@@ -2,11 +2,13 @@ package com.dtstack.dtcenter.common.loader.rdbms.common;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.utils.DBUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -54,25 +56,21 @@ public class ConnFactory {
     public Boolean testConn(SourceDTO source) {
         boolean isConnected = false;
         Connection conn = null;
+        Statement statement = null;
         try {
             conn = getConn(source);
             if (StringUtils.isBlank(testSql)) {
                 conn.isValid(5);
             } else {
-                conn.createStatement().execute((testSql));
+                statement = conn.createStatement();
+                statement.execute((testSql));
             }
 
             isConnected = true;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
+            DBUtil.closeDBResources(null, statement, conn);
         }
         return isConnected;
     }

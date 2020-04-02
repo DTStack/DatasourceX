@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 
 import java.sql.*;
@@ -24,6 +25,7 @@ import java.util.regex.Matcher;
  * @Date ：Created in 15:52 2020/1/7
  * @Description：Postgresql 客户端
  */
+@Slf4j
 public class PostgresqlClient extends AbsRdbmsClient {
     private static final String BIGSERIAL = "bigserial";
 
@@ -169,9 +171,9 @@ public class PostgresqlClient extends AbsRdbmsClient {
         if (matcher.find()) {
             String matchValue = null;
             try {
-                matchValue = matcher.group(param);
-            } finally {
-                return matchValue;
+                return matcher.group(param);
+            } catch (Exception e) {
+                log.warn("正则匹配错误", e);
             }
         }
         return null;
