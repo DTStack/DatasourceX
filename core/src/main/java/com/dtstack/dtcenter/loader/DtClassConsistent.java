@@ -54,6 +54,8 @@ public interface DtClassConsistent {
         public static final String DATA_TYPE = "data_type";
         public static final String PRIMARY_KEY = "primary_key";
         public static final String REMARKS = "REMARKS";
+
+        public static final String USE_DB = "use `%s`";
     }
 
     class PatternConsistent {
