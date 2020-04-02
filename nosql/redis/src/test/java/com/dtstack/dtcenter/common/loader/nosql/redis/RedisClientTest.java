@@ -10,8 +10,9 @@ public class RedisClientTest {
     @org.junit.Test
     public void testCon() throws Exception {
         SourceDTO source = SourceDTO.builder()
-                .url("172.16.10.61:6379")
+                .url("172.16.10.61")
                 .password("abc123")
+                .hostPort("6379")
                 .schema("5")
                 .build();
         Boolean isConnected = nosqlClient.testCon(source);

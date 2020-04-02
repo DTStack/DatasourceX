@@ -5,6 +5,8 @@ import com.dtstack.dtcenter.common.loader.nosql.common.AbsNosqlClient;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import org.junit.Test;
 
+import java.util.List;
+
 public class MongoDBClientTest {
     private static AbsNosqlClient nosqlClient = new MongoDBClient();
 
@@ -21,5 +23,18 @@ public class MongoDBClientTest {
         if (!isConnected) {
             throw new DtCenterDefException("数据源连接异常");
         }
+    }
+
+    @Test
+    public void getTableList() throws Exception {
+        SourceDTO source = SourceDTO.builder()
+                .url("172.16.8.193:27017")
+                .schema("dtstack")
+                .username(null)
+                .password("null")
+                .build();
+
+        List<String> tableList = nosqlClient.getTableList(source,null);
+        System.out.println(tableList);
     }
 }

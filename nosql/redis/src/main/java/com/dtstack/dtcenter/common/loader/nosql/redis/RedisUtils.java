@@ -29,15 +29,6 @@ public class RedisUtils {
 
     public static boolean checkConnection(SourceDTO source) {
         int db = StringUtils.isBlank(source.getSchema()) ? 0 : Integer.valueOf(source.getSchema());
-        String host = DEFAULT_HOST;
-        int port = DEFAULT_PORT;
-
-        Matcher matcher = HOST_PORT_PATTERN.matcher(source.getUrl());
-        if (matcher.find()) {
-            host = matcher.group("host");
-            String portStr = matcher.group("port");
-            port = portStr == null ? DEFAULT_PORT : Integer.parseInt(portStr);
-        }
 
         return checkConnection(source.getUrl(), Integer.valueOf(source.getHostPort()), source.getPassword(), db);
     }

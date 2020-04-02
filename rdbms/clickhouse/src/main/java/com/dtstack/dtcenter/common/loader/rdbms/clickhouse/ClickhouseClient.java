@@ -33,7 +33,7 @@ public class ClickhouseClient extends AbsRdbmsClient {
 
     @Override
     public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Boolean closeQuery = beforeQuery(source, queryDTO, false);
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
         // 获取表信息需要通过show tables 语句
         String sql = "show tables";
         Statement statement = null;
@@ -49,7 +49,7 @@ public class ClickhouseClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtCenterDefException("获取表异常", e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(closeQuery));
+            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(clearStatus));
         }
         return tableList;
     }

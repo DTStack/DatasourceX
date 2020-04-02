@@ -85,7 +85,9 @@ public class KuduClient extends AbsRdbmsClient {
         } catch (DtCenterDefException e) {
             throw new DtCenterDefException(e.getMessage(), e);
         } finally {
-            client.close();
+            if (client != null) {
+                client.close();
+            }
         }
     }
 

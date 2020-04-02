@@ -40,7 +40,7 @@ public class ImpalaClient extends AbsRdbmsClient {
 
     @Override
     public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Boolean closeQuery = beforeQuery(source, queryDTO, false);
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
         //impala db写在jdbc连接中无效，必须手动切换库
         String db = queryDTO == null || StringUtils.isBlank(source.getSchema()) ?
                 getImpalaDbFromJdbc(source.getUrl(), DataSourceType.IMPALA) : source.getSchema();
@@ -59,14 +59,14 @@ public class ImpalaClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtCenterDefException("获取表异常", e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(closeQuery));
+            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(clearStatus));
         }
         return tableList;
     }
 
     @Override
     public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Boolean closeQuery = beforeColumnQuery(source, queryDTO);
+        Integer clearStatus = beforeColumnQuery(source, queryDTO);
 
         List<ColumnMetaDTO> columnList = new ArrayList<>();
         Statement stmt = null;
@@ -87,7 +87,8 @@ public class ImpalaClient extends AbsRdbmsClient {
                 return columnList;
             }
 
-            //hive表 继续获取分区字段
+            //hive表 继续获取分区字段 先关闭之前的 rs
+            resultSet.close();
             resultSet = stmt.executeQuery("DESCRIBE formatted " + queryDTO.getTableName());
             while (resultSet.next()) {
                 String colName = resultSet.getString(DtClassConsistent.PublicConsistent.NAME).trim();
@@ -136,7 +137,7 @@ public class ImpalaClient extends AbsRdbmsClient {
 
     @Override
     public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Boolean closeQuery = beforeColumnQuery(source, queryDTO);
+        Integer clearStatus = beforeColumnQuery(source, queryDTO);
 
         Statement statement = null;
         ResultSet resultSet = null;
@@ -158,7 +159,7 @@ public class ImpalaClient extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(closeQuery));
+            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
         }
         return null;
     }

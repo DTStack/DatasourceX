@@ -5,7 +5,8 @@
 
 ## 二、使用配置
 
-> 将打包完的 pluginLibs 下需要的插件放到对应 jar 包的 root 目录，并已pluginLibs 为外目录，例如：/home/admin/app/dt-center-ide/pluginLibs/clickhouse/dtClickhouse.jar
+> 将打包完的 pluginLibs 下需要的插件放到对应 jar 包的 root 目录（ 目录可以通过AbsClientCache.setUserDir 重新定义）
+> 并以 pluginLibs 为外目录，例如：/home/admin/app/dt-center-ide/pluginLibs/clickhouse/dtClickhouse.jar
 
 ---
 

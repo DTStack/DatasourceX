@@ -10,12 +10,7 @@ public enum RedisMode {
     /**
      * 单点
      */
-    Standalone(0),
-
-    /**
-     * 主从
-     */
-    Master_Slave(1),
+    Standalone(1),
 
     /**
      * 哨兵
@@ -28,9 +23,22 @@ public enum RedisMode {
     Cluster(3)
     ;
 
-    private Integer value;
+    private int value;
 
-    RedisMode(Integer value) {
+    public int getValue() {
+        return value;
+    }
+
+    RedisMode(int value) {
         this.value = value;
+    }
+
+    public static RedisMode getRedisModel(int mode) {
+        for (RedisMode value : values()) {
+            if (mode == value.getValue()) {
+                return value;
+            }
+        }
+        return null;
     }
 }

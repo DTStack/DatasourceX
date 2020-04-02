@@ -8,10 +8,14 @@ import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Table;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -101,6 +105,38 @@ public class HbaseClient extends AbsRdbmsClient {
 
     @Override
     public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
+        Connection hConn = null;
+        Table tb = null;
+        List<ColumnMetaDTO> cfList = new ArrayList<>();
+
+
+        try {
+            hConn = HbaseConnFactory.getHbaseConn(source);
+            TableName tableName = TableName.valueOf(queryDTO.getTableName());
+            tb = hConn.getTable(tableName);
+            HTableDescriptor hTableDescriptor = tb.getTableDescriptor();
+            HColumnDescriptor[] columnDescriptors = hTableDescriptor.getColumnFamilies();
+            for(HColumnDescriptor columnDescriptor: columnDescriptors) {
+                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+                columnMetaDTO.setKey(columnDescriptor.getNameAsString());
+                cfList.add(columnMetaDTO);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("hbase list column families error", e);
+        } finally {
+            closeTable(tb);
+            closeConnection(hConn);
+        }
+        return cfList;
+    }
+
+    public static void closeTable(Table table) {
+        if(table != null) {
+            try {
+                table.close();
+            } catch (IOException e) {
+                throw new RuntimeException("hbase can not close table error", e);
+            }
+        }
     }
 }

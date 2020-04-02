@@ -32,7 +32,7 @@ public class MysqlClient extends AbsRdbmsClient {
 
     @Override
     public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Boolean closeQuery = beforeColumnQuery(source, queryDTO);
+        Integer clearStatus = beforeColumnQuery(source, queryDTO);
         Statement statement = null;
         ResultSet resultSet = null;
 
@@ -51,7 +51,7 @@ public class MysqlClient extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(closeQuery));
+            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
         }
         return null;
     }

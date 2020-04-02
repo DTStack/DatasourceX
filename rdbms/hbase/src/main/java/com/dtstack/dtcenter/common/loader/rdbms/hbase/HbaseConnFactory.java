@@ -40,11 +40,13 @@ public class HbaseConnFactory extends ConnFactory {
             log.error(e.getMessage(), e);
         } finally {
             try {
-                hConn.close();
+                if (hConn != null) {
+                    hConn.close();
+                }
             } catch (IOException e) {
-                log.error(e.getMessage(), e);
-            }
-        }
+        log.error(e.getMessage(), e);
+    }
+}
         return check;
     }
 
