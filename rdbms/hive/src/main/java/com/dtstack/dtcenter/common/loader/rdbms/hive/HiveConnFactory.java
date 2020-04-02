@@ -71,7 +71,7 @@ public class HiveConnFactory extends ConnFactory {
                         throw e;
                     }
                 } finally {
-                    DBUtil.closeDBResources(null, statement, connection);
+                    DBUtil.closeDBResources(null, statement, null);
                 }
             }
 
