@@ -49,7 +49,7 @@ public class HiveClient extends AbsRdbmsClient {
         try {
             statement = source.getConnection().createStatement();
             if (StringUtils.isNotEmpty(source.getSchema())) {
-                statement.execute("use " + source.getSchema());
+                statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, source.getSchema()));
             }
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
@@ -75,7 +75,7 @@ public class HiveClient extends AbsRdbmsClient {
         try {
             stmt = source.getConnection().createStatement();
             if (StringUtils.isNotEmpty(source.getSchema())) {
-                stmt.execute("use " + source.getSchema());
+                stmt.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, source.getSchema()));
             }
             resultSet = stmt.executeQuery("desc extended " + queryDTO.getTableName());
             while (resultSet.next()) {

@@ -144,7 +144,7 @@ public class ImpalaClient extends AbsRdbmsClient {
         try {
             statement = source.getConnection().createStatement();
             if (StringUtils.isNotEmpty(source.getSchema())) {
-                statement.execute("use " + source.getSchema());
+                statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, source.getSchema()));
             }
             resultSet = statement.executeQuery(String.format(DtClassConsistent.HadoopConfConsistent.DESCRIBE_EXTENDED
                     , queryDTO.getTableName()));
