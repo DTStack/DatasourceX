@@ -56,9 +56,9 @@ public class MD5Util {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             bytes = md5.digest(str.getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
         return HexUtil.bytes2Hex(bytes);
 
