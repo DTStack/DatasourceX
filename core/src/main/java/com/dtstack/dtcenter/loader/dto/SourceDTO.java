@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.enums.RedisMode;
 import lombok.Builder;
 import lombok.Data;
+import lombok.ToString;
 
 import java.sql.Connection;
 import java.util.Map;
@@ -16,6 +17,7 @@ import java.util.Map;
  */
 @Data
 @Builder
+@ToString
 public class SourceDTO {
 
     /**
