@@ -72,7 +72,7 @@ public class DBUtil {
         Statement statement = null;
         try {
             statement = conn.createStatement();
-            statement.executeQuery(sql);
+            statement.execute(sql);
         } catch (Exception e) {
             throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
         } finally {
