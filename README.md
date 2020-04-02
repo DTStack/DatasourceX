@@ -118,7 +118,7 @@
 <dependency>
     <groupId>com.dtstack.dtcenter</groupId>
     <artifactId>common.loader.core</artifactId>
-    <version>1.0-SPI-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
 </dependency>
 ```
 
