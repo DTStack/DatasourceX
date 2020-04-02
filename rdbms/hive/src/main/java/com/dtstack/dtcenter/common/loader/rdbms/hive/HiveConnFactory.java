@@ -59,7 +59,7 @@ public class HiveConnFactory extends ConnFactory {
             Connection connection = DriverManager.getConnection(url, source.getUsername(), source.getPassword());
             if (StringUtils.isNotEmpty(db)) {
                 try {
-                    connection.createStatement().execute("use " + db);
+                    connection.createStatement().execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, db));
                 } catch (SQLException e) {
                     if (connection != null) {
                         connection.close();
