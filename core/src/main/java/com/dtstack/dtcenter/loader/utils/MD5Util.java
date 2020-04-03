@@ -27,20 +27,10 @@ public class MD5Util {
      * @return md5加密后的字符串
      */
     public static String getMD5String(File file) {
-        FileInputStream inputStream = null;
-        try {
-            inputStream = new FileInputStream(file);
+        try (FileInputStream inputStream = new FileInputStream(file)) {
             return DigestUtils.md5Hex(inputStream);
         } catch (IOException e) {
             throw new DtLoaderException("文件获取 MD5 异常", e);
-        } finally {
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            } catch (IOException e) {
-                log.error("文件流关闭异常 {}", e.getMessage(), e);
-            }
         }
     }
 

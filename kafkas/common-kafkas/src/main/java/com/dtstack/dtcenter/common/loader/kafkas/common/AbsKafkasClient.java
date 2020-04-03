@@ -1,7 +1,10 @@
 package com.dtstack.dtcenter.common.loader.kafkas.common;
 
 import com.dtstack.dtcenter.loader.client.IClient;
-import com.dtstack.dtcenter.loader.dto.*;
+import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
+import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
+import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.commons.lang3.StringUtils;
 

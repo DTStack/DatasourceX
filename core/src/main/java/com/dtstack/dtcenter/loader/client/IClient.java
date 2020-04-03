@@ -1,6 +1,10 @@
 package com.dtstack.dtcenter.loader.client;
 
-import com.dtstack.dtcenter.loader.dto.*;
+import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
+import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
+import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
+import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 
 import java.sql.Connection;
 import java.util.List;

@@ -1,7 +1,6 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
-import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;

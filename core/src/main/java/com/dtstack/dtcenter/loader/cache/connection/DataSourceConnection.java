@@ -8,7 +8,6 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @company: www.dtstack.com
@@ -133,12 +132,12 @@ public class DataSourceConnection {
     public void close(Integer sourceType) {
         log.info("close connection SessionKey = {}", this.getSessionKey());
 
-        for (DataSourceCacheNode node : sourceNodes) {
-            if (!node.getSourceType().equals(sourceType)) {
+        for (int i = 0; i < sourceNodes.size(); i++) {
+            if (!sourceNodes.get(i).getSourceType().equals(sourceType)) {
                 continue;
             }
-            node.close();
-            sourceNodes.remove(node);
+            sourceNodes.get(i).close();
+            sourceNodes.remove(sourceNodes.get(i));
             break;
         }
     }
