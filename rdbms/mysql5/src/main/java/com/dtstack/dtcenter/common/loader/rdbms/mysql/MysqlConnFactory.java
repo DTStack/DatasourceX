@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.rdbms.mysql;
 
-import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
 import com.dtstack.dtcenter.common.enums.DataBaseType;
+import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
 
 /**
  * @company: www.dtstack.com

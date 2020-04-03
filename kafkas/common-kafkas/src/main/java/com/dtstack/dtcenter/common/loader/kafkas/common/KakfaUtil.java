@@ -23,7 +23,11 @@ import scala.collection.JavaConversions;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
@@ -101,20 +105,15 @@ public class KakfaUtil {
      */
     public static List<String> getTopicListFromBroker(String brokerUrls, Map<String, Object> kerberosConfig) {
         Properties defaultKafkaConfig = initProperties(brokerUrls, kerberosConfig);
-        KafkaConsumer<String, String> consumer = null;
         List<String> results = Lists.newArrayList();
-        try {
-            consumer = new KafkaConsumer<>(defaultKafkaConfig);
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(defaultKafkaConfig)) {
+            ;
             Map<String, List<PartitionInfo>> topics = consumer.listTopics();
             if (topics != null) {
                 results.addAll(topics.keySet());
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-        } finally {
-            if (consumer != null) {
-                consumer.close();
-            }
         }
         return results;
     }
@@ -242,9 +241,7 @@ public class KakfaUtil {
     public static List<KafkaOffsetDTO> getPartitionOffset(String brokerUrls,
                                                           Map<String, Object> kerberosConfig, String topic) {
         Properties defaultKafkaConfig = initProperties(brokerUrls, kerberosConfig);
-        KafkaConsumer<String, String> consumer = null;
-        try {
-            consumer = new KafkaConsumer<>(defaultKafkaConfig);
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(defaultKafkaConfig)) {
             List<TopicPartition> partitions = new ArrayList<>();
             List<PartitionInfo> allPartitionInfo = consumer.partitionsFor(topic);
             for (PartitionInfo partitionInfo : allPartitionInfo) {
@@ -275,10 +272,6 @@ public class KakfaUtil {
             return kafkaOffsetDTOMap.values().stream().collect(Collectors.toList());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
-        } finally {
-            if (consumer != null) {
-                consumer.close();
-            }
         }
     }
 
@@ -293,17 +286,11 @@ public class KakfaUtil {
         boolean check = false;
         Properties props = initProperties(brokerUrls, kerberosConfig);
         /* 定义consumer */
-        KafkaConsumer<String, String> consumer = null;
-        try {
-            consumer = new KafkaConsumer<>(props);
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props)) {
             consumer.listTopics();
             check = true;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-        } finally {
-            if (consumer != null) {
-                consumer.close();
-            }
         }
         return check;
     }

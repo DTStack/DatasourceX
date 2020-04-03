@@ -1,7 +1,11 @@
 package com.dtstack.dtcenter.common.loader.nosql.common;
 
 import com.dtstack.dtcenter.loader.client.IClient;
-import com.dtstack.dtcenter.loader.dto.*;
+import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
+import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
+import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
+import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 
 import java.sql.Connection;

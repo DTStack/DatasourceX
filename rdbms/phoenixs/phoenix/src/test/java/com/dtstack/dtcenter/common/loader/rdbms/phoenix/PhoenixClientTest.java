@@ -3,7 +3,6 @@ package com.dtstack.dtcenter.common.loader.rdbms.phoenix;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
-import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import org.junit.Test;
 
 /**
