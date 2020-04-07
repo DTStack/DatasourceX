@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Slf4j
 public abstract class AbsClientCache {
-    protected static String userDir = System.getProperty("user.dir");
+    protected static String userDir = String.format("%s/pluginLibs/", System.getProperty("user.dir"));
 
     /**
      * 是否校验插件改变
