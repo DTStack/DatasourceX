@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.rdbms.hive1;
 import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
@@ -10,8 +11,11 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -19,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
@@ -28,6 +33,8 @@ import java.util.stream.Collectors;
  * @Description：Hive 连接
  */
 public class HiveClient extends AbsRdbmsClient {
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    
     @Override
     protected ConnFactory getConnFactory() {
         return new HiveConnFactory();
@@ -168,5 +175,50 @@ public class HiveClient extends AbsRdbmsClient {
             DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
         }
         return null;
+    }
+
+    @Override
+    public Boolean testCon(SourceDTO source) {
+        // 先校验数据源连接性
+        Boolean testCon = super.testCon(source);
+        if (!testCon) {
+            return Boolean.FALSE;
+        }
+
+        // 校验高可用配置
+        Properties properties = combineHdfsConfig(source.getConfig(), source.getKerberosConfig());
+        if (properties.size() > 0) {
+            Configuration conf = new HdfsOperator.HadoopConf().setConf(source.getDefaultFS(), properties);
+            //不在做重复认证
+            conf.set("hadoop.security.authorization", "false");
+            //必须添加
+            conf.set("dfs.namenode.kerberos.principal.pattern", "*");
+            return HdfsOperator.checkConnection(conf);
+        }
+        return false;
+    }
+
+    /**
+     * 高可用配置
+     *
+     * @param hadoopConfig
+     * @param confMap
+     * @return
+     */
+    private Properties combineHdfsConfig(String hadoopConfig, Map<String, Object> confMap) {
+        Properties properties = new Properties();
+        if (StringUtils.isNotBlank(hadoopConfig)) {
+            try {
+                properties = objectMapper.readValue(hadoopConfig, Properties.class);
+            } catch (IOException e) {
+                throw new DtCenterDefException("高可用配置格式错误", e);
+            }
+        }
+        if (confMap != null) {
+            for (String key : confMap.keySet()) {
+                properties.setProperty(key, confMap.get(key).toString());
+            }
+        }
+        return properties;
     }
 }

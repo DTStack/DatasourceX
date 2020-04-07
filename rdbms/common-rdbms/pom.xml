@@ -23,5 +23,11 @@
             <groupId>com.dtstack.dtcenter</groupId>
             <artifactId>common.loader.core</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>
