@@ -39,45 +39,18 @@ public class HiveConnFactory extends ConnFactory {
         if (MapUtils.isNotEmpty(source.getKerberosConfig())) {
             String principalFile = (String) source.getKerberosConfig().get("principalFile");
             log.info("getHiveConnection principalFile:{}", principalFile);
-
             conf = DtKerberosUtils.loginKerberos(source.getKerberosConfig());
         }
 
         Matcher matcher = DtClassConsistent.PatternConsistent.HIVE_JDBC_PATTERN.matcher(source.getUrl());
         String db = null;
-        String host = null;
-        String port = null;
-        String param = null;
-        if (matcher.find()) {
-            host = matcher.group(DtClassConsistent.PublicConsistent.HOST_KEY);
-            port = matcher.group(DtClassConsistent.PublicConsistent.PORT_KEY);
+        if (!matcher.find()) {
             db = matcher.group(DtClassConsistent.PublicConsistent.DB_KEY);
-            param = matcher.group(DtClassConsistent.PublicConsistent.PARAM_KEY);
         }
-
-        if (StringUtils.isNotEmpty(host)) {
-            param = param == null ? "" : param;
-            String url = String.format("jdbc:hive2://%s:%s/%s", host, port, param);
-            Connection connection = DriverManager.getConnection(url, source.getUsername(), source.getPassword());
-            if (StringUtils.isNotEmpty(db)) {
-                Statement statement = null;
-                try {
-                    statement = connection.createStatement();
-                    statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, db));
-                } catch (SQLException e) {
-                    if (e.getMessage().contains("NoSuchDatabaseException")) {
-                        throw new DtCenterDefException(e.getMessage(), DBErrorCode.DB_NOT_EXISTS);
-                    } else {
-                        throw e;
-                    }
-                } finally {
-                    DBUtil.closeDBResources(null, statement, null);
-                }
-            }
-
-            return connection;
+        Connection connection = DriverManager.getConnection(source.getUrl(), source.getUsername(), source.getPassword());
+        if (StringUtils.isNotEmpty(db)) {
+            DBUtil.executeSqlWithoutResultSet(connection, String.format(DtClassConsistent.PublicConsistent.USE_DB, db), false);
         }
-
-        throw new DtCenterDefException("jdbcUrl 不规范");
+        return connection;
     }
 }

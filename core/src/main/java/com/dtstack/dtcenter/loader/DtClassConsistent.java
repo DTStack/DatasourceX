@@ -66,8 +66,7 @@ public interface DtClassConsistent {
         /**
          * HIVE_JDBC_URL 正则解析
          */
-        public static final Pattern HIVE_JDBC_PATTERN = Pattern.compile("(?i)jdbc:hive2://(?<host>[0-9a-zA-Z\\-\\.]+)" +
-                ":(?<port>\\d+)(/(?<db>[0-9a-z_%]+)*(?<param>[\\?;#].*)*)*");
+        public static final Pattern HIVE_JDBC_PATTERN = Pattern.compile("(?i)jdbc:hive2://(?<url>[0-9a-zA-Z,\\:\\-\\.]+)(/(?<db>[0-9a-z_%]+)*(?<param>[\\?;#].*)*)*");
 
         public static final Pattern IMPALA_JDBC_PATTERN = Pattern.compile("(?i)jdbc:impala://[0-9a-zA-Z\\-\\.]+:[\\d]+/" +
                 "(?<db>[0-9a-zA-Z\\-]+);.*");
