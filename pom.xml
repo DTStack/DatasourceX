@@ -11,7 +11,7 @@
         <module>core</module>
         <module>rdbms</module>
         <module>nosql</module>
-        <module>kafkas</module>
+        <module>mq</module>
         <module>ftps</module>
     </modules>
     <packaging>pom</packaging>
