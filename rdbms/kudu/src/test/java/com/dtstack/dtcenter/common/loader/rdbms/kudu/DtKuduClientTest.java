@@ -4,18 +4,21 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import org.apache.kudu.client.KuduClient;
 import org.junit.Test;
 
 import java.util.List;
 
+import static org.junit.Assert.*;
+
 /**
- * @company: www.dtstack.com
- * @Author ：Nanqi
- * @Date ：Created in 22:16 2020/2/27
- * @Description：Kudu 客户端测试
+ * Date: 2020/4/8
+ * Company: www.dtstack.com
+ *
+ * @author xiaochen
  */
-public class KuduClientTest {
-    private static AbsRdbmsClient rdbsClient = new KuduClient();
+public class DtKuduClientTest {
+    private static AbsRdbmsClient rdbsClient = new DtKuduClient();
 
     @Test
     public void getConnFactory() throws Exception {
@@ -49,6 +52,16 @@ public class KuduClientTest {
 
     }
 
+    @Test
+    public void getPreview() {
+
+        SourceDTO source = SourceDTO.builder()
+                .url("172.16.100.213:7051,172.16.101.252:7051")
+                .build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("impala::kududb.kudu_1").build();
+        List list = rdbsClient.getPreview(source, queryDTO);
+        System.out.println(list);
 
 
+    }
 }

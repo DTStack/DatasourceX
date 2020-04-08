@@ -57,4 +57,9 @@ public abstract class AbsMQClient<T> implements IClient<T> {
     public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
+
+    @Override
+    public List<List<Object>> getPreview(SourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
 }

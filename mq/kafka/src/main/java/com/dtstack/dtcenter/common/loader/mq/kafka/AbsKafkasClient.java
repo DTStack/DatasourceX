@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.mq.kafka;
 import com.dtstack.dtcenter.common.loader.kafkas.common.AbsMQClient;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -53,5 +54,10 @@ public abstract class AbsKafkasClient<T> extends AbsMQClient<T> {
             source.setBrokerUrls(KakfaUtil.getAllBrokersAddressFromZk(source.getUrl()));
         }
         return KakfaUtil.getPartitionOffset(source.getBrokerUrls(), source.getKerberosConfig(), topic);
+    }
+
+    @Override
+    public List<List<Object>> getPreview(SourceDTO source, SqlQueryDTO queryDTO) {
+        return super.getPreview(source, queryDTO);
     }
 }

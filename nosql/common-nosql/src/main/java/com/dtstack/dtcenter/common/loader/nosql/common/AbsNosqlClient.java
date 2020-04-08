@@ -82,4 +82,9 @@ public abstract class AbsNosqlClient<T> implements IClient<T> {
     public List<KafkaOffsetDTO> getOffset(SourceDTO source, String topic) throws Exception {
         throw new DtLoaderException("Not Support");
     }
+
+    @Override
+    public List<List<Object>> getPreview(SourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
 }

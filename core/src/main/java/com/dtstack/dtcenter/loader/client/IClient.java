@@ -147,4 +147,12 @@ public interface IClient<T> {
      * @throws Exception
      */
     List<KafkaOffsetDTO> getOffset(SourceDTO source, String topic) throws Exception;
+
+    /**
+     * 获取预览数据
+     * @param source
+     * @param queryDTO
+     * @return
+     */
+    List<List<Object>> getPreview(SourceDTO source, SqlQueryDTO queryDTO);
 }
