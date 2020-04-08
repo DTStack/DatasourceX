@@ -19,12 +19,11 @@ public class EMQUtils {
 
 
     public static Boolean checkConnection(String address, String userName, String password) {
-        MqttClient sampleClient = null;
 
-        try {
-            String clientId = "DTSTACK_"+System.currentTimeMillis();
-            MemoryPersistence persistence = new MemoryPersistence();
-            sampleClient = new MqttClient(address, clientId, persistence);
+        String clientId = "DTSTACK_" + System.currentTimeMillis();
+        try (MemoryPersistence persistence = new MemoryPersistence();
+             MqttClient sampleClient = new MqttClient(address, clientId, persistence);
+        ) {
             MqttConnectOptions connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(true);
             if (StringUtils.isNotBlank(userName)) {
@@ -37,28 +36,13 @@ public class EMQUtils {
             return true;
         } catch (MqttException e) {
             logger.error("connect to emq error", e);
-        }finally {
-            close(sampleClient);
         }
         return false;
     }
 
 
-    public static void close(MqttClient sampleClient) {
-        if (sampleClient != null) {
-            try {
-                if (sampleClient.isConnected()) {
-                    sampleClient.disconnect();
-                }
-                sampleClient.close(true);
-            } catch (MqttException e) {
-                //ignore
-            }
-        }
-    }
-
-    public static void main(String[] args) {
-        System.out.println(checkConnection("tcp://172.16.8.197:1883", null, null));
-
-    }
+//    public static void main(String[] args) {
+//        System.out.println(checkConnection("tcp://172.16.8.197:1883", null, null));
+//
+//    }
 }
