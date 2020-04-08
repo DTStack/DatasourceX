@@ -3,27 +3,29 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>common.loader.rdbms</artifactId>
+        <artifactId>common.loader.mq</artifactId>
         <groupId>com.dtstack.dtcenter</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>common.loader.rdbms.maxcompute</artifactId>
+    <artifactId>common.loader.mq.emq</artifactId>
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <jar.package.name>maxcompute</jar.package.name>
-        <jar.name>dtMaxcompute</jar.name>
+        <jar.package.name>emq</jar.package.name>
+        <jar.name>dtEmq</jar.name>
     </properties>
+
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>com.dtstack.dtcenter</groupId>
+            <artifactId>common.loader.mq.common</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>
@@ -32,22 +34,17 @@
         </dependency>
 
         <dependency>
-            <groupId>com.dtstack.dtcenter</groupId>
-            <artifactId>common.loader.rdbms.common</artifactId>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>top-auto-sdk</artifactId>
-            <version>20160607</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.aliyun.odps</groupId>
-            <artifactId>odps-sdk-core</artifactId>
-            <version>0.28.4-public</version>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+            <version>1.2.2</version>
         </dependency>
     </dependencies>
+
 
     <build>
         <plugins>
@@ -101,7 +98,7 @@
                         <configuration>
                             <tasks>
                                 <move file="${basedir}/target/${project.name}-${project.version}.jar"
-                                      tofile="${basedir}/target/${jar.name}.jar" />
+                                      tofile="${basedir}/target/${jar.name}.jar"/>
                                 <copy todir="${basedir}/target/../../../core/pluginLibs/${jar.package.name}/"
                                       file="${basedir}/target/${jar.name}.jar"/>
                                 <delete>
@@ -116,4 +113,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

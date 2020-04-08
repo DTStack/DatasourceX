@@ -8,6 +8,7 @@ import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
@@ -114,5 +115,15 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public List<KafkaOffsetDTO> getOffset(SourceDTO source, String topic) throws Exception {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getOffset(source, topic),
                 targetClient.getClass().getClassLoader(), true);
+    }
+
+    @Override
+    public List<List<Object>> getPreview(SourceDTO source, SqlQueryDTO queryDTO)  {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPreview(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
     }
 }
