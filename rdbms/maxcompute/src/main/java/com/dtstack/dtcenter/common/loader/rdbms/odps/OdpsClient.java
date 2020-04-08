@@ -7,6 +7,7 @@ import com.aliyun.odps.Table;
 import com.aliyun.odps.Tables;
 import com.aliyun.odps.account.Account;
 import com.aliyun.odps.account.AliyunAccount;
+import com.aliyun.odps.data.DefaultRecordReader;
 import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
@@ -14,6 +15,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -145,5 +147,27 @@ public class OdpsClient extends AbsRdbmsClient {
                 });
 
         return columnList;
+    }
+
+    @Override
+    public List<List<Object>> getPreview(SourceDTO source, SqlQueryDTO queryDTO) {
+        if (StringUtils.isBlank(queryDTO.getTableName())) {
+            return null;
+        }
+        List<List<Object>> dataList = new ArrayList<>();
+        try {
+            Odps odps = initOdps(JSON.parseObject(source.getConfig()));
+            Table t = odps.tables().get(queryDTO.getTableName());
+            DefaultRecordReader recordReader = (DefaultRecordReader) t.read(3);
+            for (int i = 0; i < 3; i++) {
+                List<String> result = recordReader.readRaw();
+                if (CollectionUtils.isNotEmpty(result)) {
+                    dataList.add(new ArrayList<>(result));
+                }
+            }
+            return dataList;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 }

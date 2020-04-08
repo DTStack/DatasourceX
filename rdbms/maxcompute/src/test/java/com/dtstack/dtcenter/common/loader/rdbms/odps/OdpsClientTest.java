@@ -51,4 +51,12 @@ public class OdpsClientTest {
 
         System.out.println(tableList);
     }
+
+    @Test
+    public void getPreview() {
+
+        List tableList = client.getPreview(sourceDTO, SqlQueryDTO.builder().tableName("act_hi_actinst").build());
+
+        System.out.println(tableList);
+    }
 }
