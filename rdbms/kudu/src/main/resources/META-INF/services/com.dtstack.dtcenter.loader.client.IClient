@@ -1,1 +1,1 @@
-com.dtstack.dtcenter.common.loader.rdbms.kudu.KuduClient
+com.dtstack.dtcenter.common.loader.rdbms.kudu.DtKuduClient

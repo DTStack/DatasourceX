@@ -33,6 +33,7 @@ public class EMQUtils {
                 connOpts.setPassword(password.toCharArray());
             }
             sampleClient.connect(connOpts);
+            sampleClient.disconnect();
             return true;
         } catch (MqttException e) {
             logger.error("connect to emq error", e);

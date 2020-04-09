@@ -22,7 +22,7 @@ public class KuduTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     SourceDTO source = SourceDTO.builder()
-            .url("172.16.100.159")
+            .url("172.16.100.213:7051,172.16.101.252:7051")
             .build();
 
     @Test
