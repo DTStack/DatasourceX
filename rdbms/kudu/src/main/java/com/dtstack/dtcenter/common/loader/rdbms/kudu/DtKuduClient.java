@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.rdbms.kudu;
 
 import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -10,6 +11,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kudu.ColumnSchema;
 import org.apache.kudu.Schema;
@@ -116,6 +118,10 @@ public class DtKuduClient extends AbsRdbmsClient {
     private static KuduClient getConnection(SourceDTO source) {
         if (source == null || StringUtils.isBlank(source.getUrl())) {
             throw new DtCenterDefException("集群地址不能为空");
+        }
+
+        if (MapUtils.isNotEmpty(source.getKerberosConfig())) {
+            DtKerberosUtils.loginKerberos(source.getKerberosConfig());
         }
 
         List<String> hosts = Arrays.stream(source.getUrl().split(",")).collect(Collectors.toList());
