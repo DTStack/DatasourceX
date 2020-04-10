@@ -95,7 +95,7 @@ public class OracleClient extends AbsRdbmsClient {
         } finally {
             DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
         }
-        return null;
+        return "";
     }
 
     @Override

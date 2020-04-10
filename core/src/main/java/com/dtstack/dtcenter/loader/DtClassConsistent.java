@@ -68,8 +68,9 @@ public interface DtClassConsistent {
          */
         public static final Pattern HIVE_JDBC_PATTERN = Pattern.compile("(?i)jdbc:hive2://(?<url>[0-9a-zA-Z,\\:\\-\\.]+)(/(?<db>[0-9a-z_%]+)*(?<param>[\\?;#].*)*)*");
 
-        public static final Pattern IMPALA_JDBC_PATTERN = Pattern.compile("(?i)jdbc:impala://[0-9a-zA-Z\\-\\.]+:[\\d]+/" +
-                "(?<db>[0-9a-zA-Z\\-]+);.*");
+        public static final Pattern IMPALA_JDBC_PATTERN = Pattern.compile("(?i)jdbc:impala://[0-9a-zA-Z\\-\\.]+:[\\d]+/(?<db>[0-9a-zA-Z\\-]+);.*");
+
+        public static final Pattern GREENPLUM_JDBC_PATTERN = Pattern.compile("(?i)jdbc:pivotal:greenplum://[0-9a-zA-Z\\-\\.]+:[\\d]+;DatabaseName=(?<db>[0-9a-zA-Z\\-]+);.*");
     }
 
     class HadoopConfConsistent {

@@ -174,7 +174,7 @@ public class HiveClient extends AbsRdbmsClient {
         } finally {
             DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
         }
-        return null;
+        return "";
     }
 
     @Override

@@ -43,7 +43,7 @@ public class ImpalaClient extends AbsRdbmsClient {
         Integer clearStatus = beforeQuery(source, queryDTO, false);
         //impala db写在jdbc连接中无效，必须手动切换库
         String db = queryDTO == null || StringUtils.isBlank(source.getSchema()) ?
-                getImpalaDbFromJdbc(source.getUrl(), DataSourceType.IMPALA) : source.getSchema();
+                getImpalaDbFromJdbc(source.getUrl()) : source.getSchema();
         // 获取表信息需要通过show tables 语句
         String sql = "show tables";
         Statement statement = null;
@@ -161,7 +161,7 @@ public class ImpalaClient extends AbsRdbmsClient {
         } finally {
             DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
         }
-        return null;
+        return "";
     }
 
     private static ColumnMetaDTO dealResult(ResultSet resultSet, Object part) throws SQLException {
@@ -173,10 +173,7 @@ public class ImpalaClient extends AbsRdbmsClient {
         return metaDTO;
     }
 
-    private static String getImpalaDbFromJdbc(String jdbcUrl, DataSourceType sourceType) {
-        if (!DataSourceType.IMPALA.equals(sourceType)) {
-            return null;
-        }
+    private static String getImpalaDbFromJdbc(String jdbcUrl) {
         if (StringUtils.isEmpty(jdbcUrl)) {
             return null;
         }

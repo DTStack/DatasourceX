@@ -76,6 +76,6 @@ public class Db2Client extends AbsRdbmsClient {
         } finally {
             DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
         }
-        return null;
+        return "";
     }
 }
