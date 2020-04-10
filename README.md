@@ -20,6 +20,7 @@
 * SQLServer2012、2017
 * PostgreSQL
 * Libra
+* Greenplum 6.X
 * MaxComputer
 * DB2
 * HDFS
