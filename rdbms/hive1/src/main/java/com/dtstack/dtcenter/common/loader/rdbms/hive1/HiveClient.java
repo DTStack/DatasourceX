@@ -195,7 +195,7 @@ public class HiveClient extends AbsRdbmsClient {
             conf.set("dfs.namenode.kerberos.principal.pattern", "*");
             return HdfsOperator.checkConnection(conf);
         }
-        return false;
+        return Boolean.TRUE;
     }
 
     /**
