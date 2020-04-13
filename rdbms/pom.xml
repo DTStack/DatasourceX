@@ -27,12 +27,13 @@
         <module>es</module>
         <module>kudu</module>
         <module>libra</module>
+        <module>greenplum6</module>
     </modules>
 
     <parent>
         <artifactId>common-loader</artifactId>
         <groupId>com.dtstack.dtcenter</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>common.loader.rdbms</artifactId>
