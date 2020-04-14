@@ -20,9 +20,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -75,7 +75,7 @@ public class HiveClient extends AbsRdbmsClient {
     public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         Integer clearStatus = beforeColumnQuery(source, queryDTO);
 
-        Map<String, ColumnMetaDTO> columnMap = new HashMap<>();
+        List<ColumnMetaDTO> columnMetaDTOS = new ArrayList<>();
         Statement stmt = null;
         ResultSet resultSet = null;
 
@@ -101,7 +101,7 @@ public class HiveClient extends AbsRdbmsClient {
                 if (colName.startsWith("#") || "Detailed Table Information".equals(colName)) {
                     break;
                 }
-                columnMap.put(colName, metaDTO);
+                columnMetaDTOS.add(metaDTO);
             }
 
             boolean partBegin = false;
@@ -122,8 +122,9 @@ public class HiveClient extends AbsRdbmsClient {
 
                 // 处理分区标志
                 if (partBegin && !colName.contains("Partition Type")) {
-                    if (columnMap.containsKey(colName.trim())) {
-                        columnMap.get(colName).setPart(true);
+                    Optional<ColumnMetaDTO> metaDTO = columnMetaDTOS.stream().filter(meta -> colName.trim().equals(meta.getKey())).findFirst();
+                    if (metaDTO.isPresent()) {
+                        metaDTO.get().setPart(true);
                     }
                 } else if (colName.contains("Partition Type")) {
                     //分区字段结束
@@ -131,7 +132,7 @@ public class HiveClient extends AbsRdbmsClient {
                 }
             }
 
-            return columnMap.values().stream().filter(column -> !queryDTO.getFilterPartitionColumns() || !column.getPart()).collect(Collectors.toList());
+            return columnMetaDTOS.stream().filter(column -> !queryDTO.getFilterPartitionColumns() || !column.getPart()).collect(Collectors.toList());
         } catch (SQLException e) {
             throw new DtCenterDefException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
                     queryDTO.getTableName()),
