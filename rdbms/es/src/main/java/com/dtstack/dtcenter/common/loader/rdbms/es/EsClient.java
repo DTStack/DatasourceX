@@ -7,6 +7,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.utils.CollectionUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
@@ -48,12 +49,7 @@ public class EsClient extends AbsRdbmsClient {
         if (source == null || StringUtils.isBlank(source.getUrl())) {
             return false;
         }
-
-        if (StringUtils.isNotBlank(source.getUsername())) {
-            return checkConnectionWithPwd(source.getUrl(), source.getUsername(), source.getPassword());
-        }
-
-        return checkConnection(source.getUrl());
+        return checkConnection(source.getUrl(), source.getUsername(), source.getPassword());
     }
 
     /**
@@ -87,21 +83,14 @@ public class EsClient extends AbsRdbmsClient {
      * @param address
      * @return
      */
-    private static boolean checkConnection(String address) {
-        RestHighLevelClient client = getClient(address);
-        return checkConnect(client);
-    }
+    private static boolean checkConnection(String address, String username, String password) {
+        RestHighLevelClient client;
+        if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
+            client = getClient(address, username, password);
+        } else {
+            client = getClient(address);
+        }
 
-    /**
-     * 根据用户名密码确认连接性
-     *
-     * @param address
-     * @param username
-     * @param password
-     * @return
-     */
-    private static boolean checkConnectionWithPwd(String address, String username, String password) {
-        RestHighLevelClient client = getClient(address, username, password);
         return checkConnect(client);
     }
 
@@ -120,12 +109,7 @@ public class EsClient extends AbsRdbmsClient {
         List<HttpHost> httpHosts = dealHost(address);
         RestHighLevelClient client =
                 new RestHighLevelClient(RestClient.builder(httpHosts.toArray(new HttpHost[httpHosts.size()]))
-                        .setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
-                            @Override
-                            public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
-                                return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-                            }
-                        }));
+                        .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)));
         return client;
     }
 
