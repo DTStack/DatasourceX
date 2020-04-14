@@ -104,6 +104,8 @@ public class HiveClient extends AbsRdbmsClient {
                 columnMetaDTOS.add(metaDTO);
             }
 
+            DBUtil.closeDBResources(resultSet, null, null);
+            resultSet = stmt.executeQuery("desc extended " + queryDTO.getTableName());
             boolean partBegin = false;
             while (resultSet.next()) {
                 String colName = resultSet.getString(DtClassConsistent.PublicConsistent.COL_NAME).trim();
