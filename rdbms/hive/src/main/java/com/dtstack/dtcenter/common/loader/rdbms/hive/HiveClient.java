@@ -140,13 +140,12 @@ public class HiveClient extends AbsRdbmsClient {
                 columnMetaDTOS.add(metaDTO);
             }
 
-//            boolean partBegin = false;
+            boolean partBegin = false;
             while (resultSet.next()) {
                 String colName = resultSet.getString(DtClassConsistent.PublicConsistent.COL_NAME).trim();
 
                 if (colName.contains("# Partition Information")) {
-//                    partBegin = true;
-                    continue;
+                    partBegin = true;
                 }
 
                 if (colName.startsWith("#")) {
@@ -157,21 +156,16 @@ public class HiveClient extends AbsRdbmsClient {
                     break;
                 }
 
-                Optional<ColumnMetaDTO> metaDTO = columnMetaDTOS.stream().filter(meta -> colName.trim().equals(meta.getKey())).findFirst();
-                if (metaDTO.isPresent()) {
-                    metaDTO.get().setPart(true);
-                }
-
                 // 处理分区标志
-//                if (partBegin && !colName.contains("Partition Type")) {
-//                    Optional<ColumnMetaDTO> metaDTO = columnMetaDTOS.stream().filter(meta -> colName.trim().equals(meta.getKey())).findFirst();
-//                    if (metaDTO.isPresent()) {
-//                        metaDTO.get().setPart(true);
-//                    }
-//                } else if (colName.contains("Partition Type")) {
-//                    //分区字段结束
-//                    partBegin = false;
-//                }
+                if (partBegin && !colName.contains("Partition Type")) {
+                    Optional<ColumnMetaDTO> metaDTO = columnMetaDTOS.stream().filter(meta -> colName.trim().equals(meta.getKey())).findFirst();
+                    if (metaDTO.isPresent()) {
+                        metaDTO.get().setPart(true);
+                    }
+                } else if (colName.contains("Partition Type")) {
+                    //分区字段结束
+                    partBegin = false;
+                }
             }
 
             return columnMetaDTOS.stream().filter(column -> !queryDTO.getFilterPartitionColumns() || !column.getPart()).collect(Collectors.toList());
