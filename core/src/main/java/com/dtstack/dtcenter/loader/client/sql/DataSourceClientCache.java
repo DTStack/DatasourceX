@@ -137,7 +137,7 @@ public class DataSourceClientCache extends AbsClientCache {
      */
     @NotNull
     private static File getFileByPluginName(String pluginName) throws Exception {
-        String plugin = String.format("%s/%s", userDir, pluginName);
+        String plugin = String.format("%s/%s", userDir, pluginName).replaceAll("//*", "/");
         File finput = new File(plugin);
         if (!finput.exists()) {
             throw new Exception(String.format("%s directory not found", plugin));
