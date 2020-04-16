@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.nosql.redis;
 
+import com.dtstack.dtcenter.common.util.AddressUtil;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.enums.RedisMode;
 import com.google.common.base.Preconditions;
@@ -98,6 +99,14 @@ public class RedisUtils {
         Set<HostAndPort> nodes = getHostAndPorts(hostPorts);
 
         Preconditions.checkArgument(CollectionUtils.isNotEmpty(nodes), "没有有效ip和端口");
+
+        // redis集群模式不带密码，创建客户端不会主动去连接集群，所以需要用telnet检测
+        for (HostAndPort node : nodes) {
+            if (!AddressUtil.telnet(node.getHost(), node.getPort())) {
+                return false;
+            }
+        }
+
         try {
             if (StringUtils.isNotBlank(password)) {
                 cluster = new JedisCluster(nodes, 1000, 1000, 100, password, poolConfig);
