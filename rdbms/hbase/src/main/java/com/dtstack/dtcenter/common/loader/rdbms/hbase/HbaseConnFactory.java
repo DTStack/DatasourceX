@@ -1,5 +1,7 @@
 package com.dtstack.dtcenter.common.loader.rdbms.hbase;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
@@ -54,9 +56,10 @@ public class HbaseConnFactory extends ConnFactory {
         if (MapUtils.isNotEmpty(source.getKerberosConfig())) {
             DtKerberosUtils.loginKerberos(source.getKerberosConfig());
         }
+        Map<String, Object> sourceToMap = sourceToMap(source);
+
 
         Configuration hConfig = HBaseConfiguration.create();
-        Map<String, Object> sourceToMap = sourceToMap(source);
         for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {
             hConfig.set(entry.getKey(), (String) entry.getValue());
         }
@@ -77,17 +80,25 @@ public class HbaseConnFactory extends ConnFactory {
      * @return
      */
     private static Map<String, Object> sourceToMap(SourceDTO source) {
-        if (StringUtils.isBlank(source.getUrl())) {
-            throw new DtCenterDefException("集群地址不能为空");
-        }
-
         Map<String, Object> hbaseMap = new HashMap<>();
-        // 设置集群地址
-        hbaseMap.put(DtClassConsistent.HBaseConsistent.KEY_HBASE_ZOOKEEPER_QUORUM, source.getUrl());
+        //对于直接传config的 走直接生成的逻辑
 
-        // 设置根路径
-        if (StringUtils.isNotBlank(source.getPath())) {
-            hbaseMap.put(DtClassConsistent.HBaseConsistent.KEY_ZOOKEEPER_ZNODE_PARENT, source.getPath());
+        if (StringUtils.isNotBlank(source.getConfig())) {
+            JSONObject jsonObject = JSON.parseObject(source.getConfig());
+            hbaseMap.putAll(jsonObject);
+        } else {
+
+            if (StringUtils.isBlank(source.getUrl())) {
+                throw new DtCenterDefException("集群地址不能为空");
+            }
+            // 设置集群地址
+            hbaseMap.put(DtClassConsistent.HBaseConsistent.KEY_HBASE_ZOOKEEPER_QUORUM, source.getUrl());
+
+            // 设置根路径
+            if (StringUtils.isNotBlank(source.getPath())) {
+                hbaseMap.put(DtClassConsistent.HBaseConsistent.KEY_ZOOKEEPER_ZNODE_PARENT, source.getPath());
+            }
+
         }
 
         // 设置其他信息

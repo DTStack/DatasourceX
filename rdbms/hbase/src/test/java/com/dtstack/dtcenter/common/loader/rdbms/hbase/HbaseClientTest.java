@@ -16,12 +16,16 @@ import java.util.List;
  */
 public class HbaseClientTest {
     private static AbsRdbmsClient rdbsClient = new HbaseClient();
+    private String conf = "{\"hbase.zookeeper.quorum\":\"172.16.10.104:2181,172.16.10.224:2181,172.16.10.252:2181\",\"zookeeper.znode.parent\":\"/hbase\"}";
+    private SourceDTO source = SourceDTO.builder().kerberosConfig(null)
+            .config(conf).build();
+
+    private SourceDTO source2 = SourceDTO.builder().kerberosConfig(null).url("172.16.10.104:2181,172.16.10.224:2181,172.16.10.252:2181")
+            .path("/hbase").build();
+
 
     @Test
     public void getConnFactory() throws Exception {
-        SourceDTO source = SourceDTO.builder()
-                .url("172.16.100.105:2181")
-                .build();
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {
             throw new DtCenterDefException("数据源连接异常");
@@ -31,22 +35,15 @@ public class HbaseClientTest {
 
     @Test
     public void getTableList() throws Exception {
-        SourceDTO source = SourceDTO.builder()
-                .url("172.16.100.105:2181")
-                .build();
         List tableList = rdbsClient.getTableList(source, null);
         System.out.println(tableList);
-
     }
+
 
     @Test
     public void getColumnMetaData() throws Exception {
-        SourceDTO source = SourceDTO.builder()
-                .url("172.16.100.105:2181")
-                .build();
-        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("KYLIN_JDE128H9FD").build();
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("table2").build();
         List columnMetaData = rdbsClient.getColumnMetaData(source, sqlQueryDTO);
         System.out.println(columnMetaData);
-
     }
 }
