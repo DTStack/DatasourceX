@@ -3,7 +3,10 @@ package com.dtstack.dtcenter.common.loader.rdbms.oracle;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  * @company: www.dtstack.com
@@ -26,4 +29,19 @@ public class OracleClientTest {
             throw new DtCenterDefException("数据源连接异常");
         }
     }
+
+    @Test
+    public void getColumnMetaDataTest() throws Exception {
+        SourceDTO source = SourceDTO.builder()
+                .url("jdbc:oracle:thin:@//118.31.39.174:1521/xe")
+                .username("study")
+                .password("study")
+                .build();
+
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("STUDY.AAAA").tableNamePattern("*").build();
+        List columnMetaData = rdbsClient.getColumnMetaData(source, sqlQueryDTO);
+        System.out.println(columnMetaData);
+
+    }
+
 }

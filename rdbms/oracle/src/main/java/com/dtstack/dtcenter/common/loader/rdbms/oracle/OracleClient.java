@@ -6,8 +6,10 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
+import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.utils.CollectionUtil;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import oracle.jdbc.OracleResultSetMetaData;
 
@@ -100,7 +102,23 @@ public class OracleClient extends AbsRdbmsClient {
 
     @Override
     protected String transferTableName(String tableName) {
-        return tableName.contains("\"") ? tableName : String.format("\"%s\"", tableName);
+        //tableName 可能存在的情况 需要兼容
+        //"db"."tableName"
+        //db.table
+        if (tableName.contains("\"")) {
+            return tableName;
+        }
+
+        if (tableName.contains(".")) {
+            String[] split = tableName.split("\\.");
+            tableName = addQuotes(split[0]) + "." + addQuotes(split[1]);
+        }
+        return tableName;
+    }
+
+    private static String addQuotes(String str) {
+        str =  str.contains("\"") ? str : String.format("\"%s\"", str);
+        return str;
     }
 
     @Override
