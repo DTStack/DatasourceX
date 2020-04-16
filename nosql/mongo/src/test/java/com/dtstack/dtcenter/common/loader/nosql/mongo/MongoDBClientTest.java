@@ -10,15 +10,15 @@ import java.util.List;
 public class MongoDBClientTest {
     private static AbsNosqlClient nosqlClient = new MongoDBClient();
 
+    private SourceDTO source = SourceDTO.builder()
+            .hostPort("172.16.100.217:27017")
+            .schema("admin")
+            .username("root")
+            .password("root")
+            .build();
+
     @Test
     public void testCon() throws Exception {
-        SourceDTO source = SourceDTO.builder()
-                .url("kudu5:27107")
-                .schema("admin")
-                .username("admin")
-                .password("123456")
-                .build();
-
         Boolean isConnected = nosqlClient.testCon(source);
         if (!isConnected) {
             throw new DtCenterDefException("数据源连接异常");
@@ -27,14 +27,7 @@ public class MongoDBClientTest {
 
     @Test
     public void getTableList() throws Exception {
-        SourceDTO source = SourceDTO.builder()
-                .url("172.16.8.193:27017")
-                .schema("dtstack")
-                .username(null)
-                .password("null")
-                .build();
-
-        List<String> tableList = nosqlClient.getTableList(source,null);
+        List<String> tableList = nosqlClient.getTableList(source, null);
         System.out.println(tableList);
     }
 }
