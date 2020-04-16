@@ -47,8 +47,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
     public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         Integer clearStatus = beforeQuery(source, queryDTO, false);
 
-        String database = getPostgreSchema(source.getConnection(), source.getUsername(), source.getUrl(),
-                "currentSchema");
+        String database = getPostgreSchema(source.getConnection(), source.getUsername());
         if (StringUtils.isNotBlank(database) && database.contains(",")) {
             //处理 "root,'public"这种情况
             String[] split = database.split(",");
@@ -120,17 +119,10 @@ public class PostgresqlClient extends AbsRdbmsClient {
      *
      * @param conn
      * @param user
-     * @param jdbcUrl
-     * @param param
      * @return
      * @throws SQLException
      */
-    private static String getPostgreSchema(Connection conn, String user, String jdbcUrl, String param) throws SQLException {
-        String schema = getJdbcParam(jdbcUrl, param);
-        if (StringUtils.isNotBlank(schema)) {
-            return schema.trim();
-        }
-
+    private static String getPostgreSchema(Connection conn, String user) throws SQLException {
         ResultSet rs = null;
         Statement statement = null;
         List<String> tableList = new ArrayList<>();
@@ -157,29 +149,5 @@ public class PostgresqlClient extends AbsRdbmsClient {
             }
         }
         return String.join("','", backList);
-    }
-
-    /**
-     * 获取 JDBC DB
-     *
-     * @param jdbcUrl
-     * @param param
-     * @return
-     */
-    private static String getJdbcParam(String jdbcUrl, String param) {
-        if (StringUtils.isBlank(jdbcUrl) || StringUtils.isBlank(param)) {
-            return null;
-        }
-
-        Matcher matcher = DtClassConsistent.PatternConsistent.JDBC_PATTERN.matcher(jdbcUrl);
-        if (matcher.find()) {
-            String matchValue = null;
-            try {
-                return matcher.group(param);
-            } catch (Exception e) {
-                log.warn("正则匹配错误", e);
-            }
-        }
-        return null;
     }
 }
