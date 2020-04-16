@@ -237,7 +237,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     @Override
     public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
+        return "";
     }
 
     /**
