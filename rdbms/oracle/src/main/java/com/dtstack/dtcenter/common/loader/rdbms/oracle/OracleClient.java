@@ -105,6 +105,7 @@ public class OracleClient extends AbsRdbmsClient {
         //tableName 可能存在的情况 需要兼容
         //"db"."tableName"
         //db.table
+        //table
         if (tableName.contains("\"")) {
             return tableName;
         }
@@ -112,7 +113,9 @@ public class OracleClient extends AbsRdbmsClient {
         if (tableName.contains(".")) {
             String[] split = tableName.split("\\.");
             tableName = addQuotes(split[0]) + "." + addQuotes(split[1]);
+            return tableName;
         }
+        tableName = addQuotes(tableName);
         return tableName;
     }
 
