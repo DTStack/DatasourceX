@@ -28,6 +28,7 @@
         <module>kudu</module>
         <module>libra</module>
         <module>greenplum6</module>
+        <module>dm</module>
     </modules>
 
     <parent>
