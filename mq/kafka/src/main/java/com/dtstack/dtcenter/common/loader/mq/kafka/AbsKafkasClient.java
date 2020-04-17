@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -58,6 +59,10 @@ public abstract class AbsKafkasClient<T> extends AbsMQClient<T> {
 
     @Override
     public List<List<Object>> getPreview(SourceDTO source, SqlQueryDTO queryDTO) {
-        return super.getPreview(source, queryDTO);
+        List<String> recordsFromKafka = KakfaUtil.getRecordsFromKafka(source.getUrl(), source.getBrokerUrls(), queryDTO.getTableName(), null, source.getKerberosConfig());
+        List<Object> records = new ArrayList<>(recordsFromKafka);
+        List<List<Object>> result = new ArrayList<>();
+        result.add(records);
+        return result;
     }
 }

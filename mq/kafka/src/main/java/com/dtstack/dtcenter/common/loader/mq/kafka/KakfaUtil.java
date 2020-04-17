@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.utils.TelUtil;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
 import kafka.cluster.Broker;
@@ -14,6 +15,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
@@ -38,13 +41,16 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class KakfaUtil {
+
+    private static final String EARLIEST = "earliest";
+    private static final int MAX_POOL_RECORDS = 5;
+
     public static boolean checkConnection(String zkUrls, String brokerUrls, Map<String, Object> kerberosConfig) {
         ZkUtils zkUtils = null;
         try {
             if (StringUtils.isEmpty(brokerUrls)) {
                 brokerUrls = getAllBrokersAddressFromZk(zkUrls);
             }
-
             return StringUtils.isNotBlank(brokerUrls) ? checkKafkaConnection(brokerUrls, kerberosConfig) : false;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -63,7 +69,7 @@ public class KakfaUtil {
      * @return
      * @throws Exception
      */
-    public static String getAllBrokersAddressFromZk(String zkUrls) throws Exception {
+    public static String getAllBrokersAddressFromZk(String zkUrls) {
         if (StringUtils.isBlank(zkUrls) || !TelUtil.checkTelnetAddr(zkUrls)) {
             throw new DtCenterDefException("请配置正确的 zookeeper 地址");
         }
@@ -211,6 +217,8 @@ public class KakfaUtil {
      * @param topic
      * @return
      */
+    //目前没有地方使用到
+    @Deprecated
     public static List<MetadataResponse.PartitionMetadata> getAllPartitionsFromZk(String zkUrls, String topic) {
         ZkUtils zkUtils = null;
 
@@ -298,6 +306,20 @@ public class KakfaUtil {
     /**
      * 初始化 Kafka 配置信息
      *
+     */
+    public static Properties initProperties (String zkUrls, String brokerUrls,Map<String, Object> conf) {
+        String bootstrapServers;
+        if (StringUtils.isEmpty(brokerUrls)){
+            bootstrapServers = getAllBrokersAddressFromZk(zkUrls);
+        }else {
+            bootstrapServers = brokerUrls;
+        }
+        return initProperties(bootstrapServers, Maps.newHashMap());
+    }
+
+    /**
+     * 初始化 Kafka 配置信息
+     *
      * @param brokerUrls
      * @param kerberosConfig
      * @return
@@ -306,8 +328,6 @@ public class KakfaUtil {
         Properties props = new Properties();
         /* 定义kakfa 服务的地址，不需要将所有broker指定上 */
         props.put("bootstrap.servers", brokerUrls);
-        /* 制定consumer group */
-        props.put("group.id", KafkaConsistent.KAFKA_GROUP);
         /* 是否自动确认offset */
         props.put("enable.auto.commit", "true");
         /* 自动确认offset的时间间隔 */
@@ -356,5 +376,55 @@ public class KakfaUtil {
         System.setProperty("java.security.auth.login.config", kafkaLoginConf);
         System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
         return props;
+    }
+
+
+    public static List<String> getRecordsFromKafka(String zkUrls, String brokerUrls, String topic, String autoReset, Map<String, Object> kerberos) {
+        List<String> result = new ArrayList<>();
+
+        Properties props = initProperties(zkUrls, brokerUrls, kerberos);
+        props.put("max.poll.records", MAX_POOL_RECORDS);
+        /* 定义consumer */
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);) {
+            List<TopicPartition> partitions = new ArrayList<>();
+            List<PartitionInfo> all = consumer.partitionsFor(topic);
+            for (PartitionInfo partitionInfo : all) {
+                partitions.add(new TopicPartition(partitionInfo.topic(), partitionInfo.partition()));
+            }
+
+            consumer.assign(partitions);
+            //如果消息没有被消费过，可能出现无法移动offset的情况导致报错
+            //https://stackoverflow.com/questions/41008610/kafkaconsumer-0-10-java-api-error-message-no-current-assignment-for-partition
+            //主动拉去一次消息
+            consumer.poll(1000);
+
+            //根据autoReset 设置位移
+            if (EARLIEST.equals(autoReset)) {
+                consumer.seekToBeginning(partitions);
+            } else {
+                Map<TopicPartition, Long> partitionLongMap = consumer.endOffsets(partitions);
+                for (Map.Entry<TopicPartition, Long> entry : partitionLongMap.entrySet()) {
+                    long offset = entry.getValue() - MAX_POOL_RECORDS;
+                    offset = offset > 0 ? offset : 0;
+                    consumer.seek(entry.getKey(), offset);
+                }
+            }
+
+            /* 读取数据，读取超时时间为100ms */
+            ConsumerRecords<String, String> records = consumer.poll(1000);
+            for (ConsumerRecord<String, String> record : records) {
+                String value = record.value();
+                if (org.apache.commons.lang.StringUtils.isBlank(value)) {
+                    continue;
+                }
+                if (result.size() >= MAX_POOL_RECORDS) {
+                    break;
+                }
+                result.add(record.value());
+            }
+        } catch (Exception e) {
+            log.error("从kafka消费数据异常 zkUrls:{} \nbrokerUrls:{} \ntopic:{} \nautoReset:{} \n ", zkUrls, brokerUrls, topic, autoReset, e);
+        }
+        return result;
     }
 }
