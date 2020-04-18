@@ -111,10 +111,16 @@
                 <version>42.2.2</version>
             </dependency>
 
+<!--            <dependency>-->
+<!--                <groupId>com.ibm.db2</groupId>-->
+<!--                <artifactId>jcc</artifactId>-->
+<!--                <version>11.5.0.0</version>-->
+<!--            </dependency>-->
+
             <dependency>
                 <groupId>com.ibm.db2</groupId>
-                <artifactId>jcc</artifactId>
-                <version>11.5.0.0</version>
+                <artifactId>db2jcc</artifactId>
+                <version>3.72.44</version>
             </dependency>
 
             <dependency>

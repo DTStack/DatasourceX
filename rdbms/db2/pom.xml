@@ -30,11 +30,15 @@
             <groupId>com.dtstack.dtcenter</groupId>
             <artifactId>common.loader.rdbms.common</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.ibm.db2</groupId>
-            <artifactId>jcc</artifactId>
+            <artifactId>db2jcc</artifactId>
         </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>com.ibm.db2</groupId>-->
+<!--            <artifactId>jcc</artifactId>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>
