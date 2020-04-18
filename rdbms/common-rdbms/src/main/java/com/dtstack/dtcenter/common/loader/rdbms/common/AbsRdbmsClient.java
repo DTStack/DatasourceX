@@ -50,14 +50,18 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     public Connection getCon(SourceDTO source) throws Exception {
         log.info("-------get connection success-----");
         if (!CacheConnectionHelper.isStart()) {
-            return connFactory.getConn(source);
+            try {
+                return connFactory.getConn(source);
+            } catch (Exception e) {
+                throw new DtCenterDefException("获取数据库连接异常", e);
+            }
         }
 
         return CacheConnectionHelper.getConnection(getSourceType().getVal(), con -> {
             try {
                 return connFactory.getConn(source);
             } catch (Exception e) {
-                throw new DtCenterDefException("获取连接异常", e);
+                throw new DtCenterDefException("获取数据库连接异常", e);
             }
         });
     }
