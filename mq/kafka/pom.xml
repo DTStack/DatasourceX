@@ -24,7 +24,6 @@
         <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
             <artifactId>common.loader.mq.common</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>

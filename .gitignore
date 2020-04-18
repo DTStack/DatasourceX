@@ -11,3 +11,4 @@ pluginLibs
 lib/*
 run/*
 bin/*
+out/*
