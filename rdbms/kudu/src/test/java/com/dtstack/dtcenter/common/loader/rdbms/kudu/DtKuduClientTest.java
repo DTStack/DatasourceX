@@ -40,7 +40,7 @@ public class DtKuduClientTest {
         System.out.println(tableList);
 
     }
-
+//    impala::xq0704.xq_test_kudu
     @Test
     public void getColumnMetaData() throws Exception {
         SourceDTO source = SourceDTO.builder()
@@ -56,9 +56,9 @@ public class DtKuduClientTest {
     public void getPreview() {
 
         SourceDTO source = SourceDTO.builder()
-                .url("172.16.100.213:7051,172.16.101.252:7051")
+                .url("172.16.10.224:7051")
                 .build();
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("impala::kududb.kudu_1").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("impala::xq0704.xq_test_kudu").build();
         List list = rdbsClient.getPreview(source, queryDTO);
         System.out.println(list);
 
