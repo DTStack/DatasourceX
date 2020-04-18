@@ -143,9 +143,6 @@ public class DtKuduClient extends AbsRdbmsClient {
             KuduTable kuduTable = client.openTable(queryDTO.getTableName());
             Schema schema = kuduTable.getSchema();
             List<String> columnStr = schema.getColumns().stream().map(ColumnSchema::getName).collect(Collectors.toList());
-
-            List<Object> columns = new ArrayList<>(columnStr);
-            dataList.add(columns);
             KuduScanner.KuduScannerBuilder scannerBuilder = client.newScannerBuilder(kuduTable)
                     .setProjectedColumnNames(columnStr)
                     .cacheBlocks(false)
