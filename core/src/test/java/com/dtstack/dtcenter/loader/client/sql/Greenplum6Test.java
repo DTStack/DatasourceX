@@ -24,9 +24,10 @@ public class Greenplum6Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     SourceDTO source = SourceDTO.builder()
-            .url("jdbc:pivotal:greenplum://172.16.10.90:5432;DatabaseName=postgres")
+            .url("jdbc:pivotal:greenplum://172.16.10.90:5432;DatabaseName=data")
             .username("gpadmin")
             .password("gpadmin")
+            .schema("public")
             .build();
 
     @Test
@@ -49,7 +50,7 @@ public class Greenplum6Test {
     @Test
     public void executeQuery() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.Greenplum6.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from pg_description").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi99").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
     }
@@ -57,7 +58,7 @@ public class Greenplum6Test {
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.Greenplum6.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("CREATE TABLE if not exists nanqi ( id integer, name text)").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("CREATE TABLE if not exists nanqi102 ( id integer )").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -72,23 +73,29 @@ public class Greenplum6Test {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.Greenplum6.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi102").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
+        columnClassInfo.forEach(column->{
+            System.out.println(column);
+        });
         System.out.println(columnClassInfo.size());
     }
 
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.Greenplum6.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("student").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
+        columnMetaData.forEach(column->{
+            System.out.println(column);
+        });
     }
 
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.Greenplum6.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("student").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
