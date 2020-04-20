@@ -4,10 +4,12 @@ import com.dtstack.dtcenter.common.loader.kafkas.common.AbsMQClient;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -32,10 +34,20 @@ public abstract class AbsKafkasClient<T> extends AbsMQClient<T> {
 
     @Override
     public List<String> getTopicList(SourceDTO source) throws Exception {
+        List<String> topics = null;
+
         if (StringUtils.isNotBlank(source.getBrokerUrls())) {
-            return KakfaUtil.getTopicListFromBroker(source.getBrokerUrls(), source.getKerberosConfig());
+            topics = KakfaUtil.getTopicListFromBroker(source.getBrokerUrls(), source.getKerberosConfig());
+        } else {
+            topics = KakfaUtil.getTopicListFromZk(source.getUrl());
         }
-        return KakfaUtil.getTopicListFromZk(source.getUrl());
+
+        //过滤特殊topic
+        if (CollectionUtils.isNotEmpty(topics)) {
+            topics = topics.stream().filter(s -> !"__consumer_offsets".equals(s)).collect(Collectors.toList());
+        }
+
+        return topics;
     }
 
     @Override
