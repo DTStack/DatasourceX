@@ -110,10 +110,9 @@ public class GreenplumClient extends AbsRdbmsClient {
         Integer clearStatus = beforeQuery(source, queryDTO, false);
         Statement statement = null;
         ResultSet resultSet = null;
-        Connection connection = getCon(source);
         List<String> tableList = new ArrayList<>();
         try {
-            statement = connection.createStatement();
+            statement = source.getConnection().createStatement();
             resultSet=statement.executeQuery(String.format(TABLE_QUERY,source.getSchema()));
             while (resultSet.next()) {
                 tableList.add(resultSet.getString(1));
