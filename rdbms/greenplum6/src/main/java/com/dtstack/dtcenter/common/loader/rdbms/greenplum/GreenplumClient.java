@@ -31,11 +31,8 @@ public class GreenplumClient extends AbsRdbmsClient {
             " left join pg_description des on col.table_name::regclass = des.objoid" +
             " and col.ordinal_position = des.objsubid where table_schema = '%s' and table_name = '%s'";
 
-    private static final String TABLE_QUERY = "select c.relname as tablename" +
-            " from pg_catalog.pg_class c, pg_catalog.pg_namespace n" +
-            " where" +
-            " n.oid = c.relnamespace" +
-            " and n.nspname='%s'";
+    private static final String TABLE_QUERY = "SELECT relname from pg_class a,pg_namespace b where relname not like '%%prt%%' and relkind ='r'  and a.relnamespace=b.oid and  nspname = '%s';";
+
 
     private static final String TABLE_COMMENT_QUERY="select de.description\n" +
             "          from (select pc.oid as ooid,pn.nspname,pc.*\n" +
@@ -126,5 +123,7 @@ public class GreenplumClient extends AbsRdbmsClient {
         }
         return tableList;
     }
+
+
 
 }

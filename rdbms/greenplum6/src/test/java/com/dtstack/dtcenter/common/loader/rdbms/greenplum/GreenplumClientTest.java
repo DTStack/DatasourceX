@@ -28,7 +28,7 @@ public class GreenplumClientTest {
     @Test
     public void getConnFactory() throws Exception {
         SourceDTO source = SourceDTO.builder()
-                .url("jdbc:pivotal:greenplum://172.16.10.90:5432;DatabaseName=exampledb")
+                .url("jdbc:pivotal:greenplum://172.16.10.90:5432;DatabaseName=data")
                 .username("gpadmin")
                 .password("gpadmin")
                 .schema("public")
