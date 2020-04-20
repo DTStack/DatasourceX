@@ -198,7 +198,6 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         Integer clearStatus = beforeColumnQuery(source, queryDTO);
         Statement statement = null;
         ResultSet rs = null;
-
         List<ColumnMetaDTO> columns = new ArrayList<>();
         try {
             statement = source.getConnection().createStatement();
@@ -212,7 +211,6 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                 columnMetaDTO.setKey(rsMetaData.getColumnName(i + 1));
                 columnMetaDTO.setType(doDealType(rsMetaData, i));
                 columnMetaDTO.setPart(false);
-
                 // 获取字段精度
                 if (columnMetaDTO.getType().equalsIgnoreCase("decimal")
                         || columnMetaDTO.getType().equalsIgnoreCase("float")
