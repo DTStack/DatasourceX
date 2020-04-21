@@ -69,6 +69,7 @@ public class GreenplumClient extends AbsRdbmsClient {
 
     @Override
     public String  getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        checkSchema(source);
         Integer clearStatus = beforeColumnQuery(source, queryDTO);
         Statement statement = null;
         ResultSet resultSet = null;
@@ -104,6 +105,7 @@ public class GreenplumClient extends AbsRdbmsClient {
 
     @Override
     public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        checkSchema(source);
         Integer clearStatus = beforeQuery(source, queryDTO, false);
         Statement statement = null;
         ResultSet resultSet = null;
@@ -124,6 +126,13 @@ public class GreenplumClient extends AbsRdbmsClient {
         return tableList;
     }
 
+
+    private void checkSchema(SourceDTO source){
+        String schemaName = source.getSchema();
+        if (StringUtils.isBlank(schemaName)) {
+            throw new DtCenterDefException("greenplum6 数据源schema不能为空");
+        }
+    }
 
 
 }
