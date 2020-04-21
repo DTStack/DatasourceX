@@ -30,7 +30,7 @@ public class GreenplumFactory extends ConnFactory {
         init();
         DriverManager.setLoginTimeout(30);
         Connection  connection = super.getConn(source);
-        if(StringUtils.isBlank(source.getSchema())){
+        if(!StringUtils.isBlank(source.getSchema())){
             connection.createStatement().execute(String.format(SCHEMA_SET,source.getSchema()));
         }
         return connection;
