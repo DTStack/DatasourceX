@@ -59,4 +59,10 @@ public class OdpsClientTest {
 
         System.out.println(tableList);
     }
+
+    @Test
+    public void getTableMetaComment() throws Exception {
+        String aa_temp = client.getTableMetaComment(sourceDTO, SqlQueryDTO.builder().tableName("aa_temp").build());
+        System.out.println(aa_temp);
+    }
 }

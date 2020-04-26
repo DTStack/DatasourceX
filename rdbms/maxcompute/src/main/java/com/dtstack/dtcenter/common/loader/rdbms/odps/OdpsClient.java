@@ -170,4 +170,18 @@ public class OdpsClient extends AbsRdbmsClient {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
+
+    @Override
+    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        if (StringUtils.isBlank(queryDTO.getTableName())) {
+            return "";
+        }
+        try {
+            Odps odps = initOdps(JSON.parseObject(source.getConfig()));
+            Table t = odps.tables().get(queryDTO.getTableName());
+            return t.getComment();
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
 }
