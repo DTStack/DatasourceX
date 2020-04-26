@@ -40,11 +40,12 @@ public class HiveConnFactory extends ConnFactory {
         }
 
         Matcher matcher = DtClassConsistent.PatternConsistent.HIVE_JDBC_PATTERN.matcher(source.getUrl());
+        Connection connection = DriverManager.getConnection(source.getUrl(), source.getUsername(), source.getPassword());
         String db = null;
         if (!matcher.find()) {
             db = matcher.group(DtClassConsistent.PublicConsistent.DB_KEY);
         }
-        Connection connection = DriverManager.getConnection(source.getUrl(), source.getUsername(), source.getPassword());
+        db = StringUtils.isBlank(source.getSchema()) ? db : source.getSchema();
         if (StringUtils.isNotEmpty(db)) {
             DBUtil.executeSqlWithoutResultSet(connection, String.format(DtClassConsistent.PublicConsistent.USE_DB, db), false);
         }
