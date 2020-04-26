@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.dtstack.dtcenter.common.loader.rdbms.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -28,41 +27,53 @@ public class OdpsClientTest {
         sourceDTO = SourceDTO.builder().config(JSON.toJSONString(odpsConfig)).build();
     }
 
-
-
     @Test
     public void testCon() {
-        Boolean aBoolean = client.testCon(sourceDTO);
-        System.out.println(aBoolean);
+        Boolean testCon = client.testCon(sourceDTO);
+        assert testCon != null;
     }
 
     @Test
     public void getTableList() throws Exception {
         List tableList = client.getTableList(sourceDTO, null);
-        System.out.println(tableList);
-
-
+        assert tableList != null;
     }
 
     @Test
     public void getColumnMetaData() throws Exception {
-
         List tableList = client.getColumnMetaData(sourceDTO, SqlQueryDTO.builder().tableName("aa_temp").build());
+        assert tableList != null;
+    }
 
-        System.out.println(tableList);
+    @Test
+    public void getColumnClassInfo() throws Exception {
+        List tableList = client.getColumnClassInfo(sourceDTO, SqlQueryDTO.builder().tableName("aa_temp").build());
+        assert tableList != null;
+    }
+
+    @Test
+    public void executeQuery () throws Exception {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
+        List<Map<String, Object>> mapList = client.executeQuery(sourceDTO, queryDTO);
+        assert mapList != null;
+    }
+
+    @Test
+    public void executeSqlWithoutResultSet () throws Exception {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("insert into nanqi (id) values(1), (2), (3)").build();
+        Boolean result = client.executeSqlWithoutResultSet(sourceDTO, queryDTO);
+        assert result != null;
     }
 
     @Test
     public void getPreview() {
-
         List tableList = client.getPreview(sourceDTO, SqlQueryDTO.builder().tableName("act_hi_actinst").build());
-
-        System.out.println(tableList);
+        assert tableList != null;
     }
 
     @Test
     public void getTableMetaComment() throws Exception {
         String aa_temp = client.getTableMetaComment(sourceDTO, SqlQueryDTO.builder().tableName("aa_temp").build());
-        System.out.println(aa_temp);
+        assert aa_temp != null;
     }
 }
