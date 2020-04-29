@@ -91,7 +91,7 @@
                 <groupId>com.dtstack.dtcenter</groupId>
                 <artifactId>common.hadoop</artifactId>
                 <version>${dtstack.common}</version>
-                <scope>provided</scope>
+                <scope>compile</scope>
                 <exclusions>
                     <exclusion>
                         <artifactId>xml-apis</artifactId>
