@@ -33,54 +33,32 @@
 
         <dependency>
             <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
             <artifactId>common.hadoop</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>gbase</artifactId>
-                    <groupId>com.esen.jdbc</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jersey-client</artifactId>
-                    <groupId>com.sun.jersey</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jersey-core</artifactId>
-                    <groupId>com.sun.jersey</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jersey-json</artifactId>
-                    <groupId>com.sun.jersey</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jersey-server</artifactId>
-                    <groupId>com.sun.jersey</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jersey-guice</artifactId>
-                    <groupId>com.sun.jersey.contribs</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>calcite-core</artifactId>
-                    <groupId>org.apache.calcite</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>calcite-server</artifactId>
-                    <groupId>org.apache.calcite</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>curator-client</artifactId>
-                    <groupId>org.apache.curator</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>hive-shade</artifactId>
-                    <groupId>dtstack.hive</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>

@@ -33,7 +33,27 @@
 
         <dependency>
             <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
         </dependency>
 
         <dependency>
@@ -70,10 +90,6 @@
                     <groupId>commons-lang</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>commons-compress</artifactId>
-                    <groupId>org.apache.commons</groupId>
-                </exclusion>
-                <exclusion>
                     <artifactId>xercesImpl</artifactId>
                     <groupId>xerces</groupId>
                 </exclusion>
@@ -104,10 +120,6 @@
                 <exclusion>
                     <artifactId>jasper-runtime</artifactId>
                     <groupId>tomcat</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>hive-shims</artifactId>
-                    <groupId>org.apache.hive</groupId>
                 </exclusion>
                 <exclusion>
                     <artifactId>commons-logging</artifactId>
@@ -203,68 +215,6 @@
         <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
             <artifactId>common.hadoop</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>gbase</artifactId>
-                    <groupId>com.esen.jdbc</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jersey-client</artifactId>
-                    <groupId>com.sun.jersey</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jersey-core</artifactId>
-                    <groupId>com.sun.jersey</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jersey-json</artifactId>
-                    <groupId>com.sun.jersey</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jersey-server</artifactId>
-                    <groupId>com.sun.jersey</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jersey-guice</artifactId>
-                    <groupId>com.sun.jersey.contribs</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>logback-classic</artifactId>
-                    <groupId>ch.qos.logback</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>calcite-core</artifactId>
-                    <groupId>org.apache.calcite</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>calcite-server</artifactId>
-                    <groupId>org.apache.calcite</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>hadoop-mapreduce-client-app</artifactId>
-                    <groupId>org.apache.hadoop</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
-                    <groupId>org.apache.hadoop</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>hadoop-mapreduce-client-core</artifactId>
-                    <groupId>org.apache.hadoop</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>hive-shims</artifactId>
-                    <groupId>org.apache.hive</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>hive-llap-tez</artifactId>
-                    <groupId>org.apache.hive</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>hive-shade</artifactId>
-                    <groupId>dtstack.hive</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 
