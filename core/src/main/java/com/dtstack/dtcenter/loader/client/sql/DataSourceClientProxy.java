@@ -82,6 +82,12 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     }
 
     @Override
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getFlinkColumnMetaData(source, queryDTO),
+                targetClient.getClass().getClassLoader(), true);
+    }
+
+    @Override
     public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableMetaComment(source, queryDTO),
                 targetClient.getClass().getClassLoader(), true);

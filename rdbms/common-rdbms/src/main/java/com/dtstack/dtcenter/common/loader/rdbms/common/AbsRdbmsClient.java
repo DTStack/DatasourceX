@@ -238,6 +238,11 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        return getColumnMetaData(source, queryDTO);
+    }
+
+    @Override
     public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         return "";
     }
