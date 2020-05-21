@@ -80,7 +80,7 @@ public class HiveTest {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi200228").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("yuebai").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -88,7 +88,7 @@ public class HiveTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi200228").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("yuebai").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
@@ -96,7 +96,7 @@ public class HiveTest {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi200228").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("yuebai").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }

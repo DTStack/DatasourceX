@@ -24,7 +24,9 @@ public class PhoenixTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     SourceDTO source = SourceDTO.builder()
-            .url("jdbc:phoenix:node01,node02,node03:2181")
+            .url("jdbc:phoenix:172.16.101.136:2181")
+            .username("root")
+            .password("abc123")
             .build();
 
     @Test

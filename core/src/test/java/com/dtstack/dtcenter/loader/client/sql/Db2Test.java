@@ -24,8 +24,8 @@ public class Db2Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     SourceDTO source = SourceDTO.builder()
-            .url("jdbc:clickhouse://172.16.10.168:8123/mqTest")
-            .username("dtstack")
+            .url("jdbc:db2://172.16.10.251:50000/mqTest")
+            .username("DB2INST1")
             .password("abc123")
             .schema("mqTest")
             .build();
@@ -50,7 +50,7 @@ public class Db2Test {
     @Test
     public void executeQuery() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi01").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
     }
@@ -58,7 +58,7 @@ public class Db2Test {
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi01").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -72,7 +72,7 @@ public class Db2Test {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("mqresult2").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi01").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -80,7 +80,7 @@ public class Db2Test {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("mqresult2").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi01").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }

@@ -25,8 +25,8 @@ public class OracleTest {
 
     SourceDTO source = SourceDTO.builder()
             .url("jdbc:oracle:thin:@172.16.8.178:1521:xe")
-            .username("dtstack")
-            .password("abc123")
+            .username("system")
+            .password("oracle")
             .build();
 
     @Test
@@ -72,7 +72,7 @@ public class OracleTest {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("MUYUN1226").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test_side").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -80,7 +80,7 @@ public class OracleTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("MUYUN1226").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test_side").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
@@ -88,7 +88,7 @@ public class OracleTest {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("MUYUN1226").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test_side").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }

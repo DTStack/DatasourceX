@@ -6,13 +6,38 @@
 
     <groupId>com.dtstack.dtcenter</groupId>
     <artifactId>common-loader</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.1.0-SNAPSHOT</version>
     <modules>
         <module>core</module>
-        <module>rdbms</module>
-        <module>nosql</module>
-        <module>mq</module>
-        <module>ftps</module>
+        <module>common</module>
+        <module>clickhouse</module>
+        <module>db2</module>
+        <module>dm</module>
+        <module>drds</module>
+        <module>es</module>
+        <module>gbase</module>
+        <module>greenplum6</module>
+        <module>hbase</module>
+        <module>hdfs</module>
+        <module>hive</module>
+        <module>hive1</module>
+        <module>impala</module>
+        <module>kudu</module>
+        <module>kylin</module>
+        <module>libra</module>
+        <module>maxcompute</module>
+        <module>mysql5</module>
+        <module>mysql8</module>
+        <module>oracle</module>
+        <module>phoenix</module>
+        <module>postgresql</module>
+        <module>sqlserver</module>
+        <module>sqlserver2017</module>
+        <module>mongo</module>
+        <module>redis</module>
+        <module>ftp</module>
+        <module>kafka</module>
+        <module>emq</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -71,7 +96,7 @@
 
             <dependency>
                 <groupId>com.dtstack.dtcenter</groupId>
-                <artifactId>common.loader.rdbms.common</artifactId>
+                <artifactId>common.loader.common</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
