@@ -18,10 +18,8 @@ public class RedisTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     SourceDTO source = SourceDTO.builder()
-            .url("172.16.10.204")
-            .hostPort("6379")
+            .hostPort("172.16.8.109:6379")
             .schema("5")
-            .password("abc123")
             .build();
 
     @Test

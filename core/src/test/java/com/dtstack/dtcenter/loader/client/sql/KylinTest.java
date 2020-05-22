@@ -24,7 +24,7 @@ public class KylinTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     SourceDTO source = SourceDTO.builder()
-            .url("jdbc:kylin://172.16.100.105:7070/yctest")
+            .url("jdbc:kylin://172.16.100.105:7070/1005_9")
             .username("ADMIN")
             .password("KYLIN")
             .build();

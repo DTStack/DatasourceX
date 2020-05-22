@@ -5,8 +5,10 @@
     <parent>
         <artifactId>common-loader</artifactId>
         <groupId>com.dtstack.dtcenter</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
+
     <modelVersion>4.0.0</modelVersion>
     <artifactId>common.loader.core</artifactId>
 
@@ -29,10 +31,10 @@
 
 
         <!-- 具体实现类不做配置，具体的容器自己处理-->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.slf4j</groupId>-->
+<!--            <artifactId>slf4j-simple</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -51,10 +53,6 @@
                 <exclusion>
                     <artifactId>logback-classic</artifactId>
                     <groupId>ch.qos.logback</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>commons-logging</artifactId>
-                    <groupId>commons-logging</groupId>
                 </exclusion>
                 <exclusion>
                     <artifactId>calcite-core</artifactId>
@@ -124,6 +122,18 @@
                     <artifactId>jackson-core-asl</artifactId>
                     <groupId>org.codehaus.jackson</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>logback-core</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -141,6 +151,10 @@
                 <exclusion>
                     <artifactId>slf4j-log4j12</artifactId>
                     <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j</artifactId>
+                    <groupId>log4j</groupId>
                 </exclusion>
             </exclusions>
             <scope>test</scope>

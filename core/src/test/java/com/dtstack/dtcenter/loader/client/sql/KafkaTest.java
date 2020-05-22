@@ -23,7 +23,7 @@ public class KafkaTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     SourceDTO source = SourceDTO.builder()
-            .url("192.168.99.199:2181")
+            .url("kudu3:2181/kafka")
             .build();
 
     @Test
@@ -52,8 +52,8 @@ public class KafkaTest {
     @Test
     public void createTopic() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.KAFKA_09.getPluginName());
-        KafkaTopicDTO topicDTO = KafkaTopicDTO.builder().partitions(3).replicationFactor(2).topicName(
-                "nanqi04").build();
+        KafkaTopicDTO topicDTO = KafkaTopicDTO.builder().partitions(1).replicationFactor(1).topicName(
+                "nanqi02").build();
         Boolean clientTopic = client.createTopic(source, topicDTO);
         assert (Boolean.TRUE.equals(clientTopic));
     }
@@ -62,14 +62,14 @@ public class KafkaTest {
     public void getAllPartitions() throws Exception {
         // 测试的时候需要引进 kafka 包
         IClient client = clientCache.getClient(DataSourceClientType.KAFKA_09.getPluginName());
-        List<MetadataResponse.PartitionMetadata> allPartitions = client.getAllPartitions(source, "nanqi05");
+        List<MetadataResponse.PartitionMetadata> allPartitions = client.getAllPartitions(source, "nanqi01");
         System.out.println(allPartitions.size());
     }
 
     @Test
     public void getOffset() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.KAFKA_09.getPluginName());
-        List<KafkaOffsetDTO> offset = client.getOffset(source, "nanqi");
+        List<KafkaOffsetDTO> offset = client.getOffset(source, "nanqi01");
         assert (offset != null);
     }
 }
