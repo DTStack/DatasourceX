@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.ftp;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.FtpSourceDTO;
 import org.junit.Test;
 
 /**
@@ -15,7 +15,7 @@ public class FtpClientTest {
 
     @Test
     public void testCon() throws Exception {
-        SourceDTO source = SourceDTO.builder()
+        FtpSourceDTO source = FtpSourceDTO.builder()
                 .url("kudu1")
                 .hostPort("22")
                 .username("root")

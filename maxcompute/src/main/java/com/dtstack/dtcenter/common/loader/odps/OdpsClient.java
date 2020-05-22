@@ -21,7 +21,8 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.OdpsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -71,14 +72,15 @@ public class OdpsClient extends AbsRdbmsClient {
     }
 
     @Override
-    public Boolean testCon(SourceDTO source) {
+    public Boolean testCon(ISourceDTO iSource) {
+        OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         try {
-            Odps odps = initOdps(JSON.parseObject(source.getConfig()));
+            Odps odps = initOdps(JSON.parseObject(odpsSourceDTO.getConfig()));
             Tables tables = odps.tables();
             tables.iterator().hasNext();
             return true;
         } catch (Exception ex) {
-            log.error("检查odps连接失败..{}", source, ex);
+            log.error("检查odps连接失败..{}", odpsSourceDTO, ex);
         }
         return false;
     }
@@ -138,19 +140,21 @@ public class OdpsClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        beforeQuery(source, queryDTO, false);
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
+        beforeQuery(odpsSourceDTO, queryDTO, false);
         List<String> tableList = new ArrayList<>();
-        Odps odps = initOdps(JSON.parseObject(source.getConfig()));
+        Odps odps = initOdps(JSON.parseObject(odpsSourceDTO.getConfig()));
         odps.tables().forEach((Table table) -> tableList.add(table.getName()));
         return tableList;
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        beforeColumnQuery(source, queryDTO);
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
+        beforeColumnQuery(odpsSourceDTO, queryDTO);
         List<ColumnMetaDTO> columnList = new ArrayList<>();
-        Odps odps = initOdps(JSON.parseObject(source.getConfig()));
+        Odps odps = initOdps(JSON.parseObject(odpsSourceDTO.getConfig()));
         Table table = odps.tables().get(queryDTO.getTableName());
         table.getSchema()
                 .getColumns().forEach(column -> {
@@ -164,12 +168,13 @@ public class OdpsClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getColumnClassInfo(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
+        Integer clearStatus = beforeColumnQuery(odpsSourceDTO, queryDTO);
         List<String> columnClassInfo = Lists.newArrayList();
         try {
             queryDTO.setSql("select * from " + queryDTO.getTableName());
-            Instance instance = runOdpsTask(source, queryDTO);
+            Instance instance = runOdpsTask(odpsSourceDTO, queryDTO);
             ResultSet records = SQLTask.getResultSet(instance);
             TableSchema tableSchema = records.getTableSchema();
             for (Column recordColumn : tableSchema.getColumns()) {
@@ -183,13 +188,14 @@ public class OdpsClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<List<Object>> getPreview(SourceDTO source, SqlQueryDTO queryDTO) {
+    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+        OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         List<List<Object>> dataList = new ArrayList<>();
         if (StringUtils.isBlank(queryDTO.getTableName())) {
             return dataList;
         }
         try {
-            Odps odps = initOdps(JSON.parseObject(source.getConfig()));
+            Odps odps = initOdps(JSON.parseObject(odpsSourceDTO.getConfig()));
             Table t = odps.tables().get(queryDTO.getTableName());
             DefaultRecordReader recordReader = (DefaultRecordReader) t.read(3);
             for (int i = 0; i < 3; i++) {
@@ -205,11 +211,12 @@ public class OdpsClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        beforeQuery(source, queryDTO, true);
+    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
+        beforeQuery(odpsSourceDTO, queryDTO, true);
         List<Map<String, Object>> result = Lists.newArrayList();
         try {
-            Instance instance = runOdpsTask(source, queryDTO);
+            Instance instance = runOdpsTask(odpsSourceDTO, queryDTO);
             ResultSet records = SQLTask.getResultSet(instance);
             TableSchema tableSchema = records.getTableSchema();
             List<String> columnNames = Lists.newArrayList();
@@ -233,7 +240,7 @@ public class OdpsClient extends AbsRdbmsClient {
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         beforeQuery(source, queryDTO, true);
         Instance instance = runOdpsTask(source, queryDTO);
         return instance.isSuccessful();
@@ -241,13 +248,14 @@ public class OdpsClient extends AbsRdbmsClient {
 
     /**
      * 以任务的形式运行 SQL
-     * @param source
+     * @param iSource
      * @param queryDTO
      * @return
      * @throws OdpsException
      */
-    private Instance runOdpsTask(SourceDTO source, SqlQueryDTO queryDTO) throws OdpsException {
-        Odps odps = initOdps(JSON.parseObject(source.getConfig()));
+    private Instance runOdpsTask(ISourceDTO iSource, SqlQueryDTO queryDTO) throws OdpsException {
+        OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
+        Odps odps = initOdps(JSON.parseObject(odpsSourceDTO.getConfig()));
         // 查询 SQL 必须以 分号结尾
         String queryDTOSql = queryDTO.getSql();
         queryDTOSql = queryDTOSql.trim().endsWith(";") ? queryDTOSql : queryDTOSql.trim() + ";";
@@ -257,10 +265,11 @@ public class OdpsClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        beforeColumnQuery(source, queryDTO);
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
+        beforeColumnQuery(odpsSourceDTO, queryDTO);
         try {
-            Odps odps = initOdps(JSON.parseObject(source.getConfig()));
+            Odps odps = initOdps(JSON.parseObject(odpsSourceDTO.getConfig()));
             Table t = odps.tables().get(queryDTO.getTableName());
             return t.getComment();
         } catch (Exception e) {
@@ -269,7 +278,7 @@ public class OdpsClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected Integer beforeQuery(SourceDTO sourceDTO, SqlQueryDTO queryDTO, boolean query) throws Exception {
+    protected Integer beforeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO, boolean query) throws Exception {
         // 查询 SQL 不能为空
         if (query && StringUtils.isBlank(queryDTO.getSql())) {
             throw new DtLoaderException("查询 SQL 不能为空");
@@ -279,8 +288,9 @@ public class OdpsClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected Integer beforeColumnQuery(SourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeQuery(sourceDTO, queryDTO, false);
+    protected Integer beforeColumnQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
+        Integer clearStatus = beforeQuery(odpsSourceDTO, queryDTO, false);
         if (queryDTO == null || StringUtils.isBlank(queryDTO.getTableName())) {
             throw new DtLoaderException("查询 表名称 不能为空");
         }

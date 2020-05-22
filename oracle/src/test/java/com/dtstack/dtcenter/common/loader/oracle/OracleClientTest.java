@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.oracle;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import org.junit.Test;
 
@@ -19,7 +19,7 @@ public class OracleClientTest {
 
     @Test
     public void testConnection() throws Exception {
-        SourceDTO source = SourceDTO.builder()
+        OracleSourceDTO source = OracleSourceDTO.builder()
                 .url("jdbc:oracle:thin:@172.16.8.178:1521:xe")
                 .username("dtstack")
                 .password("abc123")
@@ -32,7 +32,7 @@ public class OracleClientTest {
 
     @Test
     public void getColumnMetaDataTest() throws Exception {
-        SourceDTO source = SourceDTO.builder()
+        OracleSourceDTO source = OracleSourceDTO.builder()
                 .url("jdbc:oracle:thin:@//118.31.39.174:1521/xe")
                 .username("study")
                 .password("study")

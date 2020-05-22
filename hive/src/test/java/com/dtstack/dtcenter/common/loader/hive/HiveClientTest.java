@@ -2,8 +2,8 @@ package com.dtstack.dtcenter.common.loader.hive;
 
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
 import org.apache.commons.lang3.BooleanUtils;
 import org.junit.Test;
 
@@ -14,7 +14,7 @@ public class HiveClientTest {
 
     @Test
     public void getConnFactory() throws Exception {
-        SourceDTO source = SourceDTO.builder()
+        HiveSourceDTO source = HiveSourceDTO.builder()
                 .url("jdbc:hive2://cdh-impala2:10000/ceshis_pri")
                 .username("root")
                 .password("abc123")
@@ -27,7 +27,7 @@ public class HiveClientTest {
 
     @Test
     public void testConnection() {
-        SourceDTO source = SourceDTO.builder()
+        HiveSourceDTO source = HiveSourceDTO.builder()
                 .url("jdbc:hive2://172.16.101.227:10000/yuebai")
                 .schema("yuebai")
                 .defaultFS("hdfs://ns1")

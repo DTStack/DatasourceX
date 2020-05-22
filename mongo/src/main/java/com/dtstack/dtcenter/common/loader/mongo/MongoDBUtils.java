@@ -3,7 +3,8 @@ package com.dtstack.dtcenter.common.loader.mongo;
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.util.AddressUtil;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.MongoSourceDTO;
 import com.google.common.collect.Lists;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
@@ -38,15 +39,16 @@ public class MongoDBUtils {
 
     public static final int TIME_OUT = 5 * 1000;
 
-    public static boolean checkConnection(SourceDTO source) {
+    public static boolean checkConnection(ISourceDTO iSource) {
+        MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
         boolean check = false;
         MongoClient mongoClient = null;
         try {
-            mongoClient = getClient(source.getHostPort(), source.getUsername(), source.getPassword(),
-                    source.getSchema());
-            MongoDatabase mongoDatabase = mongoClient.getDatabase(source.getSchema());
+            mongoClient = getClient(mongoSourceDTO.getHostPort(), mongoSourceDTO.getUsername(), mongoSourceDTO.getPassword(),
+                    mongoSourceDTO.getSchema());
+            MongoDatabase mongoDatabase = mongoClient.getDatabase(mongoSourceDTO.getSchema());
             MongoIterable<String> mongoIterable = mongoDatabase.listCollectionNames();
-            mongoIterable.iterator().next();
+            mongoIterable.iterator().hasNext();
             check = true;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -58,19 +60,20 @@ public class MongoDBUtils {
         return check;
     }
 
-    public static List<String> getTableList(SourceDTO source) {
+    public static List<String> getTableList(ISourceDTO iSource) {
+        MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
         List<String> tableList = Lists.newArrayList();
         MongoClient mongoClient = null;
         try {
-            String db = source.getSchema();
-            mongoClient = getClient(source.getHostPort(), source.getUsername(), source.getPassword(), db);
+            String db = mongoSourceDTO.getSchema();
+            mongoClient = getClient(mongoSourceDTO.getHostPort(), mongoSourceDTO.getUsername(), mongoSourceDTO.getPassword(), db);
             MongoDatabase mongoDatabase = mongoClient.getDatabase(db);
             MongoIterable<String> tableNames = mongoDatabase.listCollectionNames();
             for (String s : tableNames) {
                 tableList.add(s);
             }
         } catch (Exception e) {
-            log.error("获取tablelist异常  {}", source, e);
+            log.error("获取tablelist异常  {}", mongoSourceDTO, e);
         } finally {
             if (mongoClient != null) {
                 mongoClient.close();

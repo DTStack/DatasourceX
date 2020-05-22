@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.odps;
 
 import com.dtstack.dtcenter.common.enums.DataBaseType;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 
 import java.sql.Connection;
@@ -19,7 +19,7 @@ public class OdpsConnFactory extends ConnFactory {
     }
 
     @Override
-    public Connection getConn(SourceDTO source) throws Exception {
+    public Connection getConn(ISourceDTO source) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 }

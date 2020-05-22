@@ -2,15 +2,15 @@ package com.dtstack.dtcenter.common.loader.db2;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.Db2SourceDTO;
 import org.junit.Test;
 
 import java.util.List;
 
 public class Db2ClientTest {
     private static AbsRdbmsClient rdbsClient = new Db2Client();
-    SourceDTO source = SourceDTO.builder()
+    Db2SourceDTO source = Db2SourceDTO.builder()
             .url("jdbc:db2://kudu5:50000/xiaochen")
             .username("xiaochen")
             .password("Abc1234")

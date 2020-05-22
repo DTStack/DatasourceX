@@ -2,8 +2,8 @@ package com.dtstack.dtcenter.common.loader.sqlserver;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.SqlserverSourceDTO;
 import org.junit.Test;
 
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.List;
 
 public class SqlServerClientTest {
     private static AbsRdbmsClient rdbsClient = new SqlServerClient();
-    private SourceDTO source = SourceDTO.builder()
+    private SqlserverSourceDTO source = SqlserverSourceDTO.builder()
             .url("jdbc:jtds:sqlserver://172.16.8.149:1433;DatabaseName=DTstack")
             .username("sa")
             .password("Dtstack2018")

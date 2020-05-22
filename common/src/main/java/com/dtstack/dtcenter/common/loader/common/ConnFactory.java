@@ -1,7 +1,8 @@
 package com.dtstack.dtcenter.common.loader.common;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -39,21 +40,23 @@ public class ConnFactory {
         }
     }
 
-    public Connection getConn(SourceDTO source) throws Exception {
+    public Connection getConn(ISourceDTO source) throws Exception {
         if (source == null) {
             throw new DtCenterDefException("数据源信息为 NULL");
         }
 
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+
         init();
         DriverManager.setLoginTimeout(5);
-        if (StringUtils.isBlank(source.getUsername())) {
-            return DriverManager.getConnection(source.getUrl());
+        if (StringUtils.isBlank(rdbmsSourceDTO.getUsername())) {
+            return DriverManager.getConnection(rdbmsSourceDTO.getUrl());
         }
 
-        return DriverManager.getConnection(source.getUrl(), source.getUsername(), source.getPassword());
+        return DriverManager.getConnection(rdbmsSourceDTO.getUrl(), rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getPassword());
     }
 
-    public Boolean testConn(SourceDTO source) {
+    public Boolean testConn(ISourceDTO source) {
         boolean isConnected = false;
         Connection conn = null;
         Statement statement = null;

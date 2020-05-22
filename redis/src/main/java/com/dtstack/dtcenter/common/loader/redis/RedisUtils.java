@@ -1,7 +1,8 @@
 package com.dtstack.dtcenter.common.loader.redis;
 
 import com.dtstack.dtcenter.common.util.AddressUtil;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RedisSourceDTO;
 import com.dtstack.dtcenter.loader.enums.RedisMode;
 import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
@@ -33,28 +34,30 @@ public class RedisUtils {
     private static final int DEFAULT_PORT = 6379;
     private static final int TIME_OUT = 5 * 1000;
 
-    public static boolean checkConnection(SourceDTO source) {
-        log.info("checkRedisConnection  source :{}", source);
-        RedisMode redisMode = source.getRedisMode() != null ? source.getRedisMode() : RedisMode.Standalone;
+    public static boolean checkConnection(ISourceDTO iSource) {
+        RedisSourceDTO redisSourceDTO = (RedisSourceDTO) iSource;
+        log.info("checkRedisConnection  source :{}", redisSourceDTO);
+        RedisMode redisMode = redisSourceDTO.getRedisMode() != null ? redisSourceDTO.getRedisMode() : RedisMode.Standalone;
         switch (redisMode) {
             case Standalone:
-                return checkConnectionStandalone(source);
+                return checkConnectionStandalone(redisSourceDTO);
             case Sentinel:
-                return checkRedisConnectionSentinel(source);
+                return checkRedisConnectionSentinel(redisSourceDTO);
             case Cluster:
-                return checkRedisConnectionCluster(source);
+                return checkRedisConnectionCluster(redisSourceDTO);
             default:
                 throw new RuntimeException("暂不支持的模式");
         }
     }
 
-    private static boolean checkConnectionStandalone(SourceDTO source) {
-        String password = source.getPassword();
-        String hostPort = source.getHostPort();
+    private static boolean checkConnectionStandalone(ISourceDTO iSource) {
+        RedisSourceDTO redisSourceDTO = (RedisSourceDTO) iSource;
+        String password = redisSourceDTO.getPassword();
+        String hostPort = redisSourceDTO.getHostPort();
 
         String host = null;
         int port = -1;
-        int db = StringUtils.isNotEmpty(source.getSchema()) ? Integer.parseInt(source.getSchema()) : 0;
+        int db = StringUtils.isNotEmpty(redisSourceDTO.getSchema()) ? Integer.parseInt(redisSourceDTO.getSchema()) : 0;
         Matcher matcher = HOST_PORT_PATTERN.matcher(hostPort);
 
         Preconditions.checkArgument(matcher.find(), "hostPort格式异常");
@@ -85,9 +88,10 @@ public class RedisUtils {
         }
     }
 
-    public static boolean checkRedisConnectionCluster(SourceDTO source) {
-        String hostPorts = source.getHostPort();
-        String password = source.getPassword();
+    public static boolean checkRedisConnectionCluster(ISourceDTO iSource) {
+        RedisSourceDTO redisSourceDTO = (RedisSourceDTO) iSource;
+        String hostPorts = redisSourceDTO.getHostPort();
+        String password = redisSourceDTO.getPassword();
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(2);
         poolConfig.setMaxIdle(2);
@@ -125,11 +129,12 @@ public class RedisUtils {
         }
     }
 
-    public static boolean checkRedisConnectionSentinel(SourceDTO source) {
-        String masterName = source.getMaster();
-        String hostPorts = source.getHostPort();
-        int db = StringUtils.isEmpty(source.getSchema()) ? 0 : Integer.parseInt(source.getSchema());
-        String password = source.getPassword();
+    public static boolean checkRedisConnectionSentinel(ISourceDTO iSource) {
+        RedisSourceDTO redisSourceDTO = (RedisSourceDTO) iSource;
+        String masterName = redisSourceDTO.getMaster();
+        String hostPorts = redisSourceDTO.getHostPort();
+        int db = StringUtils.isEmpty(redisSourceDTO.getSchema()) ? 0 : Integer.parseInt(redisSourceDTO.getSchema());
+        String password = redisSourceDTO.getPassword();
         Preconditions.checkArgument(StringUtils.isNotBlank(hostPorts), "hostPort不能为空");
         Set<HostAndPort> nodes = getHostAndPorts(hostPorts);
         Preconditions.checkArgument(CollectionUtils.isNotEmpty(nodes), "没有有效ip和端口");

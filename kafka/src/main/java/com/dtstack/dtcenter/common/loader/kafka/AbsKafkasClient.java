@@ -3,8 +3,9 @@ package com.dtstack.dtcenter.common.loader.kafka;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.KafkaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,26 +25,31 @@ import java.util.stream.Collectors;
 public abstract class AbsKafkasClient<T> implements IClient<T> {
 
     @Override
-    public Boolean testCon(SourceDTO source) {
-        return KakfaUtil.checkConnection(source.getUrl(), source.getBrokerUrls(), source.getKerberosConfig());
+    public Boolean testCon(ISourceDTO iSource) {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
+        return KakfaUtil.checkConnection(kafkaSourceDTO.getUrl(), kafkaSourceDTO.getBrokerUrls(),
+                kafkaSourceDTO.getKerberosConfig());
     }
 
     @Override
-    public String getAllBrokersAddress(SourceDTO source) throws Exception {
-        if (StringUtils.isNotBlank(source.getBrokerUrls())) {
-            return source.getBrokerUrls();
+    public String getAllBrokersAddress(ISourceDTO iSource) throws Exception {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
+        if (StringUtils.isNotBlank(kafkaSourceDTO.getBrokerUrls())) {
+            return kafkaSourceDTO.getBrokerUrls();
         }
-        return KakfaUtil.getAllBrokersAddressFromZk(source.getUrl());
+        return KakfaUtil.getAllBrokersAddressFromZk(kafkaSourceDTO.getUrl());
     }
 
     @Override
-    public List<String> getTopicList(SourceDTO source) throws Exception {
+    public List<String> getTopicList(ISourceDTO iSource) throws Exception {
         List<String> topics = null;
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
 
-        if (StringUtils.isNotBlank(source.getBrokerUrls())) {
-            topics = KakfaUtil.getTopicListFromBroker(source.getBrokerUrls(), source.getKerberosConfig());
+        if (StringUtils.isNotBlank(kafkaSourceDTO.getBrokerUrls())) {
+            topics = KakfaUtil.getTopicListFromBroker(kafkaSourceDTO.getBrokerUrls(),
+                    kafkaSourceDTO.getKerberosConfig());
         } else {
-            topics = KakfaUtil.getTopicListFromZk(source.getUrl());
+            topics = KakfaUtil.getTopicListFromZk(kafkaSourceDTO.getUrl());
         }
 
         //过滤特殊topic
@@ -55,27 +61,33 @@ public abstract class AbsKafkasClient<T> implements IClient<T> {
     }
 
     @Override
-    public Boolean createTopic(SourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception {
-        return KakfaUtil.createTopicFromZk(source.getUrl(), kafkaTopic.getTopicName(), kafkaTopic.getPartitions(),
+    public Boolean createTopic(ISourceDTO iSource, KafkaTopicDTO kafkaTopic) throws Exception {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
+        return KakfaUtil.createTopicFromZk(kafkaSourceDTO.getUrl(), kafkaTopic.getTopicName(),
+                kafkaTopic.getPartitions(),
                 kafkaTopic.getReplicationFactor());
     }
 
     @Override
-    public List<T> getAllPartitions(SourceDTO source, String topic) throws Exception {
-        return (List<T>) KakfaUtil.getAllPartitionsFromZk(source.getUrl(), topic);
+    public List<T> getAllPartitions(ISourceDTO iSource, String topic) throws Exception {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
+        return (List<T>) KakfaUtil.getAllPartitionsFromZk(kafkaSourceDTO.getUrl(), topic);
     }
 
     @Override
-    public List getOffset(SourceDTO source, String topic) throws Exception {
-        if (StringUtils.isBlank(source.getBrokerUrls())) {
-            source.setBrokerUrls(KakfaUtil.getAllBrokersAddressFromZk(source.getUrl()));
+    public List getOffset(ISourceDTO iSource, String topic) throws Exception {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
+        if (StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls())) {
+            kafkaSourceDTO.setBrokerUrls(KakfaUtil.getAllBrokersAddressFromZk(kafkaSourceDTO.getUrl()));
         }
-        return KakfaUtil.getPartitionOffset(source.getBrokerUrls(), source.getKerberosConfig(), topic);
+        return KakfaUtil.getPartitionOffset(kafkaSourceDTO.getBrokerUrls(), kafkaSourceDTO.getKerberosConfig(), topic);
     }
 
     @Override
-    public List<List<Object>> getPreview(SourceDTO source, SqlQueryDTO queryDTO) {
-        List<String> recordsFromKafka = KakfaUtil.getRecordsFromKafka(source.getUrl(), source.getBrokerUrls(), queryDTO.getTableName(), null, source.getKerberosConfig());
+    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
+        List<String> recordsFromKafka = KakfaUtil.getRecordsFromKafka(kafkaSourceDTO.getUrl(),
+                kafkaSourceDTO.getBrokerUrls(), queryDTO.getTableName(), null, kafkaSourceDTO.getKerberosConfig());
         List<Object> records = new ArrayList<>(recordsFromKafka);
         List<List<Object>> result = new ArrayList<>();
         result.add(records);
@@ -84,42 +96,42 @@ public abstract class AbsKafkasClient<T> implements IClient<T> {
 
     /********************************* mq数据源无需实现的方法 ******************************************/
     @Override
-    public Connection getCon(SourceDTO source) throws Exception {
+    public Connection getCon(ISourceDTO iSource) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<String> getColumnClassInfo(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 }

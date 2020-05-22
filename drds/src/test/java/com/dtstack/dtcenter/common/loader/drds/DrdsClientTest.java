@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.drds;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import org.junit.Test;
 
 public class DrdsClientTest {
@@ -10,7 +10,7 @@ public class DrdsClientTest {
 
     @Test
     public void getConnFactory() throws Exception {
-        SourceDTO source = SourceDTO.builder()
+        RdbmsSourceDTO source = RdbmsSourceDTO.builder()
                 .url("jdbc:mysql://172.16.8.109:3306/ide")
                 .username("dtstack")
                 .password("abc123")

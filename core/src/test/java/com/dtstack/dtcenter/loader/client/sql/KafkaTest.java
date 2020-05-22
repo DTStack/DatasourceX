@@ -6,7 +6,7 @@ import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.KafkaSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.apache.kafka.common.requests.MetadataResponse;
 import org.junit.Test;
@@ -22,7 +22,7 @@ import java.util.List;
 public class KafkaTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    SourceDTO source = SourceDTO.builder()
+    KafkaSourceDTO source = KafkaSourceDTO.builder()
             .url("kudu3:2181/kafka")
             .build();
 

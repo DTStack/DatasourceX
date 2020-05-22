@@ -8,8 +8,9 @@ import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import org.apache.commons.lang.StringUtils;
 
@@ -39,18 +40,19 @@ public class ImpalaClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeQuery(source, queryDTO, false);
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeQuery(iSource, queryDTO, false);
+        ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
         //impala db写在jdbc连接中无效，必须手动切换库
-        String db = queryDTO == null || StringUtils.isBlank(source.getSchema()) ?
-                getImpalaDbFromJdbc(source.getUrl()) : source.getSchema();
+        String db = queryDTO == null || StringUtils.isBlank(impalaSourceDTO.getSchema()) ?
+                getImpalaDbFromJdbc(impalaSourceDTO.getUrl()) : impalaSourceDTO.getSchema();
         // 获取表信息需要通过show tables 语句
         String sql = "show tables";
         Statement statement = null;
         ResultSet rs = null;
         List<String> tableList = new ArrayList<>();
         try {
-            statement = source.getConnection().createStatement();
+            statement = impalaSourceDTO.getConnection().createStatement();
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
@@ -59,21 +61,22 @@ public class ImpalaClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtCenterDefException("获取表异常", e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, impalaSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return tableList;
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
+        ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
 
         List<ColumnMetaDTO> columnList = new ArrayList<>();
         Statement stmt = null;
         ResultSet resultSet = null;
         try {
             LinkedHashMap<String, JSONObject> colNameMap = new LinkedHashMap<>();
-            stmt = source.getConnection().createStatement();
+            stmt = impalaSourceDTO.getConnection().createStatement();
             //首先判断是否是kudu表 是kudu表直接用主键代替 isPart
             resultSet = stmt.executeQuery("DESCRIBE " + queryDTO.getTableName());
             int columnCnt = resultSet.getMetaData().getColumnCount();
@@ -129,22 +132,24 @@ public class ImpalaClient extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, stmt, null);
+            DBUtil.closeDBResources(resultSet, stmt, impalaSourceDTO.clearAfterGetConnection(clearStatus));
         }
 
         return columnList;
     }
 
     @Override
-    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
+        ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
 
         Statement statement = null;
         ResultSet resultSet = null;
         try {
-            statement = source.getConnection().createStatement();
-            if (StringUtils.isNotEmpty(source.getSchema())) {
-                statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, source.getSchema()));
+            statement = impalaSourceDTO.getConnection().createStatement();
+            if (StringUtils.isNotEmpty(impalaSourceDTO.getSchema())) {
+                statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB,
+                        impalaSourceDTO.getSchema()));
             }
             resultSet = statement.executeQuery(String.format(DtClassConsistent.HadoopConfConsistent.DESCRIBE_EXTENDED
                     , queryDTO.getTableName()));
@@ -159,7 +164,7 @@ public class ImpalaClient extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, impalaSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return "";
     }

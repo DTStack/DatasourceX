@@ -8,8 +8,9 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.utils.CollectionUtil;
@@ -47,11 +48,11 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     private static final String DONT_EXIST = "doesn't exist";
 
     @Override
-    public Connection getCon(SourceDTO source) throws Exception {
+    public Connection getCon(ISourceDTO iSource) throws Exception {
         log.info("-------get connection success-----");
         if (!CacheConnectionHelper.isStart()) {
             try {
-                return connFactory.getConn(source);
+                return connFactory.getConn(iSource);
             } catch (Exception e) {
                 throw new DtCenterDefException("获取数据库连接异常", e);
             }
@@ -59,7 +60,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
         return CacheConnectionHelper.getConnection(getSourceType().getVal(), con -> {
             try {
-                return connFactory.getConn(source);
+                return connFactory.getConn(iSource);
             } catch (Exception e) {
                 throw new DtCenterDefException("获取数据库连接异常", e);
             }
@@ -67,31 +68,33 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
-    public Boolean testCon(SourceDTO source) {
-        return connFactory.testConn(source);
+    public Boolean testCon(ISourceDTO iSource) {
+        return connFactory.testConn(iSource);
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeQuery(source, queryDTO, true);
+    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeQuery(iSource, queryDTO, true);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
         // 如果当前 connection 已关闭，直接返回空列表
-        if (source.getConnection().isClosed()) {
+        if (rdbmsSourceDTO.getConnection().isClosed()) {
             return Lists.newArrayList();
         }
 
-        return DBUtil.executeQuery(source.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
+        return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
                 ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeQuery(source, queryDTO, true);
+    public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeQuery(iSource, queryDTO, true);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
         // 如果当前 connection 已关闭，直接返回空列表
-        if (source.getConnection().isClosed()) {
+        if (rdbmsSourceDTO.getConnection().isClosed()) {
             return false;
         }
 
-        DBUtil.executeSqlWithoutResultSet(source.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
+        DBUtil.executeSqlWithoutResultSet(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
                 ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
         return true;
     }
@@ -99,20 +102,21 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     /**
      * 执行查询前的操作
      *
-     * @param sourceDTO
+     * @param iSource
      * @param queryDTO
      * @return 是否需要自动关闭连接
      * @throws Exception
      */
-    protected Integer beforeQuery(SourceDTO sourceDTO, SqlQueryDTO queryDTO, boolean query) throws Exception {
+    protected Integer beforeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO, boolean query) throws Exception {
         // 查询 SQL 不能为空
         if (query && StringUtils.isBlank(queryDTO.getSql())) {
             throw new DtLoaderException("查询 SQL 不能为空");
         }
 
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
         // 设置 connection
-        if (sourceDTO.getConnection() == null) {
-            sourceDTO.setConnection(getCon(sourceDTO));
+        if (rdbmsSourceDTO.getConnection() == null) {
+            rdbmsSourceDTO.setConnection(getCon(iSource));
             if (CacheConnectionHelper.isStart()) {
                 return ConnectionClearStatus.CLEAR.getValue();
             }
@@ -124,13 +128,14 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     /**
      * 执行字段处理前的操作
      *
-     * @param sourceDTO
+     * @param iSource
      * @param queryDTO
      * @return
      * @throws Exception
      */
-    protected Integer beforeColumnQuery(SourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeQuery(sourceDTO, queryDTO, false);
+    protected Integer beforeColumnQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        // 查询表不能为空
+        Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         if (queryDTO == null || StringUtils.isBlank(queryDTO.getTableName())) {
             throw new DtLoaderException("查询 表名称 不能为空");
         }
@@ -141,16 +146,17 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeQuery(source, queryDTO, false);
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeQuery(iSource, queryDTO, false);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
         ResultSet rs = null;
         List<String> tableList = new ArrayList<>();
         try {
-            DatabaseMetaData meta = source.getConnection().getMetaData();
+            DatabaseMetaData meta = rdbmsSourceDTO.getConnection().getMetaData();
             if (null == queryDTO) {
                 rs = meta.getTables(null, null, null, null);
             } else {
-                rs = meta.getTables(null, source.getSchema(),
+                rs = meta.getTables(null, rdbmsSourceDTO.getSchema(),
                         StringUtils.isBlank(queryDTO.getTableNamePattern()) ? queryDTO.getTableNamePattern() :
                                 queryDTO.getTableName(),
                         DBUtil.getTableTypes(queryDTO));
@@ -161,19 +167,20 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         } catch (Exception e) {
             throw new DtLoaderException("获取数据库表异常", e);
         } finally {
-            DBUtil.closeDBResources(rs, null, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, null, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return tableList;
     }
 
     @Override
-    public List<String> getColumnClassInfo(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
 
         Statement stmt = null;
         ResultSet rs = null;
         try {
-            stmt = source.getConnection().createStatement();
+            stmt = rdbmsSourceDTO.getConnection().createStatement();
             String queryColumnSql =
                     "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + queryDTO.getTableName()
                             + " where 1=2";
@@ -189,18 +196,19 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
             return columnClassNameList;
         } finally {
-            DBUtil.closeDBResources(rs, stmt, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, stmt, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
         }
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
         Statement statement = null;
         ResultSet rs = null;
         List<ColumnMetaDTO> columns = new ArrayList<>();
         try {
-            statement = source.getConnection().createStatement();
+            statement = rdbmsSourceDTO.getConnection().createStatement();
             String queryColumnSql =
                     "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferTableName(queryDTO.getTableName()) + " where 1=2";
 
@@ -233,17 +241,17 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                         DBErrorCode.GET_COLUMN_INFO_FAILED, e);
             }
         } finally {
-            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
         }
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return getColumnMetaData(source, queryDTO);
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        return getColumnMetaData(iSource, queryDTO);
     }
 
     @Override
-    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         return "";
     }
 
@@ -266,32 +274,32 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     /********************************* 关系型数据库无需实现的方法 ******************************************/
     @Override
-    public String getAllBrokersAddress(SourceDTO source) throws Exception {
+    public String getAllBrokersAddress(ISourceDTO iSource) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<String> getTopicList(SourceDTO source) throws Exception {
+    public List<String> getTopicList(ISourceDTO iSource) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public Boolean createTopic(SourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception {
+    public Boolean createTopic(ISourceDTO iSource, KafkaTopicDTO kafkaTopic) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<T> getAllPartitions(SourceDTO source, String topic) throws Exception {
+    public List<T> getAllPartitions(ISourceDTO iSource, String topic) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<KafkaOffsetDTO> getOffset(SourceDTO source, String topic) throws Exception {
+    public List<KafkaOffsetDTO> getOffset(ISourceDTO iSource, String topic) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<List<Object>> getPreview(SourceDTO source, SqlQueryDTO queryDTO) {
+    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 }

@@ -4,7 +4,8 @@ import com.dtstack.dtcenter.common.enums.DataBaseType;
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
@@ -28,25 +29,28 @@ public class HiveConnFactory extends ConnFactory {
     }
 
     @Override
-    public Connection getConn(SourceDTO source) throws Exception {
+    public Connection getConn(ISourceDTO iSource) throws Exception {
         init();
+        HiveSourceDTO hiveSourceDTO = (HiveSourceDTO) iSource;
         DriverManager.setLoginTimeout(30);
         Configuration conf = null;
-        if (MapUtils.isNotEmpty(source.getKerberosConfig())) {
-            String principalFile = (String) source.getKerberosConfig().get("principalFile");
+        if (MapUtils.isNotEmpty(hiveSourceDTO.getKerberosConfig())) {
+            String principalFile = (String) hiveSourceDTO.getKerberosConfig().get("principalFile");
             log.info("getHiveConnection principalFile:{}", principalFile);
-            conf = DtKerberosUtils.loginKerberos(source.getKerberosConfig());
+            conf = DtKerberosUtils.loginKerberos(hiveSourceDTO.getKerberosConfig());
         }
 
-        Matcher matcher = DtClassConsistent.PatternConsistent.HIVE_JDBC_PATTERN.matcher(source.getUrl());
-        Connection connection = DriverManager.getConnection(source.getUrl(), source.getUsername(), source.getPassword());
+        Matcher matcher = DtClassConsistent.PatternConsistent.HIVE_JDBC_PATTERN.matcher(hiveSourceDTO.getUrl());
+        Connection connection = DriverManager.getConnection(hiveSourceDTO.getUrl(), hiveSourceDTO.getUsername(),
+                hiveSourceDTO.getPassword());
         String db = null;
         if (!matcher.find()) {
             db = matcher.group(DtClassConsistent.PublicConsistent.DB_KEY);
         }
-        db = StringUtils.isBlank(source.getSchema()) ? db : source.getSchema();
+        db = StringUtils.isBlank(hiveSourceDTO.getSchema()) ? db : hiveSourceDTO.getSchema();
         if (StringUtils.isNotEmpty(db)) {
-            DBUtil.executeSqlWithoutResultSet(connection, String.format(DtClassConsistent.PublicConsistent.USE_DB, db), false);
+            DBUtil.executeSqlWithoutResultSet(connection, String.format(DtClassConsistent.PublicConsistent.USE_DB,
+                    db), false);
         }
         return connection;
     }

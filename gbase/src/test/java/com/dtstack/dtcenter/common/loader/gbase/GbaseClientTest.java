@@ -2,8 +2,8 @@ package com.dtstack.dtcenter.common.loader.gbase;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.GBaseSourceDTO;
 import org.junit.Test;
 
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.List;
 public class GbaseClientTest {
     private static AbsRdbmsClient rdbsClient = new GbaseClient();
 
-    private SourceDTO source = SourceDTO.builder()
+    private GBaseSourceDTO source = GBaseSourceDTO.builder()
             .url("jdbc:gbase://172.16.8.193:5258/dtstack")
             .username("root")
             .password("123456")

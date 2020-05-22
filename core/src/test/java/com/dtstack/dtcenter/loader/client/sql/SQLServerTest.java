@@ -5,8 +5,8 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.SqlserverSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
@@ -23,7 +23,7 @@ import java.util.Map;
 public class SQLServerTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    SourceDTO source = SourceDTO.builder()
+    SqlserverSourceDTO source = SqlserverSourceDTO.builder()
             .url("jdbc:jtds:sqlserver://172.16.8.149:1433;DatabaseName=DTstack")
             .username("sa")
             .password("Dtstack2018")

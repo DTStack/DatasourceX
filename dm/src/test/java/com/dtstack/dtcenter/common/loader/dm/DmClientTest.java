@@ -1,8 +1,8 @@
 package com.dtstack.dtcenter.common.loader.dm;
 
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.DmSourceDTO;
 import org.junit.Test;
 
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class DmClientTest {
     private static AbsRdbmsClient rdbsClient = new DmClient();
-    SourceDTO source = SourceDTO.builder()
+    DmSourceDTO source = DmSourceDTO.builder()
             .url("jdbc:dm://172.16.8.178:5236/chener")
             .username("chener")
             .password("abc123456")

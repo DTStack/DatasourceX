@@ -6,7 +6,8 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.utils.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -31,11 +32,12 @@ import java.util.Map;
 @Slf4j
 public class HbaseConnFactory extends ConnFactory {
     @Override
-    public Boolean testConn(SourceDTO source) {
+    public Boolean testConn(ISourceDTO iSource) {
+        HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) iSource;
         boolean check = false;
         org.apache.hadoop.hbase.client.Connection hConn = null;
         try {
-            hConn = getHbaseConn(source);
+            hConn = getHbaseConn(hbaseSourceDTO);
             ClusterStatus clusterStatus = hConn.getAdmin().getClusterStatus();
             check = true;
         } catch (Exception e) {
@@ -46,13 +48,13 @@ public class HbaseConnFactory extends ConnFactory {
                     hConn.close();
                 }
             } catch (IOException e) {
-        log.error(e.getMessage(), e);
-    }
-}
+                log.error(e.getMessage(), e);
+            }
+        }
         return check;
     }
 
-    public static org.apache.hadoop.hbase.client.Connection getHbaseConn(SourceDTO source) throws Exception {
+    public static org.apache.hadoop.hbase.client.Connection getHbaseConn(HbaseSourceDTO source) throws Exception {
         if (MapUtils.isNotEmpty(source.getKerberosConfig())) {
             DtKerberosUtils.loginKerberos(source.getKerberosConfig());
         }
@@ -76,37 +78,38 @@ public class HbaseConnFactory extends ConnFactory {
     /**
      * 数据源 改成 HBase 需要的 Map 信息
      *
-     * @param source
+     * @param iSource
      * @return
      */
-    private static Map<String, Object> sourceToMap(SourceDTO source) {
+    private static Map<String, Object> sourceToMap(ISourceDTO iSource) {
+        HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) iSource;
         Map<String, Object> hbaseMap = new HashMap<>();
         //对于直接传config的 走直接生成的逻辑
 
-        if (StringUtils.isNotBlank(source.getConfig())) {
-            JSONObject jsonObject = JSON.parseObject(source.getConfig());
+        if (StringUtils.isNotBlank(hbaseSourceDTO.getConfig())) {
+            JSONObject jsonObject = JSON.parseObject(hbaseSourceDTO.getConfig());
             hbaseMap.putAll(jsonObject);
         } else {
 
-            if (StringUtils.isBlank(source.getUrl())) {
+            if (StringUtils.isBlank(hbaseSourceDTO.getUrl())) {
                 throw new DtCenterDefException("集群地址不能为空");
             }
             // 设置集群地址
-            hbaseMap.put(DtClassConsistent.HBaseConsistent.KEY_HBASE_ZOOKEEPER_QUORUM, source.getUrl());
+            hbaseMap.put(DtClassConsistent.HBaseConsistent.KEY_HBASE_ZOOKEEPER_QUORUM, hbaseSourceDTO.getUrl());
 
             // 设置根路径
-            if (StringUtils.isNotBlank(source.getPath())) {
-                hbaseMap.put(DtClassConsistent.HBaseConsistent.KEY_ZOOKEEPER_ZNODE_PARENT, source.getPath());
+            if (StringUtils.isNotBlank(hbaseSourceDTO.getPath())) {
+                hbaseMap.put(DtClassConsistent.HBaseConsistent.KEY_ZOOKEEPER_ZNODE_PARENT, hbaseSourceDTO.getPath());
             }
 
         }
 
         // 设置其他信息
-        hbaseMap.putAll(JSONUtil.parseMap(source.getOthers()));
+        hbaseMap.putAll(JSONUtil.parseMap(hbaseSourceDTO.getOthers()));
 
         // 设置 Kerberos 信息
-        if (MapUtils.isNotEmpty(source.getKerberosConfig())) {
-            hbaseMap.putAll(source.getKerberosConfig());
+        if (MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
+            hbaseMap.putAll(hbaseSourceDTO.getKerberosConfig());
         }
 
         // 设置默认信息
@@ -119,7 +122,7 @@ public class HbaseConnFactory extends ConnFactory {
     }
 
     @Override
-    public Connection getConn(SourceDTO source) throws Exception {
+    public Connection getConn(ISourceDTO source) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 }

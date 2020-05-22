@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.mysql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.Mysql8SourceDTO;
 import org.junit.Test;
 
 public class MysqlClientTest {
@@ -10,7 +10,7 @@ public class MysqlClientTest {
 
     @Test
     public void getConnFactory() throws Exception {
-        SourceDTO source = SourceDTO.builder()
+        Mysql8SourceDTO source = Mysql8SourceDTO.builder()
                 .url("jdbc:mysql://localhost:3306?useSSL=false&serverTimezone=Asia/Shanghai")
                 .username("root")
                 .password("123456")

@@ -4,7 +4,7 @@ import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
@@ -19,10 +19,10 @@ import java.util.List;
 public class HbaseTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    SourceDTO source = SourceDTO.builder()
+    HbaseSourceDTO source = HbaseSourceDTO.builder()
             .url("node01,node02,node03:2181")
             .path("/hbase")
-            .schema("mqTest")
+            .schema("default")
             .build();
 
     @Test

@@ -5,8 +5,8 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.Greenplum6SourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
@@ -23,7 +23,7 @@ import java.util.Map;
 public class Greenplum6Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    SourceDTO source = SourceDTO.builder()
+    Greenplum6SourceDTO source = Greenplum6SourceDTO.builder()
             .url("jdbc:pivotal:greenplum://172.16.10.90:5432;DatabaseName=data")
             .username("gpadmin")
             .password("gpadmin")
@@ -75,7 +75,7 @@ public class Greenplum6Test {
         IClient client = clientCache.getClient(DataSourceClientType.Greenplum6.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi102").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
-        columnClassInfo.forEach(column->{
+        columnClassInfo.forEach(column -> {
             System.out.println(column);
         });
         System.out.println(columnClassInfo.size());
@@ -87,7 +87,7 @@ public class Greenplum6Test {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("student").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
-        columnMetaData.forEach(column->{
+        columnMetaData.forEach(column -> {
             System.out.println(column);
         });
     }
