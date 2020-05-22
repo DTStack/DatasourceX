@@ -1,0 +1,43 @@
+package com.dtstack.dtcenter.loader.dto.source;
+
+import com.dtstack.dtcenter.loader.enums.RedisMode;
+import lombok.*;
+
+/**
+ * @company: www.dtstack.com
+ * @Author ：WangChuan
+ * @Date ：Created in 19:20 2020/5/22
+ * @Description：Mongo 数据源信息
+ */
+@Data
+@ToString
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class MongoSourceDTO  implements ISourceDTO {
+
+    /**
+     * 用户名
+     */
+    private String username;
+
+    /**
+     * 密码
+     */
+    private String password;
+
+    /**
+     * 端口号
+     */
+    private String hostPort;
+
+    /**
+     * 模式即 DBName
+     */
+    private String schema;
+
+    /**
+     * 如果为 master slave 的则为 master 的地址
+     */
+    private String master;
+}

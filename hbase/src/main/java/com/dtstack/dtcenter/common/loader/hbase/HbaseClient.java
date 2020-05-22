@@ -4,8 +4,9 @@ import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -39,12 +40,13 @@ public class HbaseClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) iSource;
         Connection hConn = null;
         Admin admin = null;
         List<String> tableList = new ArrayList<>();
         try {
-            hConn = HbaseConnFactory.getHbaseConn(source);
+            hConn = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
             admin = hConn.getAdmin();
             TableName[] tableNames = admin.listTableNames();
             if (tableNames != null) {
@@ -81,36 +83,14 @@ public class HbaseClient extends AbsRdbmsClient {
         }
     }
 
-    /******************** 未支持的方法 **********************/
     @Override
-    public java.sql.Connection getCon(SourceDTO source) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<Map<String, Object>> executeQuery(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public Boolean executeSqlWithoutResultSet(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getColumnClassInfo(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) iSource;
         Connection hConn = null;
         Table tb = null;
         List<ColumnMetaDTO> cfList = new ArrayList<>();
-
-
         try {
-            hConn = HbaseConnFactory.getHbaseConn(source);
+            hConn = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
             TableName tableName = TableName.valueOf(queryDTO.getTableName());
             tb = hConn.getTable(tableName);
             HTableDescriptor hTableDescriptor = tb.getTableDescriptor();
@@ -137,5 +117,26 @@ public class HbaseClient extends AbsRdbmsClient {
                 throw new RuntimeException("hbase can not close table error", e);
             }
         }
+    }
+
+    /******************** 未支持的方法 **********************/
+    @Override
+    public java.sql.Connection getCon(ISourceDTO source) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<String> getColumnClassInfo(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
     }
 }

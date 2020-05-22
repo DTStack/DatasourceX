@@ -6,8 +6,9 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.Greenplum6SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import org.apache.commons.lang.StringUtils;
 
@@ -30,10 +31,11 @@ public class GreenplumClient extends AbsRdbmsClient {
             " left join pg_description des on col.table_name::regclass = des.objoid" +
             " and col.ordinal_position = des.objsubid where table_schema = '%s' and table_name = '%s'";
 
-    private static final String TABLE_QUERY = "SELECT relname from pg_class a,pg_namespace b where relname not like '%%prt%%' and relkind ='r'  and a.relnamespace=b.oid and  nspname = '%s';";
+    private static final String TABLE_QUERY = "SELECT relname from pg_class a,pg_namespace b where relname not like " +
+            "'%%prt%%' and relkind ='r'  and a.relnamespace=b.oid and  nspname = '%s';";
 
 
-    private static final String TABLE_COMMENT_QUERY="select de.description\n" +
+    private static final String TABLE_COMMENT_QUERY = "select de.description\n" +
             "          from (select pc.oid as ooid,pn.nspname,pc.*\n" +
             "      from pg_class pc\n" +
             "           left outer join pg_namespace pn\n" +
@@ -67,13 +69,14 @@ public class GreenplumClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String  getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        checkSchema(source);
-        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
+        Greenplum6SourceDTO greenplum6SourceDTO = (Greenplum6SourceDTO) iSource;
+        checkSchema(greenplum6SourceDTO);
         Statement statement = null;
         ResultSet resultSet = null;
         try {
-            statement = source.getConnection().createStatement();
+            statement = greenplum6SourceDTO.getConnection().createStatement();
             resultSet = statement.executeQuery(String.format(TABLE_COMMENT_QUERY, queryDTO.getTableName()));
             while (resultSet.next()) {
                 String tableDesc = resultSet.getString(1);
@@ -84,7 +87,7 @@ public class GreenplumClient extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, greenplum6SourceDTO.clearAfterGetConnection(clearStatus));
         }
         return "";
     }
@@ -103,30 +106,31 @@ public class GreenplumClient extends AbsRdbmsClient {
 
 
     @Override
-    public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        checkSchema(source);
-        Integer clearStatus = beforeQuery(source, queryDTO, false);
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeQuery(iSource, queryDTO, false);
+        Greenplum6SourceDTO greenplum6SourceDTO = (Greenplum6SourceDTO) iSource;
+        checkSchema(greenplum6SourceDTO);
         Statement statement = null;
         ResultSet resultSet = null;
         List<String> tableList = new ArrayList<>();
         try {
-            statement = source.getConnection().createStatement();
-            resultSet=statement.executeQuery(String.format(TABLE_QUERY,source.getSchema()));
+            statement = greenplum6SourceDTO.getConnection().createStatement();
+            resultSet = statement.executeQuery(String.format(TABLE_QUERY, greenplum6SourceDTO.getSchema()));
             while (resultSet.next()) {
                 tableList.add(resultSet.getString(1));
             }
         } catch (SQLException e) {
             throw new DtCenterDefException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
-                    source.getSchema()),
+                    greenplum6SourceDTO.getSchema()),
                     DBErrorCode.GET_TABLE_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, greenplum6SourceDTO.clearAfterGetConnection(clearStatus));
         }
         return tableList;
     }
 
 
-    private void checkSchema(SourceDTO source){
+    private void checkSchema(Greenplum6SourceDTO source) {
         String schemaName = source.getSchema();
         if (StringUtils.isBlank(schemaName)) {
             throw new DtCenterDefException("greenplum6 数据源schema不能为空");

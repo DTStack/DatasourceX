@@ -3,8 +3,8 @@ package com.dtstack.dtcenter.loader.client;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 
 import java.sql.Connection;
 import java.util.List;
@@ -24,7 +24,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    Connection getCon(SourceDTO source) throws Exception;
+    Connection getCon(ISourceDTO source) throws Exception;
 
     /**
      * 校验 连接
@@ -33,7 +33,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    Boolean testCon(SourceDTO source);
+    Boolean testCon(ISourceDTO source);
 
     /**
      * 执行查询
@@ -43,7 +43,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<Map<String, Object>> executeQuery(SourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
     /**
      * 执行查询，无需结果集
@@ -53,7 +53,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    Boolean executeSqlWithoutResultSet(SourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
     /**
      * 返回所有的表字段名称
@@ -64,7 +64,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
     /**
      * 返回字段 Java 类的标准名称
@@ -75,7 +75,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<String> getColumnClassInfo(SourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    List<String> getColumnClassInfo(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
     /**
      * 获取表字段属性
@@ -86,7 +86,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    List<ColumnMetaDTO> getColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
     /**
      * 获取flinkSql字段名称
@@ -96,7 +96,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<ColumnMetaDTO> getFlinkColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
     /**
      * 获取表注释
@@ -106,7 +106,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
     /****************************************** Kafka 定制 ******************************************************/
 
@@ -117,7 +117,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    String getAllBrokersAddress(SourceDTO source) throws Exception;
+    String getAllBrokersAddress(ISourceDTO source) throws Exception;
 
     /**
      * 获取 所有 Topic 信息
@@ -126,7 +126,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<String> getTopicList(SourceDTO source) throws Exception;
+    List<String> getTopicList(ISourceDTO source) throws Exception;
 
     /**
      * 创建 Topic
@@ -136,7 +136,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    Boolean createTopic(SourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception;
+    Boolean createTopic(ISourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception;
 
     /**
      * 获取特定 Topic 分区信息
@@ -146,7 +146,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<T> getAllPartitions(SourceDTO source, String topic) throws Exception;
+    List<T> getAllPartitions(ISourceDTO source, String topic) throws Exception;
 
     /**
      * 获取特定 Topic 所有分区的偏移量
@@ -156,7 +156,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<KafkaOffsetDTO> getOffset(SourceDTO source, String topic) throws Exception;
+    List<KafkaOffsetDTO> getOffset(ISourceDTO source, String topic) throws Exception;
 
     /**
      * 获取预览数据
@@ -164,5 +164,5 @@ public interface IClient<T> {
      * @param queryDTO
      * @return
      */
-    List<List<Object>> getPreview(SourceDTO source, SqlQueryDTO queryDTO);
+    List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO);
 }

@@ -8,8 +8,9 @@ import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
@@ -46,17 +47,18 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeQuery(source, queryDTO, false);
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeQuery(iSource, queryDTO, false);
+        HiveSourceDTO hiveSourceDTO = (HiveSourceDTO) iSource;
         // 获取表信息需要通过show tables 语句
         String sql = "show tables";
         Statement statement = null;
         ResultSet rs = null;
         List<String> tableList = new ArrayList<>();
         try {
-            statement = source.getConnection().createStatement();
-            if (StringUtils.isNotEmpty(source.getSchema())) {
-                statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, source.getSchema()));
+            statement = hiveSourceDTO.getConnection().createStatement();
+            if (StringUtils.isNotEmpty(hiveSourceDTO.getSchema())) {
+                statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, hiveSourceDTO.getSchema()));
             }
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
@@ -66,21 +68,22 @@ public class HiveClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtCenterDefException("获取表异常", e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, hiveSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return tableList;
     }
 
     @Override
-    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
+        HiveSourceDTO hiveSourceDTO = (HiveSourceDTO) iSource;
 
         Statement statement = null;
         ResultSet resultSet = null;
         try {
-            statement = source.getConnection().createStatement();
-            if (StringUtils.isNotEmpty(source.getSchema())) {
-                statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, source.getSchema()));
+            statement = hiveSourceDTO.getConnection().createStatement();
+            if (StringUtils.isNotEmpty(hiveSourceDTO.getSchema())) {
+                statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, hiveSourceDTO.getSchema()));
             }
             resultSet = statement.executeQuery(String.format(DtClassConsistent.HadoopConfConsistent.DESCRIBE_EXTENDED
                     , queryDTO.getTableName()));
@@ -102,23 +105,24 @@ public class HiveClient extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, hiveSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return "";
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
+        HiveSourceDTO hiveSourceDTO = (HiveSourceDTO) iSource;
 
         List<ColumnMetaDTO> columnMetaDTOS = new ArrayList<>();
         Statement stmt = null;
         ResultSet resultSet = null;
 
         try {
-            stmt = source.getConnection().createStatement();
-            if (StringUtils.isNotEmpty(source.getSchema())) {
-                stmt.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, source.getSchema()));
+            stmt = hiveSourceDTO.getConnection().createStatement();
+            if (StringUtils.isNotEmpty(hiveSourceDTO.getSchema())) {
+                stmt.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, hiveSourceDTO.getSchema()));
             }
             resultSet = stmt.executeQuery("desc extended " + queryDTO.getTableName());
             while (resultSet.next()) {
@@ -160,7 +164,8 @@ public class HiveClient extends AbsRdbmsClient {
 
                 // 处理分区标志
                 if (partBegin && !colName.contains("Partition Type")) {
-                    Optional<ColumnMetaDTO> metaDTO = columnMetaDTOS.stream().filter(meta -> colName.trim().equals(meta.getKey())).findFirst();
+                    Optional<ColumnMetaDTO> metaDTO =
+                            columnMetaDTOS.stream().filter(meta -> colName.trim().equals(meta.getKey())).findFirst();
                     if (metaDTO.isPresent()) {
                         metaDTO.get().setPart(true);
                     }
@@ -176,22 +181,23 @@ public class HiveClient extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, stmt, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, stmt, hiveSourceDTO.clearAfterGetConnection(clearStatus));
         }
     }
 
     @Override
-    public Boolean testCon(SourceDTO source) {
+    public Boolean testCon(ISourceDTO iSource) {
         // 先校验数据源连接性
-        Boolean testCon = super.testCon(source);
+        Boolean testCon = super.testCon(iSource);
         if (!testCon) {
             return Boolean.FALSE;
         }
+        HiveSourceDTO hiveSourceDTO= (HiveSourceDTO) iSource;
 
         // 校验高可用配置
-        Properties properties = combineHdfsConfig(source.getConfig(), source.getKerberosConfig());
+        Properties properties = combineHdfsConfig(hiveSourceDTO.getConfig(), hiveSourceDTO.getKerberosConfig());
         if (properties.size() > 0) {
-            Configuration conf = new HdfsOperator.HadoopConf().setConf(source.getDefaultFS(), properties);
+            Configuration conf = new HdfsOperator.HadoopConf().setConf(hiveSourceDTO.getDefaultFS(), properties);
             //不在做重复认证
             conf.set("hadoop.security.authorization", "false");
             //必须添加

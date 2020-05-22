@@ -6,7 +6,8 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.Mysql5SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 
@@ -70,13 +71,14 @@ public class MysqlClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+    public String getTableMetaComment(ISourceDTO ISource, SqlQueryDTO queryDTO) throws Exception {
+        Mysql5SourceDTO mysql5SourceDTO = (Mysql5SourceDTO) ISource;
+        Integer clearStatus = beforeColumnQuery(mysql5SourceDTO, queryDTO);
         Statement statement = null;
         ResultSet resultSet = null;
 
         try {
-            statement = source.getConnection().createStatement();
+            statement = mysql5SourceDTO.getConnection().createStatement();
             resultSet = statement.executeQuery("show table status");
             while (resultSet.next()) {
                 String dbTableName = resultSet.getString(1);
@@ -90,7 +92,7 @@ public class MysqlClient extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, mysql5SourceDTO.clearAfterGetConnection(clearStatus));
         }
         return "";
     }

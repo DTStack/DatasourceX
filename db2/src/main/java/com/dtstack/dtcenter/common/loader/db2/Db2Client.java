@@ -5,8 +5,9 @@ import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.Db2SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 
 import java.sql.ResultSet;
@@ -34,15 +35,15 @@ public class Db2Client extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeQuery(source, queryDTO, false);
-
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeQuery(iSource, queryDTO, false);
+        Db2SourceDTO db2SourceDTO = (Db2SourceDTO) iSource;
         Statement statement = null;
         ResultSet rs = null;
         List<String> tableList = new ArrayList<>();
         try {
-            String sql = String.format(TABLE_QUERY, source.getUsername().toUpperCase());
-            statement = source.getConnection().createStatement();
+            String sql = String.format(TABLE_QUERY, db2SourceDTO.getUsername().toUpperCase());
+            statement = db2SourceDTO.getConnection().createStatement();
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
@@ -51,19 +52,20 @@ public class Db2Client extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtCenterDefException("获取表异常", e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, db2SourceDTO.clearAfterGetConnection(clearStatus));
         }
         return tableList;
     }
 
     @Override
-    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
+        Db2SourceDTO db2SourceDTO = (Db2SourceDTO) iSource;
 
         Statement statement = null;
         ResultSet resultSet = null;
         try {
-            statement = source.getConnection().createStatement();
+            statement = db2SourceDTO.getConnection().createStatement();
             resultSet = statement.executeQuery(String.format("select remarks from syscat.tables where tabname = '%s'"
                     , queryDTO.getTableName()));
             while (resultSet.next()) {
@@ -74,7 +76,7 @@ public class Db2Client extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, db2SourceDTO.clearAfterGetConnection(clearStatus));
         }
         return "";
     }

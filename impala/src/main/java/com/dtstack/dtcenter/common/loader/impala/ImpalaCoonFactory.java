@@ -4,7 +4,8 @@ import com.dtstack.dtcenter.common.enums.DataBaseType;
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
@@ -27,15 +28,17 @@ public class ImpalaCoonFactory extends ConnFactory {
     }
 
     @Override
-    public Connection getConn(SourceDTO source) throws Exception {
+    public Connection getConn(ISourceDTO iSource) throws Exception {
         init();
+        ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
+
         DriverManager.setLoginTimeout(30);
-        if (MapUtils.isNotEmpty(source.getKerberosConfig())) {
-            DtKerberosUtils.loginKerberos(source.getKerberosConfig());
+        if (MapUtils.isNotEmpty(impalaSourceDTO.getKerberosConfig())) {
+            DtKerberosUtils.loginKerberos(impalaSourceDTO.getKerberosConfig());
         }
 
-        Connection conn = super.getConn(source);
-        String db = StringUtils.isBlank(source.getSchema()) ? getImpalaSchema(source.getUrl()) : source.getSchema();
+        Connection conn = super.getConn(impalaSourceDTO);
+        String db = StringUtils.isBlank(impalaSourceDTO.getSchema()) ? getImpalaSchema(impalaSourceDTO.getUrl()) : impalaSourceDTO.getSchema();
         if (StringUtils.isNotBlank(db)) {
             DBUtil.executeSqlWithoutResultSet(conn, String.format(DtClassConsistent.PublicConsistent.USE_DB, db),
                     false);

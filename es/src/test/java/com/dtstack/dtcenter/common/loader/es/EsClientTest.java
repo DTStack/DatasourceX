@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.es;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import org.junit.Test;
 
 /**
@@ -16,7 +16,7 @@ public class EsClientTest {
 
     @Test
     public void getConnFactory() throws Exception {
-        SourceDTO source = SourceDTO.builder()
+        ESSourceDTO source = ESSourceDTO.builder()
                 .url("kudu5:9200")
                 .username("elastic")
                 .others("abc123")

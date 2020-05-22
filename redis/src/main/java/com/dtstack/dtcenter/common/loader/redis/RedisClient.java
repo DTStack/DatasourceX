@@ -4,8 +4,8 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 
 import java.sql.Connection;
@@ -20,78 +20,78 @@ import java.util.Map;
  */
 public class RedisClient<T> implements IClient<T> {
     @Override
-    public Boolean testCon(SourceDTO source) {
-        return RedisUtils.checkConnection(source);
+    public Boolean testCon(ISourceDTO iSource) {
+        return RedisUtils.checkConnection(iSource);
     }
 
     /********************************* 非关系型数据库无需实现的方法 ******************************************/
     @Override
-    public Connection getCon(SourceDTO source) throws Exception {
+    public Connection getCon(ISourceDTO iSource) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<String> getColumnClassInfo(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public String getAllBrokersAddress(SourceDTO source) throws Exception {
+    public String getAllBrokersAddress(ISourceDTO iSource) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<String> getTopicList(SourceDTO source) throws Exception {
+    public List<String> getTopicList(ISourceDTO iSource) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public Boolean createTopic(SourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception {
+    public Boolean createTopic(ISourceDTO iSource, KafkaTopicDTO kafkaTopic) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<T> getAllPartitions(SourceDTO source, String topic) throws Exception {
+    public List<T> getAllPartitions(ISourceDTO iSource, String topic) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<KafkaOffsetDTO> getOffset(SourceDTO source, String topic) throws Exception {
+    public List<KafkaOffsetDTO> getOffset(ISourceDTO iSource, String topic) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<List<Object>> getPreview(SourceDTO source, SqlQueryDTO queryDTO) {
+    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 }

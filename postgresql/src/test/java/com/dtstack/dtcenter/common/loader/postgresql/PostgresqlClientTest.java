@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.postgresql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import org.junit.Test;
 
@@ -11,7 +11,7 @@ import java.util.List;
 public class PostgresqlClientTest {
 
     private static AbsRdbmsClient rdbsClient = new PostgresqlClient();
-    private SourceDTO source = SourceDTO.builder()
+    private PostgresqlSourceDTO source = PostgresqlSourceDTO.builder()
             .url("jdbc:postgresql://172.16.8.193:5432/DTstack?currentSchema=xq_libra")
             .username("root")
             .password("123456")

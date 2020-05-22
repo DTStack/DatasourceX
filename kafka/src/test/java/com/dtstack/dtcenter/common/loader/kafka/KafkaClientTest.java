@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.kafka;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.KafkaSourceDTO;
 import org.junit.Test;
 
 /**
@@ -15,7 +15,7 @@ public class KafkaClientTest {
 
     @Test
     public void testCon() throws Exception {
-        SourceDTO source = SourceDTO.builder()
+        KafkaSourceDTO source = KafkaSourceDTO.builder()
                 .brokerUrls("Kudu1:9092")
                 .build();
         Boolean isConnected = kafkaClient.testCon(source);

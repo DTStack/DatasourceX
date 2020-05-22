@@ -6,7 +6,8 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.PhoenixSourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 
@@ -37,8 +38,9 @@ public class PhoenixClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        PhoenixSourceDTO phoenixSourceDTO = (PhoenixSourceDTO) iSource;
+        Integer clearStatus = beforeColumnQuery(phoenixSourceDTO, queryDTO);
 
         String tableName = queryDTO.getTableName();
         if (tableName.contains(".")) {
@@ -50,7 +52,7 @@ public class PhoenixClient extends AbsRdbmsClient {
         ResultSet resultSet = null;
 
         try {
-            DatabaseMetaData metaData = source.getConnection().getMetaData();
+            DatabaseMetaData metaData = phoenixSourceDTO.getConnection().getMetaData();
             resultSet = metaData.getTables(null, null, tableName, null);
             while (resultSet.next()) {
                 String comment = resultSet.getString(DtClassConsistent.PublicConsistent.REMARKS);
@@ -61,7 +63,7 @@ public class PhoenixClient extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, phoenixSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return "";
     }

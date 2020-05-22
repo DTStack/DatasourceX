@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.odps;
 
 import com.alibaba.fastjson.JSON;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.OdpsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import org.junit.Test;
 
@@ -18,13 +18,13 @@ import java.util.Map;
  */
 public class OdpsClientTest {
     private AbsRdbmsClient client = new OdpsClient();
-    private SourceDTO sourceDTO;
+    private OdpsSourceDTO sourceDTO;
     {
         Map<String,String> odpsConfig = new HashMap<>();
         odpsConfig.put("accessId", "LTAIljBeC8ei9Yy0");
         odpsConfig.put("accessKey", "gwTWasH7sEE0pSUEuiXnw7JecXyfGF");
         odpsConfig.put("project", "dtstack_dev");
-        sourceDTO = SourceDTO.builder().config(JSON.toJSONString(odpsConfig)).build();
+        sourceDTO = OdpsSourceDTO.builder().config(JSON.toJSONString(odpsConfig)).build();
     }
 
     @Test

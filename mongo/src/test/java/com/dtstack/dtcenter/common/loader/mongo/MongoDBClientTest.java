@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.mongo;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.MongoSourceDTO;
 import org.junit.Test;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
 public class MongoDBClientTest {
     private static MongoDBClient nosqlClient = new MongoDBClient();
 
-    private SourceDTO source = SourceDTO.builder()
+    private MongoSourceDTO source = MongoSourceDTO.builder()
             .hostPort("172.16.100.217:27017")
             .schema("admin")
             .username("root")

@@ -5,8 +5,9 @@ import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -42,10 +43,11 @@ public class PostgresqlClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeQuery(source, queryDTO, false);
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        PostgresqlSourceDTO postgresqlSourceDTO = (PostgresqlSourceDTO) iSource;
+        Integer clearStatus = beforeQuery(postgresqlSourceDTO, queryDTO, false);
 
-        String database = getPostgreSchema(source.getConnection(), source.getUsername());
+        String database = getPostgreSchema(postgresqlSourceDTO.getConnection(), postgresqlSourceDTO.getUsername());
         if (StringUtils.isNotBlank(database) && database.contains(",")) {
             //处理 "root,'public"这种情况
             String[] split = database.split(",");
@@ -57,7 +59,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
         Statement statement = null;
         ResultSet rs = null;
         try {
-            statement = source.getConnection().createStatement();
+            statement = postgresqlSourceDTO.getConnection().createStatement();
             //大小写区分
             rs = statement.executeQuery(String.format("select table_name from information_schema.tables WHERE " +
                     "table_schema in ( '%s' )", database));
@@ -69,18 +71,19 @@ public class PostgresqlClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtCenterDefException("获取表异常", e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, postgresqlSourceDTO.clearAfterGetConnection(clearStatus));
         }
     }
 
     @Override
-    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        PostgresqlSourceDTO postgresqlSourceDTO = (PostgresqlSourceDTO) iSource;
+        Integer clearStatus = beforeColumnQuery(postgresqlSourceDTO, queryDTO);
 
         Statement statement = null;
         ResultSet resultSet = null;
         try {
-            statement = source.getConnection().createStatement();
+            statement = postgresqlSourceDTO.getConnection().createStatement();
             resultSet = statement.executeQuery(String.format("select relname as tabname,\n" +
                     "cast(obj_description(relfilenode,'pg_class') as varchar) as comment from pg_class c\n" +
                     "where  relkind = 'r' and relname = '%s'", queryDTO.getTableName()));
@@ -95,7 +98,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, postgresqlSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return "";
     }

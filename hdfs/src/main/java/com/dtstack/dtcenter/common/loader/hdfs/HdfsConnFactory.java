@@ -5,7 +5,8 @@ import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.MapUtils;
@@ -27,23 +28,24 @@ public class HdfsConnFactory extends ConnFactory {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public Connection getConn(SourceDTO source) throws Exception {
+    public Connection getConn(ISourceDTO source) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public Boolean testConn(SourceDTO source) {
-        if (!source.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
+    public Boolean testConn(ISourceDTO iSource) {
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
+        if (!hdfsSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
             throw new DtCenterDefException("defaultFS格式不正确");
         }
 
         //kerberos认证
-        if (MapUtils.isNotEmpty(source.getKerberosConfig())) {
-            DtKerberosUtils.loginKerberos(source.getKerberosConfig());
+        if (MapUtils.isNotEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            DtKerberosUtils.loginKerberos(hdfsSourceDTO.getKerberosConfig());
         }
-        Properties properties = combineHdfsConfig(source.getConfig(), source.getKerberosConfig());
+        Properties properties = combineHdfsConfig(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
         if (properties.size() > 0) {
-            Configuration conf = new HdfsOperator.HadoopConf().setConf(source.getDefaultFS(), properties);
+            Configuration conf = new HdfsOperator.HadoopConf().setConf(hdfsSourceDTO.getDefaultFS(), properties);
             //不在做重复认证
             conf.set("hadoop.security.authorization", "false");
             //必须添加

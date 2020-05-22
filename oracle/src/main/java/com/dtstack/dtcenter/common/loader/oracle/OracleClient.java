@@ -7,7 +7,8 @@ import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.utils.CollectionUtil;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
@@ -49,8 +50,9 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeQuery(source, queryDTO, false);
+    public List<String> getTableList(ISourceDTO ISource, SqlQueryDTO queryDTO) throws Exception {
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) ISource;
+        Integer clearStatus = beforeQuery(oracleSourceDTO, queryDTO, false);
 
         Statement statement = null;
         ResultSet rs = null;
@@ -58,7 +60,7 @@ public class OracleClient extends AbsRdbmsClient {
         try {
             String sql = queryDTO != null && queryDTO.getView() ? ORACLE_ALL_TABLES_SQL + ORACLE_WITH_VIEWS_SQL :
                     ORACLE_ALL_TABLES_SQL;
-            statement = source.getConnection().createStatement();
+            statement = oracleSourceDTO.getConnection().createStatement();
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
@@ -67,14 +69,15 @@ public class OracleClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtCenterDefException("获取表异常", e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, oracleSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return tableList;
     }
 
     @Override
-    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+    public String getTableMetaComment(ISourceDTO ISource, SqlQueryDTO queryDTO) throws Exception {
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) ISource;
+        Integer clearStatus = beforeColumnQuery(oracleSourceDTO, queryDTO);
 
         String tableName = queryDTO.getTableName();
         if (tableName.contains(".")) {
@@ -86,7 +89,7 @@ public class OracleClient extends AbsRdbmsClient {
         ResultSet resultSet = null;
 
         try {
-            DatabaseMetaData metaData = source.getConnection().getMetaData();
+            DatabaseMetaData metaData = oracleSourceDTO.getConnection().getMetaData();
             resultSet = metaData.getTables(null, null, tableName, null);
             while (resultSet.next()) {
                 String comment = resultSet.getString(DtClassConsistent.PublicConsistent.REMARKS);
@@ -97,19 +100,20 @@ public class OracleClient extends AbsRdbmsClient {
                     queryDTO.getTableName()),
                     DBErrorCode.GET_COLUMN_INFO_FAILED, e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, oracleSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return "";
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO ISource, SqlQueryDTO queryDTO) throws Exception {
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) ISource;
+        Integer clearStatus = beforeColumnQuery(oracleSourceDTO, queryDTO);
         Statement statement = null;
         ResultSet rs = null;
         List<ColumnMetaDTO> columns = new ArrayList<>();
         try {
-            statement = source.getConnection().createStatement();
+            statement = oracleSourceDTO.getConnection().createStatement();
             String queryColumnSql =
                     "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferTableName(queryDTO.getTableName()) + " where 1=2";
 
@@ -145,7 +149,7 @@ public class OracleClient extends AbsRdbmsClient {
                         DBErrorCode.GET_COLUMN_INFO_FAILED, e);
             }
         } finally {
-            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, oracleSourceDTO.clearAfterGetConnection(clearStatus));
         }
     }
 

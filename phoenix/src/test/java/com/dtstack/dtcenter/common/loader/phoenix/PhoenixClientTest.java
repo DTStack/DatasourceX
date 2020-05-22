@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.phoenix;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.PhoenixSourceDTO;
 import org.junit.Test;
 
 /**
@@ -16,7 +16,7 @@ public class PhoenixClientTest {
 
     @Test
     public void testConnection() throws Exception {
-        SourceDTO source = SourceDTO.builder()
+        PhoenixSourceDTO source = PhoenixSourceDTO.builder()
                 .url("jdbc:phoenix:node01,node02,node03:2181")
                 .build();
         Boolean isConnected = rdbsClient.testCon(source);

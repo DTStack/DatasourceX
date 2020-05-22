@@ -6,8 +6,9 @@ import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.KuduSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -45,11 +46,12 @@ public class DtKuduClient extends AbsRdbmsClient {
     private static int PRE_SIZE = 3;
 
     @Override
-    public Boolean testCon(SourceDTO source) {
-        if (null == source || StringUtils.isBlank(source.getUrl())) {
+    public Boolean testCon(ISourceDTO iSource) {
+        KuduSourceDTO kuduSourceDTO = (KuduSourceDTO) iSource;
+        if (null == kuduSourceDTO || StringUtils.isBlank(kuduSourceDTO.getUrl())) {
             return false;
         }
-        try (KuduClient client = getConnection(source)){
+        try (KuduClient client = getConnection(kuduSourceDTO)){
                 client.getTablesList();
             return true;
         } catch (KuduException e) {
@@ -59,9 +61,9 @@ public class DtKuduClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         List<String> tableList = null;
-        try (KuduClient client = getConnection(source);){
+        try (KuduClient client = getConnection(iSource);){
             tableList = client.getTablesList().getTablesList();
         } catch (KuduException e) {
             log.error(e.getMessage(), e);
@@ -70,11 +72,11 @@ public class DtKuduClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         if (queryDTO == null || StringUtils.isBlank(queryDTO.getTableName())) {
             throw new DtCenterDefException("表名称不能为空");
         }
-        try (KuduClient client = getConnection(source);) {
+        try (KuduClient client = getConnection(iSource);) {
             return getTableColumns(client, queryDTO.getTableName());
         }
     }
@@ -115,22 +117,23 @@ public class DtKuduClient extends AbsRdbmsClient {
         return DataSourceType.Kudu;
     }
 
-    private static KuduClient getConnection(SourceDTO source) {
-        if (source == null || StringUtils.isBlank(source.getUrl())) {
+    private static KuduClient getConnection(ISourceDTO iSource) {
+        KuduSourceDTO kuduSourceDTO = (KuduSourceDTO) iSource;
+        if (kuduSourceDTO == null || StringUtils.isBlank(kuduSourceDTO.getUrl())) {
             throw new DtCenterDefException("集群地址不能为空");
         }
 
-        if (MapUtils.isNotEmpty(source.getKerberosConfig())) {
-            DtKerberosUtils.loginKerberos(source.getKerberosConfig());
+        if (MapUtils.isNotEmpty(kuduSourceDTO.getKerberosConfig())) {
+            DtKerberosUtils.loginKerberos(kuduSourceDTO.getKerberosConfig());
         }
 
-        List<String> hosts = Arrays.stream(source.getUrl().split(",")).collect(Collectors.toList());
+        List<String> hosts = Arrays.stream(kuduSourceDTO.getUrl().split(",")).collect(Collectors.toList());
         return new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build();
     }
 
 
     @Override
-    public List<List<Object>> getPreview(SourceDTO source, SqlQueryDTO queryDTO) {
+    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
         if (StringUtils.isBlank(queryDTO.getTableName())) {
             return null;
         }
@@ -234,22 +237,22 @@ public class DtKuduClient extends AbsRdbmsClient {
 
     /******************** 未支持的方法 **********************/
     @Override
-    public Connection getCon(SourceDTO source) throws Exception {
+    public Connection getCon(ISourceDTO iSource) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<String> getColumnClassInfo(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 }

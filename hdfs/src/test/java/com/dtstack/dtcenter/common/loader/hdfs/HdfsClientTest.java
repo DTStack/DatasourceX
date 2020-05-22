@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.hdfs;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import org.junit.Test;
 
 /**
@@ -16,7 +16,7 @@ public class HdfsClientTest {
 
     @Test
     public void getConnFactory() throws Exception {
-        SourceDTO source = SourceDTO.builder()
+        HdfsSourceDTO source = HdfsSourceDTO.builder()
                 .defaultFS("hdfs://ns1")
                 .config("{\n" +
                         "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +

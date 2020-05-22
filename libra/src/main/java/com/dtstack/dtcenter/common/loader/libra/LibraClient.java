@@ -4,8 +4,9 @@ import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.LibraSourceDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import org.apache.commons.lang.StringUtils;
 
@@ -32,19 +33,20 @@ public class LibraClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        Integer clearStatus = beforeQuery(source, queryDTO, false);
-        if (queryDTO == null || StringUtils.isBlank(source.getSchema())) {
-            return super.getTableList(source, queryDTO);
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        LibraSourceDTO libraSourceDTO = (LibraSourceDTO) iSource;
+        Integer clearStatus = beforeQuery(libraSourceDTO, queryDTO, false);
+        if (queryDTO == null || StringUtils.isBlank(libraSourceDTO.getSchema())) {
+            return super.getTableList(libraSourceDTO, queryDTO);
         }
 
         Statement statement = null;
         ResultSet rs = null;
         try {
-            statement = source.getConnection().createStatement();
+            statement = libraSourceDTO.getConnection().createStatement();
             //大小写区分
             rs = statement.executeQuery(String.format("select table_name from information_schema.tables WHERE " +
-                    "table_schema in ( '%s' )", source.getSchema()));
+                    "table_schema in ( '%s' )", libraSourceDTO.getSchema()));
             List<String> tableList = new ArrayList<>();
             while (rs.next()) {
                 tableList.add(rs.getString(1));
@@ -53,7 +55,7 @@ public class LibraClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtCenterDefException("获取表异常", e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, source.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, libraSourceDTO.clearAfterGetConnection(clearStatus));
         }
     }
 }

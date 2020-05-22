@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.sqlserver;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.Sqlserver2017SourceDTO;
 import org.junit.Test;
 
 
@@ -11,7 +11,7 @@ public class SqlServerClientTest {
 
     @Test
     public void testConnection() throws Exception {
-        SourceDTO source = SourceDTO.builder()
+        Sqlserver2017SourceDTO source = Sqlserver2017SourceDTO.builder()
                 .url("jdbc:sqlserver://kudu5:1433;databaseName=tudou")
                 .username("sa")
                 .password("<root@Passw0rd>")

@@ -2,8 +2,8 @@ package com.dtstack.dtcenter.common.loader.hbase;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import org.junit.Test;
 
 import java.util.List;
@@ -16,13 +16,14 @@ import java.util.List;
  */
 public class HbaseClientTest {
     private static AbsRdbmsClient rdbsClient = new HbaseClient();
-    private String conf = "{\"hbase.zookeeper.quorum\":\"172.16.10.104:2181,172.16.10.224:2181,172.16.10.252:2181\",\"zookeeper.znode.parent\":\"/hbase\"}";
-    private SourceDTO source = SourceDTO.builder().kerberosConfig(null)
+    private String conf = "{\"hbase.zookeeper.quorum\":\"172.16.10.104:2181,172.16.10.224:2181,172.16.10.252:2181\"," +
+            "\"zookeeper.znode.parent\":\"/hbase\"}";
+    private HbaseSourceDTO source = HbaseSourceDTO.builder().kerberosConfig(null)
             .config(conf).build();
 
-    private SourceDTO source2 = SourceDTO.builder().kerberosConfig(null).url("172.16.10.104:2181,172.16.10.224:2181,172.16.10.252:2181")
+    private HbaseSourceDTO source2 = HbaseSourceDTO.builder().kerberosConfig(null).url("172.16.10.104:2181,172.16.10" +
+            ".224:2181,172.16.10.252:2181")
             .path("/hbase").build();
-
 
     @Test
     public void getConnFactory() throws Exception {
@@ -32,13 +33,11 @@ public class HbaseClientTest {
         }
     }
 
-
     @Test
     public void getTableList() throws Exception {
         List tableList = rdbsClient.getTableList(source, null);
         System.out.println(tableList);
     }
-
 
     @Test
     public void getColumnMetaData() throws Exception {

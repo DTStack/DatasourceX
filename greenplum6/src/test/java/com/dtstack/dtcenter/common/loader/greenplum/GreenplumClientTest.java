@@ -1,8 +1,8 @@
 package com.dtstack.dtcenter.common.loader.greenplum;
 
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.Greenplum6SourceDTO;
 import org.junit.Test;
 
 import java.util.List;
@@ -24,7 +24,7 @@ public class GreenplumClientTest {
 
     @Test
     public void getConnFactory() throws Exception {
-        SourceDTO source = SourceDTO.builder()
+        Greenplum6SourceDTO source = Greenplum6SourceDTO.builder()
                 .url("jdbc:pivotal:greenplum://172.16.10.90:5432;DatabaseName=data")
                 .username("gpadmin")
                 .password("gpadmin")
@@ -41,20 +41,20 @@ public class GreenplumClientTest {
     }
 
     @Test
-    public void testSchema() throws Exception{
-        SourceDTO source = SourceDTO.builder()
+    public void testSchema() throws Exception {
+        Greenplum6SourceDTO source = Greenplum6SourceDTO.builder()
                 .url("jdbc:pivotal:greenplum://172.16.10.90:5432;DatabaseName=data")
                 .username("gpadmin")
                 .password("gpadmin")
                 .schema("test")
                 .build();
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("CREATE TABLE if not exists nanqi100 ( id integer )").build();
-        rdbsClient.executeSqlWithoutResultSet(source,queryDTO);
+        rdbsClient.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
-        public void testTableMetadata() throws Exception{
-        SourceDTO source = SourceDTO.builder()
+    public void testTableMetadata() throws Exception {
+        Greenplum6SourceDTO source = Greenplum6SourceDTO.builder()
                 .url("jdbc:pivotal:greenplum://172.16.10.90:5432;DatabaseName=data")
                 .username("gpadmin")
                 .password("gpadmin")

@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.kylin;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.KylinSourceDTO;
 import org.junit.Test;
 
 public class KylinClientTest {
@@ -10,7 +10,7 @@ public class KylinClientTest {
 
     @Test
     public void getConnFactory() throws Exception {
-        SourceDTO source = SourceDTO.builder()
+        KylinSourceDTO source = KylinSourceDTO.builder()
                 .url("jdbc:kylin://172.16.100.105:7070/1005_9")
                 .username("ADMIN")
                 .password("KYLIN")
