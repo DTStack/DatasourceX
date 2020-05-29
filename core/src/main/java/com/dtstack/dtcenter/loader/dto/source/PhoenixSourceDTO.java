@@ -16,46 +16,5 @@ import java.sql.Connection;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PhoenixSourceDTO implements ISourceDTO {
-
-    /**
-     * 用户名
-     */
-    private String username;
-
-    /**
-     * 密码
-     */
-    private String password;
-
-    /**
-     * 数据库持续性连接
-     */
-    private Connection connection;
-
-    /**
-     * URL 地址
-     */
-    private String url;
-
-    /**
-     * 获取连接并清除当前对象中的连接
-     *
-     * @param clearStatus
-     * @return
-     */
-    public Connection clearAfterGetConnection(Integer clearStatus) {
-        if (ConnectionClearStatus.NORMAL.getValue().equals(clearStatus)) {
-            return this.connection;
-        }
-
-        Connection temp = connection;
-        this.connection = null;
-
-        if (ConnectionClearStatus.CLEAR.getValue().equals(clearStatus)) {
-            return null;
-        }
-        return temp;
-    }
-
+public class PhoenixSourceDTO extends RdbmsSourceDTO {
 }
