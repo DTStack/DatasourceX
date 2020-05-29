@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.dto.source;
 
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.sql.Connection;
 
@@ -13,7 +14,7 @@ import java.sql.Connection;
  */
 @Data
 @ToString
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class PhoenixSourceDTO extends RdbmsSourceDTO {
