@@ -54,6 +54,11 @@ public abstract class AbsMQClient<T> implements IClient<T> {
     }
 
     @Override
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
     public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
