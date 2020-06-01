@@ -13,17 +13,23 @@ import org.junit.Test;
  */
 public class EsClientTest {
     private static AbsRdbmsClient rdbsClient = new EsClient();
+    ESSourceDTO source = ESSourceDTO.builder()
+            .url("kudu5:9200")
+            .username("elastic")
+            .others("abc123")
+            .build();
 
     @Test
     public void getConnFactory() throws Exception {
-        ESSourceDTO source = ESSourceDTO.builder()
-                .url("kudu5:9200")
-                .username("elastic")
-                .others("abc123")
-                .build();
+
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {
             throw new DtCenterDefException("数据源连接异常");
         }
+    }
+
+    @Test
+    public void getAllDatabase(){
+
     }
 }

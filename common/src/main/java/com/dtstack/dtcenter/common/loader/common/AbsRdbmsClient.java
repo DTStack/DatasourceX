@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.ClickHouseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
@@ -27,9 +28,12 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @company: www.dtstack.com
@@ -301,5 +305,61 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     @Override
     public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception{
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+
+        // 获取表信息需要通过show databases 语句
+        String sql = queryDTO.getSql()==null?"show databases":queryDTO.getSql();
+        Statement statement = null;
+        ResultSet rs = null;
+        List<String> databaseList = new ArrayList<>();
+        try {
+            statement = rdbmsSourceDTO.getConnection().createStatement();
+            rs = statement.executeQuery(sql);
+            int columnSize = rs.getMetaData().getColumnCount();
+            while (rs.next()) {
+                databaseList.add(rs.getString(columnSize == 1 ? 1 : 2));
+            }
+        } catch (Exception e) {
+            throw new DtCenterDefException("获取库异常", e);
+        } finally {
+            DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        return databaseList;
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+
+        // 获取表信息需要通过show databases 语句
+        String sql = queryDTO.getSql()==null?"show create table "+queryDTO.getTableName():queryDTO.getSql();
+        Statement statement = null;
+        ResultSet rs = null;
+        String createTableSql =null;
+        try {
+            statement = rdbmsSourceDTO.getConnection().createStatement();
+            rs = statement.executeQuery(sql);
+            int columnSize = rs.getMetaData().getColumnCount();
+            while (rs.next()) {
+                createTableSql = rs.getString(columnSize == 1 ? 1 : 2);
+                break;
+            }
+        } catch (Exception e) {
+            throw new DtCenterDefException("获取库异常", e);
+        } finally {
+            DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        return createTableSql;
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        return null;
     }
 }

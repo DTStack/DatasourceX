@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -229,5 +230,17 @@ public class HiveClient extends AbsRdbmsClient {
             }
         }
         return properties;
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        List<ColumnMetaDTO> columnMetaDTOS = getColumnMetaData(source,queryDTO);
+        List<ColumnMetaDTO> partitionColumnMeta = new ArrayList<>();
+        columnMetaDTOS.forEach(columnMetaDTO -> {
+            if(columnMetaDTO.getPart()){
+                partitionColumnMeta.add(columnMetaDTO);
+            }
+        });
+        return partitionColumnMeta;
     }
 }

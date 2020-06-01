@@ -49,4 +49,17 @@ public class Db2ClientTest {
         System.out.println(columnMetaData);
 
     }
+
+    @Test
+    public void getDatabases() throws Exception {
+        List<String> dataBases = rdbsClient.getAllDatabases(source,queryDTO);
+        dataBases.forEach(s->{
+            System.out.println(s);
+        });
+    }
+
+    @Test
+    public void getCreateSql() throws Exception {
+        System.out.println(rdbsClient.getCreateTableSql(source,queryDTO));
+    }
 }

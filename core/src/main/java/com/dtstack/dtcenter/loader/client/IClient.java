@@ -165,4 +165,10 @@ public interface IClient<T> {
      * @return
      */
     List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO);
+
+    List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+
+    String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+
+    List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 }

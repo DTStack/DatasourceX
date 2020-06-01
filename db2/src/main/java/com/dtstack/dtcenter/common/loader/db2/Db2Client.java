@@ -8,6 +8,8 @@ import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Db2SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 
 import java.sql.ResultSet;
@@ -23,6 +25,8 @@ import java.util.List;
  */
 public class Db2Client extends AbsRdbmsClient {
     private static final String TABLE_QUERY = "select tabname from syscat.tables where tabschema = '%s'";
+
+    private static final String DATABASE_QUERY = "select schemaname from syscat.schemata where ownertype != 'S'";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -79,5 +83,17 @@ public class Db2Client extends AbsRdbmsClient {
             DBUtil.closeDBResources(resultSet, statement, db2SourceDTO.clearAfterGetConnection(clearStatus));
         }
         return "";
+    }
+
+
+    @Override
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        queryDTO.setSql(DATABASE_QUERY);
+        return super.getAllDatabases(source,queryDTO);
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
     }
 }

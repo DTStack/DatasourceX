@@ -19,9 +19,10 @@ public class DmClientTest {
             .url("jdbc:dm://172.16.8.178:5236/chener")
             .username("chener")
             .password("abc123456")
+            .schema("CHENSAN")
             .build();
 
-    SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+    SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("TABLE_NAME").build();
 
 
     @Test
@@ -40,5 +41,20 @@ public class DmClientTest {
 
     @Test
     public void getColumnMetaData() {
+    }
+
+    @Test
+    public void getCreateTableSql() throws Exception{
+        System.out.println(rdbsClient.getCreateTableSql(source,queryDTO));
+    }
+
+    @Test
+    public void getAllDatabase() throws Exception{
+        System.out.println(rdbsClient.getAllDatabases(source,queryDTO));
+    }
+
+    @Test
+    public void getPartitionColumn(){
+
     }
 }

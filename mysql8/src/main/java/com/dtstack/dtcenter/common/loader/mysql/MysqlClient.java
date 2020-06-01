@@ -8,11 +8,15 @@ import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.Mysql5SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.Mysql8SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @company: www.dtstack.com
@@ -57,4 +61,5 @@ public class MysqlClient extends AbsRdbmsClient {
         }
         return null;
     }
+
 }

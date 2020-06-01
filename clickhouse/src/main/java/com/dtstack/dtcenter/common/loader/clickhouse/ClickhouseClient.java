@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ClickHouseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -12,7 +13,11 @@ import com.dtstack.dtcenter.loader.utils.DBUtil;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @company: www.dtstack.com
@@ -30,6 +35,8 @@ public class ClickhouseClient extends AbsRdbmsClient {
     protected DataSourceType getSourceType() {
         return DataSourceType.Clickhouse;
     }
+
+    private static String PARTITION_COLUMN_SQL = "select name,type,comment from system.columns where database = '%s' and table = '%s' and is_in_partition_key = 1";
 
     @Override
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
@@ -54,5 +61,32 @@ public class ClickhouseClient extends AbsRdbmsClient {
             DBUtil.closeDBResources(rs, statement, clickHouseSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return tableList;
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
+        ClickHouseSourceDTO clickHouseSourceDTO = (ClickHouseSourceDTO) source;
+        String sql = String.format(PARTITION_COLUMN_SQL,clickHouseSourceDTO.getSchema(),queryDTO.getTableName());
+        Statement statement = null;
+        ResultSet rs = null;
+        List<ColumnMetaDTO> columnList = new ArrayList<>();
+        try {
+            statement = clickHouseSourceDTO.getConnection().createStatement();
+            rs = statement.executeQuery(sql);
+            while (rs.next()) {
+                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+                columnMetaDTO.setKey(rs.getString(1));
+                columnMetaDTO.setType(rs.getString(2));
+                columnMetaDTO.setComment(rs.getString(3));
+                columnMetaDTO.setPart(true);
+                columnList.add(columnMetaDTO);
+            }
+        } catch (Exception e) {
+            throw new DtCenterDefException("获取表异常", e);
+        } finally {
+            DBUtil.closeDBResources(rs, statement, clickHouseSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        return columnList;
     }
 }

@@ -132,4 +132,19 @@ public class DataSourceClientProxy<T> implements IClient<T> {
             throw new DtLoaderException(e.getMessage(), e);
         }
     }
+
+    @Override
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        return null;
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        return null;
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        return null;
+    }
 }

@@ -22,14 +22,16 @@ public class GreenplumClientTest {
             " n.oid = c.relnamespace" +
             " and n.nspname='%s'";
 
+    Greenplum6SourceDTO source = Greenplum6SourceDTO.builder()
+            .url("jdbc:pivotal:greenplum://172.16.10.90:5432;DatabaseName=data")
+            .username("gpadmin")
+            .password("gpadmin")
+            .schema("public")
+            .build();
+
     @Test
     public void getConnFactory() throws Exception {
-        Greenplum6SourceDTO source = Greenplum6SourceDTO.builder()
-                .url("jdbc:pivotal:greenplum://172.16.10.90:5432;DatabaseName=data")
-                .username("gpadmin")
-                .password("gpadmin")
-                .schema("public")
-                .build();
+
         List<String> tableList = rdbsClient.getTableList(source, null);
 //        Connection connection = rdbsClient.getCon(source);
 //        ResultSet rs=connection.createStatement().executeQuery(String.format(TABLE_QUERY,"pg_catalog"));
@@ -63,6 +65,11 @@ public class GreenplumClientTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("student").build();
         String metaComment = rdbsClient.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
+    }
+
+    @Test
+    public void getAllDataBase() throws  Exception{
+        System.out.println(rdbsClient.getAllDatabases(source, SqlQueryDTO.builder().build()));
     }
 
 
