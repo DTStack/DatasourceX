@@ -49,11 +49,21 @@ public class ConnFactory {
 
         init();
         DriverManager.setLoginTimeout(5);
+        String url = dealSourceUrl(rdbmsSourceDTO);
         if (StringUtils.isBlank(rdbmsSourceDTO.getUsername())) {
             return DriverManager.getConnection(rdbmsSourceDTO.getUrl());
         }
 
-        return DriverManager.getConnection(rdbmsSourceDTO.getUrl(), rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getPassword());
+        return DriverManager.getConnection(url, rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getPassword());
+    }
+
+    /**
+     * 处理 URL 地址
+     * @param rdbmsSourceDTO
+     * @return
+     */
+    protected String dealSourceUrl(RdbmsSourceDTO rdbmsSourceDTO) {
+        return rdbmsSourceDTO.getUrl();
     }
 
     public Boolean testConn(ISourceDTO source) {
