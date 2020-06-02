@@ -24,9 +24,10 @@ public class Mysql5Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     Mysql5SourceDTO source = Mysql5SourceDTO.builder()
-            .url("jdbc:mysql://172.16.8.109:3306/ide")
+            .url("jdbc:mysql://172.16.8.109:3306/")
             .username("dtstack")
             .password("abc123")
+            .schema("ide")
             .build();
 
     @Test

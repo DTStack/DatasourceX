@@ -24,7 +24,8 @@ public class Mysql8Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     Mysql8SourceDTO source = Mysql8SourceDTO.builder()
-            .url("jdbc:mysql://172.16.8.109:3306/ide")
+            .url("jdbc:mysql://172.16.8.109:3306")
+            .schema("ide")
             .username("dtstack")
             .password("abc123")
             .build();

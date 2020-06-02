@@ -1,11 +1,10 @@
-package com.dtstack.dtcenter.common.loader.redis;
+package com.dtstack.dtcenter.common.loader.kafka;
 
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
-import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.KafkaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 
 import java.sql.Connection;
@@ -14,17 +13,19 @@ import java.util.Map;
 
 /**
  * @company: www.dtstack.com
- * @Author ：Nanqi
- * @Date ：Created in 15:38 2020/2/4
- * @Description：Redis 客户端
+ * @Author ：wangchuan
+ * @Date ：Created in 下午4:35 2020/6/2
+ * @Description：Kafka 数据源
  */
-public class RedisClient<T> implements IClient<T> {
+public abstract class AbsKafkaClient<T> implements IClient<T> {
+
     @Override
     public Boolean testCon(ISourceDTO iSource) {
-        return RedisUtils.checkConnection(iSource);
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
+        return KakfaUtil.checkConnection(kafkaSourceDTO.getUrl(), kafkaSourceDTO.getBrokerUrls(),
+                kafkaSourceDTO.getKerberosConfig());
     }
 
-    /********************************* 非关系型数据库无需实现的方法 ******************************************/
     @Override
     public Connection getCon(ISourceDTO iSource) throws Exception {
         throw new DtLoaderException("Not Support");
@@ -66,7 +67,7 @@ public class RedisClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 }

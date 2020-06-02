@@ -11,7 +11,7 @@ import org.junit.Test;
  * @Description：Kafka 客户端测试
  */
 public class KafkaClientTest {
-    private static AbsKafkasClient kafkaClient = new KafkaClient();
+    private static AbsKafka kafkaClient = new Kafka();
 
     @Test
     public void testCon() throws Exception {
