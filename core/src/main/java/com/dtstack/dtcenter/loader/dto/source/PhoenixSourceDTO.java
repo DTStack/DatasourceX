@@ -15,7 +15,5 @@ import java.sql.Connection;
 @Data
 @ToString
 @SuperBuilder
-@NoArgsConstructor
-@AllArgsConstructor
 public class PhoenixSourceDTO extends RdbmsSourceDTO {
 }
