@@ -1,9 +1,10 @@
-package com.dtstack.dtcenter.loader.client.sql;
+package com.dtstack.dtcenter.loader.client.mq;
 
 import com.dtstack.dtcenter.common.thread.RdosThreadFactory;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.IKafka;
+import com.dtstack.dtcenter.loader.client.sql.DataSourceClientFactory;
 import com.dtstack.dtcenter.loader.exception.ClientAccessException;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Maps;
@@ -20,19 +21,20 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @company: www.dtstack.com
- * @Author ：Nanqi
- * @Date ：Created in 15:40 2020/1/6
- * @Description：关系型数据库插件客户端
+ * @Author ：wangchuan
+ * @Date ：Created in 下午2:14 2020/6/2
+ * @Description： kafka 插件客户端
  */
 @Slf4j
-public class DataSourceClientCache extends AbsClientCache {
-    private Map<String, IClient> defaultClientMap = Maps.newConcurrentMap();
+public class KafkaClientCache extends AbsClientCache {
+
+    private Map<String, IKafka> defaultClientMap = Maps.newConcurrentMap();
 
     private static final ScheduledExecutorService sourceClientExecutor = new ScheduledThreadPoolExecutor(1,
-            new RdosThreadFactory("sourceClientCache"));
+            new RdosThreadFactory("kafkaClientCache"));
 
     static {
-        sourceClientExecutor.scheduleAtFixedRate(new DataSourceClientCache.CacheTimerTask(), 10, 10,
+        sourceClientExecutor.scheduleAtFixedRate(new KafkaClientCache.CacheTimerTask(), 10, 10,
                 TimeUnit.MINUTES);
     }
 
@@ -60,8 +62,8 @@ public class DataSourceClientCache extends AbsClientCache {
 
                 // 如果不空并且与当前值不同
                 if (StringUtils.isNotBlank(oldMd5) && StringUtils.isNotBlank(loaderMd5) && !oldMd5.equals(loaderMd5)) {
-                    IClient client = getInstance().buildPluginClient(pluginName);
-                    getInstance().replaceSourceClient(pluginName, client);
+                    IKafka kafka = getInstance().buildPluginClient(pluginName);
+                    getInstance().replaceSourceClient(pluginName, kafka);
                 }
             } catch (Exception e) {
                 log.error("校验异常，保持原先数据源类型", e);
@@ -69,12 +71,12 @@ public class DataSourceClientCache extends AbsClientCache {
         }
     }
 
-    private static DataSourceClientCache singleton = new DataSourceClientCache();
+    private static KafkaClientCache singleton = new KafkaClientCache();
 
-    private DataSourceClientCache() {
+    private KafkaClientCache() {
     }
 
-    public static DataSourceClientCache getInstance() {
+    public static KafkaClientCache getInstance() {
         return singleton;
     }
 
@@ -83,9 +85,9 @@ public class DataSourceClientCache extends AbsClientCache {
      *
      * @param pluginName
      */
-    public void replaceSourceClient(String pluginName, IClient client) {
+    public void replaceSourceClient(String pluginName, IKafka kafka) {
         DataSourceClientFactory.removePlugin(pluginName);
-        getInstance().defaultClientMap.put(pluginName, client);
+        getInstance().defaultClientMap.put(pluginName, kafka);
     }
 
     /**
@@ -95,25 +97,25 @@ public class DataSourceClientCache extends AbsClientCache {
      * @return
      */
     @Override
-    public IClient getClient(String pluginName) throws ClientAccessException {
+    public IKafka getKafka(String pluginName) throws ClientAccessException {
         try {
-            IClient client = defaultClientMap.get(pluginName);
-            if (client == null) {
+            IKafka kafka = defaultClientMap.get(pluginName);
+            if (kafka == null) {
                 synchronized (defaultClientMap) {
-                    client = buildPluginClient(pluginName);
-                    defaultClientMap.put(pluginName, client);
+                    kafka = buildPluginClient(pluginName);
+                    defaultClientMap.put(pluginName, kafka);
                 }
             }
 
-            return client;
+            return kafka;
         } catch (Throwable e) {
             throw new ClientAccessException(e);
         }
     }
 
-    private IClient buildPluginClient(String pluginName) throws Exception {
+    private IKafka buildPluginClient(String pluginName) throws Exception {
         loadComputerPlugin(pluginName);
-        return DataSourceClientFactory.createPluginClass(pluginName);
+        return KafkaClientFactory.createPluginClass(pluginName);
     }
 
     /**
@@ -123,11 +125,11 @@ public class DataSourceClientCache extends AbsClientCache {
      * @throws Exception
      */
     private void loadComputerPlugin(String pluginName) throws Exception {
-        if (DataSourceClientFactory.checkContainClassLoader(pluginName)) {
+        if (KafkaClientFactory.checkContainClassLoader(pluginName)) {
             return;
         }
 
-        DataSourceClientFactory.addClassLoader(pluginName, getClassLoad(pluginName, getFileByPluginName(pluginName)));
+        KafkaClientFactory.addClassLoader(pluginName, getClassLoad(pluginName, getFileByPluginName(pluginName)));
     }
 
     /**
@@ -148,7 +150,7 @@ public class DataSourceClientCache extends AbsClientCache {
     }
 
     @Override
-    public IKafka getKafka(String sourceName) throws ClientAccessException {
-        throw  new DtLoaderException("请通过kafkaClientCache获取kafka客户端");
+    public IClient getClient(String sourceName) throws ClientAccessException {
+        throw new DtLoaderException("请通过DataSourceClientCache获取其他数据库客户端");
     }
 }

@@ -1,19 +1,15 @@
 package com.dtstack.dtcenter.common.loader.kafka;
 
-import com.dtstack.dtcenter.loader.client.IClient;
-import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
+import com.dtstack.dtcenter.loader.client.IKafka;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.KafkaSourceDTO;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -22,7 +18,7 @@ import java.util.stream.Collectors;
  * @Date ：Created in 22:39 2020/2/26
  * @Description：Kafka 数据源
  */
-public abstract class AbsKafkasClient<T> implements IClient<T> {
+public abstract class AbsKafka<T> implements IKafka<T> {
 
     @Override
     public Boolean testCon(ISourceDTO iSource) {
@@ -92,46 +88,5 @@ public abstract class AbsKafkasClient<T> implements IClient<T> {
         List<List<Object>> result = new ArrayList<>();
         result.add(records);
         return result;
-    }
-
-    /********************************* mq数据源无需实现的方法 ******************************************/
-    @Override
-    public Connection getCon(ISourceDTO iSource) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
     }
 }

@@ -271,35 +271,4 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     protected String doDealType(ResultSetMetaData rsMetaData, Integer los) throws SQLException {
         return rsMetaData.getColumnTypeName(los + 1);
     }
-
-    /********************************* 关系型数据库无需实现的方法 ******************************************/
-    @Override
-    public String getAllBrokersAddress(ISourceDTO iSource) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getTopicList(ISourceDTO iSource) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public Boolean createTopic(ISourceDTO iSource, KafkaTopicDTO kafkaTopic) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<T> getAllPartitions(ISourceDTO iSource, String topic) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<KafkaOffsetDTO> getOffset(ISourceDTO iSource, String topic) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
 }

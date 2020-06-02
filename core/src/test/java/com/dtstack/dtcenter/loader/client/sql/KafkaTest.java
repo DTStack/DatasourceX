@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.client.IKafka;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.source.KafkaSourceDTO;
@@ -20,14 +21,23 @@ import java.util.List;
  * @Description：Kafka 测试类
  */
 public class KafkaTest {
+    private static final AbsClientCache kafkaClientCache = ClientType.KAFKA_CLIENT.getClientCache();
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
-
     KafkaSourceDTO source = KafkaSourceDTO.builder()
-            .url("kudu3:2181/kafka")
+            .url("172.16.8.107:2181/kafka")
             .build();
 
     @Test
-    public void testCon() throws Exception {
+    public void testConForKafka() throws Exception {
+        IKafka client = kafkaClientCache.getKafka(DataSourceClientType.KAFKA_09.getPluginName());
+        Boolean isConnected = client.testCon(source);
+        if (Boolean.FALSE.equals(isConnected)) {
+            throw new DtCenterDefException("连接异常");
+        }
+    }
+
+    @Test
+    public void testConForClient() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.KAFKA_09.getPluginName());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
@@ -37,23 +47,24 @@ public class KafkaTest {
 
     @Test
     public void getAllBrokersAddress() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.KAFKA_09.getPluginName());
+        IKafka client = kafkaClientCache.getKafka(DataSourceClientType.KAFKA_09.getPluginName());
         String brokersAddress = client.getAllBrokersAddress(source);
         assert (null != brokersAddress);
     }
 
     @Test
     public void getTopicList() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.KAFKA_09.getPluginName());
+        IKafka client = kafkaClientCache.getKafka(DataSourceClientType.KAFKA_09.getPluginName());
         List<String> topicList = client.getTopicList(source);
         assert (topicList != null);
+        System.out.println(topicList);
     }
 
     @Test
     public void createTopic() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.KAFKA_09.getPluginName());
+        IKafka client = kafkaClientCache.getKafka(DataSourceClientType.KAFKA_09.getPluginName());
         KafkaTopicDTO topicDTO = KafkaTopicDTO.builder().partitions(1).replicationFactor(1).topicName(
-                "nanqi02").build();
+                "wangchuan02").build();
         Boolean clientTopic = client.createTopic(source, topicDTO);
         assert (Boolean.TRUE.equals(clientTopic));
     }
@@ -61,15 +72,15 @@ public class KafkaTest {
     @Test
     public void getAllPartitions() throws Exception {
         // 测试的时候需要引进 kafka 包
-        IClient client = clientCache.getClient(DataSourceClientType.KAFKA_09.getPluginName());
-        List<MetadataResponse.PartitionMetadata> allPartitions = client.getAllPartitions(source, "nanqi01");
+        IKafka client = clientCache.getKafka(DataSourceClientType.KAFKA_09.getPluginName());
+        List<MetadataResponse.PartitionMetadata> allPartitions = client.getAllPartitions(source, "wangchuan01");
         System.out.println(allPartitions.size());
     }
 
     @Test
     public void getOffset() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.KAFKA_09.getPluginName());
-        List<KafkaOffsetDTO> offset = client.getOffset(source, "nanqi01");
+        IKafka client = clientCache.getKafka(DataSourceClientType.KAFKA_09.getPluginName());
+        List<KafkaOffsetDTO> offset = client.getOffset(source, "wangchuan01");
         assert (offset != null);
     }
 }
