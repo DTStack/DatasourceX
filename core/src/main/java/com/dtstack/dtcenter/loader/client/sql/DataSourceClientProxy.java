@@ -92,4 +92,14 @@ public class DataSourceClientProxy<T> implements IClient<T> {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableMetaComment(source, queryDTO),
                 targetClient.getClass().getClassLoader(), true);
     }
+
+    @Override
+    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPreview(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
+    }
 }

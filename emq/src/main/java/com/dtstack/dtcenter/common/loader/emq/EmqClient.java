@@ -26,31 +26,6 @@ public class EmqClient<T> implements IClient<T> {
         return EMQUtils.checkConnection(emqSourceDTO.getUrl(), emqSourceDTO.getUsername(), emqSourceDTO.getPassword());
     }
 
-    @Override
-    public String getAllBrokersAddress(ISourceDTO iSource) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getTopicList(ISourceDTO iSource) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public Boolean createTopic(ISourceDTO iSource, KafkaTopicDTO kafkaTopic) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List getAllPartitions(ISourceDTO iSource, String topic) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<KafkaOffsetDTO> getOffset(ISourceDTO iSource, String topic) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
     /********************************* mq数据源无需实现的方法 ******************************************/
     @Override
     public Connection getCon(ISourceDTO iSource) throws Exception {

@@ -68,31 +68,6 @@ public class MongoDBClient<T> implements IClient<T> {
     }
 
     @Override
-    public String getAllBrokersAddress(ISourceDTO source) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getTopicList(ISourceDTO source) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public Boolean createTopic(ISourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<T> getAllPartitions(ISourceDTO source, String topic) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<KafkaOffsetDTO> getOffset(ISourceDTO source, String topic) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
     public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }

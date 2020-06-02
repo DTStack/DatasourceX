@@ -271,4 +271,10 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     protected String doDealType(ResultSetMetaData rsMetaData, Integer los) throws SQLException {
         return rsMetaData.getColumnTypeName(los + 1);
     }
+
+    /********************************* 关系型数据库无需实现的方法 ******************************************/
+    @Override
+    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
 }

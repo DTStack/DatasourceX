@@ -107,4 +107,12 @@ public interface IClient<T> {
      * @throws Exception
      */
     String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+
+    /**
+     * 获取预览数据
+     * @param source
+     * @param queryDTO
+     * @return
+     */
+    List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO);
 }

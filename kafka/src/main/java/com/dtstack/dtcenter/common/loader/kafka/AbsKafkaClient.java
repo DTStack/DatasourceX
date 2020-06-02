@@ -66,4 +66,8 @@ public abstract class AbsKafkaClient<T> implements IClient<T> {
         throw new DtLoaderException("Not Support");
     }
 
+    @Override
+    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
 }
