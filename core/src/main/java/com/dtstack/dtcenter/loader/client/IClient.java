@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client;
 
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
@@ -115,4 +116,13 @@ public interface IClient<T> {
      * @return
      */
     List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO);
+
+    /**
+     * 获取对应的downloader
+     * @param source
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
+    IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 }

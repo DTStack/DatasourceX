@@ -74,7 +74,7 @@ public class HiveTest {
         IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
     }
 
     @Test

@@ -83,6 +83,12 @@
             </dependency>
 
             <dependency>
+                <groupId>com.dtstack.dtcenter</groupId>
+                <artifactId>sql-core</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
                 <artifactId>jedis</artifactId>
                 <groupId>redis.clients</groupId>
                 <version>2.9.0</version>

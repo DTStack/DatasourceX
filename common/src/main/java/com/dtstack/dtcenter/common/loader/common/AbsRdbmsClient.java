@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.common;
 import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.connection.CacheConnectionHelper;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -270,6 +271,11 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      */
     protected String doDealType(ResultSetMetaData rsMetaData, Integer los) throws SQLException {
         return rsMetaData.getColumnTypeName(los + 1);
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
     }
 
     /********************************* 关系型数据库无需实现的方法 ******************************************/

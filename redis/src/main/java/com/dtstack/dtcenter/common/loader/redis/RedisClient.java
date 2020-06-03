@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.redis;
 
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
@@ -67,6 +68,11 @@ public class RedisClient<T> implements IClient<T> {
 
     @Override
     public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 }
