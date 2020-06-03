@@ -51,7 +51,7 @@ public class ConnFactory {
         DriverManager.setLoginTimeout(5);
         String url = dealSourceUrl(rdbmsSourceDTO);
         if (StringUtils.isBlank(rdbmsSourceDTO.getUsername())) {
-            return DriverManager.getConnection(rdbmsSourceDTO.getUrl());
+            return DriverManager.getConnection(url);
         }
 
         return DriverManager.getConnection(url, rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getPassword());
