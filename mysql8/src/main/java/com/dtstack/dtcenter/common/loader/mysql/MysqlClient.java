@@ -63,10 +63,8 @@ public class MysqlClient extends AbsRdbmsClient {
     @Override
     public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         Mysql8SourceDTO mysql8SourceDTO = (Mysql8SourceDTO) source;
-        Connection connection = getCon(source);
-        String sql = queryDTO.getSql();
-        String schema = mysql8SourceDTO.getSchema();
-        MysqlDownloader mysqlDownloader = new MysqlDownloader(connection, sql, schema);
+        MysqlDownloader mysqlDownloader = new MysqlDownloader(getCon(source), queryDTO.getSql(), mysql8SourceDTO.getSchema());
+        mysqlDownloader.configure();
         return mysqlDownloader;
     }
 }

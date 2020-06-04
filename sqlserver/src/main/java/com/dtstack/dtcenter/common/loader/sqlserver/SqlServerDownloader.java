@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * @company: www.dtstack.com
  * @Author ：wangchuan
  * @Date ：Created in 下午5:52 2020/5/29
- * @Description：
+ * @Description：SqlServer表下载
  */
 
 public class SqlServerDownloader implements IDownloader {

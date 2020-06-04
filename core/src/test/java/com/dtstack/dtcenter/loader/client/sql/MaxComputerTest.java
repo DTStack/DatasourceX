@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -81,5 +82,21 @@ public class MaxComputerTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("aa_temp").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
+    }
+
+    @Test
+    public void getDownload() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.MAXCOMPUTE.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi102").build();
+        IDownloader downloader = client.getDownloader(source, queryDTO);
+        System.out.println(downloader.getMetaInfo());
+        int i = 0;
+        while (!downloader.reachedEnd()){
+            System.out.println("==================第"+ ++i+"页==================");
+            List<List<String>> o = (List<List<String>>)downloader.readNext();
+            for (List list:o){
+                System.out.println(list);
+            }
+        }
     }
 }

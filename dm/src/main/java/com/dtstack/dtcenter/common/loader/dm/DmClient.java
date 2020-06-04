@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.DmSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -59,5 +60,13 @@ public class DmClient extends AbsRdbmsClient {
             DBUtil.closeDBResources(rs, statement, dmSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return tableList;
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        DmSourceDTO dmSourceDTO = (DmSourceDTO) source;
+        DmDownloader dmDownloader = new DmDownloader(getCon(dmSourceDTO), queryDTO.getSql(), dmSourceDTO.getSchema());
+        dmDownloader.configure();
+        return dmDownloader;
     }
 }

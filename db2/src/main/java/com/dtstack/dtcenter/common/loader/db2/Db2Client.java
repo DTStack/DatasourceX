@@ -5,11 +5,13 @@ import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Db2SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -79,5 +81,16 @@ public class Db2Client extends AbsRdbmsClient {
             DBUtil.closeDBResources(resultSet, statement, db2SourceDTO.clearAfterGetConnection(clearStatus));
         }
         return "";
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Db2SourceDTO db2SourceDTO = (Db2SourceDTO) source;
+        Connection connection = getCon(source);
+        String sql = queryDTO.getSql();
+        String schema = db2SourceDTO.getSchema();
+        Db2Downloader db2Downloader = new Db2Downloader(connection, sql, schema);
+        db2Downloader.configure();
+        return db2Downloader;
     }
 }

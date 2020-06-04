@@ -5,6 +5,7 @@ import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
@@ -150,5 +151,13 @@ public class PostgresqlClient extends AbsRdbmsClient {
             }
         }
         return String.join("','", backList);
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        PostgresqlSourceDTO postgresqlSourceDTO = (PostgresqlSourceDTO) source;
+        PostgresqlDownloader postgresqlDownloader = new PostgresqlDownloader(getCon(postgresqlSourceDTO), queryDTO.getSql(), postgresqlSourceDTO.getSchema());
+        postgresqlDownloader.configure();
+        return postgresqlDownloader;
     }
 }

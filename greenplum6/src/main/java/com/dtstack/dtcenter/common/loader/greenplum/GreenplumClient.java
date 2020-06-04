@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Greenplum6SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -137,5 +138,11 @@ public class GreenplumClient extends AbsRdbmsClient {
         }
     }
 
-
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Greenplum6SourceDTO greenplum6SourceDTO = (Greenplum6SourceDTO) source;
+        GreenplumDownloader greenplumDownloader = new GreenplumDownloader(getCon(greenplum6SourceDTO), queryDTO.getSql(), greenplum6SourceDTO.getSchema());
+        greenplumDownloader.configure();
+        return greenplumDownloader;
+    }
 }
