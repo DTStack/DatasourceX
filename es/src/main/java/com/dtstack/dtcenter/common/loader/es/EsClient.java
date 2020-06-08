@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.es;
 
 import com.dtstack.dtcenter.common.enums.DataSourceType;
+import com.dtstack.dtcenter.common.http.PoolHttpClient;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -15,14 +16,26 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.elasticsearch.action.ActionFuture;
+import org.elasticsearch.action.admin.indices.stats.IndexStats;
+import org.elasticsearch.action.admin.indices.stats.IndicesStatsRequest;
+import org.elasticsearch.action.admin.indices.stats.IndicesStatsResponse;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.client.IndicesClient;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @company: www.dtstack.com
@@ -133,6 +146,46 @@ public class EsClient extends AbsRdbmsClient {
             httpHostList.add(new HttpHost(pair[0], Integer.valueOf(pair[1]), "http"));
         }
         return httpHostList;
+    }
+
+    public static List<String> getDatabases(ISourceDTO iSource, SqlQueryDTO queryDTO){
+        ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
+        if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
+            return new ArrayList<>();
+        }
+        RestHighLevelClient client;
+        if (StringUtils.isNotBlank(esSourceDTO.getUsername()) && StringUtils.isNotBlank(esSourceDTO.getPassword())) {
+            client = getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
+        } else {
+            client = getClient(esSourceDTO.getUrl());
+        }
+        IndicesClient indices = client.indices();
+
+        //request.
+        return null;
+    }
+
+    @Override
+    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+        ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
+        if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
+            return new ArrayList<>();
+        }
+        RestHighLevelClient client;
+        if (StringUtils.isNotBlank(esSourceDTO.getUsername()) && StringUtils.isNotBlank(esSourceDTO.getPassword())) {
+            client = getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
+        } else {
+            client = getClient(esSourceDTO.getUrl());
+        }
+        GetRequest getRequest = new GetRequest(esSourceDTO.getSchema());
+        GetResponse getResponse = null;
+        try {
+            getResponse = client.get(getRequest);
+        }catch (Exception e){
+            log.error("获取文档异常", e);
+        }
+        //getResponse.
+        return null;
     }
 
     /******************** 未支持的方法 **********************/

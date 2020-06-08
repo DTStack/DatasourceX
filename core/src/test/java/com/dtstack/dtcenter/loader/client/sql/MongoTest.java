@@ -41,4 +41,22 @@ public class MongoTest {
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList);
     }
+
+    @Test
+    public void getDatabaseList() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("system.profile").build();
+        List list = client.getColumnMetaData(source, queryDTO);
+        System.out.println(list);
+    }
+
+    @Test
+    public void getPreview(){
+        IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("system.profile").build();
+        List<List<Object>> preview = client.getPreview(source, queryDTO);
+        for (List list:preview){
+            System.out.println(list);
+        }
+    }
 }

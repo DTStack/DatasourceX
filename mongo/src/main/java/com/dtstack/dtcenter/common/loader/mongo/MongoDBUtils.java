@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.mongo;
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.util.AddressUtil;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.MongoSourceDTO;
 import com.google.common.collect.Lists;
@@ -11,12 +12,16 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.bson.Document;
 
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,6 +44,8 @@ public class MongoDBUtils {
 
     public static final int TIME_OUT = 5 * 1000;
 
+    private static final String mongoRow = "%s=%s";
+
     public static boolean checkConnection(ISourceDTO iSource) {
         MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
         boolean check = false;
@@ -60,6 +67,61 @@ public class MongoDBUtils {
         return check;
     }
 
+    //获取数据库
+    public static List<String> getDatabaseList(ISourceDTO iSource){
+        MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
+        MongoClient mongoClient = null;
+        ArrayList<String> databases = new ArrayList<>();
+        try {
+            mongoClient = getClient(mongoSourceDTO.getHostPort(), mongoSourceDTO.getUsername(), mongoSourceDTO.getPassword(),
+                    mongoSourceDTO.getSchema());
+
+            MongoIterable<String> dbNames = mongoClient.listDatabaseNames();
+            for (String dbName:dbNames){
+                databases.add(dbName);
+            }
+        }catch (Exception e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            if (mongoClient != null) {
+                mongoClient.close();
+            }
+        }
+        return databases;
+    }
+
+    //预览数据
+    public static List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO){
+        MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
+        List<List<Object>> dataList = new ArrayList<>();
+        if (StringUtils.isBlank(queryDTO.getTableName()) || StringUtils.isBlank(mongoSourceDTO.getSchema())) {
+            return dataList;
+        }
+        MongoClient mongoClient = null;
+        try {
+            mongoClient = getClient(mongoSourceDTO.getHostPort(), mongoSourceDTO.getUsername(), mongoSourceDTO.getPassword(),
+                    mongoSourceDTO.getSchema());
+            //获取指定数据库
+            MongoDatabase mongoDatabase = mongoClient.getDatabase(mongoSourceDTO.getSchema());
+            //获取指定表
+            MongoCollection<Document> collection = mongoDatabase.getCollection(queryDTO.getTableName());
+            FindIterable<Document> documents = collection.find().limit(queryDTO.getPreviewNum());
+            for (Document document:documents){
+                ArrayList<Object> list = new ArrayList<>();
+                document.keySet().forEach(key->list.add(String.format(mongoRow, key, document.get(key))));
+                dataList.add(list);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            if (mongoClient != null) {
+                mongoClient.close();
+            }
+        }
+        return dataList;
+    }
+
+    //获取指定库下的表名
     public static List<String> getTableList(ISourceDTO iSource) {
         MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
         List<String> tableList = Lists.newArrayList();

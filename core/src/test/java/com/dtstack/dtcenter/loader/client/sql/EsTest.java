@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.http.PoolHttpClient;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
@@ -30,5 +31,11 @@ public class EsTest {
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtCenterDefException("连接异常");
         }
+    }
+
+    @Test
+    public void getDatabases(){
+        String s = PoolHttpClient.get("http://"+source.getUrl() + "/_cat/indices?v", null);
+        System.out.println(s);
     }
 }
