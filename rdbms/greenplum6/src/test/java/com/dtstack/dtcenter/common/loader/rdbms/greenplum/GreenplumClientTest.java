@@ -56,7 +56,7 @@ public class GreenplumClientTest {
     }
 
     @Test
-        public void testTableMetadata() throws Exception{
+    public void testTableMetadata() throws Exception{
         SourceDTO source = SourceDTO.builder()
                 .url("jdbc:pivotal:greenplum://172.16.10.90:5432;DatabaseName=data")
                 .username("gpadmin")
@@ -66,6 +66,19 @@ public class GreenplumClientTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("student").build();
         String metaComment = rdbsClient.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
+    }
+
+
+    @Test
+    public void testTableList() throws Exception {
+        SourceDTO source = SourceDTO.builder()
+                .url("jdbc:pivotal:greenplum://172.16.10.90:5432;DatabaseName=data")
+                .username("gpadmin")
+                .password("gpadmin")
+                .build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        List<String> tables = rdbsClient.getTableList(source, queryDTO);
+        System.out.println(tables);
     }
 
 

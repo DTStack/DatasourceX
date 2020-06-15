@@ -33,6 +33,8 @@ public class GreenplumClient extends AbsRdbmsClient {
 
     private static final String TABLE_QUERY = "SELECT relname from pg_class a,pg_namespace b where relname not like '%%prt%%' and relkind ='r'  and a.relnamespace=b.oid and  nspname = '%s';";
 
+    private static final String TABLE_QUERY_WITHOUT_SCHEMA = "\n" +
+            "select table_schema ||'.'||table_name as tableName from information_schema.tables where table_schema in (SELECT n.nspname AS \"Name\"  FROM pg_catalog.pg_namespace n WHERE n.nspname !~ '^pg_' AND n.nspname <> 'gp_toolkit' AND n.nspname <> 'information_schema' ORDER BY 1)";
 
     private static final String TABLE_COMMENT_QUERY="select de.description\n" +
             "          from (select pc.oid as ooid,pn.nspname,pc.*\n" +
@@ -105,14 +107,17 @@ public class GreenplumClient extends AbsRdbmsClient {
 
     @Override
     public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        checkSchema(source);
         Integer clearStatus = beforeQuery(source, queryDTO, false);
         Statement statement = null;
         ResultSet resultSet = null;
         List<String> tableList = new ArrayList<>();
         try {
             statement = source.getConnection().createStatement();
-            resultSet=statement.executeQuery(String.format(TABLE_QUERY,source.getSchema()));
+            if (StringUtils.isBlank(source.getSchema())) {
+                resultSet = statement.executeQuery(TABLE_QUERY_WITHOUT_SCHEMA);
+            } else {
+                resultSet = statement.executeQuery(String.format(TABLE_QUERY, source.getSchema()));
+            }
             while (resultSet.next()) {
                 tableList.add(resultSet.getString(1));
             }
