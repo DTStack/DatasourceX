@@ -20,6 +20,7 @@ import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.OdpsSourceDTO;
@@ -298,5 +299,13 @@ public class OdpsClient extends AbsRdbmsClient {
         queryDTO.setColumns(CollectionUtils.isEmpty(queryDTO.getColumns()) ? Collections.singletonList("*") :
                 queryDTO.getColumns());
         return clearStatus;
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) source;
+        MaxcomputeDownloader maxcomputeDownloader = new MaxcomputeDownloader(getCon(odpsSourceDTO), queryDTO.getSql(), odpsSourceDTO.getSchema());
+        maxcomputeDownloader.configure();
+        return maxcomputeDownloader;
     }
 }

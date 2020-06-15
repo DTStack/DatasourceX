@@ -51,7 +51,7 @@ public class KylinTest {
         IClient client = clientCache.getClient(DataSourceClientType.Kylin.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select 1111").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
-        System.out.println(mapList.size());
+        System.out.println(mapList);
     }
 
     @Test
@@ -84,4 +84,5 @@ public class KylinTest {
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
+
 }

@@ -257,6 +257,62 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     /**
+     * rdbms数据预览
+     * @param iSource
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
+        List<List<Object>> previewList = new ArrayList<>();
+        if (org.apache.commons.lang3.StringUtils.isBlank(queryDTO.getTableName())) {
+            return previewList;
+        }
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            stmt = rdbmsSourceDTO.getConnection().createStatement();
+            //查询sql，默认预览100条
+            String querySql = dealSql(queryDTO.getTableName(), queryDTO.getPreviewNum());
+            rs = stmt.executeQuery(querySql);
+            ResultSetMetaData rsmd = rs.getMetaData();
+            //存储字段信息
+            List<Object> metaDataList = Lists.newArrayList();
+            //字段数量
+            int len = rsmd.getColumnCount();
+            for (int i = 0; i < len; i++) {
+                metaDataList.add(rsmd.getColumnName(i + 1));
+            }
+            previewList.add(metaDataList);
+            while (rs.next()){
+                //一个columnData存储一行数据信息
+                ArrayList<Object> columnData = Lists.newArrayList();
+                for (int i = 0; i < len; i++) {
+                    columnData.add(rs.getObject(i + 1));
+                }
+                previewList.add(columnData);
+            }
+        }finally {
+            DBUtil.closeDBResources(rs, stmt, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        return previewList;
+    }
+
+    /**
+     * 处理sql语句预览条数
+     * @param tableName 表名
+     * @param previewNum 预览条数
+     * @return 处理后的查询sql
+     */
+    protected String dealSql(String tableName, Integer previewNum){
+        return "select * from " + tableName
+                + " limit " + previewNum;
+    }
+
+    /**
      * 处理表名
      *
      * @param tableName
@@ -278,9 +334,4 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         throw new DtLoaderException("Not Support");
     }
 
-    /********************************* 关系型数据库无需实现的方法 ******************************************/
-    @Override
-    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
 }

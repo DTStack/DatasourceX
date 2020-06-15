@@ -66,7 +66,7 @@ public class PhoenixTest {
         IClient client = clientCache.getClient(DataSourceClientType.Phoenix.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
     }
 
     @Test

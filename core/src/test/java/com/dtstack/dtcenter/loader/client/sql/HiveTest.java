@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -99,5 +100,26 @@ public class HiveTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("yuebai").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
+    }
+
+    @Test
+    public void getDownloader() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        for (int i = 1; i < 8; i++) {
+            System.out.println("============================wangchuan00"+i+"============================");
+            SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("wangchuan00"+i).build();
+            IDownloader downloader = client.getDownloader(source, queryDTO);
+            System.out.println(downloader.getMetaInfo());
+            while (!downloader.reachedEnd()){
+                System.out.println(downloader.readNext());
+            }
+        }
+    }
+    @Test
+    public void getPreview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("wangchuan003").build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
     }
 }

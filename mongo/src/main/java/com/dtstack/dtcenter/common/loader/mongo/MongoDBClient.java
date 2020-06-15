@@ -32,6 +32,16 @@ public class MongoDBClient<T> implements IClient<T> {
         return MongoDBUtils.getTableList(iSource);
     }
 
+    @Override
+    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
+        return MongoDBUtils.getPreview(source, queryDTO);
+    }
+
+
+    public List<String> getDatabasesList(ISourceDTO iSource){
+        return MongoDBUtils.getDatabaseList(iSource);
+    }
+
     /********************************* 非关系型数据库无需实现的方法 ******************************************/
     @Override
     public Connection getCon(ISourceDTO source) throws Exception {
@@ -65,11 +75,6 @@ public class MongoDBClient<T> implements IClient<T> {
 
     @Override
     public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 

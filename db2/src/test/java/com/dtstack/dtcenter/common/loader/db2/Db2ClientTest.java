@@ -6,6 +6,10 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Db2SourceDTO;
 import org.junit.Test;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.List;
 
 public class Db2ClientTest {
@@ -48,5 +52,16 @@ public class Db2ClientTest {
         List columnMetaData = rdbsClient.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData);
 
+    }
+
+    @Test
+    public void insert() throws Exception {
+        Connection connection = DriverManager.getConnection("jdbc:db2://172.16.10.251:50000/mqTest", "DB2INST1", "abc123");
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery("show tables");
+        while (resultSet.next()){
+            String string = resultSet.getString(1);
+            System.out.println(string);
+        }
     }
 }

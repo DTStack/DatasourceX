@@ -25,8 +25,8 @@ public class Mysql8Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     Mysql8SourceDTO source = Mysql8SourceDTO.builder()
-            .url("jdbc:mysql://172.16.8.109:3306/ide")
-            .schema("ide")
+            .url("jdbc:mysql://172.16.8.109:3306/stream_new")
+            .schema("stream_new")
             .username("dtstack")
             .password("abc123")
             .build();
@@ -109,5 +109,17 @@ public class Mysql8Test {
                 System.out.println(list);
             }
         }
+    }
+
+    /**
+     * 数据预览测试
+     * @throws Exception
+     */
+    @Test
+    public void testGetPreview() throws Exception{
+        IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(1).tableName("rdos_stream_data_source").build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
     }
 }

@@ -21,10 +21,8 @@ public class MongoTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     MongoSourceDTO source = MongoSourceDTO.builder()
-            .hostPort("kudu5:27107")
-            .schema("admin")
-            .username("admin")
-            .password("123456")
+            .hostPort("172.16.8.193:27017")
+            .schema("dtstack")
             .build();
 
     @Test
@@ -41,6 +39,24 @@ public class MongoTest {
         IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
+    }
+
+    @Test
+    public void getDatabaseList() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("system.profile").build();
+        List list = client.getColumnMetaData(source, queryDTO);
+        System.out.println(list);
+    }
+
+    @Test
+    public void getPreview() throws Exception{
+        IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("system.profile").build();
+        List<List<Object>> preview = client.getPreview(source, queryDTO);
+        for (List list:preview){
+            System.out.println(list);
+        }
     }
 }

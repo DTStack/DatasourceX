@@ -6,20 +6,18 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.utils.CollectionUtil;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
+import groovy.sql.Sql;
 import org.apache.commons.lang.StringUtils;
 import oracle.jdbc.OracleResultSetMetaData;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -195,5 +193,18 @@ public class OracleClient extends AbsRdbmsClient {
         }
 
         return String.format(ORACLE_NUMBER_FORMAT, precision, scale);
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) source;
+        OracleDownloader oracleDownloader = new OracleDownloader(getCon(oracleSourceDTO), queryDTO.getSql(), oracleSourceDTO.getSchema());
+        oracleDownloader.configure();
+        return oracleDownloader;
+    }
+
+    @Override
+    protected String dealSql(String tableName, Integer previewNum) {
+        return "select * from " + tableName + " where rownum <=" + previewNum;
     }
 }

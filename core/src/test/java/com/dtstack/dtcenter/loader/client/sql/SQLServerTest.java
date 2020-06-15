@@ -66,13 +66,13 @@ public class SQLServerTest {
         IClient client = clientCache.getClient(DataSourceClientType.SQLServer.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
     }
 
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.SQLServer.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("TempTable0").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("jiangbo_dev_copy").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -91,5 +91,13 @@ public class SQLServerTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("TempTable0").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
+    }
+
+    @Test
+    public void getPreview() throws Exception{
+        IClient client = clientCache.getClient(DataSourceClientType.SQLServer.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(20).tableName("jiangbo_dev_copy").build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
     }
 }
