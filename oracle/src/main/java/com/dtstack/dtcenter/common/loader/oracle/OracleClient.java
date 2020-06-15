@@ -202,4 +202,9 @@ public class OracleClient extends AbsRdbmsClient {
         oracleDownloader.configure();
         return oracleDownloader;
     }
+
+    @Override
+    protected String dealSql(String tableName, Integer previewNum) {
+        return "select * from " + tableName + " where rownum <=" + previewNum;
+    }
 }

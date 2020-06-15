@@ -92,4 +92,16 @@ public class OracleTest {
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
+
+    /**
+     * 数据预览测试
+     * @throws Exception
+     */
+    @Test
+    public void testGetPreview() throws Exception{
+        IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("\"test_side\"").previewNum(1).build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
+    }
 }

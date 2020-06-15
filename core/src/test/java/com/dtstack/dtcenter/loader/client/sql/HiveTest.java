@@ -115,4 +115,11 @@ public class HiveTest {
             }
         }
     }
+    @Test
+    public void getPreview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("wangchuan003").build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
+    }
 }

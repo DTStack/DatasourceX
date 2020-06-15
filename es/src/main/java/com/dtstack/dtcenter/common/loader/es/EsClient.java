@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.es;
 
 import com.dtstack.dtcenter.common.enums.DataSourceType;
-import com.dtstack.dtcenter.common.http.PoolHttpClient;
+import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
@@ -16,19 +17,15 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.elasticsearch.action.ActionFuture;
-import org.elasticsearch.action.admin.indices.stats.IndexStats;
-import org.elasticsearch.action.admin.indices.stats.IndicesStatsRequest;
-import org.elasticsearch.action.admin.indices.stats.IndicesStatsResponse;
+import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.client.IndicesClient;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.client.*;
+import org.elasticsearch.client.indices.GetMappingsRequest;
+import org.elasticsearch.client.indices.GetMappingsResponse;
+import org.elasticsearch.cluster.metadata.AliasMetaData;
+import org.elasticsearch.cluster.metadata.MappingMetaData;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -65,6 +62,147 @@ public class EsClient extends AbsRdbmsClient {
     }
 
     /**
+     * 获取es某一索引下所有type（也就是表），6.0版本之后不允许一个index下多个type
+     * @param iSource
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
+        if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
+            return new ArrayList<>();
+        }
+        RestHighLevelClient client;
+        if (StringUtils.isNotBlank(esSourceDTO.getUsername()) && StringUtils.isNotBlank(esSourceDTO.getPassword())) {
+            client = getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
+        } else {
+            client = getClient(esSourceDTO.getUrl());
+        }
+        List<String> typeList = Lists.newArrayList();
+        //es索引
+        String index = esSourceDTO.getSchema();
+        //不指定index抛异常
+        if (StringUtils.isBlank(index)){
+            throw new DtCenterDefException("未指定es的index，获取失败");
+        }
+        try {
+            GetMappingsResponse res = client.indices().getMapping(new GetMappingsRequest(), RequestOptions.DEFAULT);
+            MappingMetaData data = res.mappings().get(index);
+            typeList.add(data.type());
+        }catch (NullPointerException e){
+            log.error("index不存在", e);
+            throw new DtCenterDefException("index不存在");
+        }catch (Exception e){
+            log.error("获取type异常", e);
+        }
+        return typeList;
+    }
+
+    /**
+     * 获取es所有索引（也就是数据库）
+     * @param iSource
+     * @return
+     */
+    public static List<String> getDatabases(ISourceDTO iSource){
+        ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
+        if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
+            return new ArrayList<>();
+        }
+        RestHighLevelClient client;
+        if (StringUtils.isNotBlank(esSourceDTO.getUsername()) && StringUtils.isNotBlank(esSourceDTO.getPassword())) {
+            client = getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
+        } else {
+            client = getClient(esSourceDTO.getUrl());
+        }
+        ArrayList<String> dbs = new ArrayList<>();
+        try {
+            GetAliasesRequest aliasesRequest = new GetAliasesRequest();
+            GetAliasesResponse alias = client.indices().getAlias(aliasesRequest, RequestOptions.DEFAULT);
+            Map<String, Set<AliasMetaData>> aliases = alias.getAliases();
+            Set<String> set = aliases.keySet();
+            dbs = new ArrayList<>(set);
+        }catch (Exception e){
+            log.error("获取es索引失败", e);
+        }
+        return dbs;
+    }
+
+    @Override
+    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+        ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
+        if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
+            return new ArrayList<>();
+        }
+        RestHighLevelClient client;
+        if (StringUtils.isNotBlank(esSourceDTO.getUsername()) && StringUtils.isNotBlank(esSourceDTO.getPassword())) {
+            client = getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
+        } else {
+            client = getClient(esSourceDTO.getUrl());
+        }
+        //索引
+        String index = esSourceDTO.getSchema();
+        if (StringUtils.isBlank(index) || StringUtils.isBlank(esSourceDTO.getId())){
+            throw new DtCenterDefException("未指定es的index或者id，数据预览失败");
+        }
+        //根据index和id进行查询
+        GetRequest request = new GetRequest(index, esSourceDTO.getId());
+        String document = null;
+        try {
+            GetResponse response = client.get(request, RequestOptions.DEFAULT);
+            document = response.getSourceAsString();
+        }catch (Exception e){
+            log.error("获取文档异常", e);
+        }
+        List<Object> documentList = Lists.newArrayList(document);
+        List<List<Object>> res = Lists.newArrayList();
+        res.add(documentList);
+        return res;
+    }
+
+    /**
+     * 获取es字段信息
+     * @param iSource
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
+        if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
+            return new ArrayList<>();
+        }
+        RestHighLevelClient client;
+        if (StringUtils.isNotBlank(esSourceDTO.getUsername()) && StringUtils.isNotBlank(esSourceDTO.getPassword())) {
+            client = getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
+        } else {
+            client = getClient(esSourceDTO.getUrl());
+        }
+        //索引
+        String index = esSourceDTO.getSchema();
+        if (StringUtils.isBlank(index) || StringUtils.isBlank(esSourceDTO.getId())){
+            throw new DtCenterDefException("未指定es的index或者id，数据预览失败");
+        }
+        //根据index和id进行查询
+        GetRequest request = new GetRequest(index, esSourceDTO.getId());
+        Set<String> set = null;
+        List<ColumnMetaDTO> columnMetaDTOS = new ArrayList<>();
+        try {
+            GetResponse response = client.get(request, RequestOptions.DEFAULT);
+            set = response.getSource().keySet();
+            for (String field:set){
+                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+                columnMetaDTO.setKey(field);
+                columnMetaDTOS.add(columnMetaDTO);
+            }
+        }catch (Exception e){
+            log.error("获取文档异常", e);
+        }
+        return columnMetaDTOS;
+    }
+    /**
      * 根据连接确定连接成功性
      *
      * @param client
@@ -73,7 +211,7 @@ public class EsClient extends AbsRdbmsClient {
     private static boolean checkConnect(RestHighLevelClient client) {
         boolean check = false;
         try {
-            client.info();
+            client.info(RequestOptions.DEFAULT);
             check = true;
         } catch (Exception e) {
             log.error("", e);
@@ -148,46 +286,6 @@ public class EsClient extends AbsRdbmsClient {
         return httpHostList;
     }
 
-    public static List<String> getDatabases(ISourceDTO iSource, SqlQueryDTO queryDTO){
-        ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
-        if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
-            return new ArrayList<>();
-        }
-        RestHighLevelClient client;
-        if (StringUtils.isNotBlank(esSourceDTO.getUsername()) && StringUtils.isNotBlank(esSourceDTO.getPassword())) {
-            client = getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
-        } else {
-            client = getClient(esSourceDTO.getUrl());
-        }
-        IndicesClient indices = client.indices();
-
-        //request.
-        return null;
-    }
-
-    @Override
-    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
-        if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
-            return new ArrayList<>();
-        }
-        RestHighLevelClient client;
-        if (StringUtils.isNotBlank(esSourceDTO.getUsername()) && StringUtils.isNotBlank(esSourceDTO.getPassword())) {
-            client = getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
-        } else {
-            client = getClient(esSourceDTO.getUrl());
-        }
-        GetRequest getRequest = new GetRequest(esSourceDTO.getSchema());
-        GetResponse getResponse = null;
-        try {
-            getResponse = client.get(getRequest);
-        }catch (Exception e){
-            log.error("获取文档异常", e);
-        }
-        //getResponse.
-        return null;
-    }
-
     /******************** 未支持的方法 **********************/
     @Override
     public Connection getCon(ISourceDTO iSource) throws Exception {
@@ -205,17 +303,7 @@ public class EsClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
     public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 }

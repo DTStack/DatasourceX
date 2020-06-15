@@ -108,6 +108,14 @@ public class PostgreSQLTest {
             }
             i++;
         }
+    }
+
+    @Test
+    public void getPreview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.PostgreSQL.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("dim_est_project").previewNum(1).build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
 
     }
 }

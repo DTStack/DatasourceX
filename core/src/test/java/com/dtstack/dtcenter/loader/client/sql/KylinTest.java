@@ -84,4 +84,5 @@ public class KylinTest {
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
+
 }

@@ -66,7 +66,7 @@ public class Hive1Test {
         IClient client = clientCache.getClient(DataSourceClientType.HIVE1X.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
     }
 
     @Test
@@ -91,5 +91,13 @@ public class Hive1Test {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("chener_o2").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
+    }
+
+    @Test
+    public void getPreview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.HIVE1X.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("chener").build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
     }
 }

@@ -51,7 +51,7 @@ public class MongoTest {
     }
 
     @Test
-    public void getPreview(){
+    public void getPreview() throws Exception{
         IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("system.profile").build();
         List<List<Object>> preview = client.getPreview(source, queryDTO);

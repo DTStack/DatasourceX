@@ -115,7 +115,7 @@ public interface IClient<T> {
      * @param queryDTO
      * @return
      */
-    List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO);
+    List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
     /**
      * 获取对应的downloader

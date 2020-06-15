@@ -115,6 +115,13 @@ public class Greenplum6Test {
                 System.out.println(list);
             }
         }
+    }
 
+    @Test
+    public void testGetPreview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.Greenplum6.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi102").previewNum(50).build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
     }
 }

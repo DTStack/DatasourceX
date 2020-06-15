@@ -98,4 +98,9 @@ public class SqlServerClient extends AbsRdbmsClient {
         sqlServerDownloader.configure();
         return sqlServerDownloader;
     }
+
+    @Override
+    protected String dealSql(String tableName, Integer previewNum) {
+        return "select top "+previewNum+" * from "+tableName;
+    }
 }

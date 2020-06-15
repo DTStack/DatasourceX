@@ -22,4 +22,9 @@ public class ESSourceDTO extends RdbmsSourceDTO {
      * 其他配置信息
      */
     private String others;
+
+    /**
+     * es文档id
+     */
+    private String id;
 }

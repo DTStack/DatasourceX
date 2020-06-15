@@ -25,10 +25,10 @@ public class Mysql5Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     Mysql5SourceDTO source = Mysql5SourceDTO.builder()
-            .url("jdbc:mysql://172.16.8.109:3306/ide")
+            .url("jdbc:mysql://172.16.8.109:3306/stream_new")
             .username("dtstack")
             .password("abc123")
-            .schema("ide")
+            .schema("stream_new")
             .build();
 
     @Test
@@ -109,5 +109,17 @@ public class Mysql5Test {
                 System.out.println(list);
             }
         }
+    }
+
+    /**
+     * 数据预览测试
+     * @throws Exception
+     */
+    @Test
+    public void testGetPreview() throws Exception{
+        IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_stream_data_source").build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
     }
 }

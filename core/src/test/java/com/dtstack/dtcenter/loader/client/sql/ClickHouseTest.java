@@ -67,7 +67,7 @@ public class ClickHouseTest {
     public void getTableList() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.Clickhouse.getPluginName());
         List<String> tableList = client.getTableList(source, null);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
     }
 
     @Test
@@ -99,5 +99,13 @@ public class ClickHouseTest {
             }
         }
 
+    }
+
+    @Test
+    public void testGetPreview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.Clickhouse.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("sidetest").previewNum(1).build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
     }
 }
