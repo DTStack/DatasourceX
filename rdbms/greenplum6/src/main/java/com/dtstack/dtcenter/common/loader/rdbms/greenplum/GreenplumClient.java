@@ -56,7 +56,7 @@ public class GreenplumClient extends AbsRdbmsClient {
             "    where 1=1\n" +
             "      and pd.objsubid = 0) de\n" +
             "                            on tab.ooid = de.objoid\n" +
-            "         where 1=1 and tab.relname='%s'";
+            "         where 1=1 and tab.relname='%s' and tab.nspname = '%s'";
 
 
     @Override
@@ -71,13 +71,21 @@ public class GreenplumClient extends AbsRdbmsClient {
 
     @Override
     public String  getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        checkSchema(source);
+        String tableName = queryDTO.getTableName();
+        String schema = source.getSchema();
+        if (StringUtils.isEmpty(source.getSchema())) {
+            if (!queryDTO.getTableName().contains(".")) {
+                throw new DtCenterDefException("greenplum数据源需要schema参数");
+            }
+            schema = queryDTO.getTableName().split("\\.")[0];
+            tableName = queryDTO.getTableName().split("\\.")[1];
+        }
         Integer clearStatus = beforeColumnQuery(source, queryDTO);
         Statement statement = null;
         ResultSet resultSet = null;
         try {
             statement = source.getConnection().createStatement();
-            resultSet = statement.executeQuery(String.format(TABLE_COMMENT_QUERY, queryDTO.getTableName()));
+            resultSet = statement.executeQuery(String.format(TABLE_COMMENT_QUERY, tableName, schema));
             while (resultSet.next()) {
                 String tableDesc = resultSet.getString(1);
                 return tableDesc;
@@ -131,13 +139,6 @@ public class GreenplumClient extends AbsRdbmsClient {
         return tableList;
     }
 
-
-    private void checkSchema(SourceDTO source){
-        String schemaName = source.getSchema();
-        if (StringUtils.isBlank(schemaName)) {
-            throw new DtCenterDefException("greenplum6 数据源schema不能为空");
-        }
-    }
 
 
 }

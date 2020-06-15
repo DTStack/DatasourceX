@@ -61,9 +61,8 @@ public class GreenplumClientTest {
                 .url("jdbc:pivotal:greenplum://172.16.10.90:5432;DatabaseName=data")
                 .username("gpadmin")
                 .password("gpadmin")
-                .schema("test")
                 .build();
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("student").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("public.nanqi").build();
         String metaComment = rdbsClient.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
