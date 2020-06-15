@@ -52,45 +52,73 @@ public class DataSourceClientProxy<T> implements IClient<T> {
 
     @Override
     public List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeQuery(source, queryDTO),
-                targetClient.getClass().getClassLoader(), true);
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeQuery(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
     }
 
     @Override
     public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeSqlWithoutResultSet(source,
-                queryDTO), targetClient.getClass().getClassLoader(), true);
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeSqlWithoutResultSet(source,
+                    queryDTO), targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return false;
+        }
     }
 
     @Override
     public List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableList(source, queryDTO),
-                targetClient.getClass().getClassLoader(), true);
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableList(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
     }
 
     @Override
     public List<String> getColumnClassInfo(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnClassInfo(source, queryDTO),
-                targetClient.getClass().getClassLoader(), true);
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnClassInfo(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
     }
 
     @Override
     public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnMetaData(source, queryDTO),
-                targetClient.getClass().getClassLoader(), true);
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnMetaData(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
     }
 
     @Override
     public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getFlinkColumnMetaData(source, queryDTO),
-                targetClient.getClass().getClassLoader(), true);
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getFlinkColumnMetaData(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
     }
 
     @Override
     public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableMetaComment(source, queryDTO),
-                targetClient.getClass().getClassLoader(), true);
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableMetaComment(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
     }
 
     @Override
