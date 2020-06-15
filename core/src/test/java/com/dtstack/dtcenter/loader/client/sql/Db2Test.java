@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -50,9 +51,9 @@ public class Db2Test {
     @Test
     public void executeQuery() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi01").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi01 limit 1,1").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
-        System.out.println(mapList.size());
+        System.out.println(mapList);
     }
 
     @Test
@@ -83,5 +84,19 @@ public class Db2Test {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi01").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
+    }
+
+    @Test
+    public void getDownloader() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from WANGCHUAN01").build();
+        IDownloader downloader = client.getDownloader(source, queryDTO);
+        System.out.println(downloader.getMetaInfo());
+        while (!downloader.reachedEnd()){
+            List<List<String>> o = (List<List<String>>)downloader.readNext();
+            for (List<String> list:o)
+                System.out.println(list);
+        }
+
     }
 }

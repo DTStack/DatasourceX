@@ -6,11 +6,13 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Mysql8SourceDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -56,5 +58,13 @@ public class MysqlClient extends AbsRdbmsClient {
             DBUtil.closeDBResources(resultSet, statement, mysql8SourceDTO.clearAfterGetConnection(clearStatus));
         }
         return null;
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Mysql8SourceDTO mysql8SourceDTO = (Mysql8SourceDTO) source;
+        MysqlDownloader mysqlDownloader = new MysqlDownloader(getCon(source), queryDTO.getSql(), mysql8SourceDTO.getSchema());
+        mysqlDownloader.configure();
+        return mysqlDownloader;
     }
 }

@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -66,7 +67,7 @@ public class PostgreSQLTest {
         IClient client = clientCache.getClient(DataSourceClientType.PostgreSQL.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
     }
 
     @Test
@@ -91,5 +92,30 @@ public class PostgreSQLTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("employee").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
+    }
+
+    @Test
+    public void getDownloader() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.PostgreSQL.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from dim_est_project").build();
+        IDownloader downloader = client.getDownloader(source, queryDTO);
+        int i = 0;
+        while (!downloader.reachedEnd()){
+            List<List<String>> o = (List<List<String>>)downloader.readNext();
+            System.out.println("========================"+i+"========================");
+            for (List list:o){
+                System.out.println(list);
+            }
+            i++;
+        }
+    }
+
+    @Test
+    public void getPreview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.PostgreSQL.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("dim_est_project").previewNum(1).build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
+
     }
 }

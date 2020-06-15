@@ -3,6 +3,10 @@ package com.dtstack.dtcenter.common.loader.kylin;
 import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.KylinSourceDTO;
 
 /**
  * @company: www.dtstack.com
@@ -19,5 +23,13 @@ public class KylinClient extends AbsRdbmsClient {
     @Override
     protected DataSourceType getSourceType() {
         return DataSourceType.Kylin;
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        KylinSourceDTO kylinSourceDTO = (KylinSourceDTO) source;
+        KylinDownloader kylinDownloader = new KylinDownloader(getCon(kylinSourceDTO), queryDTO.getSql(), kylinSourceDTO.getSchema());
+        kylinDownloader.configure();
+        return kylinDownloader;
     }
 }

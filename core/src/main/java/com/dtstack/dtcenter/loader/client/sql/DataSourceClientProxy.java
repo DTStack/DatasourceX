@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
@@ -101,5 +102,11 @@ public class DataSourceClientProxy<T> implements IClient<T> {
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getDownloader(source, queryDTO),
+                targetClient.getClass().getClassLoader(), true);
     }
 }

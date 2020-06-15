@@ -138,6 +138,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.dtstack.dtcenter</groupId>
+            <artifactId>sql-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>17.0.0</version>

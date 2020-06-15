@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.mongo;
 
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
@@ -29,6 +30,16 @@ public class MongoDBClient<T> implements IClient<T> {
     @Override
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         return MongoDBUtils.getTableList(iSource);
+    }
+
+    @Override
+    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
+        return MongoDBUtils.getPreview(source, queryDTO);
+    }
+
+
+    public List<String> getDatabasesList(ISourceDTO iSource){
+        return MongoDBUtils.getDatabaseList(iSource);
     }
 
     /********************************* 非关系型数据库无需实现的方法 ******************************************/
@@ -68,7 +79,7 @@ public class MongoDBClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 }

@@ -66,7 +66,7 @@ public class ImpalaTest {
         IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
     }
 
     @Test
@@ -91,5 +91,13 @@ public class ImpalaTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi01").build();
         String tableMetaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(tableMetaComment);
+    }
+
+    @Test
+    public void getPreview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("nanqi01").build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
     }
 }

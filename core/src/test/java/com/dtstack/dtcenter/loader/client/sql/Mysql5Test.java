@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -24,10 +25,10 @@ public class Mysql5Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     Mysql5SourceDTO source = Mysql5SourceDTO.builder()
-            .url("jdbc:mysql://172.16.8.109:3306/")
+            .url("jdbc:mysql://172.16.8.109:3306/stream_new")
             .username("dtstack")
             .password("abc123")
-            .schema("ide")
+            .schema("stream_new")
             .build();
 
     @Test
@@ -67,7 +68,7 @@ public class Mysql5Test {
         IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
     }
 
     @Test
@@ -92,5 +93,33 @@ public class Mysql5Test {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_batch_job_backup").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
+    }
+
+    @Test
+    public void testGetDownloader() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from rdos_batch_task").build();
+        IDownloader downloader = client.getDownloader(source, queryDTO);
+        downloader.configure();
+        List<String> metaInfo = downloader.getMetaInfo();
+        System.out.println(metaInfo);
+        while (!downloader.reachedEnd()){
+            List<List<String>> o = (List<List<String>>)downloader.readNext();
+            for (List<String> list:o){
+                System.out.println(list);
+            }
+        }
+    }
+
+    /**
+     * 数据预览测试
+     * @throws Exception
+     */
+    @Test
+    public void testGetPreview() throws Exception{
+        IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_stream_data_source").build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
     }
 }

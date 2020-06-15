@@ -2,11 +2,15 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.http.PoolHttpClient;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  * @company: www.dtstack.com
@@ -21,6 +25,8 @@ public class EsTest {
             .url("172.16.10.251:9200")
             .username("elastic")
             .password("abc123")
+            .schema("my_index")
+            .id("id_1")
             .build();
 
     @Test
@@ -30,5 +36,26 @@ public class EsTest {
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtCenterDefException("连接异常");
         }
+    }
+
+    @Test
+    public void getTableList() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.ES6.getPluginName());
+        List tableList = client.getTableList(source, SqlQueryDTO.builder().build());
+        System.out.println(tableList);
+    }
+
+    @Test
+    public void getPreview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.ES6.getPluginName());
+        List viewList = client.getPreview(source, SqlQueryDTO.builder().build());
+        System.out.println(viewList);
+    }
+
+    @Test
+    public void getColumnMetaData() throws Exception{
+        IClient client = clientCache.getClient(DataSourceClientType.ES6.getPluginName());
+        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().build());
+        System.out.println(metaData);
     }
 }

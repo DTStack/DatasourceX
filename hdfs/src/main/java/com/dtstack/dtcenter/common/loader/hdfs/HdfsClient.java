@@ -59,4 +59,9 @@ public class HdfsClient extends AbsRdbmsClient {
     public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSourceDTO, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
+
+    @Override
+    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
 }

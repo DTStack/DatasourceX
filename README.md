@@ -64,7 +64,7 @@
 | getColumnMetaData | 对应数据源的DTO,SqlQueryDTO | List<ColumnMetaDTO>              | 获取字段属性 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤 |
 | getFlinkColumnMetaData | 对应数据源的DTO,SqlQueryDTO | List<ColumnMetaDTO>              | 获取flinkSql任务字段属性 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤 |
 | getTableMetaComment | 对应数据源的DTO,SqlQueryDTO | List<ColumnMetaDTO>              | 获取表备注信息 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤 |
-| getPreview | 对应数据源的DTO,SqlQueryDTO | List<List<Object>>              | 获取预览数据 |
+| getPreview | 对应数据源的DTO,SqlQueryDTO | List<List<Object>>              | 获取预览数据,支持大多数关系型数据库，支持es、mongdb |
 
 #### IKafka
 | 方法           | 入参                    | 出参                        | 备注  |

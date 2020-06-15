@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.emq;
 
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
@@ -72,4 +73,8 @@ public class EmqClient<T> implements IClient<T> {
         throw new DtLoaderException("Not Support");
     }
 
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
 }
