@@ -290,7 +290,11 @@ public class HiveClient extends AbsRdbmsClient {
             conf.set("dfs.namenode.kerberos.principal.pattern", "*");
 
         }
+
         //根据存储格式创建对应的hiveDownloader
+        if (StringUtils.isBlank(StorageMode)) {
+            throw new DtCenterDefException("不支持该存储类型的hive表读取");
+        }
         if (StorageMode.contains("Text")){
             HiveTextDownload hiveTextDownload = new HiveTextDownload(conf, tableLocation, columnNames, fieldDelimiter, partitionColumns);
             hiveTextDownload.configure();

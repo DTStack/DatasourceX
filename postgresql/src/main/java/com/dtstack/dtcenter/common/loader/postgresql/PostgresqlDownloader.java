@@ -59,32 +59,32 @@ public class PostgresqlDownloader implements IDownloader {
         pageNum = 1;
         statement = connection.createStatement();
 
-        /*if (StringUtils.isNotEmpty(schema)) {
-            //选择schema
-            String useSchema = String.format("USE %s", schema);
-            statement.execute(useSchema);
-        }*/
         String countSQL = String.format("SELECT COUNT(*) FROM (%s) temp", sql);
-        ResultSet resultSet = statement.executeQuery(countSQL);
-        while (resultSet.next()) {
-            //获取总行数
-            totalLine = resultSet.getInt(1);
-        }
-        //获取列信息
         String showColumns = String.format("SELECT * FROM (%s) t limit 1", sql);
-        resultSet = statement.executeQuery(showColumns);
-        columnNames = new ArrayList<>();
-        columnCount = resultSet.getMetaData().getColumnCount();
-        for (int i = 1; i <= columnCount; i++) {
-            Column column = new Column();
-            column.setName(resultSet.getMetaData().getColumnName(i));
-            column.setType(resultSet.getMetaData().getColumnTypeName(i));
-            column.setIndex(i);
-            columnNames.add(column);
+
+        try (
+                ResultSet totalResultSet = statement.executeQuery(countSQL);
+                ResultSet columnsResultSet = statement.executeQuery(showColumns);
+        ) {
+            while (totalResultSet.next()) {
+                //获取总行数
+                totalLine = totalResultSet.getInt(1);
+            }
+            //获取列信息
+            columnNames = new ArrayList<>();
+            columnCount = columnsResultSet.getMetaData().getColumnCount();
+            for (int i = 1; i <= columnCount; i++) {
+                Column column = new Column();
+                column.setName(columnsResultSet.getMetaData().getColumnName(i));
+                column.setType(columnsResultSet.getMetaData().getColumnTypeName(i));
+                column.setIndex(i);
+                columnNames.add(column);
+            }
+            //获取总页数
+            pageAll = (int) Math.ceil(totalLine / (double) pageSize);
+        } catch (Exception e) {
+            throw new DtCenterDefException("构造 Postgresql 下载器信息异常 : " + e.getMessage(), e);
         }
-        //获取总页数
-        pageAll = (int) Math.ceil(totalLine / (double) pageSize);
-        resultSet.close();
     }
 
     @Override
@@ -99,16 +99,20 @@ public class PostgresqlDownloader implements IDownloader {
     public List<List<String>> readNext() throws Exception {
         //分页查询，一次一百条
         String limitSQL = String.format("SELECT * FROM (%s) t limit %s offset %s", sql, pageSize, pageSize*(pageNum-1));
-        ResultSet resultSet = statement.executeQuery(limitSQL);
         List<List<String>> pageTemp = new ArrayList<>(100);
-        while (resultSet.next()) {
-            List<String> columns = new ArrayList<>(columnCount);
-            for (int i = 1; i <= columnCount; i++) {
-                columns.add(resultSet.getString(i));
+
+        try (ResultSet resultSet = statement.executeQuery(limitSQL)) {
+            while (resultSet.next()) {
+                List<String> columns = new ArrayList<>(columnCount);
+                for (int i = 1; i <= columnCount; i++) {
+                    columns.add(resultSet.getString(i));
+                }
+                pageTemp.add(columns);
             }
-            pageTemp.add(columns);
+        } catch (Exception e) {
+            throw new DtCenterDefException("读取 Postgresql 信息异常 : " + e.getMessage(), e);
         }
-        resultSet.close();
+
         pageNum++;
         return pageTemp;
     }

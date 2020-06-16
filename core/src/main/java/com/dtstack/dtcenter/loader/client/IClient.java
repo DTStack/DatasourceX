@@ -2,8 +2,6 @@ package com.dtstack.dtcenter.loader.client;
 
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
-import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 

@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.common.enums.DataBaseType;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.source.Greenplum6SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.utils.DBUtil;
 import org.apache.commons.lang.StringUtils;
 
 import java.sql.Connection;
@@ -30,10 +31,8 @@ public class GreenplumFactory extends ConnFactory {
         DriverManager.setLoginTimeout(30);
         Connection connection = super.getConn(greenplum6SourceDTO);
         if (!StringUtils.isBlank(greenplum6SourceDTO.getSchema())) {
-            connection.createStatement().execute(String.format(SCHEMA_SET, greenplum6SourceDTO.getSchema()));
+            DBUtil.executeSqlWithoutResultSet(connection, String.format(SCHEMA_SET, greenplum6SourceDTO.getSchema()), false);
         }
         return connection;
     }
-
-
 }

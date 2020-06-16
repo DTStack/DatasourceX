@@ -2,8 +2,8 @@ package com.dtstack.dtcenter.common.loader.oracle;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
 import org.junit.Test;
 
 import java.util.List;
