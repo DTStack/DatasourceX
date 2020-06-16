@@ -4,7 +4,7 @@ import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RedisSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
@@ -17,11 +17,9 @@ import org.junit.Test;
 public class RedisTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    SourceDTO source = SourceDTO.builder()
-            .url("172.16.10.204")
-            .hostPort("6379")
+    RedisSourceDTO source = RedisSourceDTO.builder()
+            .hostPort("172.16.8.109:6379")
             .schema("5")
-            .password("abc123")
             .build();
 
     @Test

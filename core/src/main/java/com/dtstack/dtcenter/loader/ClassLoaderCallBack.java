@@ -7,5 +7,10 @@ package com.dtstack.dtcenter.loader;
  */
 @FunctionalInterface
 public interface ClassLoaderCallBack<T> {
+    /**
+     * 抽象执行类
+     * @return
+     * @throws Exception
+     */
     T execute() throws Exception;
 }

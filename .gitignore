@@ -12,3 +12,4 @@ lib/*
 run/*
 bin/*
 out/*
+*.iml

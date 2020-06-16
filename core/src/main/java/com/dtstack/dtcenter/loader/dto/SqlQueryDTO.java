@@ -45,12 +45,17 @@ public class SqlQueryDTO {
     /**
      * 是否需要视图表，默认 false 不过滤
      */
-    private Boolean view = false;
+    private Boolean view;
 
     /**
      * 是否过滤分区字段，默认 false 不过滤
      */
     private Boolean filterPartitionColumns;
+
+    /**
+     * 预览条数，默认100
+     */
+    private Integer previewNum;
 
     public Boolean getView() {
         if (ArrayUtils.isEmpty(getTableTypes())) {
@@ -58,6 +63,13 @@ public class SqlQueryDTO {
         }
 
         return Arrays.stream(getTableTypes()).filter( type -> "VIEW".equalsIgnoreCase(type)).findFirst().isPresent();
+    }
+
+    public Integer getPreviewNum() {
+        if (this.previewNum == null){
+            return 100;
+        }
+        return previewNum;
     }
 
     public Boolean getFilterPartitionColumns() {

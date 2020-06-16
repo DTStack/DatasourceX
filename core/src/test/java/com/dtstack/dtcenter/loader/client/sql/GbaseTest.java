@@ -4,8 +4,8 @@ import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.GBaseSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class GbaseTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
-    private SourceDTO source = SourceDTO.builder()
+    private GBaseSourceDTO source = GBaseSourceDTO.builder()
             .url("jdbc:gbase://172.16.8.193:5258/dtstack")
             .username("root")
             .password("123456")

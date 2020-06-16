@@ -1,17 +1,16 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
-import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.OdpsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
-import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +23,7 @@ import java.util.Map;
 public class MaxComputerTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    SourceDTO source = SourceDTO.builder()
+    OdpsSourceDTO source = OdpsSourceDTO.builder()
             .config("{\"accessId\":\"LTAINn0gjHA3Yxy6\",\"accessKey\":\"p1xcV89FzYyCInwA6YTyYawJnTwNzh\"," +
                     "\"project\":\"dtstack_dev\",\"endPoint\":\"\"}")
             .build();
@@ -83,5 +82,21 @@ public class MaxComputerTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("aa_temp").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
+    }
+
+    @Test
+    public void getDownload() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.MAXCOMPUTE.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi102").build();
+        IDownloader downloader = client.getDownloader(source, queryDTO);
+        System.out.println(downloader.getMetaInfo());
+        int i = 0;
+        while (!downloader.reachedEnd()){
+            System.out.println("==================第"+ ++i+"页==================");
+            List<List<String>> o = (List<List<String>>)downloader.readNext();
+            for (List list:o){
+                System.out.println(list);
+            }
+        }
     }
 }

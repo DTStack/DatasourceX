@@ -2,11 +2,12 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.Greenplum6SourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
@@ -23,7 +24,7 @@ import java.util.Map;
 public class Greenplum6Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    SourceDTO source = SourceDTO.builder()
+    Greenplum6SourceDTO source = Greenplum6SourceDTO.builder()
             .url("jdbc:pivotal:greenplum://172.16.10.90:5432;DatabaseName=data")
             .username("gpadmin")
             .password("gpadmin")
@@ -50,9 +51,9 @@ public class Greenplum6Test {
     @Test
     public void executeQuery() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.Greenplum6.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi99").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi102 limit 2 offset ").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
-        System.out.println(mapList.size());
+        System.out.println(mapList);
     }
 
     @Test
@@ -75,7 +76,7 @@ public class Greenplum6Test {
         IClient client = clientCache.getClient(DataSourceClientType.Greenplum6.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi102").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
-        columnClassInfo.forEach(column->{
+        columnClassInfo.forEach(column -> {
             System.out.println(column);
         });
         System.out.println(columnClassInfo.size());
@@ -87,7 +88,7 @@ public class Greenplum6Test {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("student").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
-        columnMetaData.forEach(column->{
+        columnMetaData.forEach(column -> {
             System.out.println(column);
         });
     }
@@ -98,5 +99,29 @@ public class Greenplum6Test {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("student").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
+    }
+
+    @Test
+    public void getDownloader() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.Greenplum6.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi102").build();
+        IDownloader downloader = client.getDownloader(source, queryDTO);
+        System.out.println(downloader.getMetaInfo());
+        int i = 0;
+        while (!downloader.reachedEnd()){
+            System.out.println("==================第"+ ++i+"页==================");
+            List<List<String>> o = (List<List<String>>)downloader.readNext();
+            for (List list:o){
+                System.out.println(list);
+            }
+        }
+    }
+
+    @Test
+    public void testGetPreview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.Greenplum6.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi102").previewNum(50).build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
     }
 }

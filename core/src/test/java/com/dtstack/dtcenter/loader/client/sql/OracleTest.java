@@ -5,8 +5,8 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
@@ -23,10 +23,10 @@ import java.util.Map;
 public class OracleTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    SourceDTO source = SourceDTO.builder()
+    OracleSourceDTO source = OracleSourceDTO.builder()
             .url("jdbc:oracle:thin:@172.16.8.178:1521:xe")
-            .username("dtstack")
-            .password("abc123")
+            .username("system")
+            .password("oracle")
             .build();
 
     @Test
@@ -72,7 +72,7 @@ public class OracleTest {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("MUYUN1226").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test_side").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -80,7 +80,7 @@ public class OracleTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("MUYUN1226").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test_side").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
@@ -88,8 +88,20 @@ public class OracleTest {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("MUYUN1226").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test_side").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
+    }
+
+    /**
+     * 数据预览测试
+     * @throws Exception
+     */
+    @Test
+    public void testGetPreview() throws Exception{
+        IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("\"test_side\"").previewNum(1).build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
     }
 }
