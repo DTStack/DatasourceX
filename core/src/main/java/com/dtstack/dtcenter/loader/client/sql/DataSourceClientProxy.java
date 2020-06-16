@@ -128,7 +128,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPreview(source, queryDTO),
                     targetClient.getClass().getClassLoader(), true);
         } catch (Exception e) {
-            throw new DtLoaderException(e.getMessage(), e);
+            throw new DtCenterDefException(e.getMessage(), e);
         }
     }
 
@@ -138,7 +138,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getDownloader(source, queryDTO),
                     targetClient.getClass().getClassLoader(), true);
         } catch (Exception e) {
-            throw new DtLoaderException(e.getMessage(), e);
+            throw new DtCenterDefException(e.getMessage(), e);
         }
     }
 }
