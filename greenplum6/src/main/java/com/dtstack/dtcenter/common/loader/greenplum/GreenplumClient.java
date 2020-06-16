@@ -35,6 +35,10 @@ public class GreenplumClient extends AbsRdbmsClient {
     private static final String TABLE_QUERY = "SELECT relname from pg_class a,pg_namespace b where relname not like " +
             "'%%prt%%' and relkind ='r'  and a.relnamespace=b.oid and  nspname = '%s';";
 
+    private static final String TABLE_QUERY_WITHOUT_SCHEMA = "\n" +
+            "select table_schema ||'.'||table_name as tableName from information_schema.tables where table_schema in " +
+            "(SELECT n.nspname AS \"Name\"  FROM pg_catalog.pg_namespace n WHERE n.nspname !~ '^pg_' AND n.nspname <>" +
+            " 'gp_toolkit' AND n.nspname <> 'information_schema' ORDER BY 1)";
 
     private static final String TABLE_COMMENT_QUERY = "select de.description\n" +
             "          from (select pc.oid as ooid,pn.nspname,pc.*\n" +
@@ -56,7 +60,7 @@ public class GreenplumClient extends AbsRdbmsClient {
             "    where 1=1\n" +
             "      and pd.objsubid = 0) de\n" +
             "                            on tab.ooid = de.objoid\n" +
-            "         where 1=1 and tab.relname='%s'";
+            "         where 1=1 and tab.relname='%s' and tab.nspname = '%s'";
 
 
     @Override
@@ -73,12 +77,23 @@ public class GreenplumClient extends AbsRdbmsClient {
     public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         Greenplum6SourceDTO greenplum6SourceDTO = (Greenplum6SourceDTO) iSource;
-        checkSchema(greenplum6SourceDTO);
+
+        // 校验 schema，特殊处理表名中带了 schema 信息的
+        String tableName = queryDTO.getTableName();
+        String schema = greenplum6SourceDTO.getSchema();
+        if (StringUtils.isEmpty(greenplum6SourceDTO.getSchema())) {
+            if (!queryDTO.getTableName().contains(".")) {
+                throw new DtCenterDefException("greenplum数据源需要schema参数");
+            }
+            schema = queryDTO.getTableName().split("\\.")[0];
+            tableName = queryDTO.getTableName().split("\\.")[1];
+        }
+
         Statement statement = null;
         ResultSet resultSet = null;
         try {
             statement = greenplum6SourceDTO.getConnection().createStatement();
-            resultSet = statement.executeQuery(String.format(TABLE_COMMENT_QUERY, queryDTO.getTableName()));
+            resultSet = statement.executeQuery(String.format(TABLE_COMMENT_QUERY, tableName, schema));
             while (resultSet.next()) {
                 String tableDesc = resultSet.getString(1);
                 return tableDesc;
@@ -110,13 +125,18 @@ public class GreenplumClient extends AbsRdbmsClient {
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         Greenplum6SourceDTO greenplum6SourceDTO = (Greenplum6SourceDTO) iSource;
-        checkSchema(greenplum6SourceDTO);
+
         Statement statement = null;
         ResultSet resultSet = null;
         List<String> tableList = new ArrayList<>();
         try {
             statement = greenplum6SourceDTO.getConnection().createStatement();
-            resultSet = statement.executeQuery(String.format(TABLE_QUERY, greenplum6SourceDTO.getSchema()));
+            if (StringUtils.isBlank(greenplum6SourceDTO.getSchema())) {
+                resultSet = statement.executeQuery(TABLE_QUERY_WITHOUT_SCHEMA);
+            } else {
+                resultSet = statement.executeQuery(String.format(TABLE_QUERY, greenplum6SourceDTO.getSchema()));
+            }
+
             while (resultSet.next()) {
                 tableList.add(resultSet.getString(1));
             }
@@ -130,18 +150,11 @@ public class GreenplumClient extends AbsRdbmsClient {
         return tableList;
     }
 
-
-    private void checkSchema(Greenplum6SourceDTO source) {
-        String schemaName = source.getSchema();
-        if (StringUtils.isBlank(schemaName)) {
-            throw new DtCenterDefException("greenplum6 数据源schema不能为空");
-        }
-    }
-
     @Override
     public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         Greenplum6SourceDTO greenplum6SourceDTO = (Greenplum6SourceDTO) source;
-        GreenplumDownloader greenplumDownloader = new GreenplumDownloader(getCon(greenplum6SourceDTO), queryDTO.getSql(), greenplum6SourceDTO.getSchema());
+        GreenplumDownloader greenplumDownloader = new GreenplumDownloader(getCon(greenplum6SourceDTO),
+                queryDTO.getSql(), greenplum6SourceDTO.getSchema());
         greenplumDownloader.configure();
         return greenplumDownloader;
     }
