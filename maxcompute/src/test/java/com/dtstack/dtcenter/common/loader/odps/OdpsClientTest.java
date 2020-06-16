@@ -66,7 +66,7 @@ public class OdpsClientTest {
     }
 
     @Test
-    public void getPreview() {
+    public void getPreview() throws Exception {
         List tableList = client.getPreview(sourceDTO, SqlQueryDTO.builder().tableName("act_hi_actinst").build());
         assert tableList != null;
     }
