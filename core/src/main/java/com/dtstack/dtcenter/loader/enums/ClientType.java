@@ -1,8 +1,8 @@
 package com.dtstack.dtcenter.loader.enums;
 
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
-import com.dtstack.dtcenter.loader.client.sql.DataSourceClientCache;
 import com.dtstack.dtcenter.loader.client.mq.KafkaClientCache;
+import com.dtstack.dtcenter.loader.client.sql.DataSourceClientCache;
 
 /**
  * @company: www.dtstack.com

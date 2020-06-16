@@ -1,10 +1,8 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
-import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
-import lombok.*;
+import lombok.Data;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-
-import java.sql.Connection;
 
 /**
  * @company: www.dtstack.com

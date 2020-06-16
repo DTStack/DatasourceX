@@ -2,8 +2,8 @@ package com.dtstack.dtcenter.common.loader.odps;
 
 import com.alibaba.fastjson.JSON;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.source.OdpsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.OdpsSourceDTO;
 import org.junit.Test;
 
 import java.util.HashMap;

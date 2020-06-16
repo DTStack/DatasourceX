@@ -1,8 +1,6 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 

@@ -33,7 +33,7 @@
 
         <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
-            <artifactId>common.loader.common</artifactId>
+            <artifactId>common.loader.rdbms</artifactId>
         </dependency>
 
         <dependency>

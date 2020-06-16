@@ -9,7 +9,7 @@
     <version>1.1.0-SNAPSHOT</version>
     <modules>
         <module>core</module>
-        <module>common</module>
+        <module>rdbms</module>
         <module>clickhouse</module>
         <module>db2</module>
         <module>dm</module>
@@ -102,7 +102,7 @@
 
             <dependency>
                 <groupId>com.dtstack.dtcenter</groupId>
-                <artifactId>common.loader.common</artifactId>
+                <artifactId>common.loader.rdbms</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
