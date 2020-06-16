@@ -2,11 +2,12 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.ClickHouseSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
@@ -23,7 +24,7 @@ import java.util.Map;
 public class ClickHouseTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    SourceDTO source = SourceDTO.builder()
+    ClickHouseSourceDTO source = ClickHouseSourceDTO.builder()
             .url("jdbc:clickhouse://172.16.10.168:8123/mqTest")
             .username("dtstack")
             .password("abc123")
@@ -66,7 +67,7 @@ public class ClickHouseTest {
     public void getTableList() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.Clickhouse.getPluginName());
         List<String> tableList = client.getTableList(source, null);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
     }
 
     @Test
@@ -83,5 +84,28 @@ public class ClickHouseTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("mqresult2").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
+    }
+
+    @Test
+    public void getDownloader() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.Clickhouse.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from mqresult2").build();
+        IDownloader downloader = client.getDownloader(source, queryDTO);
+        System.out.println(downloader.getMetaInfo());
+        while (!downloader.reachedEnd()){
+            List<List<String>> o = (List<List<String>>)downloader.readNext();
+            for (List list:o){
+                System.out.println(list);
+            }
+        }
+
+    }
+
+    @Test
+    public void testGetPreview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.Clickhouse.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("sidetest").previewNum(1).build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
     }
 }

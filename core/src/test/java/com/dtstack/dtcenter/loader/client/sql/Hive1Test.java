@@ -5,8 +5,8 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
@@ -23,8 +23,8 @@ import java.util.Map;
 public class Hive1Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    SourceDTO source = SourceDTO.builder()
-            .url("jdbc:hive2://cdh-impala2:10000/ceshis_pri")
+    Hive1SourceDTO source = Hive1SourceDTO.builder()
+            .url("jdbc:hive2://kudu3:10000/dev2")
             .username("root")
             .password("abc123")
             .build();
@@ -66,13 +66,13 @@ public class Hive1Test {
         IClient client = clientCache.getClient(DataSourceClientType.HIVE1X.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
     }
 
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.HIVE1X.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi200228").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("chener_o2").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -80,7 +80,7 @@ public class Hive1Test {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.HIVE1X.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi200228").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("chener_o2").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
@@ -88,8 +88,16 @@ public class Hive1Test {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.HIVE1X.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi200228").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("chener_o2").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
+    }
+
+    @Test
+    public void getPreview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.HIVE1X.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("chener").build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
     }
 }

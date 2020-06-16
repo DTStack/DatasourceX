@@ -2,13 +2,11 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
-import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
@@ -30,7 +28,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     }
 
     @Override
-    public Connection getCon(SourceDTO source) throws Exception {
+    public Connection getCon(ISourceDTO source) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getCon(source),
                     targetClient.getClass().getClassLoader(), true);
@@ -40,7 +38,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     }
 
     @Override
-    public Boolean testCon(SourceDTO source) {
+    public Boolean testCon(ISourceDTO source) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.testCon(source),
                     targetClient.getClass().getClassLoader(), true);
@@ -51,85 +49,93 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeQuery(source, queryDTO),
-                targetClient.getClass().getClassLoader(), true);
+    public List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeQuery(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeSqlWithoutResultSet(source,
-                queryDTO), targetClient.getClass().getClassLoader(), true);
+    public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeSqlWithoutResultSet(source,
+                    queryDTO), targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return false;
+        }
     }
 
     @Override
-    public List<String> getTableList(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableList(source, queryDTO),
-                targetClient.getClass().getClassLoader(), true);
+    public List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableList(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
     }
 
     @Override
-    public List<String> getColumnClassInfo(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnClassInfo(source, queryDTO),
-                targetClient.getClass().getClassLoader(), true);
+    public List<String> getColumnClassInfo(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnClassInfo(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnMetaData(source, queryDTO),
-                targetClient.getClass().getClassLoader(), true);
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnMetaData(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getFlinkColumnMetaData(source, queryDTO),
-                targetClient.getClass().getClassLoader(), true);
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getFlinkColumnMetaData(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
     }
 
     @Override
-    public String getTableMetaComment(SourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableMetaComment(source, queryDTO),
-                targetClient.getClass().getClassLoader(), true);
+    public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableMetaComment(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
     }
 
     @Override
-    public String getAllBrokersAddress(SourceDTO source) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getAllBrokersAddress(source),
-                targetClient.getClass().getClassLoader(), true);
-    }
-
-    @Override
-    public List<String> getTopicList(SourceDTO source) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTopicList(source),
-                targetClient.getClass().getClassLoader(), true);
-    }
-
-    @Override
-    public Boolean createTopic(SourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.createTopic(source, kafkaTopic),
-                targetClient.getClass().getClassLoader(), true);
-    }
-
-    @Override
-    public List<T> getAllPartitions(SourceDTO source, String topic) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getAllPartitions(source, topic),
-                targetClient.getClass().getClassLoader(), true);
-    }
-
-    @Override
-    public List<KafkaOffsetDTO> getOffset(SourceDTO source, String topic) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getOffset(source, topic),
-                targetClient.getClass().getClassLoader(), true);
-    }
-
-    @Override
-    public List<List<Object>> getPreview(SourceDTO source, SqlQueryDTO queryDTO)  {
+    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPreview(source, queryDTO),
                     targetClient.getClass().getClassLoader(), true);
         } catch (Exception e) {
-            throw new DtLoaderException(e.getMessage(), e);
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getDownloader(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
         }
     }
 }

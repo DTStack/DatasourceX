@@ -120,4 +120,13 @@ public abstract class AbsClientCache {
      * @throws ClientAccessException
      */
     public abstract IClient getClient(String sourceName) throws ClientAccessException;
+
+    /**
+     * 获取kafka对应的客户端
+     *
+     * @param sourceName
+     * @return
+     * @throws ClientAccessException
+     */
+    public abstract IKafka getKafka(String sourceName) throws ClientAccessException;
 }

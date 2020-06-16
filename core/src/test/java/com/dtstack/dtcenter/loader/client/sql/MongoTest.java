@@ -4,8 +4,8 @@ import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.MongoSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
@@ -20,11 +20,9 @@ import java.util.List;
 public class MongoTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    SourceDTO source = SourceDTO.builder()
-            .url("kudu5:27107")
-            .schema("admin")
-            .username("admin")
-            .password("123456")
+    MongoSourceDTO source = MongoSourceDTO.builder()
+            .hostPort("172.16.8.193:27017")
+            .schema("dtstack")
             .build();
 
     @Test
@@ -39,9 +37,26 @@ public class MongoTest {
     @Test
     public void getTableList() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
-        source.setSchema("admin");
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
+    }
+
+    @Test
+    public void getDatabaseList() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("system.profile").build();
+        List list = client.getColumnMetaData(source, queryDTO);
+        System.out.println(list);
+    }
+
+    @Test
+    public void getPreview() throws Exception{
+        IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("system.profile").build();
+        List<List<Object>> preview = client.getPreview(source, queryDTO);
+        for (List list:preview){
+            System.out.println(list);
+        }
     }
 }

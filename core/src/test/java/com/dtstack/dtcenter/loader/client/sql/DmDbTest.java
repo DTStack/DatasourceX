@@ -2,11 +2,12 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.DmSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
@@ -23,7 +24,7 @@ import java.util.Map;
 public class DmDbTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    SourceDTO source = SourceDTO.builder()
+    DmSourceDTO source = DmSourceDTO.builder()
             .url("jdbc:dm://172.16.8.178:5236/chener")
             .username("chener")
             .password("abc123456")
@@ -49,9 +50,9 @@ public class DmDbTest {
     @Test
     public void executeQuery() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.DMDB.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from XQ_TEST").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from XQ_TEST limit 8").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
-        System.out.println(mapList.size());
+        System.out.println(mapList);
     }
 
     @Test
@@ -66,7 +67,7 @@ public class DmDbTest {
         IClient client = clientCache.getClient(DataSourceClientType.DMDB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
     }
 
     @Test
@@ -92,4 +93,22 @@ public class DmDbTest {
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
+
+    @Test
+    public void getDownloader() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.DMDB.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from XQ_TEST").build();
+        IDownloader downloader = client.getDownloader(source, queryDTO);
+        for (int j = 0; j < 5; j++) {
+            if (!downloader.reachedEnd()){
+                List<List<String>> o = (List<List<String>>)downloader.readNext();
+                System.out.println("=================="+j+"==================");
+                for (List<String> list:o){
+                    System.out.println(list);
+                }
+            }
+        }
+    }
+
+
 }

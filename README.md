@@ -13,25 +13,27 @@
 ## 三、已支持数据源（具体版本后续补充）
 
 ### 3.1 关系型数据库
-* Mysql5、8
-* ADS
-* DRDS
-* Oracle
-* SQLServer2012、2017
-* PostgreSQL
-* Libra
-* Greenplum 6.X
-* MaxComputer
+* ClickHouse
 * DB2
+* DM
+* DRDS
+* FTP
+* GBase
+* Greenplum 6.X
+* HBase
 * HDFS
 * Hive
-* Hive1.X
-* ClickHouse
-* GBase
-* HBase
+* Hive 1.X
 * Impala
-* Kylin
 * Kudu
+* Kylin
+* Libra
+* MaxComputer
+* Mysql 5、8
+* Oracle
+* Phoneix
+* PostgreSQL
+* SQLServer2012、2017
 
 ### 3.2 非关系型数据库
 * Redis
@@ -50,26 +52,65 @@
 
 ### 4.1 支持的函数
 
+#### IClient
 | 方法           | 入参                    | 出参                        | 备注  |
 |---------------|------------------------|-----------------------------|------|
-| getConn      | SourceDTO             | Connection                | 获取 连接    |
-| testConn     | SourceDTO             | Boolean                   | 校验 连接    |
-| executeQuery | SourceDTO,SqlQueryDTO | List<Map<String, Object>> | 执行查询     |
-| executeSqlWithoutResultSet | SourceDTO,SqlQueryDTO | Boolean | 执行查询，无需结果集     |
-| getTableList | SourceDTO,SqlQueryDTO | List<String>              | 获取数据库表名称 |
-| getColumnClassInfo | SourceDTO,SqlQueryDTO | List<String>              | 获取字段 Java 类的标准名称,字段名若不填则默认全部 |
-| getColumnMetaData | SourceDTO,SqlQueryDTO | List<ColumnMetaDTO>              | 获取字段属性 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤 |
-| getTableMetaComment | SourceDTO,SqlQueryDTO | List<ColumnMetaDTO>              | 获取表备注信息 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤 |
-| getAllBrokersAddress | SourceDTO | String | 获取所有 Brokers 的地址 |
-| getTopicList | SourceDTO | List<String> | 获取所有 Topic 信息 |
-| createTopic | SourceDTO,KafkaTopicDTO | Boolean | 创建 Topic |
-| getAllPartitions | SourceDTO,String | List<ColumnMetaDTO>              | 获取特定 Topic 分区信息 |
-| getColumnMetaData | SourceDTO,SqlQueryDTO | List<MetadataResponse.PartitionMetadata>| 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤 |
-| getOffset | SourceDTO,String | KafkaOffsetDTO | 获取特定 Topic 位移量|
+| getConn      | 对应数据源的DTO             | Connection                | 获取 连接    |
+| testConn     | 对应数据源的DTO             | Boolean                   | 校验 连接    |
+| executeQuery | 对应数据源的DTO,SqlQueryDTO | List<Map<String, Object>> | 执行查询     |
+| executeSqlWithoutResultSet | 对应数据源的DTO,SqlQueryDTO | Boolean | 执行查询，无需结果集     |
+| getTableList | 对应数据源的DTO,SqlQueryDTO | List<String>              | 获取数据库表名称 |
+| getColumnClassInfo | 对应数据源的DTO,SqlQueryDTO | List<String>              | 获取字段 Java 类的标准名称,字段名若不填则默认全部 |
+| getColumnMetaData | 对应数据源的DTO,SqlQueryDTO | List<ColumnMetaDTO>              | 获取字段属性 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤 |
+| getFlinkColumnMetaData | 对应数据源的DTO,SqlQueryDTO | List<ColumnMetaDTO>              | 获取flinkSql任务字段属性 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤 |
+| getTableMetaComment | 对应数据源的DTO,SqlQueryDTO | List<ColumnMetaDTO>              | 获取表备注信息 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤 |
+| getPreview | 对应数据源的DTO,SqlQueryDTO | List<List<Object>>              | 获取预览数据,支持大多数关系型数据库，支持es、mongdb |
+
+#### IKafka
+| 方法           | 入参                    | 出参                        | 备注  |
+|---------------|------------------------|-----------------------------|------|
+| testConn     | 对应数据源的DTO             | Boolean                   | 校验 连接    |
+| getAllBrokersAddress | 对应数据源的DTO | String | 获取所有 Brokers 的地址 |
+| getTopicList | 对应数据源的DTO | List<String> | 获取所有 Topic 信息 |
+| createTopic | 对应数据源的DTO,KafkaTopicDTO | Boolean | 创建 Topic |
+| getAllPartitions | 对应数据源的DTO,String | List<ColumnMetaDTO>              | 获取特定 Topic 分区信息 |
+| getColumnMetaData | 对应数据源的DTO,SqlQueryDTO | List<MetadataResponse.PartitionMetadata>| 字段名若不填则默认全部, 是否过滤分区字段 不填默认不过滤 |
+| getOffset | 对应数据源的DTO,String | KafkaOffsetDTO | 获取特定 Topic 位移量|
+| getPreview | 对应数据源的DTO,SqlQueryDTO | List<List<Object>>              | 获取预览数据 |
 
 **备注**
 
-[SourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/SourceDTO.java)
+[sourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source)
+
+* [ISourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/ISourceDTO.java)
+* [RdbmsSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/RdbmsSourceDTO.java)
+* [ClickHouseSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/ClickHouseSourceDTO.java)
+* [Db2SourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/Db2SourceDTO.java)
+* [DmSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/DmSourceDTO.java)
+* [GBaseSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/GBaseSourceDTO.java)
+* [Greenplum6SourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/Greenplum6SourceDTO.java)
+* [HbaseSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/HbaseSourceDTO.java)
+* [HdfsSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/HdfsSourceDTO.java)
+* [Hive1SourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/Hive1SourceDTO.java)
+* [HiveSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/HiveSourceDTO.java)
+* [ImpalaSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/ImpalaSourceDTO.java)
+* [KuduSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/KuduSourceDTO.java)
+* [KylinSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/KylinSourceDTO.java)
+* [LibraSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/LibraSourceDTO.java)
+* [Mysql5SourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/Mysql5SourceDTO.java)
+* [Mysql8SourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/Mysql8SourceDTO.java)
+* [OdpsSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/OdpsSourceDTO.java)
+* [OracleSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/OracleSourceDTO.java)
+* [PhoenixSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/PhoenixSourceDTO.java)
+* [PostgresqlSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/PostgresqlSourceDTO.java)
+* [Sqlserver2017SourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/Sqlserver2017SourceDTO.java)
+* [SqlserverSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/SqlserverSourceDTO.java)
+* [RedisSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/RedisSourceDTO.java)
+* [MongoSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/MongoSourceDTO.java)
+* [ESSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/ESSourceDTO.java)
+* [KafkaSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/KafkaSourceDTO.java)
+* [EMQSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/EMQSourceDTO.java)
+* [FtpSourceDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/FtpSourceDTO.java)
 
 [SqlQueryDTO](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/dto/SqlQueryDTO.java)
 
@@ -100,6 +141,9 @@
 6. Phoenix 常用版本支持 【已完成】
 7. 复用 Connection 支持，需要支持注解、支持 Start & Close 【已完成】
 8. 其他非关系型数据库支持、关系型数据库支持、不同版本支持，根据项目需要支持
+9. 优化异常信息，将异常抛出放到 core 中
+10. Hadoop 版本放入 loader 包不同插件自身去控制
+11. 实现 common 中的 IDownLoad
 
 ---
 
@@ -109,11 +153,15 @@
 1. com.dtstack.dtcenter.loader.client.IClient 中增加对应的方法
 2. com.dtstack.dtcenter.loader.client.sql.DataSourceClientProxy 中增加代理实现
 3. 对应的抽象类和具体实现类补充对应的方法实现
+4. 支持查询数据源的所有 DB
+5. 支持单独查询表的分区字段
+6. 支持获取建表语句
+7. kafka逻辑从IClient剥离
 
 #### 6.1.2 增加支持的数据源
 1. 在对应的关系型数据库模块或者非关系型模块增加子模块并按照其他模块修改对应的pom
 2. 继承对应抽象类并重写对应方法
-3. 在Resources/META-INF/services 下增加文件com.dtstack.dtcenter.loader.client.IClient，并在里面补充实现类的引用地址：例如：com.dtstack.dtcenter.common.loader.rdbms.db2.Db2Client
+3. 在Resources/META-INF/services 下增加文件com.dtstack.dtcenter.loader.client.IClient，并在里面补充实现类的引用地址：例如：com.dtstack.dtcenter.common.loader.db2.Db2Client
 
 ### 6.2 二次开发使用
 
@@ -121,8 +169,8 @@
 ```$xml
 <dependency>
     <groupId>com.dtstack.dtcenter</groupId>
-    <artifactId>common.loader.core</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>common-loader</artifactId>
+    <version>1.1.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -146,7 +194,7 @@
     @Test
     public void getMysqlConnection() throws Exception {
     IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
-        SourceDTO source = SourceDTO.builder()
+        Mysql5SourceDTO source = Mysql5SourceDTO.builder()
             .url("jdbc:mysql://172.16.8.109:3306/ide")
             .username("dtstack")
             .password("abc123")
@@ -162,11 +210,25 @@
     @Test
     public void getMysqlConnection() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
-        SourceDTO source = SourceDTO.builder()
+        Mysql5SourceDTO source = Mysql5SourceDTO.builder()
             .url("jdbc:mysql://172.16.8.109:3306/ide")
             .username("dtstack")
             .password("abc123")
             .build();
         Boolean isConnect = client.testConn(source);
+    }
+```
+```$java
+    //kafka客户端插件需要如下使用
+    private static final AbsClientCache kafkaClientCache = ClientType.KAFKA_CLIENT.getClientCache();
+
+    @Test
+    public void getTopicList() throws Exception {
+        IKafka client = kafkaClientCache.getKafka(DataSourceClientType.KAFKA_09.getPluginName());
+        KafkaSourceDTO source = KafkaSourceDTO.builder()
+                        .url("172.16.8.107:2181/kafka")
+                        .build();
+        List<String> topicList = client.getTopicList(source);
+        
     }
 ```

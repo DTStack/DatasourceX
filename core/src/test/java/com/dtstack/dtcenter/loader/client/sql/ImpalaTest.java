@@ -5,8 +5,8 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SourceDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
@@ -23,10 +23,10 @@ import java.util.Map;
 public class ImpalaTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    SourceDTO source = SourceDTO.builder()
-            .url("jdbc:impala://cdh-impala1:21050/nanqia_pub;AuthMech=3")
-            .username("root")
-            .password("abc123")
+    ImpalaSourceDTO source = ImpalaSourceDTO.builder()
+            .url("jdbc:impala://172.16.101.13:21050/zh_pri;AuthMech=3")
+            .username("hxb")
+            .password("admin123")
             .build();
 
     @Test
@@ -66,13 +66,13 @@ public class ImpalaTest {
         IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
     }
 
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi200228").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi01").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -80,7 +80,7 @@ public class ImpalaTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi200228").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi01").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
@@ -88,8 +88,16 @@ public class ImpalaTest {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("a00021").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi01").build();
         String tableMetaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(tableMetaComment);
+    }
+
+    @Test
+    public void getPreview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("nanqi01").build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
     }
 }

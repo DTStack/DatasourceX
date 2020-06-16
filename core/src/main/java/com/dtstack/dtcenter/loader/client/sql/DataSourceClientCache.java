@@ -3,7 +3,9 @@ package com.dtstack.dtcenter.loader.client.sql;
 import com.dtstack.dtcenter.common.thread.RdosThreadFactory;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.client.IKafka;
 import com.dtstack.dtcenter.loader.exception.ClientAccessException;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -143,5 +145,10 @@ public class DataSourceClientCache extends AbsClientCache {
             throw new Exception(String.format("%s directory not found", plugin));
         }
         return finput;
+    }
+
+    @Override
+    public IKafka getKafka(String sourceName) throws ClientAccessException {
+        throw  new DtLoaderException("请通过kafkaClientCache获取kafka客户端");
     }
 }
