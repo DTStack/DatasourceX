@@ -50,7 +50,7 @@ public class DtKuduClientTest {
     }
 
     @Test
-    public void getPreview() {
+    public void getPreview() throws Exception {
         KuduSourceDTO source = KuduSourceDTO.builder()
                 .url("172.16.100.213:7051,172.16.101.252:7051")
                 .build();
