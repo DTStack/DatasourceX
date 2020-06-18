@@ -14,4 +14,13 @@ import lombok.experimental.SuperBuilder;
 @ToString
 @SuperBuilder
 public class ImpalaSourceDTO extends RdbmsSourceDTO {
+    /**
+     * Hadoop defaultFS
+     */
+    private String defaultFS;
+
+    /**
+     * Hadoop/ Hbase 配置信息
+     */
+    private String config;
 }
