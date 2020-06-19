@@ -314,7 +314,7 @@ public class KakfaUtil {
         }else {
             bootstrapServers = brokerUrls;
         }
-        return initProperties(bootstrapServers, Maps.newHashMap());
+        return initProperties(bootstrapServers, conf);
     }
 
     /**
