@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Mysql5SourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -25,10 +26,10 @@ public class Mysql5Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     Mysql5SourceDTO source = Mysql5SourceDTO.builder()
-            .url("jdbc:mysql://172.16.8.109:3306/stream_new")
-            .username("dtstack")
-            .password("abc123")
-            .schema("stream_new")
+            .url("jdbc:mysql://172.16.101.249:3306/streamapp")
+            .username("drpeco")
+            .password("DT@Stack#123")
+            .schema("streamapp")
             .build();
 
     @Test
@@ -43,9 +44,14 @@ public class Mysql5Test {
     public void testCon() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
         Boolean isConnected = client.testCon(source);
-        if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtCenterDefException("连接异常");
-        }
+        Assert.assertTrue(isConnected);
+    }
+
+    @Test(expected = DtCenterDefException.class)
+    public void testErrorCon() {
+        IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
+        source.setUsername("nanqi233");
+        client.testCon(source);
     }
 
     @Test
@@ -74,7 +80,7 @@ public class Mysql5Test {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_batch_job_backup").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -82,7 +88,7 @@ public class Mysql5Test {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_batch_job_backup").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
@@ -90,7 +96,7 @@ public class Mysql5Test {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_batch_job_backup").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
@@ -98,7 +104,7 @@ public class Mysql5Test {
     @Test
     public void testGetDownloader() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from rdos_batch_task").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from rdos_dict").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         downloader.configure();
         List<String> metaInfo = downloader.getMetaInfo();
@@ -118,7 +124,7 @@ public class Mysql5Test {
     @Test
     public void testGetPreview() throws Exception{
         IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_stream_data_source").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }

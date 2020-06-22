@@ -43,8 +43,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.testCon(source),
                     targetClient.getClass().getClassLoader(), true);
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return false;
+            throw new DtCenterDefException(e.getMessage(), e);
         }
     }
 

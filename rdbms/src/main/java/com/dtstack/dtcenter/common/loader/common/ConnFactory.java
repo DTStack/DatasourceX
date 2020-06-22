@@ -67,7 +67,6 @@ public class ConnFactory {
     }
 
     public Boolean testConn(ISourceDTO source) {
-        boolean isConnected = false;
         Connection conn = null;
         Statement statement = null;
         try {
@@ -79,12 +78,11 @@ public class ConnFactory {
                 statement.execute((testSql));
             }
 
-            isConnected = true;
+            return true;
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            throw new DtCenterDefException("数据源连接异常:" + e.getMessage(), e);
         } finally {
             DBUtil.closeDBResources(null, statement, conn);
         }
-        return isConnected;
     }
 }
