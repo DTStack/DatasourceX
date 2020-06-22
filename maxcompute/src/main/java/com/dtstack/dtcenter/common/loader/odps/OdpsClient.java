@@ -300,12 +300,4 @@ public class OdpsClient extends AbsRdbmsClient {
                 queryDTO.getColumns());
         return clearStatus;
     }
-
-    @Override
-    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) source;
-        MaxcomputeDownloader maxcomputeDownloader = new MaxcomputeDownloader(getCon(odpsSourceDTO), queryDTO.getSql(), odpsSourceDTO.getSchema());
-        maxcomputeDownloader.configure();
-        return maxcomputeDownloader;
-    }
 }

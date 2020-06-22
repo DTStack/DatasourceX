@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -99,5 +100,21 @@ public class SQLServerTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(20).tableName("jiangbo_dev_copy").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
+    }
+
+    @Test
+    public void testGetDownloader() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.SQLServer.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from jiangbo_dev_copy").build();
+        IDownloader downloader = client.getDownloader(source, queryDTO);
+        downloader.configure();
+        List<String> metaInfo = downloader.getMetaInfo();
+        System.out.println(metaInfo);
+        while (!downloader.reachedEnd()){
+            List<List<String>> o = (List<List<String>>)downloader.readNext();
+            for (List<String> list:o){
+                System.out.println(list);
+            }
+        }
     }
 }

@@ -63,15 +63,16 @@ public class ClickHouseDownloader implements IDownloader {
 
         //获取列信息
         String showColumns = String.format("SELECT * FROM (%s) t limit 1", sql);
-        try (
-                ResultSet totalResultSet = statement.executeQuery(countSQL);
-                ResultSet columnsResultSet = statement.executeQuery(showColumns);
-        ) {
+        ResultSet totalResultSet = null;
+        ResultSet columnsResultSet = null;
+        try {
+            totalResultSet = statement.executeQuery(countSQL);
             while (totalResultSet.next()) {
                 //获取总行数
                 totalLine = totalResultSet.getInt(1);
             }
 
+            columnsResultSet = statement.executeQuery(showColumns);
             columnNames = new ArrayList<>();
             columnCount = columnsResultSet.getMetaData().getColumnCount();
             for (int i = 1; i <= columnCount; i++) {
@@ -85,6 +86,9 @@ public class ClickHouseDownloader implements IDownloader {
             pageAll = (int) Math.ceil(totalLine / (double) pageSize);
         } catch (Exception e) {
             throw new DtCenterDefException("构造 ClickHouse 下载器信息异常 : " + e.getMessage(), e);
+        } finally {
+            columnsResultSet.close();
+            totalResultSet.close();
         }
     }
 

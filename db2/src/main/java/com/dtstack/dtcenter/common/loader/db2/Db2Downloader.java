@@ -63,14 +63,15 @@ public class Db2Downloader implements IDownloader {
         String countSQL = String.format("SELECT COUNT(*) FROM (%s) temp", sql);
         String showColumns = String.format("SELECT * FROM (%s) t limit 1", sql);
 
-        try (
-                ResultSet totalResultSet = statement.executeQuery(countSQL);
-                ResultSet columnsResultSet = statement.executeQuery(showColumns);
-        ) {
+        ResultSet totalResultSet = null;
+        ResultSet columnsResultSet = null;
+        try {
+            totalResultSet = statement.executeQuery(countSQL);
             while (totalResultSet.next()) {
                 //获取总行数
                 totalLine = totalResultSet.getInt(1);
             }
+            columnsResultSet = statement.executeQuery(showColumns);
             //获取列信息
             columnNames = new ArrayList<>();
             columnCount = columnsResultSet.getMetaData().getColumnCount();
@@ -85,6 +86,9 @@ public class Db2Downloader implements IDownloader {
             pageAll = (int) Math.ceil(totalLine / (double) pageSize);
         } catch (Exception e) {
             throw new DtCenterDefException("构造 DB2 下载器信息异常 : " + e.getMessage(), e);
+        } finally {
+            columnsResultSet.close();
+            totalResultSet.close();
         }
     }
 

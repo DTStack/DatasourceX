@@ -11,6 +11,7 @@ import com.dtstack.dtcenter.loader.dto.source.OdpsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
@@ -85,18 +86,9 @@ public class MaxComputerTest {
     }
 
     @Test
-    public void getDownload() throws Exception {
+    public void getConn() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MAXCOMPUTE.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi102").build();
-        IDownloader downloader = client.getDownloader(source, queryDTO);
-        System.out.println(downloader.getMetaInfo());
-        int i = 0;
-        while (!downloader.reachedEnd()){
-            System.out.println("==================第"+ ++i+"页==================");
-            List<List<String>> o = (List<List<String>>)downloader.readNext();
-            for (List list:o){
-                System.out.println(list);
-            }
-        }
+        Connection con = client.getCon(source);
+        System.out.println(con);
     }
 }
