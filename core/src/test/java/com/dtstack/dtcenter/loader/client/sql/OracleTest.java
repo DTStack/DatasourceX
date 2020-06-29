@@ -121,4 +121,11 @@ public class OracleTest {
             }
         }
     }
+
+    @Test
+    public void getFlinkColumnMetaData() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
+        List data = client.getFlinkColumnMetaData(source, SqlQueryDTO.builder().tableName("JIANGBO.TB1").build());
+        System.out.println(data);
+    }
 }
