@@ -115,8 +115,22 @@ public class OracleClient extends AbsRdbmsClient {
         List<ColumnMetaDTO> columns = new ArrayList<>();
         try {
             statement = oracleSourceDTO.getConnection().createStatement();
-            String queryColumnSql =
-                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferTableName(queryDTO.getTableName()) + " where 1=2";
+            String tableName = transferTableName(queryDTO.getTableName());
+            String queryColumnSql;
+            boolean tableHasTransfer = false;
+            String[] split = tableName.split("\\.");
+            if(split.length > 1){
+                tableHasTransfer = split[1].startsWith("\"");
+            }
+            if (tableName.contains(".") && !tableHasTransfer) {
+                String ku = transferTableName(split[0]);
+                tableName = transferTableName(split[1]);
+                queryColumnSql = "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + ku + '"' + "." + '"' + tableName
+                        + " where 1=2";
+            } else {
+                queryColumnSql = "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + tableName
+                        + " where 1=2";
+            }
 
             rs = statement.executeQuery(queryColumnSql);
             ResultSetMetaData rsMetaData = rs.getMetaData();
