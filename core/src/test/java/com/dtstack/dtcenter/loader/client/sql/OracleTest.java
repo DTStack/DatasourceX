@@ -67,7 +67,7 @@ public class OracleTest {
         IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
     }
 
     @Test
@@ -127,5 +127,15 @@ public class OracleTest {
         IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
         List data = client.getFlinkColumnMetaData(source, SqlQueryDTO.builder().tableName("JIANGBO.TB1").build());
         System.out.println(data);
+    }
+
+    @Test
+    public void getColumnMetaDataWithSql() throws Exception{
+        IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from MVIEW$_ADV_TEMP left join DEF$_ORIGIN on 1=1 ").build();
+
+        List list = client.getColumnMetaDataWithSql(source, queryDTO);
+
+        System.out.println(list);
     }
 }

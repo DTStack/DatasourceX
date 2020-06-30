@@ -26,15 +26,14 @@ public class HiveTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     HiveSourceDTO source = HiveSourceDTO.builder()
-            .url("jdbc:hive2://172.16.101.227:10000/yuebai")
-            .schema("yuebai")
+            .url("jdbc:hive2://node1:10000/data_science")
+            .schema("data_science")
             .defaultFS("hdfs://ns1")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.101.136:9000\",\n" +
-                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha" +
-                    ".ConfiguredFailoverProxyProvider\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.100.216:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"node2:9000\",\n" +
+                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"node1:9000\",\n" +
                     "    \"dfs.nameservices\": \"ns1\"\n" +
                     "}")
             .build();
@@ -146,6 +145,14 @@ public class HiveTest {
     public void query() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
         List list = client.executeQuery(source, SqlQueryDTO.builder().sql("select month,day from wangchuan007").build());
+        System.out.println(list);
+    }
+
+    @Test
+    public void getColumnMetaDataWithSql() throws Exception{
+        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().sql("select a.id,b.name,b.email,b.pt from userinfo_4_sanyue a left join userinfo_3 b on a.id=b.id ").build();
+        List list = client.getColumnMetaDataWithSql(source, sqlQueryDTO);
         System.out.println(list);
     }
 }

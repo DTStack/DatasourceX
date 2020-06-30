@@ -200,6 +200,49 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
+    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeQuery(iSource, queryDTO, true);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
+        Statement statement = null;
+        ResultSet rs = null;
+        List<ColumnMetaDTO> columns = new ArrayList<>();
+        try {
+            statement = rdbmsSourceDTO.getConnection().createStatement();
+            String queryColumnSql = queryDTO.getSql();
+            rs = statement.executeQuery(queryColumnSql);
+            ResultSetMetaData rsMetaData = rs.getMetaData();
+            for (int i = 0, len = rsMetaData.getColumnCount(); i < len; i++) {
+                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+                columnMetaDTO.setKey(rsMetaData.getColumnName(i + 1));
+                columnMetaDTO.setType(doDealType(rsMetaData, i));
+                columnMetaDTO.setPart(false);
+                // 获取字段精度
+                if (columnMetaDTO.getType().equalsIgnoreCase("decimal")
+                        || columnMetaDTO.getType().equalsIgnoreCase("float")
+                        || columnMetaDTO.getType().equalsIgnoreCase("double")
+                        || columnMetaDTO.getType().equalsIgnoreCase("numeric")) {
+                    columnMetaDTO.setScale(rsMetaData.getScale(i + 1));
+                    columnMetaDTO.setPrecision(rsMetaData.getPrecision(i + 1));
+                }
+
+                columns.add(columnMetaDTO);
+            }
+            return columns;
+
+        } catch (SQLException e) {
+            if (e.getMessage().contains(DONT_EXIST)) {
+                throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
+            } else {
+                throw new DtCenterDefException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
+                        queryDTO.getTableName()),
+                        DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            }
+        } finally {
+            DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+    }
+
+    @Override
     public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
