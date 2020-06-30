@@ -21,8 +21,8 @@ public class MongoTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     MongoSourceDTO source = MongoSourceDTO.builder()
-            .hostPort("172.16.8.193:27017")
-            .schema("dtstack")
+            .hostPort("172.16.8.193:27017,172.16.8.193:27017/dtstack")
+            //.schema("dtstack")
             .build();
 
     @Test
