@@ -221,7 +221,7 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected String dealSql(String tableName, Integer previewNum) {
-        return "select * from " + tableName + " where rownum <=" + previewNum;
+    protected String dealSql(SqlQueryDTO sqlQueryDTO) {
+        return "select * from " + sqlQueryDTO.getTableName() + " where rownum <=" + sqlQueryDTO.getPreviewNum();
     }
 }

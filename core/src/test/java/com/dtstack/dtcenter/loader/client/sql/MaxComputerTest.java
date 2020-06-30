@@ -12,6 +12,7 @@ import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,9 +42,9 @@ public class MaxComputerTest {
     @Test
     public void executeQuery() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MAXCOMPUTE.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi;").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from wangchuan_test;").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
-        System.out.println(mapList.size());
+        System.out.println(mapList);
     }
 
     @Test
@@ -72,9 +73,9 @@ public class MaxComputerTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MAXCOMPUTE.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("aa_temp").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("wangchuan_test2").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        System.out.println(columnMetaData);
     }
 
     @Test
@@ -90,5 +91,15 @@ public class MaxComputerTest {
         IClient client = clientCache.getClient(DataSourceClientType.MAXCOMPUTE.getPluginName());
         Connection con = client.getCon(source);
         System.out.println(con);
+    }
+
+    @Test
+    public void getPreview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.MAXCOMPUTE.getPluginName());
+        HashMap<String, String> map = new HashMap<>();
+        map.put("province", "henan");
+        map.put("province", "shandong");
+        List data = client.getPreview(source, SqlQueryDTO.builder().partitionColumns(map).previewNum(1000).tableName("wangchuan_test").build());
+        System.out.println(data);
     }
 }

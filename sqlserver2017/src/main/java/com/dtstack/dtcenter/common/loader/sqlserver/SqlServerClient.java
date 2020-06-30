@@ -100,7 +100,7 @@ public class SqlServerClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected String dealSql(String tableName, Integer previewNum) {
-        return "select top "+previewNum+" * from "+tableName;
+    protected String dealSql(SqlQueryDTO sqlQueryDTO) {
+        return "select top "+sqlQueryDTO.getPreviewNum()+" * from "+sqlQueryDTO.getTableName();
     }
 }

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -311,5 +312,32 @@ public class HiveClient extends AbsRdbmsClient {
             return hiveParquetDownload;
         }
         throw new DtCenterDefException("不支持该存储类型的hive表读取");
+    }
+
+    /**
+     * 处理hive分区信息和sql语句
+     * @param sqlQueryDTO 查询条件
+     * @return
+     */
+    @Override
+    protected String dealSql(SqlQueryDTO sqlQueryDTO) {
+        Map<String, String> partitions = sqlQueryDTO.getPartitionColumns();
+        StringBuilder partSql = new StringBuilder();
+        //拼接分区信息
+        if (MapUtils.isNotEmpty(partitions)){
+            boolean check = true;
+            partSql.append(" where ");
+            Set<String> set = partitions.keySet();
+            for (String column:set){
+                if (check){
+                    partSql.append(column+"=").append(partitions.get(column));
+                    check = false;
+                }else {
+                    partSql.append(" and ").append(column+"=").append(partitions.get(column));
+                }
+            }
+        }
+        return "select * from " + sqlQueryDTO.getTableName()
+                +partSql.toString() + " limit " + sqlQueryDTO.getPreviewNum();
     }
 }
