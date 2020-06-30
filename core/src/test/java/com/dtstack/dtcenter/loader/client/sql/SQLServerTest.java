@@ -65,7 +65,7 @@ public class SQLServerTest {
     @Test
     public void getTableList() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.SQLServer.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().view(true).build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList);
     }
@@ -81,9 +81,9 @@ public class SQLServerTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.SQLServer.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("TempTable0").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("dbo.dd.dd").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        System.out.println(columnMetaData);
     }
 
     @Test
@@ -100,6 +100,15 @@ public class SQLServerTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(20).tableName("jiangbo_dev_copy").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
+    }
+
+    @Test
+    public void getTableListWithSchema() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.SQLServer.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("" +
+                "select sys.objects.name tableName,sys.schemas.name schemaName from sys.objects,sys.schemas where sys.objects.type='U'  and sys.objects.schema_id=sys.schemas.schema_id").build();
+        List list = client.executeQuery(source, queryDTO);
+        System.out.println(list);
     }
 
     @Test

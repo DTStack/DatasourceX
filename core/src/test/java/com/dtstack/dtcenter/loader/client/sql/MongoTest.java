@@ -46,7 +46,7 @@ public class MongoTest {
     public void getDatabaseList() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("system.profile").build();
-        List list = client.getColumnMetaData(source, queryDTO);
+        List list = client.getAllDatabases(source, queryDTO);
         System.out.println(list);
     }
 

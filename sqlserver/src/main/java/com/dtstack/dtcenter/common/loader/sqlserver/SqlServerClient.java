@@ -26,6 +26,9 @@ import java.util.List;
 public class SqlServerClient extends AbsRdbmsClient {
     private static final String TABLE_QUERY_ALL = "select * from sys.objects where type='U' or type='V'";
     private static final String TABLE_QUERY = "select * from sys.objects where type='U'";
+    //获取所有的表和对应的schema-备用
+    private static final String TABLE_QUERY_ALL_SCHEMA = "select sys.objects.name tableName,sys.schemas.name schemaName from sys.objects,sys.schemas where sys.objects.type='U' and sys.objects.schema_id=sys.schemas.schema_id";
+    private static final String TABLE_QUERY_SCHEMA = "select sys.objects.name tableName,sys.schemas.name schemaName from sys.objects,sys.schemas where sys.objects.type='U' or type='V' and sys.objects.schema_id=sys.schemas.schema_id";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -102,5 +105,17 @@ public class SqlServerClient extends AbsRdbmsClient {
     @Override
     protected String dealSql(SqlQueryDTO sqlQueryDTO) {
         return "select top "+sqlQueryDTO.getPreviewNum()+" * from "+sqlQueryDTO.getTableName();
+    }
+
+    @Override
+    protected String transferTableName(String tableName) {
+        //有问题，如果传入一个表名是aa.bb的表名并且不带schema信息，就会把aa当成schema
+        if (tableName.contains(".")) {
+            String[] tables = tableName.split("\\.", 2);
+            tableName = tables[1];
+            return String.format("%s.%s", tables[0], tableName.contains("[") ? tableName : String.format("[%s]",
+                    tableName));
+        }
+        return tableName.contains("[") ? tableName : String.format("[%s]", tableName);
     }
 }

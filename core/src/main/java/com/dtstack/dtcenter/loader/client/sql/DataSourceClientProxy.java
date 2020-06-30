@@ -150,16 +150,31 @@ public class DataSourceClientProxy<T> implements IClient<T> {
 
     @Override
     public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return null;
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getAllDatabases(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
     }
 
     @Override
     public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return null;
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getCreateTableSql(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
     }
 
     @Override
     public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return null;
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPartitionColumn(source, queryDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtCenterDefException(e.getMessage(), e);
+        }
     }
 }

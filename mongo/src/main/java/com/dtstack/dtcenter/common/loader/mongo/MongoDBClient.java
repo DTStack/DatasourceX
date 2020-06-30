@@ -35,8 +35,8 @@ public class MongoDBClient<T> implements IClient<T> {
         return MongoDBUtils.getPreview(source, queryDTO);
     }
 
-
-    public List<String> getDatabasesList(ISourceDTO iSource){
+    @Override
+    public List<String> getAllDatabases(ISourceDTO iSource, SqlQueryDTO queryDTO){
         return MongoDBUtils.getDatabaseList(iSource);
     }
 
@@ -83,6 +83,16 @@ public class MongoDBClient<T> implements IClient<T> {
 
     @Override
     public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 }

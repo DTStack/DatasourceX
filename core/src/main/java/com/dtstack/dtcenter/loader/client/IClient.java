@@ -132,45 +132,6 @@ public interface IClient<T> {
      * @throws Exception
      */
     IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
-    List<String> getTopicList(ISourceDTO source) throws Exception;
-
-    /**
-     * 创建 Topic
-     *
-     * @param source
-     * @param kafkaTopic
-     * @return
-     * @throws Exception
-     */
-    Boolean createTopic(ISourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception;
-
-    /**
-     * 获取特定 Topic 分区信息
-     *
-     * @param source
-     * @param topic
-     * @return
-     * @throws Exception
-     */
-    List<T> getAllPartitions(ISourceDTO source, String topic) throws Exception;
-
-    /**
-     * 获取特定 Topic 所有分区的偏移量
-     *
-     * @param source
-     * @param topic
-     * @return
-     * @throws Exception
-     */
-    List<KafkaOffsetDTO> getOffset(ISourceDTO source, String topic) throws Exception;
-
-    /**
-     * 获取预览数据
-     * @param source
-     * @param queryDTO
-     * @return
-     */
-    List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO);
 
     List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
