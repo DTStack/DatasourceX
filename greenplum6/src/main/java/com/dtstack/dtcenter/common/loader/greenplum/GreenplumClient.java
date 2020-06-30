@@ -62,6 +62,7 @@ public class GreenplumClient extends AbsRdbmsClient {
             "                            on tab.ooid = de.objoid\n" +
             "         where 1=1 and tab.relname='%s' and tab.nspname = '%s'";
 
+    private static final String DATABASE_QUERY = "select nspname from pg_namespace";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -157,5 +158,16 @@ public class GreenplumClient extends AbsRdbmsClient {
                 queryDTO.getSql(), greenplum6SourceDTO.getSchema());
         greenplumDownloader.configure();
         return greenplumDownloader;
+    }
+
+    @Override
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        queryDTO.setSql(DATABASE_QUERY);
+        return super.getAllDatabases(source, queryDTO);
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        return super.getCreateTableSql(source, queryDTO);
     }
 }

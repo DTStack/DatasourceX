@@ -11,15 +11,34 @@ import java.util.List;
 public class ClickhouseClientTest {
     private static AbsRdbmsClient rdbsClient = new ClickhouseClient();
 
+    ClickHouseSourceDTO source = ClickHouseSourceDTO.builder()
+            .url("jdbc:clickhouse://172.16.10.168:8123/mqTest")
+            .username("dtstack")
+            .password("abc123")
+            .schema("mqTest")
+            .build();
+    SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("cust").build();
+
     @Test
     public void getConnFactory() throws Exception {
-        ClickHouseSourceDTO source = ClickHouseSourceDTO.builder()
-                .url("jdbc:clickhouse://172.16.10.168:8123/mqTest")
-                .username("dtstack")
-                .password("abc123")
-                .build();
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("mqresult2").build();
         List<ColumnMetaDTO> columnMetaData = rdbsClient.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
+    }
+
+    @Test
+    public void getAllDataBases() throws Exception{
+        rdbsClient.getAllDatabases(source,queryDTO).forEach(s->{
+            System.out.println(s);
+        });
+    }
+
+    @Test
+    public void getCreateSql() throws Exception{
+        System.out.println(rdbsClient.getCreateTableSql(source,queryDTO));
+    }
+
+    @Test
+    public void getPartitionColumn() throws Exception{
+        System.out.println(rdbsClient.getPartitionColumn(source,queryDTO));
     }
 }
