@@ -38,6 +38,8 @@ public class MongoDBUtils {
 
     private static Pattern HOST_PORT_PATTERN = Pattern.compile("(?<host>(.*)):((?<port>\\d+))*");
 
+    private static Pattern HOST_PORT_SCHEMA_PATTERN = Pattern.compile("(?<host>(.*)):((?<port>\\d+))*/(?<schema>(.*))");
+
     private static Pattern USER_PWD_PATTERN = Pattern.compile("(?<username>(.*)):(?<password>(.*))@(?<else>(.*))");
 
     private static final Integer DEFAULT_PORT = 27017;
@@ -53,7 +55,8 @@ public class MongoDBUtils {
         try {
             mongoClient = getClient(mongoSourceDTO.getHostPort(), mongoSourceDTO.getUsername(), mongoSourceDTO.getPassword(),
                     mongoSourceDTO.getSchema());
-            MongoDatabase mongoDatabase = mongoClient.getDatabase(mongoSourceDTO.getSchema());
+            String schema = StringUtils.isBlank(mongoSourceDTO.getSchema()) ? dealSchema(mongoSourceDTO.getHostPort()) : mongoSourceDTO.getSchema();
+            MongoDatabase mongoDatabase = mongoClient.getDatabase(schema);
             MongoIterable<String> mongoIterable = mongoDatabase.listCollectionNames();
             mongoIterable.iterator().hasNext();
             check = true;
@@ -94,15 +97,16 @@ public class MongoDBUtils {
     public static List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO){
         MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
         List<List<Object>> dataList = new ArrayList<>();
-        if (StringUtils.isBlank(queryDTO.getTableName()) || StringUtils.isBlank(mongoSourceDTO.getSchema())) {
+        String schema = StringUtils.isBlank(mongoSourceDTO.getSchema()) ? dealSchema(mongoSourceDTO.getHostPort()) : mongoSourceDTO.getSchema();
+        if (StringUtils.isBlank(queryDTO.getTableName()) || StringUtils.isBlank(schema)) {
             return dataList;
         }
         MongoClient mongoClient = null;
         try {
             mongoClient = getClient(mongoSourceDTO.getHostPort(), mongoSourceDTO.getUsername(), mongoSourceDTO.getPassword(),
-                    mongoSourceDTO.getSchema());
+                    schema);
             //获取指定数据库
-            MongoDatabase mongoDatabase = mongoClient.getDatabase(mongoSourceDTO.getSchema());
+            MongoDatabase mongoDatabase = mongoClient.getDatabase(schema);
             //获取指定表
             MongoCollection<Document> collection = mongoDatabase.getCollection(queryDTO.getTableName());
             FindIterable<Document> documents = collection.find().limit(queryDTO.getPreviewNum());
@@ -127,7 +131,7 @@ public class MongoDBUtils {
         List<String> tableList = Lists.newArrayList();
         MongoClient mongoClient = null;
         try {
-            String db = mongoSourceDTO.getSchema();
+            String db = StringUtils.isBlank(mongoSourceDTO.getSchema()) ? dealSchema(mongoSourceDTO.getHostPort()) : mongoSourceDTO.getSchema();
             mongoClient = getClient(mongoSourceDTO.getHostPort(), mongoSourceDTO.getUsername(), mongoSourceDTO.getPassword(), db);
             MongoDatabase mongoDatabase = mongoClient.getDatabase(db);
             MongoIterable<String> tableNames = mongoDatabase.listCollectionNames();
@@ -206,6 +210,9 @@ public class MongoDBUtils {
             if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password)) {
                 mongoClient = new MongoClient(serverAddress, options);
             } else {
+                if (StringUtils.isBlank(db)){
+                    db = dealSchema(hostPorts);
+                }
                 MongoCredential credential = MongoCredential.createScramSha1Credential(username, db,
                         password.toCharArray());
                 List<MongoCredential> credentials = Lists.newArrayList();
@@ -214,5 +221,24 @@ public class MongoDBUtils {
             }
         }
         return mongoClient;
+    }
+
+    /**
+     * 如果没有指定schema，判断hostPort中有没有
+     * @param hostPorts
+     * @return
+     */
+    private static String dealSchema(String hostPorts) {
+        for (String hostPort : hostPorts.split(HOST_SPLIT_REGEX)) {
+            if (hostPort.length() == 0) {
+                continue;
+            }
+            Matcher matcher = HOST_PORT_SCHEMA_PATTERN.matcher(hostPort);
+            if (matcher.find()) {
+                String schema = matcher.group("schema");
+                return schema;
+            }
+        }
+        return null;
     }
 }
