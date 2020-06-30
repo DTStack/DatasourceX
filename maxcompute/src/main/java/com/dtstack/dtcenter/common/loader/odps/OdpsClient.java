@@ -6,6 +6,8 @@ import com.aliyun.odps.Column;
 import com.aliyun.odps.Instance;
 import com.aliyun.odps.Odps;
 import com.aliyun.odps.OdpsException;
+import com.aliyun.odps.OdpsType;
+import com.aliyun.odps.PartitionSpec;
 import com.aliyun.odps.Table;
 import com.aliyun.odps.TableSchema;
 import com.aliyun.odps.Tables;
@@ -20,7 +22,6 @@ import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
-import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -31,12 +32,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @company: www.dtstack.com
@@ -157,6 +160,7 @@ public class OdpsClient extends AbsRdbmsClient {
         List<ColumnMetaDTO> columnList = new ArrayList<>();
         Odps odps = initOdps(JSON.parseObject(odpsSourceDTO.getConfig()));
         Table table = odps.tables().get(queryDTO.getTableName());
+        //获取非分区字段
         table.getSchema()
                 .getColumns().forEach(column -> {
             ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
@@ -164,7 +168,16 @@ public class OdpsClient extends AbsRdbmsClient {
             columnMetaDTO.setType(column.getTypeInfo().getTypeName());
             columnList.add(columnMetaDTO);
         });
-
+        //获取分区字段
+        table.getSchema()
+                .getPartitionColumns().forEach(partitionColumn -> {
+            ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+            columnMetaDTO.setKey(partitionColumn.getName());
+            columnMetaDTO.setType(partitionColumn.getTypeInfo().getTypeName());
+            //设置为分区字段
+            columnMetaDTO.setPart(true);
+            columnList.add(columnMetaDTO);
+        });
         return columnList;
     }
 
@@ -192,14 +205,34 @@ public class OdpsClient extends AbsRdbmsClient {
     public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         List<List<Object>> dataList = new ArrayList<>();
+        List<Object> columnMeta = Lists.newArrayList();
+        //预览条数，默认100条
+        Integer previewNum = queryDTO.getPreviewNum();
         if (StringUtils.isBlank(queryDTO.getTableName())) {
             return dataList;
         }
         try {
             Odps odps = initOdps(JSON.parseObject(odpsSourceDTO.getConfig()));
             Table t = odps.tables().get(queryDTO.getTableName());
-            DefaultRecordReader recordReader = (DefaultRecordReader) t.read(3);
-            for (int i = 0; i < 3; i++) {
+            DefaultRecordReader recordReader;
+            Map<String, String> partitionColumns = queryDTO.getPartitionColumns();
+            if (MapUtils.isNotEmpty(partitionColumns)){
+                PartitionSpec partitionSpec = new PartitionSpec();
+                Set<String> partSet = partitionColumns.keySet();
+                for (String part:partSet){
+                    partitionSpec.set(part, partitionColumns.get(part));
+                }
+                recordReader = (DefaultRecordReader) t.read(partitionSpec, null, previewNum);
+            }else {
+                recordReader = (DefaultRecordReader) t.read(previewNum);
+            }
+
+            List<ColumnMetaDTO> metaData = getColumnMetaData(odpsSourceDTO, queryDTO);
+            for (ColumnMetaDTO columnMetaDTO:metaData){
+                columnMeta.add(columnMetaDTO.getKey());
+            }
+            dataList.add(columnMeta);
+            for (int i = 0; i < previewNum; i++) {
                 List<String> result = recordReader.readRaw();
                 if (CollectionUtils.isNotEmpty(result)) {
                     dataList.add(new ArrayList<>(result));
@@ -220,16 +253,12 @@ public class OdpsClient extends AbsRdbmsClient {
             Instance instance = runOdpsTask(odpsSourceDTO, queryDTO);
             ResultSet records = SQLTask.getResultSet(instance);
             TableSchema tableSchema = records.getTableSchema();
-            List<String> columnNames = Lists.newArrayList();
-            for (Column recordColumn : tableSchema.getColumns()) {
-                columnNames.add(recordColumn.getName());
-            }
-
             while (records.hasNext()) {
                 Record record = records.next();
                 Map<String, Object> row = Maps.newLinkedHashMap();
-                for (String columnName : columnNames) {
-                    row.put(columnName, record.get(columnName));
+                for (Column recordColumn : tableSchema.getColumns()) {
+                    String columnName = recordColumn.getName();
+                    row.put(columnName, dealColumnType(record, recordColumn));
                 }
                 result.add(row);
             }
@@ -238,6 +267,28 @@ public class OdpsClient extends AbsRdbmsClient {
         }
 
         return result;
+    }
+
+    //odps类型转换java类型
+    private Object dealColumnType(Record record, Column recordColumn) {
+        OdpsType odpsType = recordColumn.getTypeInfo().getOdpsType();
+        String columnName = recordColumn.getName();
+        switch (odpsType){
+            case STRING:
+                return record.getString(columnName);
+            case DOUBLE:
+                return record.getDouble(columnName);
+            case BOOLEAN:
+                return record.getBoolean(columnName);
+            case DATE:
+                return record.getDatetime(columnName);
+            case DECIMAL:
+                return record.getDecimal(columnName);
+            case BIGINT:
+                return record.getBigint(columnName);
+            default:
+                return record.get(columnName);
+        }
     }
 
     @Override

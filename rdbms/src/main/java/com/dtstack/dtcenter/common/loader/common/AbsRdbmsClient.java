@@ -274,7 +274,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         try {
             stmt = rdbmsSourceDTO.getConnection().createStatement();
             //查询sql，默认预览100条
-            String querySql = dealSql(queryDTO.getTableName(), queryDTO.getPreviewNum());
+            String querySql = dealSql(queryDTO);
             rs = stmt.executeQuery(querySql);
             ResultSetMetaData rsmd = rs.getMetaData();
             //存储字段信息
@@ -301,13 +301,12 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     /**
      * 处理sql语句预览条数
-     * @param tableName 表名
-     * @param previewNum 预览条数
+     * @param sqlQueryDTO 查询条件
      * @return 处理后的查询sql
      */
-    protected String dealSql(String tableName, Integer previewNum){
-        return "select * from " + tableName
-                + " limit " + previewNum;
+    protected String dealSql(SqlQueryDTO sqlQueryDTO){
+        return "select * from " + sqlQueryDTO.getTableName()
+                + " limit " + sqlQueryDTO.getPreviewNum();
     }
 
     /**

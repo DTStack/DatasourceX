@@ -6,6 +6,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @company: www.dtstack.com
@@ -41,6 +42,11 @@ public class SqlQueryDTO {
      * 字段名称
      */
     private List<String> columns;
+
+    /**
+     * 分区字段:值,用于hive分区预览数据
+     */
+    private Map<String, String> partitionColumns;
 
     /**
      * 是否需要视图表，默认 false 不过滤

@@ -12,6 +12,7 @@ import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -115,11 +116,36 @@ public class HiveTest {
             }
         }
     }
+
     @Test
     public void getPreview() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("wangchuan003").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("wangchuan002").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
+    }
+
+    @Test
+    public void getPartitionColumn() throws Exception{
+        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        List<ColumnMetaDTO> data = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("wangchuan002").build());
+        data.forEach(x-> System.out.println(x.getKey()+"=="+x.getPart()));
+    }
+
+    @Test
+    public void getPreview2() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        HashMap<String, String> map = new HashMap<>();
+        map.put("month", "3");
+        map.put("day", "5");
+        List list = client.getPreview(source, SqlQueryDTO.builder().tableName("wangchuan007").partitionColumns(map).build());
+        System.out.println(list);
+    }
+
+    @Test
+    public void query() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        List list = client.executeQuery(source, SqlQueryDTO.builder().sql("select month,day from wangchuan007").build());
+        System.out.println(list);
     }
 }
