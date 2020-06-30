@@ -182,6 +182,37 @@ public class OdpsClient extends AbsRdbmsClient {
     }
 
     @Override
+    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
+        beforeQuery(odpsSourceDTO, queryDTO, true);
+        List<ColumnMetaDTO> columnList = new ArrayList<>();
+        try {
+            Instance instance = runOdpsTask(odpsSourceDTO, queryDTO);
+            ResultSet records = SQLTask.getResultSet(instance);
+            TableSchema tableSchema = records.getTableSchema();
+            //获取非分区字段
+            tableSchema.getColumns().forEach(column -> {
+                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+                columnMetaDTO.setKey(column.getName());
+                columnMetaDTO.setType(column.getTypeInfo().getTypeName());
+                columnList.add(columnMetaDTO);
+            });
+            //获取分区字段-应该不会走到这
+            tableSchema.getPartitionColumns().forEach(partitionColumn -> {
+                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+                columnMetaDTO.setKey(partitionColumn.getName());
+                columnMetaDTO.setType(partitionColumn.getTypeInfo().getTypeName());
+                //设置为分区字段
+                columnMetaDTO.setPart(true);
+                columnList.add(columnMetaDTO);
+            });
+        } catch (OdpsException e) {
+            throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+        }
+        return columnList;
+    }
+
+    @Override
     public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(odpsSourceDTO, queryDTO);

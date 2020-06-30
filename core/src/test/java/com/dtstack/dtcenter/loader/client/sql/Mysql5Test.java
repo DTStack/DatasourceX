@@ -128,4 +128,15 @@ public class Mysql5Test {
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }
+
+    /**
+     * 根据自定义sql获取表字段信息
+     */
+    @Test
+    public void getColumnMetaDataWithSql() throws Exception{
+        IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select a.*,b.role_name from rdos_dict a join rdos_role b on 1=1").build();
+        List sql = client.getColumnMetaDataWithSql(source, queryDTO);
+        System.out.println(sql);
+    }
 }

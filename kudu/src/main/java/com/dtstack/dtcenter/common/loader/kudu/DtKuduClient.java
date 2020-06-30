@@ -255,4 +255,9 @@ public class DtKuduClient extends AbsRdbmsClient {
     public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
+
+    @Override
+    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
 }

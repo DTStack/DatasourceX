@@ -57,6 +57,11 @@ public class EmqClient<T> implements IClient<T> {
     }
 
     @Override
+    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
     public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }

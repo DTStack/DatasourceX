@@ -88,6 +88,15 @@ public interface IClient<T> {
     List<ColumnMetaDTO> getColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
     /**
+     * 根据自定义sql获取表字段属性
+     * @param source
+     * @param queryDTO 必填项 sql
+     * @return
+     * @throws Exception
+     */
+    List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+
+    /**
      * 获取flinkSql字段名称
      *
      * @param source

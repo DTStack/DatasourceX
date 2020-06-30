@@ -131,6 +131,11 @@ public class HbaseClient extends AbsRdbmsClient {
     }
 
     @Override
+    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
     public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }

@@ -42,7 +42,7 @@ public class MaxComputerTest {
     @Test
     public void executeQuery() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MAXCOMPUTE.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from wangchuan_test;").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select province from wangchuan_test;").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList);
     }
@@ -100,6 +100,14 @@ public class MaxComputerTest {
         map.put("province", "henan");
         map.put("province", "shandong");
         List data = client.getPreview(source, SqlQueryDTO.builder().partitionColumns(map).previewNum(1000).tableName("wangchuan_test").build());
+        System.out.println(data);
+    }
+
+    @Test
+    public void getColumnMetaDataWithSql() throws Exception{
+        IClient client = clientCache.getClient(DataSourceClientType.MAXCOMPUTE.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from wangchuan_test2 a left semi join wangchuan_test b on a.id = b.id").build();
+        List data = client.getColumnMetaDataWithSql(source, queryDTO);
         System.out.println(data);
     }
 }
