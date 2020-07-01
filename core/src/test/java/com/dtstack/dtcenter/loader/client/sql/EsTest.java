@@ -24,8 +24,8 @@ public class EsTest {
             .url("172.16.10.251:9200")
             .username("elastic")
             .password("abc123")
-            .schema("my_index")
-            .id("id_1")
+            .schema("result")
+            //.id("id_1")
             .build();
 
     @Test
@@ -47,7 +47,7 @@ public class EsTest {
     @Test
     public void getPreview() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.ES6.getPluginName());
-        List viewList = client.getPreview(source, SqlQueryDTO.builder().build());
+        List viewList = client.getPreview(source, SqlQueryDTO.builder().previewNum(5).build());
         System.out.println(viewList);
     }
 

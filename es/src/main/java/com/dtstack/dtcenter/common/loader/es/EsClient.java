@@ -10,6 +10,7 @@ import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
+import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
@@ -20,6 +21,8 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
@@ -28,6 +31,12 @@ import org.elasticsearch.client.indices.GetMappingsRequest;
 import org.elasticsearch.client.indices.GetMappingsResponse;
 import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -44,6 +53,9 @@ import java.util.Set;
  */
 @Slf4j
 public class EsClient extends AbsRdbmsClient {
+
+    private static final int MAX_NUM = 10000;
+
     @Override
     protected ConnFactory getConnFactory() {
         return null;
@@ -134,6 +146,12 @@ public class EsClient extends AbsRdbmsClient {
         return dbs;
     }
 
+    /**
+     * es数据预览，默认100条，最大10000条
+     * @param iSource
+     * @param queryDTO
+     * @return
+     */
     @Override
     public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
@@ -148,22 +166,34 @@ public class EsClient extends AbsRdbmsClient {
         }
         //索引
         String index = esSourceDTO.getSchema();
-        if (StringUtils.isBlank(index) || StringUtils.isBlank(esSourceDTO.getId())){
-            throw new DtCenterDefException("未指定es的index或者id，数据预览失败");
+        if (StringUtils.isBlank(index)){
+            throw new DtCenterDefException("未指定es的index，数据预览失败");
         }
-        //根据index和id进行查询
-        GetRequest request = new GetRequest(index, esSourceDTO.getId());
-        String document = null;
+        //限制条数，最大10000条
+        int previewNum = queryDTO.getPreviewNum() > MAX_NUM ? MAX_NUM:queryDTO.getPreviewNum();
+        //根据index进行查询
+        SearchRequest searchRequest = new SearchRequest(index);
+        SearchSourceBuilder query = new SearchSourceBuilder()
+                .query(QueryBuilders.matchAllQuery())
+                .size(previewNum);
+        SearchRequest source = searchRequest.source(query);
+        List<List<Object>> documentList = Lists.newArrayList();
         try {
-            GetResponse response = client.get(request, RequestOptions.DEFAULT);
-            document = response.getSourceAsString();
+            SearchResponse search = client.search(source, RequestOptions.DEFAULT);
+            //结果集
+            SearchHit[] hits = search.getHits().getHits();
+            for (SearchHit hit:hits){
+                //一行数据
+                List<Object> document = Lists.newArrayList();
+                Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+                sourceAsMap.keySet().forEach(key->
+                        document.add(new Pair<String, Object>(key, sourceAsMap.get(key))));
+                documentList.add(document);
+            }
         }catch (Exception e){
             log.error("获取文档异常", e);
         }
-        List<Object> documentList = Lists.newArrayList(document);
-        List<List<Object>> res = Lists.newArrayList();
-        res.add(documentList);
-        return res;
+        return documentList;
     }
 
     /**
@@ -187,19 +217,22 @@ public class EsClient extends AbsRdbmsClient {
         }
         //索引
         String index = esSourceDTO.getSchema();
-        if (StringUtils.isBlank(index) || StringUtils.isBlank(esSourceDTO.getId())){
-            throw new DtCenterDefException("未指定es的index或者id，数据预览失败");
+        if (StringUtils.isBlank(index)){
+            throw new DtCenterDefException("未指定es的index,获取字段信息失败");
         }
-        //根据index和id进行查询
-        GetRequest request = new GetRequest(index, esSourceDTO.getId());
-        Set<String> set = null;
         List<ColumnMetaDTO> columnMetaDTOS = new ArrayList<>();
         try {
-            GetResponse response = client.get(request, RequestOptions.DEFAULT);
-            set = response.getSource().keySet();
-            for (String field:set){
+            //根据index进行查询
+            GetMappingsResponse res = client.indices().getMapping(new GetMappingsRequest(), RequestOptions.DEFAULT);
+            MappingMetaData data = res.mappings().get(index);
+            Map<String, Object> metaDataMap = (Map<String, Object>) data.getSourceAsMap().get("properties");
+            Set<String> metaData = metaDataMap.keySet();
+            for (String meta:metaData){
                 ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
-                columnMetaDTO.setKey(field);
+                columnMetaDTO.setKey(meta);
+                Map<String, Object> map = (Map<String, Object>)metaDataMap.get(meta);
+                String type = (String) map.get("type");
+                columnMetaDTO.setType(type);
                 columnMetaDTOS.add(columnMetaDTO);
             }
         }catch (Exception e){

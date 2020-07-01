@@ -16,6 +16,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
+import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
@@ -112,7 +113,7 @@ public class MongoDBUtils {
             FindIterable<Document> documents = collection.find().limit(queryDTO.getPreviewNum());
             for (Document document:documents){
                 ArrayList<Object> list = new ArrayList<>();
-                document.keySet().forEach(key->list.add(String.format(mongoRow, key, document.get(key))));
+                document.keySet().forEach(key->list.add(new Pair<String, Object>(key, document.get(key))));
                 dataList.add(list);
             }
         } catch (Exception e) {
