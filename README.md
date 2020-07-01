@@ -131,6 +131,14 @@
 如果需要开启插件校验，请使用 startCheckFile 来校验文件
 默认十分钟一次校验，首次开启不校验，用到的缓存连接才会校验
 
+### 4.4 方法说明
+1. getPreview方法和getColumnMetaData方法中tableName处理方法：
+1). sqlQueryDTO中的tableName为必填项。
+2). 对于sqlServer数据源，如果传过来的是不带schema的表名，则使用[]处理；
+3). 如果传过来tableName被[]包括，则不处理；
+4). 如果传过来的schema.tableName格式，则进行最大长度2切割，此时tableName中即使有"."或者被[]包裹，也不影响系统；
+ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
+
 ---
 ## 五、后续开发计划
 1. IClient DTO 优化，为 Kerberos 和 复用 Connection 准备 【已完成 200226】

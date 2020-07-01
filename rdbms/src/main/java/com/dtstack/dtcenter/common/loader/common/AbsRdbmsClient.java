@@ -352,7 +352,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @return 处理后的查询sql
      */
     protected String dealSql(SqlQueryDTO sqlQueryDTO){
-        return "select * from " + sqlQueryDTO.getTableName()
+        return "select * from " + transferTableName(sqlQueryDTO.getTableName())
                 + " limit " + sqlQueryDTO.getPreviewNum();
     }
 

@@ -104,18 +104,24 @@ public class SqlServerClient extends AbsRdbmsClient {
 
     @Override
     protected String dealSql(SqlQueryDTO sqlQueryDTO) {
-        return "select top "+sqlQueryDTO.getPreviewNum()+" * from "+sqlQueryDTO.getTableName();
+        return "select top "+sqlQueryDTO.getPreviewNum()+" * from "+transferTableName(sqlQueryDTO.getTableName());
     }
 
     @Override
     protected String transferTableName(String tableName) {
-        //有问题，如果传入一个表名是aa.bb的表名并且不带schema信息，就会把aa当成schema
+        //如果传过来是[tableName]格式直接当成表名
+        if (tableName.startsWith("[") && tableName.endsWith("]")){
+            return tableName;
+        }
+        //如果不是上述格式，判断有没有"."符号，有的话，第一个"."之前的当成schema，后面的当成表名进行[tableName]处理
         if (tableName.contains(".")) {
+            //切割，表名中可能会有包含"."的情况，所以限制切割后长度为2
             String[] tables = tableName.split("\\.", 2);
             tableName = tables[1];
             return String.format("%s.%s", tables[0], tableName.contains("[") ? tableName : String.format("[%s]",
                     tableName));
         }
-        return tableName.contains("[") ? tableName : String.format("[%s]", tableName);
+        //判断表名
+        return String.format("[%s]", tableName);
     }
 }
