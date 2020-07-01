@@ -21,8 +21,10 @@ public class MongoTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     MongoSourceDTO source = MongoSourceDTO.builder()
-            .hostPort("172.16.8.193:27017,172.16.8.193:27017/dtstack")
-            //.schema("dtstack")
+            .hostPort("172.16.8.89:27017/admin")
+            //.schema("admin")
+            .username("root")
+            .password("admin")
             .build();
 
     @Test
@@ -53,10 +55,8 @@ public class MongoTest {
     @Test
     public void getPreview() throws Exception{
         IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("system.profile").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("system.users").build();
         List<List<Object>> preview = client.getPreview(source, queryDTO);
-        for (List list:preview){
-            System.out.println(list);
-        }
+        System.out.println(preview);
     }
 }
