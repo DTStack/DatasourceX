@@ -102,12 +102,15 @@ public class EsClient extends AbsRdbmsClient {
         return typeList;
     }
 
+
     /**
      * 获取es所有索引（也就是数据库）
      * @param iSource
+     * @param queryDTO
      * @return
      */
-    public static List<String> getDatabases(ISourceDTO iSource){
+    @Override
+    public List<String> getAllDatabases(ISourceDTO iSource, SqlQueryDTO queryDTO){
         ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return new ArrayList<>();

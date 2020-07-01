@@ -57,4 +57,11 @@ public class EsTest {
         List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().build());
         System.out.println(metaData);
     }
+
+    @Test
+    public void getDB() throws Exception{
+        IClient client = clientCache.getClient(DataSourceClientType.ES6.getPluginName());
+        List list = client.getAllDatabases(source, SqlQueryDTO.builder().build());
+        System.out.println(list);
+    }
 }

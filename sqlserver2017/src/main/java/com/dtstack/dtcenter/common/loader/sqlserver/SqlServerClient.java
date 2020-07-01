@@ -103,4 +103,16 @@ public class SqlServerClient extends AbsRdbmsClient {
     protected String dealSql(SqlQueryDTO sqlQueryDTO) {
         return "select top "+sqlQueryDTO.getPreviewNum()+" * from "+sqlQueryDTO.getTableName();
     }
+
+    @Override
+    protected String transferTableName(String tableName) {
+        //有问题，如果传入一个表名是aa.bb的表名并且不带schema信息，就会把aa当成schema
+        if (tableName.contains(".")) {
+            String[] tables = tableName.split("\\.", 2);
+            tableName = tables[1];
+            return String.format("%s.%s", tables[0], tableName.contains("[") ? tableName : String.format("[%s]",
+                    tableName));
+        }
+        return tableName.contains("[") ? tableName : String.format("[%s]", tableName);
+    }
 }

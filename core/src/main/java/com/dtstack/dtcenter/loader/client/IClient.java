@@ -132,4 +132,10 @@ public interface IClient<T> {
      * @throws Exception
      */
     IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+
+    List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+
+    String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+
+    List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 }

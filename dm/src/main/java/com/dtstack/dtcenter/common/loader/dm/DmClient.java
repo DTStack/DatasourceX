@@ -5,9 +5,11 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.DmSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 
 import java.sql.ResultSet;
@@ -26,6 +28,11 @@ public class DmClient extends AbsRdbmsClient {
             ".'||'\"'||TABLE_NAME||'\"' FROM ALL_TAB_PRIVS WHERE grantee = (SELECT USERNAME FROM user_users WHERE " +
             "ROWNUM = 1) ";
     private static final String ORACLE_WITH_VIEWS_SQL = "UNION SELECT VIEW_NAME FROM USER_VIEWS ";
+
+    private static  String DM_ALL_DATABASES = "SELECT DISTINCT OWNER FROM SYS.DBA_TABLES WHERE TABLESPACE_NAME = 'MAIN'";
+
+    private static String CREATE_TABLE_SQL = "select dbms_metadata.get_ddl(OBJECT_TYPE => 'TABLE',\n" +
+            "NAME=>upper('%s'),SCHNAME => '%s')";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -68,5 +75,23 @@ public class DmClient extends AbsRdbmsClient {
         DmDownloader dmDownloader = new DmDownloader(getCon(dmSourceDTO), queryDTO.getSql(), dmSourceDTO.getSchema());
         dmDownloader.configure();
         return dmDownloader;
+    }
+
+    @Override
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        queryDTO.setSql(DM_ALL_DATABASES);
+        return super.getAllDatabases(source, queryDTO);
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        DmSourceDTO dmSourceDTO = (DmSourceDTO) source;
+        queryDTO.setSql(String.format(CREATE_TABLE_SQL,queryDTO.getTableName(),dmSourceDTO.getSchema()));
+        return super.getCreateTableSql(source,queryDTO);
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
     }
 }
