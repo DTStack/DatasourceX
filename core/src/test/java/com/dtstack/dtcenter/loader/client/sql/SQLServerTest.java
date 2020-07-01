@@ -81,7 +81,7 @@ public class SQLServerTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.SQLServer.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("dbo.dd.dd").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("dbo.demo").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData);
     }
@@ -97,7 +97,7 @@ public class SQLServerTest {
     @Test
     public void getPreview() throws Exception{
         IClient client = clientCache.getClient(DataSourceClientType.SQLServer.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(20).tableName("jiangbo_dev_copy").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(20).tableName("dbo.[dd.dd]").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }
