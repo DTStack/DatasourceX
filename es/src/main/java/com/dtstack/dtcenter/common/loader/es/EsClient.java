@@ -96,7 +96,7 @@ public class EsClient extends AbsRdbmsClient {
         }
         List<String> typeList = Lists.newArrayList();
         //es索引
-        String index = esSourceDTO.getSchema();
+        String index = queryDTO.getTableName();
         //不指定index抛异常
         if (StringUtils.isBlank(index)){
             throw new DtCenterDefException("未指定es的index，获取失败");
@@ -165,7 +165,7 @@ public class EsClient extends AbsRdbmsClient {
             client = getClient(esSourceDTO.getUrl());
         }
         //索引
-        String index = esSourceDTO.getSchema();
+        String index = queryDTO.getTableName();
         if (StringUtils.isBlank(index)){
             throw new DtCenterDefException("未指定es的index，数据预览失败");
         }
@@ -216,7 +216,7 @@ public class EsClient extends AbsRdbmsClient {
             client = getClient(esSourceDTO.getUrl());
         }
         //索引
-        String index = esSourceDTO.getSchema();
+        String index = queryDTO.getTableName();
         if (StringUtils.isBlank(index)){
             throw new DtCenterDefException("未指定es的index,获取字段信息失败");
         }
