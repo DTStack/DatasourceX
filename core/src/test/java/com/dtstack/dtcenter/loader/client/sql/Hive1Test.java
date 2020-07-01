@@ -24,9 +24,8 @@ public class Hive1Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     Hive1SourceDTO source = Hive1SourceDTO.builder()
-            .url("jdbc:hive2://kudu3:10000/dev2")
-            .username("root")
-            .password("abc123")
+            .url("jdbc:hive2://172.16.10.99:10000/default?principal=hive/node1@DTSTACK.COM")
+            .defaultFS("hdfs://nameservice1")
             .build();
 
     @Test

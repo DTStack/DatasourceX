@@ -21,10 +21,10 @@ public class EsTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     ESSourceDTO source = ESSourceDTO.builder()
-            .url("172.16.10.251:9200")
-            .username("elastic")
-            .password("abc123")
-            .schema("result")
+            .url("172.16.8.89:9200")
+            //.username("elastic")
+            //.password("abc123")
+            //.schema("family_tree")
             //.id("id_1")
             .build();
 
@@ -47,14 +47,14 @@ public class EsTest {
     @Test
     public void getPreview() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.ES6.getPluginName());
-        List viewList = client.getPreview(source, SqlQueryDTO.builder().previewNum(5).build());
+        List viewList = client.getPreview(source, SqlQueryDTO.builder().tableName("family_tree").previewNum(5).build());
         System.out.println(viewList);
     }
 
     @Test
     public void getColumnMetaData() throws Exception{
         IClient client = clientCache.getClient(DataSourceClientType.ES6.getPluginName());
-        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().build());
+        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("family_tree").build());
         System.out.println(metaData);
     }
 
