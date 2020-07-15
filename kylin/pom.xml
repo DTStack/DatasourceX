@@ -55,6 +55,10 @@
                     <artifactId>jcl-over-slf4j</artifactId>
                     <groupId>org.slf4j</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
     </dependencies>
@@ -80,6 +84,7 @@
                                 <excludes>
                                     <exclude>org.slf4j:slf4j-log4j12</exclude>
                                     <exclude>log4j:log4j</exclude>
+                                    <exclude>commons-logging:commons-logging</exclude>
                                     <exclude>org.slf4j:slf4j-api</exclude>
                                 </excludes>
                             </artifactSet>
@@ -93,6 +98,12 @@
                                     </excludes>
                                 </filter>
                             </filters>
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.slf4j</pattern>
+                                    <shadedPattern>com.dtstack.nanqi</shadedPattern>
+                                </relocation>
+                            </relocations>
                         </configuration>
                     </execution>
                 </executions>
