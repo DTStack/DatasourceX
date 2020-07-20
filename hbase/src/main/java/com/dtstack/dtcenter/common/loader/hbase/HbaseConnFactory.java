@@ -60,7 +60,6 @@ public class HbaseConnFactory extends ConnFactory {
         }
         Map<String, Object> sourceToMap = sourceToMap(source);
 
-
         Configuration hConfig = HBaseConfiguration.create();
         for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {
             hConfig.set(entry.getKey(), (String) entry.getValue());
@@ -90,7 +89,6 @@ public class HbaseConnFactory extends ConnFactory {
             JSONObject jsonObject = JSON.parseObject(hbaseSourceDTO.getConfig());
             hbaseMap.putAll(jsonObject);
         } else {
-
             if (StringUtils.isBlank(hbaseSourceDTO.getUrl())) {
                 throw new DtCenterDefException("集群地址不能为空");
             }
@@ -101,7 +99,6 @@ public class HbaseConnFactory extends ConnFactory {
             if (StringUtils.isNotBlank(hbaseSourceDTO.getPath())) {
                 hbaseMap.put(DtClassConsistent.HBaseConsistent.KEY_ZOOKEEPER_ZNODE_PARENT, hbaseSourceDTO.getPath());
             }
-
         }
 
         // 设置其他信息
@@ -110,6 +107,10 @@ public class HbaseConnFactory extends ConnFactory {
         // 设置 Kerberos 信息
         if (MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
             hbaseMap.putAll(hbaseSourceDTO.getKerberosConfig());
+            hbaseMap.put("hadoop.security.authentication", "Kerberos");
+            hbaseMap.put("hbase.security.authentication", "Kerberos");
+            hbaseMap.put("hbase.master.kerberos.principal", hbaseMap.get("hbase.master.kerberos.principal"));
+            log.info("getHbaseConnection principalFile:{}", hbaseMap.get("principalFile"));
         }
 
         // 设置默认信息

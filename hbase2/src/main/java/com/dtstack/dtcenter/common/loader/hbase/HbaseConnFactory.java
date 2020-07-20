@@ -110,6 +110,10 @@ public class HbaseConnFactory extends ConnFactory {
         // 设置 Kerberos 信息
         if (MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
             hbaseMap.putAll(hbaseSourceDTO.getKerberosConfig());
+            hbaseMap.put("hadoop.security.authentication", "Kerberos");
+            hbaseMap.put("hbase.security.authentication", "Kerberos");
+            hbaseMap.put("hbase.master.kerberos.principal", hbaseMap.get("hbase.master.kerberos.principal"));
+            log.info("getHbaseConnection principalFile:{}", hbaseMap.get("principalFile"));
         }
 
         // 设置默认信息
