@@ -56,7 +56,7 @@ public class HbaseConnFactory extends ConnFactory {
 
     public static org.apache.hadoop.hbase.client.Connection getHbaseConn(HbaseSourceDTO source) throws Exception {
         if (MapUtils.isNotEmpty(source.getKerberosConfig())) {
-            DtKerberosUtils.loginKerberos(source.getKerberosConfig());
+            DtKerberosUtils.loginKerberos(new HashMap<>(source.getKerberosConfig()));
         }
         Map<String, Object> sourceToMap = sourceToMap(source);
 
@@ -110,6 +110,7 @@ public class HbaseConnFactory extends ConnFactory {
             hbaseMap.put("hadoop.security.authentication", "Kerberos");
             hbaseMap.put("hbase.security.authentication", "Kerberos");
             hbaseMap.put("hbase.master.kerberos.principal", hbaseMap.get("hbase.master.kerberos.principal"));
+            hbaseMap.put("hbase.regionserver.kerberos.principal", hbaseMap.get("hbase.regionserver.kerberos.principal"));
             log.info("getHbaseConnection principalFile:{}", hbaseMap.get("principalFile"));
         }
 
