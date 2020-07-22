@@ -5,11 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -27,6 +29,10 @@ public class HashCacheConnectionKey {
     static {
         scheduledThreadPoolExecutor.scheduleAtFixedRate(new HashCacheConnectionKey.CacheTimerTask(), 0, 10,
                 TimeUnit.SECONDS);
+    }
+
+    public static List<String> getSimilarSessionKey(String similarKey) {
+        return sessionConnMap.keySet().stream().filter(key -> key.startsWith(similarKey)).collect(Collectors.toList());
     }
 
     static class CacheTimerTask implements Runnable {
