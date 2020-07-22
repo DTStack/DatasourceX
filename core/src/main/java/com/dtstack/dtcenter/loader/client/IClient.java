@@ -123,6 +123,7 @@ public interface IClient<T> {
      * @param source
      * @param queryDTO
      * @return
+     * @throws Exception
      */
     List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
