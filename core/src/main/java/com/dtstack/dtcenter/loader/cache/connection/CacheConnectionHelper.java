@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -81,6 +82,22 @@ public class CacheConnectionHelper {
 
         removeCacheConnection();
         HashCacheConnectionKey.clearKey(sessionKey, null, false);
+    }
+
+    /**
+     * 根据 sessionKey 查找到类似的 KEY 关闭
+     * @param similarKey
+     */
+    public static void stopSimilarCacheConnection(String similarKey) {
+        if (StringUtils.isBlank(similarKey)) {
+            return;
+        }
+
+        List<String> sessionKeys = HashCacheConnectionKey.getSimilarSessionKey(similarKey);
+        log.info("关闭全部 sessionKeys {}", sessionKeys);
+        for (String sessionKey : sessionKeys) {
+            closeCacheConnection(sessionKey);
+        }
     }
 
     /**
