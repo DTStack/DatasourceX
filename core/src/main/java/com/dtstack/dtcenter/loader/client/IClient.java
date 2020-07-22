@@ -89,6 +89,7 @@ public interface IClient<T> {
 
     /**
      * 根据自定义sql获取表字段属性
+     *
      * @param source
      * @param queryDTO 必填项 sql
      * @return
@@ -118,6 +119,7 @@ public interface IClient<T> {
 
     /**
      * 获取预览数据
+     *
      * @param source
      * @param queryDTO
      * @return
@@ -126,6 +128,7 @@ public interface IClient<T> {
 
     /**
      * 获取对应的downloader
+     *
      * @param source
      * @param queryDTO
      * @return
@@ -133,9 +136,33 @@ public interface IClient<T> {
      */
     IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
+    /**
+     * 获取所有的 DB
+     *
+     * @param source
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
     List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
+    /**
+     * 获取建表语句
+     *
+     * @param source
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
     String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
+    /**
+     * 获取分区字段
+     *
+     * @param source
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
     List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 }
