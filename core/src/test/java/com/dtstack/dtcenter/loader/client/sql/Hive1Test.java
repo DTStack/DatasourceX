@@ -99,4 +99,18 @@ public class Hive1Test {
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }
+
+    @Test
+    public void getCreateTableSql() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.HIVE1X.getPluginName());
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("chener").build();
+        System.out.println(client.getCreateTableSql(source, sqlQueryDTO));
+    }
+
+    @Test
+    public void getAllDataBases() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.HIVE1X.getPluginName());
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().build();
+        System.out.println(client.getAllDatabases(source, sqlQueryDTO));
+    }
 }

@@ -110,5 +110,19 @@ public class DmDbTest {
         }
     }
 
+    @Test
+    public void getAllDatabases() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.DMDB.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        System.out.println(client.getAllDatabases(source, queryDTO));
+    }
+
+    @Test
+    public void getCreateTableSql() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.DMDB.getPluginName());
+        source.setSchema("chener");
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("XQ_TEST").build();
+        System.out.println(client.getCreateTableSql(source, queryDTO));
+    }
 
 }
