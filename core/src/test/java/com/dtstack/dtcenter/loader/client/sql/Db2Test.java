@@ -25,10 +25,10 @@ public class Db2Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     Db2SourceDTO source = Db2SourceDTO.builder()
-            .url("jdbc:db2://172.16.10.251:50000/mqTest")
+            .url("jdbc:db2://172.16.10.168:50000/SAMPLE")
             .username("DB2INST1")
-            .password("abc123")
-            .schema("mqTest")
+            .password("db2root-pwd")
+            .schema("SHIFANG")
             .build();
 
     @Test
@@ -99,4 +99,14 @@ public class Db2Test {
         }
 
     }
+
+    @Test
+    public void getAllDatabases() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        System.out.println(client.getAllDatabases(source, queryDTO));
+    }
+
+
+
 }

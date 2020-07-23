@@ -139,4 +139,25 @@ public class Mysql5Test {
         List sql = client.getColumnMetaDataWithSql(source, queryDTO);
         System.out.println(sql);
     }
+
+    @Test
+    public void getAllDatabases() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        System.out.println(client.getAllDatabases(source,queryDTO));
+    }
+
+    @Test
+    public void getCreateTableSql() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
+        System.out.println(client.getCreateTableSql(source,queryDTO));
+    }
+
+    @Test
+    public void getPartitionColumn() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
+        System.out.println(client.getPartitionColumn(source,queryDTO));
+    }
 }

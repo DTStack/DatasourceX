@@ -122,4 +122,25 @@ public class Mysql8Test {
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }
+
+    @Test
+    public void getAllDatabases() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.MySql8.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        System.out.println(client.getAllDatabases(source,queryDTO));
+    }
+
+    @Test
+    public void getCreateTableSql() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.MySql8.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
+        System.out.println(client.getCreateTableSql(source,queryDTO));
+    }
+
+    @Test
+    public void getPartitionColumn() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.MySql8.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
+        System.out.println(client.getPartitionColumn(source,queryDTO));
+    }
 }

@@ -155,4 +155,18 @@ public class HiveTest {
         List list = client.getColumnMetaDataWithSql(source, sqlQueryDTO);
         System.out.println(list);
     }
+
+    @Test
+    public void getCreateTableSql() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("dirty_mysql_kafka11_id_1395").build();
+        System.out.println(client.getCreateTableSql(source, sqlQueryDTO));
+    }
+
+    @Test
+    public void getAllDataBases() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().build();
+        System.out.println(client.getAllDatabases(source, sqlQueryDTO));
+    }
 }
