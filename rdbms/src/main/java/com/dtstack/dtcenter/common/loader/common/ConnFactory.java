@@ -4,12 +4,16 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
+import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -23,6 +27,8 @@ public class ConnFactory {
     protected String driverName = null;
 
     protected String testSql;
+
+    private static ConcurrentHashMap<String, Object> hikariDataSources = new ConcurrentHashMap<>();
 
     private AtomicBoolean isFirstLoaded = new AtomicBoolean(true);
 
@@ -46,7 +52,44 @@ public class ConnFactory {
         }
 
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        return StringUtils.isNotBlank(rdbmsSourceDTO.getCpKey())
+                && rdbmsSourceDTO.getCpConfig() != null
+                && MapUtils.isEmpty(rdbmsSourceDTO.getKerberosConfig()) ?
+                getCpConn(rdbmsSourceDTO) : getSimpleConn(rdbmsSourceDTO);
+    }
 
+    /**
+     * 从连接池获取连接
+     *
+     * @param source
+     * @return
+     * @throws Exception
+     */
+    protected Connection getCpConn(ISourceDTO source) throws Exception {
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        HikariDataSource hikariData = (HikariDataSource) hikariDataSources.get(rdbmsSourceDTO.getCpKey());
+        if (hikariData == null) {
+            synchronized (ConnFactory.class) {
+                hikariData = (HikariDataSource) hikariDataSources.get(rdbmsSourceDTO.getCpKey());
+                if (hikariData == null) {
+                    hikariData = transHikari(source);
+                    hikariDataSources.put(rdbmsSourceDTO.getCpKey(), hikariData);
+                }
+            }
+        }
+
+        return hikariData.getConnection();
+    }
+
+    /**
+     * 获取普通连接
+     *
+     * @param source
+     * @return
+     * @throws Exception
+     */
+    protected Connection getSimpleConn(ISourceDTO source) throws Exception {
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
         init();
         DriverManager.setLoginTimeout(5);
         String url = dealSourceUrl(rdbmsSourceDTO);
@@ -59,6 +102,7 @@ public class ConnFactory {
 
     /**
      * 处理 URL 地址
+     *
      * @param rdbmsSourceDTO
      * @return
      */
@@ -84,5 +128,29 @@ public class ConnFactory {
         } finally {
             DBUtil.closeDBResources(null, statement, conn);
         }
+    }
+
+    /**
+     * sourceDTO 转化为 HikariDataSource
+     *
+     * @param source
+     * @return
+     */
+    protected HikariDataSource transHikari(ISourceDTO source) {
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        HikariDataSource hikariData = new HikariDataSource();
+        hikariData.setDriverClassName(driverName);
+        hikariData.setUsername(rdbmsSourceDTO.getUsername());
+        hikariData.setPassword(rdbmsSourceDTO.getPassword());
+        hikariData.setJdbcUrl(rdbmsSourceDTO.getUrl());
+        hikariData.setConnectionInitSql(testSql);
+
+        hikariData.setConnectionTimeout(rdbmsSourceDTO.getCpConfig().getConnectionTimeout());
+        hikariData.setIdleTimeout(rdbmsSourceDTO.getCpConfig().getIdleTimeout());
+        hikariData.setMaxLifetime(rdbmsSourceDTO.getCpConfig().getMaxLifetime());
+        hikariData.setMaximumPoolSize(rdbmsSourceDTO.getCpConfig().getMaximumPoolSize());
+        hikariData.setMinimumIdle(rdbmsSourceDTO.getCpConfig().getMinimumIdle());
+        hikariData.setReadOnly(rdbmsSourceDTO.getCpConfig().getReadOnly());
+        return hikariData;
     }
 }

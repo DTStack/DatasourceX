@@ -178,7 +178,7 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 <dependency>
     <groupId>com.dtstack.dtcenter</groupId>
     <artifactId>common-loader</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
 </dependency>
 ```
 

@@ -8,7 +8,6 @@ import com.dtstack.dtcenter.loader.cache.connection.CacheConnectionHelper;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
-import com.dtstack.dtcenter.loader.dto.source.ClickHouseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
@@ -27,12 +26,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @company: www.dtstack.com
