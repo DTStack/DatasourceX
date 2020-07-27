@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
+import com.dtstack.dtcenter.loader.cache.cp.CpConfig;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -51,6 +52,16 @@ public class RdbmsSourceDTO implements ISourceDTO {
      * kerberos 配置信息
      */
     private Map<String, Object> kerberosConfig;
+
+    /**
+     * 连接池的 KEY，如果不为空，则必填
+     */
+    private String cpKey;
+
+    /**
+     * 连接池配置信息
+     */
+    private CpConfig cpConfig;
 
     /**
      * 获取连接并清除当前对象中的连接
