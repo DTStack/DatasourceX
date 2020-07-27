@@ -54,12 +54,7 @@ public class RdbmsSourceDTO implements ISourceDTO {
     private Map<String, Object> kerberosConfig;
 
     /**
-     * 连接池的 KEY，如果不为空，则必填
-     */
-    private String cpKey;
-
-    /**
-     * 连接池配置信息
+     * 连接池配置信息，如果传入则认为开启连接池
      */
     private CpConfig cpConfig;
 

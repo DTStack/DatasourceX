@@ -15,7 +15,6 @@ public class MysqlClientTest {
             .url("jdbc:mysql://172.16.101.249:3306/ide?useUnicode=true&characterEncoding=utf-8&tinyInt1isBit=false")
             .username("drpeco")
             .password("DT@Stack#123")
-            .cpKey("233")
             .cpConfig(CpConfig.builder().build())
             .build();
 

@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.cache.cp.CpConfig;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -30,14 +31,24 @@ public class Mysql5Test {
             .username("drpeco")
             .password("DT@Stack#123")
             .schema("streamapp")
+            .cpConfig(CpConfig.builder().build())
             .build();
 
     @Test
     public void getCon() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
-        Connection con = client.getCon(source);
-        con.createStatement().close();
-        con.close();
+        Connection con1 = client.getCon(source);
+        Connection con2 = client.getCon(source);
+        Connection con3 = client.getCon(source);
+        Connection con4 = client.getCon(source);
+        Connection con5 = client.getCon(source);
+        Connection con6 = client.getCon(source);
+        Connection con7 = client.getCon(source);
+        Connection con8 = client.getCon(source);
+        Connection con9 = client.getCon(source);
+        Connection con10 = client.getCon(source);
+        con10.close();
+        Connection con11 = client.getCon(source);
     }
 
     @Test

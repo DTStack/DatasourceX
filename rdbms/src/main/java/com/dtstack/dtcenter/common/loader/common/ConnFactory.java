@@ -9,10 +9,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -32,6 +32,10 @@ public class ConnFactory {
 
     private AtomicBoolean isFirstLoaded = new AtomicBoolean(true);
 
+    private static final String cpPoolKey = "url:%s,username:%s,password:%s";
+
+    private static final String cpConfigFieldName = "cpConfig";
+
     protected void init() throws ClassNotFoundException {
         // 减少加锁开销
         if (!isFirstLoaded.get()) {
@@ -50,11 +54,15 @@ public class ConnFactory {
         if (source == null) {
             throw new DtCenterDefException("数据源信息为 NULL");
         }
-
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
-        return StringUtils.isNotBlank(rdbmsSourceDTO.getCpKey())
-                && rdbmsSourceDTO.getCpConfig() != null
-                && MapUtils.isEmpty(rdbmsSourceDTO.getKerberosConfig()) ?
+        boolean isStart = false;
+        Field[] fields = RdbmsSourceDTO.class.getDeclaredFields();
+        for (Field field:fields) {
+            if (cpConfigFieldName.equals(field.getName())) {
+                isStart = rdbmsSourceDTO.getCpConfig() != null;
+            }
+        }
+        return isStart && MapUtils.isEmpty(rdbmsSourceDTO.getKerberosConfig()) ?
                 getCpConn(rdbmsSourceDTO) : getSimpleConn(rdbmsSourceDTO);
     }
 
@@ -67,13 +75,14 @@ public class ConnFactory {
      */
     protected Connection getCpConn(ISourceDTO source) throws Exception {
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
-        HikariDataSource hikariData = (HikariDataSource) hikariDataSources.get(rdbmsSourceDTO.getCpKey());
+        String poolKey = getPrimaryKey(source);
+        HikariDataSource hikariData = (HikariDataSource) hikariDataSources.get(poolKey);
         if (hikariData == null) {
             synchronized (ConnFactory.class) {
-                hikariData = (HikariDataSource) hikariDataSources.get(rdbmsSourceDTO.getCpKey());
+                hikariData = (HikariDataSource) hikariDataSources.get(poolKey);
                 if (hikariData == null) {
                     hikariData = transHikari(source);
-                    hikariDataSources.put(rdbmsSourceDTO.getCpKey(), hikariData);
+                    hikariDataSources.put(poolKey, hikariData);
                 }
             }
         }
@@ -152,5 +161,16 @@ public class ConnFactory {
         hikariData.setMinimumIdle(rdbmsSourceDTO.getCpConfig().getMinimumIdle());
         hikariData.setReadOnly(rdbmsSourceDTO.getCpConfig().getReadOnly());
         return hikariData;
+    }
+
+    /**
+     * 根据数据源获取数据源唯一 KEY
+     *
+     * @param source
+     * @return
+     */
+    protected String getPrimaryKey(ISourceDTO source) {
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        return String.format(cpPoolKey, rdbmsSourceDTO.getUrl(), rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getPassword());
     }
 }
