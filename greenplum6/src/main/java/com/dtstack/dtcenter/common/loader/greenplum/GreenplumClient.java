@@ -10,6 +10,7 @@ import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Greenplum6SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import org.apache.commons.lang.StringUtils;
 
@@ -168,6 +169,6 @@ public class GreenplumClient extends AbsRdbmsClient {
 
     @Override
     public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return super.getCreateTableSql(source, queryDTO);
+        throw new DtLoaderException("Not Support");
     }
 }
