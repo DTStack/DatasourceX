@@ -26,6 +26,7 @@ public class EsTest {
             //.password("abc123")
             //.schema("tools")
             //.id("id_1")
+            //.isCache(true)
             .build();
 
     @Test

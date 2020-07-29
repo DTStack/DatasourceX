@@ -21,9 +21,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.bson.Document;
 
+import java.lang.reflect.Method;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,15 +49,18 @@ public class MongoDBUtils {
 
     public static final int TIME_OUT = 5 * 1000;
 
-    private static final String mongoRow = "%s=%s";
+    private static final String cacheMethodName = "getIsCache";
+
+    private static final String MONGO_KEY = "hostPorts:%s,username:%s,password:%s,schema:%s";
+
+    private static ConcurrentHashMap<String, MongoClient> mongoDataSources = new ConcurrentHashMap<>();
 
     public static boolean checkConnection(ISourceDTO iSource) {
         MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
         boolean check = false;
         MongoClient mongoClient = null;
         try {
-            mongoClient = getClient(mongoSourceDTO.getHostPort(), mongoSourceDTO.getUsername(), mongoSourceDTO.getPassword(),
-                    mongoSourceDTO.getSchema());
+            mongoClient = getClient(mongoSourceDTO);
             String schema = StringUtils.isBlank(mongoSourceDTO.getSchema()) ? dealSchema(mongoSourceDTO.getHostPort()) : mongoSourceDTO.getSchema();
             MongoDatabase mongoDatabase = mongoClient.getDatabase(schema);
             MongoIterable<String> mongoIterable = mongoDatabase.listCollectionNames();
@@ -77,8 +82,7 @@ public class MongoDBUtils {
         MongoClient mongoClient = null;
         ArrayList<String> databases = new ArrayList<>();
         try {
-            mongoClient = getClient(mongoSourceDTO.getHostPort(), mongoSourceDTO.getUsername(), mongoSourceDTO.getPassword(),
-                    mongoSourceDTO.getSchema());
+            mongoClient = getClient(mongoSourceDTO);
 
             MongoIterable<String> dbNames = mongoClient.listDatabaseNames();
             for (String dbName:dbNames){
@@ -104,8 +108,7 @@ public class MongoDBUtils {
         }
         MongoClient mongoClient = null;
         try {
-            mongoClient = getClient(mongoSourceDTO.getHostPort(), mongoSourceDTO.getUsername(), mongoSourceDTO.getPassword(),
-                    schema);
+            mongoClient = getClient(mongoSourceDTO);
             //获取指定数据库
             MongoDatabase mongoDatabase = mongoClient.getDatabase(schema);
             //获取指定表
@@ -133,7 +136,7 @@ public class MongoDBUtils {
         MongoClient mongoClient = null;
         try {
             String db = StringUtils.isBlank(mongoSourceDTO.getSchema()) ? dealSchema(mongoSourceDTO.getHostPort()) : mongoSourceDTO.getSchema();
-            mongoClient = getClient(mongoSourceDTO.getHostPort(), mongoSourceDTO.getUsername(), mongoSourceDTO.getPassword(), db);
+            mongoClient = getClient(mongoSourceDTO);
             MongoDatabase mongoDatabase = mongoClient.getDatabase(db);
             MongoIterable<String> tableNames = mongoDatabase.listCollectionNames();
             for (String s : tableNames) {
@@ -183,6 +186,43 @@ public class MongoDBUtils {
         return addresses;
     }
 
+
+    public static MongoClient getClient(MongoSourceDTO mongoSourceDTO) {
+        String hostPorts = mongoSourceDTO.getHostPort();
+        String username = mongoSourceDTO.getUsername();
+        String password = mongoSourceDTO.getPassword();
+        String schema = mongoSourceDTO.getSchema();
+        boolean isCache = false;
+        //适配之前的版本，判断ISourceDTO类中有无获取isCache字段的方法
+        Method[] methods = ISourceDTO.class.getDeclaredMethods();
+        for (Method method:methods) {
+            if (cacheMethodName.equals(method.getName())) {
+                isCache = mongoSourceDTO.getIsCache();
+                break;
+            }
+        }
+        //不开启缓存
+        if (!isCache) {
+            return getClient(hostPorts, username, password, schema);
+        }
+        //开启缓存
+        String primaryKey = getPrimaryKey(hostPorts, username, password, schema);
+        MongoClient mongoClient = mongoDataSources.get(primaryKey);
+        if (mongoClient == null) {
+            synchronized (MongoDBUtils.class) {
+                mongoClient = mongoDataSources.get(primaryKey);
+                if (mongoClient == null) {
+                    mongoClient = getClient(hostPorts, username, password, schema);;
+                    mongoDataSources.put(primaryKey, mongoClient);
+                }
+            }
+        }
+        return mongoClient;
+    }
+
+    private static String getPrimaryKey(String hostPorts, String username, String password, String schema) {
+        return String.format(MONGO_KEY, hostPorts, username, password, schema);
+    }
 
     /*
     1.  username:password@host:port,host:port/db?option

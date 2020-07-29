@@ -27,6 +27,7 @@ public class MaxComputerTest {
     OdpsSourceDTO source = OdpsSourceDTO.builder()
             .config("{\"accessId\":\"LTAINn0gjHA3Yxy6\",\"accessKey\":\"p1xcV89FzYyCInwA6YTyYawJnTwNzh\"," +
                     "\"project\":\"dtstack_dev\",\"endPoint\":\"\"}")
+            .isCache(true)
             .build();
 
     @Test

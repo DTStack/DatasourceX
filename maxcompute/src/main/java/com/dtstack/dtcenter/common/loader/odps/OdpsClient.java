@@ -35,6 +35,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,6 +69,8 @@ public class OdpsClient extends AbsRdbmsClient {
 
     private static final String ODPS_KEY = "endPoint:%s,accessId:%s,accessKey:%s,project:%s,packageAuthorizedProject:%s,accountType:%s";
 
+    private static final String cacheMethodName = "getIsCache";
+
     private static ConcurrentHashMap<String, Odps> odpsDataSources = new ConcurrentHashMap<>();
 
     @Override
@@ -84,7 +87,7 @@ public class OdpsClient extends AbsRdbmsClient {
     public Boolean testCon(ISourceDTO iSource) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         try {
-            Odps odps = initOdps(JSON.parseObject(odpsSourceDTO.getConfig()));
+            Odps odps = initOdps(odpsSourceDTO);
             Tables tables = odps.tables();
             tables.iterator().hasNext();
             return true;
@@ -95,7 +98,24 @@ public class OdpsClient extends AbsRdbmsClient {
     }
 
 
-    public static Odps initOdps(JSONObject odpsConfig) {
+    public static Odps initOdps(OdpsSourceDTO odpsSourceDTO) {
+        boolean isCache = false;
+        //适配之前的版本，判断ISourceDTO类中有无获取isCache字段的方法
+        Method[] methods = ISourceDTO.class.getDeclaredMethods();
+        for (Method method:methods) {
+            if (cacheMethodName.equals(method.getName())) {
+                isCache = odpsSourceDTO.getIsCache();
+                break;
+            }
+        }
+        JSONObject odpsConfig = JSON.parseObject(odpsSourceDTO.getConfig());
+        //不开启缓存
+        if (!isCache) {
+            return initOdps(odpsConfig.getString(KEY_ODPS_SERVER), odpsConfig.getString(KEY_ACCESS_ID),
+                    odpsConfig.getString(KEY_ACCESS_KEY), odpsConfig.getString(KEY_PROJECT),
+                    odpsConfig.getString(PACKAGE_AUTHORIZED_PROJECT), odpsConfig.getString(KEY_ACCOUNT_TYPE));
+        }
+        //开启缓存
         String primaryKey = getPrimaryKey(odpsConfig.getString(KEY_ODPS_SERVER), odpsConfig.getString(KEY_ACCESS_ID),
                 odpsConfig.getString(KEY_ACCESS_KEY), odpsConfig.getString(KEY_PROJECT),
                 odpsConfig.getString(PACKAGE_AUTHORIZED_PROJECT), odpsConfig.getString(KEY_ACCOUNT_TYPE));
@@ -180,7 +200,7 @@ public class OdpsClient extends AbsRdbmsClient {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeQuery(odpsSourceDTO, queryDTO, false);
         List<String> tableList = new ArrayList<>();
-        Odps odps = initOdps(JSON.parseObject(odpsSourceDTO.getConfig()));
+        Odps odps = initOdps(odpsSourceDTO);
         odps.tables().forEach((Table table) -> tableList.add(table.getName()));
         return tableList;
     }
@@ -190,7 +210,7 @@ public class OdpsClient extends AbsRdbmsClient {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeColumnQuery(odpsSourceDTO, queryDTO);
         List<ColumnMetaDTO> columnList = new ArrayList<>();
-        Odps odps = initOdps(JSON.parseObject(odpsSourceDTO.getConfig()));
+        Odps odps = initOdps(odpsSourceDTO);
         Table table = odps.tables().get(queryDTO.getTableName());
         //获取非分区字段
         table.getSchema()
@@ -275,7 +295,7 @@ public class OdpsClient extends AbsRdbmsClient {
             return dataList;
         }
         try {
-            Odps odps = initOdps(JSON.parseObject(odpsSourceDTO.getConfig()));
+            Odps odps = initOdps(odpsSourceDTO);
             Table t = odps.tables().get(queryDTO.getTableName());
             DefaultRecordReader recordReader;
             Map<String, String> partitionColumns = queryDTO.getPartitionColumns();
@@ -370,7 +390,7 @@ public class OdpsClient extends AbsRdbmsClient {
      */
     private Instance runOdpsTask(ISourceDTO iSource, SqlQueryDTO queryDTO) throws OdpsException {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
-        Odps odps = initOdps(JSON.parseObject(odpsSourceDTO.getConfig()));
+        Odps odps = initOdps(odpsSourceDTO);
         // 查询 SQL 必须以 分号结尾
         String queryDTOSql = queryDTO.getSql();
         queryDTOSql = queryDTOSql.trim().endsWith(";") ? queryDTOSql : queryDTOSql.trim() + ";";
@@ -384,7 +404,7 @@ public class OdpsClient extends AbsRdbmsClient {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeColumnQuery(odpsSourceDTO, queryDTO);
         try {
-            Odps odps = initOdps(JSON.parseObject(odpsSourceDTO.getConfig()));
+            Odps odps = initOdps(odpsSourceDTO);
             Table t = odps.tables().get(queryDTO.getTableName());
             return t.getComment();
         } catch (Exception e) {

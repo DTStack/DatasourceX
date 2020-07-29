@@ -60,6 +60,7 @@ public class ConnFactory {
         for (Field field:fields) {
             if (cpConfigFieldName.equals(field.getName())) {
                 isStart = rdbmsSourceDTO.getCpConfig() != null;
+                break;
             }
         }
         return isStart && MapUtils.isEmpty(rdbmsSourceDTO.getKerberosConfig()) ?

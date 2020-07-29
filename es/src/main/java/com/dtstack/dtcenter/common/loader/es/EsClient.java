@@ -34,7 +34,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +67,7 @@ public class EsClient extends AbsRdbmsClient {
 
     private static final String ES_KEY = "address:%s,username:%s,password:%s";
 
-    private static final String cacheFieldName = "isCache";
+    private static final String cacheMethodName = "getIsCache";
 
     @Override
     public Boolean testCon(ISourceDTO iSource) {
@@ -197,12 +197,7 @@ public class EsClient extends AbsRdbmsClient {
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return new ArrayList<>();
         }
-        RestHighLevelClient client;
-        if (StringUtils.isNotBlank(esSourceDTO.getUsername()) && StringUtils.isNotBlank(esSourceDTO.getPassword())) {
-            client = getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
-        } else {
-            client = getClient(esSourceDTO);
-        }
+        RestHighLevelClient client = getClient(esSourceDTO);
         //索引
         String index = queryDTO.getTableName();
         if (StringUtils.isBlank(index)){
@@ -255,11 +250,12 @@ public class EsClient extends AbsRdbmsClient {
 
     private static RestHighLevelClient getClient (ESSourceDTO esSourceDTO) {
         boolean isCache = false;
-        //适配之前的版本，判断ESSourceDTO类中有无isCache字段
-        Field[] fields = ESSourceDTO.class.getDeclaredFields();
-        for (Field field:fields) {
-            if (cacheFieldName.equals(field.getName())) {
+        //适配之前的版本，判断ISourceDTO类中有无获取isCache字段的方法
+        Method[] methods = ISourceDTO.class.getDeclaredMethods();
+        for (Method method:methods) {
+            if (cacheMethodName.equals(method.getName())) {
                 isCache = esSourceDTO.getIsCache();
+                break;
             }
         }
         return isCache ? getClientFromCache(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword())

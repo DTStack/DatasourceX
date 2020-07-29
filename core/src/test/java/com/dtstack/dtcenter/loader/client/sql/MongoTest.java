@@ -23,6 +23,7 @@ public class MongoTest {
     MongoSourceDTO source = MongoSourceDTO.builder()
             .hostPort("172.16.8.89:27017/admin")
             //.schema("admin")
+            .isCache(true)
             .username("root")
             .password("admin")
             .build();
