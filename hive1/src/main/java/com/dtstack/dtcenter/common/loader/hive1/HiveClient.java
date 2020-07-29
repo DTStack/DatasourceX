@@ -335,4 +335,16 @@ public class HiveClient extends AbsRdbmsClient {
         return "select * from " + sqlQueryDTO.getTableName()
                 +partSql.toString() + " limit " + sqlQueryDTO.getPreviewNum();
     }
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        List<ColumnMetaDTO> columnMetaDTOS = getColumnMetaData(source,queryDTO);
+        List<ColumnMetaDTO> partitionColumnMeta = new ArrayList<>();
+        columnMetaDTOS.forEach(columnMetaDTO -> {
+            if(columnMetaDTO.getPart()){
+                partitionColumnMeta.add(columnMetaDTO);
+            }
+        });
+        return partitionColumnMeta;
+    }
 }

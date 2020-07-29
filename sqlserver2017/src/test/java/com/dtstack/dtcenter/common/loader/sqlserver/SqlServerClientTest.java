@@ -1,9 +1,14 @@
 package com.dtstack.dtcenter.common.loader.sqlserver;
 
+import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
+import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Sqlserver2017SourceDTO;
 import org.junit.Test;
+
+import java.util.List;
 
 
 public class SqlServerClientTest {
@@ -21,4 +26,17 @@ public class SqlServerClientTest {
             throw new DtCenterDefException("数据源连接异常");
         }
     }
+
+    @Test
+    public void getAllDatabases() throws Exception {
+        Sqlserver2017SourceDTO source = Sqlserver2017SourceDTO.builder()
+                .url("jdbc:sqlserver://kudu5:1433;databaseName=tudou")
+                .username("sa")
+                .password("<root@Passw0rd>")
+                .build();
+        List<String> databases = rdbsClient.getAllDatabases(source, SqlQueryDTO.builder().build());
+        System.out.println(databases);
+    }
+
+
 }

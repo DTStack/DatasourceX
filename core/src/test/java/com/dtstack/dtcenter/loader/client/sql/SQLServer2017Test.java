@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.Sqlserver2017SourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import org.junit.Test;
@@ -49,7 +50,7 @@ public class SQLServer2017Test {
     @Test
     public void executeQuery() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.SQLSERVER_2017_LATER.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select 1111").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("SELECT TABLE_NAME,COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_NAME='kudu'").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
     }
@@ -94,4 +95,12 @@ public class SQLServer2017Test {
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
+
+    @Test
+    public void getAllDatabases() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.SQLSERVER_2017_LATER.getPluginName());
+        List<String> databases = client.getAllDatabases(source, SqlQueryDTO.builder().build());
+        System.out.println(databases);
+    }
+
 }

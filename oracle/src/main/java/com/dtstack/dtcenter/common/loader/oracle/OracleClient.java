@@ -11,6 +11,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.utils.CollectionUtil;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import oracle.jdbc.OracleResultSetMetaData;
@@ -40,6 +41,10 @@ public class OracleClient extends AbsRdbmsClient {
     private static String ORACLE_NUMBER_FORMAT = "NUMBER(%d,%d)";
     private static final String DONT_EXIST = "doesn't exist";
 
+    private static final String DATABASE_QUERY = "select USERNAME from sys.dba_users order by USERNAME";
+
+    private static final String TABLE_CREATE_SQL = "select dbms_metadata.get_ddl('TABLE','%s','%s') from dual";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new OracleConnFactory();
@@ -63,7 +68,6 @@ public class OracleClient extends AbsRdbmsClient {
                     ORACLE_ALL_TABLES_SQL;
             statement = oracleSourceDTO.getConnection().createStatement();
             rs = statement.executeQuery(sql);
-            int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
                 tableList.add(rs.getString(1));
             }
@@ -223,5 +227,25 @@ public class OracleClient extends AbsRdbmsClient {
     @Override
     protected String dealSql(SqlQueryDTO sqlQueryDTO) {
         return "select * from " + transferTableName(sqlQueryDTO.getTableName()) + " where rownum <=" + sqlQueryDTO.getPreviewNum();
+    }
+
+
+    @Override
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        queryDTO.setSql(DATABASE_QUERY);
+        return super.getAllDatabases(source, queryDTO);
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) source;
+        String createTableSql = String.format(TABLE_CREATE_SQL,queryDTO.getTableName(),oracleSourceDTO.getSchema());
+        queryDTO.setSql(createTableSql);
+        return super.getCreateTableSql(source, queryDTO);
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
     }
 }

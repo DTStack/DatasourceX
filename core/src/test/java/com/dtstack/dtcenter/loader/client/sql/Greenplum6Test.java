@@ -132,17 +132,4 @@ public class Greenplum6Test {
         System.out.println(client.getAllDatabases(source, queryDTO));
     }
 
-    @Test
-    public void getCreateTableSql() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.Greenplum6.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("persons").build();
-        System.out.println(client.getCreateTableSql(source,queryDTO));
-    }
-
-    @Test
-    public void getPartitionColumn() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.Greenplum6.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
-        System.out.println(client.getPartitionColumn(source,queryDTO));
-    }
 }

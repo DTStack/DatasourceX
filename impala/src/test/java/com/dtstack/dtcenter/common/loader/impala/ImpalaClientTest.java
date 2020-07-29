@@ -48,23 +48,26 @@ public class ImpalaClientTest {
     @Test
     public void getPartitionColumn() throws Exception {
         ImpalaSourceDTO source = ImpalaSourceDTO.builder()
-                .url("jdbc:impala://172.16.101.13:21050/default;AuthMech=3")
+                .url("jdbc:impala://172.16.101.13:21050/nanqi;AuthMech=3")
                 .username("hxb")
                 .password("admin123")
                 .build();
-        System.out.println(rdbsClient.getPartitionColumn(source, SqlQueryDTO.builder().tableName("day").build()));
+        System.out.println(rdbsClient.getPartitionColumn(source, SqlQueryDTO.builder().tableName("import").build()));
     }
 
 
     @Test
     public void getCreateSql() throws Exception {
         ImpalaSourceDTO source = ImpalaSourceDTO.builder()
-                .url("jdbc:impala://172.16.101.13:21050/default;AuthMech=3")
+                .url("jdbc:impala://172.16.101.13:21050/nanqi;AuthMech=3")
                 .username("hxb")
                 .password("admin123")
+                .schema("default")
                 .build();
         System.out.println(rdbsClient.getCreateTableSql(source, SqlQueryDTO.builder().tableName("day").build()));
     }
+
+
 
 
 
