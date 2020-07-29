@@ -1,12 +1,12 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
-import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.GBaseSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
 
 import java.util.List;
@@ -27,7 +27,7 @@ public class GbaseTest {
 
     @Test
     public void getConnFactory() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.GBase_8a.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.GBase_8a.getPluginName());
         Boolean isConnected = client.testCon(source);
         if (!isConnected) {
             throw new DtCenterDefException("数据源连接异常");
@@ -36,14 +36,14 @@ public class GbaseTest {
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.GBase_8a.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.GBase_8a.getPluginName());
         List tableList = client.getTableList(source, null);
         assert tableList != null;
     }
 
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.GBase_8a.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.GBase_8a.getPluginName());
         String createSQL = "CREATE TABLE nanqi (id int) comment 'table comment'";
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(createSQL).build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -51,7 +51,7 @@ public class GbaseTest {
 
     @Test
     public void getTableMetaComment() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.GBase_8a.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.GBase_8a.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         assert metaComment != null;

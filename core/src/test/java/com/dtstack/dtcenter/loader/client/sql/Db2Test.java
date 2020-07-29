@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
-import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
@@ -9,6 +8,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Db2SourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -33,7 +33,7 @@ public class Db2Test {
 
     @Test
     public void getCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
         Connection con = client.getCon(source);
         con.createStatement().close();
         con.close();
@@ -41,7 +41,7 @@ public class Db2Test {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtCenterDefException("连接异常");
@@ -50,7 +50,7 @@ public class Db2Test {
 
     @Test
     public void executeQuery() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi01 limit 1,1").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList);
@@ -58,21 +58,21 @@ public class Db2Test {
 
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi01").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
         List<String> tableList = client.getTableList(source, null);
         System.out.println(tableList.size());
     }
 
     @Test
     public void getColumnClassInfo() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi01").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
@@ -80,7 +80,7 @@ public class Db2Test {
 
     @Test
     public void getColumnMetaData() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi01").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
@@ -88,7 +88,7 @@ public class Db2Test {
 
     @Test
     public void getDownloader() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from WANGCHUAN01").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         System.out.println(downloader.getMetaInfo());
@@ -102,7 +102,7 @@ public class Db2Test {
 
     @Test
     public void getAllDatabases() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         System.out.println(client.getAllDatabases(source, queryDTO));
     }

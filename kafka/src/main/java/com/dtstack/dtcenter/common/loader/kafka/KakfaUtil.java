@@ -4,7 +4,6 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.utils.TelUtil;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
 import kafka.cluster.Broker;

@@ -1,9 +1,9 @@
 package com.dtstack.dtcenter.common.loader.odps;
 
-import com.dtstack.dtcenter.common.enums.DataBaseType;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.source.DataBaseType;
 
 import java.sql.Connection;
 
