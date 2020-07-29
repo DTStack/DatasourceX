@@ -98,7 +98,7 @@ public class SQLServer2017Test {
 
     @Test
     public void getAllDatabases() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.SQLSERVER_2017_LATER.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
         List<String> databases = client.getAllDatabases(source, SqlQueryDTO.builder().build());
         System.out.println(databases);
     }

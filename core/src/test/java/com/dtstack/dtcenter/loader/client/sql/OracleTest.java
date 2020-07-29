@@ -142,14 +142,14 @@ public class OracleTest {
 
     @Test
     public void getAllDatabases() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         System.out.println(client.getAllDatabases(source,queryDTO));
     }
 
     @Test
     public void getCreateTableSql() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("SDO_CS_SRS").build();
         System.out.println(client.getCreateTableSql(source,queryDTO));
     }

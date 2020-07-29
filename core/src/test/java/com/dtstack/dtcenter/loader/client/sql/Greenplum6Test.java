@@ -127,7 +127,7 @@ public class Greenplum6Test {
 
     @Test
     public void getAllDatabases() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.Greenplum6.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.GREENPLUM6.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         System.out.println(client.getAllDatabases(source, queryDTO));
     }
