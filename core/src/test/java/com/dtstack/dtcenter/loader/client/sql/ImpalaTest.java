@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.cache.cp.CpConfig;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -24,17 +25,40 @@ public class ImpalaTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     ImpalaSourceDTO source = ImpalaSourceDTO.builder()
-            .url("jdbc:impala://172.16.101.13:21050/zh_pri;AuthMech=3")
+            .url("jdbc:impala://172.16.100.242:21050/default;AuthMech=3")
             .username("hxb")
             .password("admin123")
+            .cpConfig(CpConfig.builder().build())
             .build();
 
     @Test
     public void getCon() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
-        Connection con = client.getCon(source);
-        con.createStatement().close();
-        con.close();
+        Connection con1 = client.getCon(source);
+        String con1JdbcConn = con1.toString().split("wrapping")[1];
+        Connection con2 = client.getCon(source);
+        Connection con3 = client.getCon(source);
+        Connection con4 = client.getCon(source);
+        Connection con5 = client.getCon(source);
+        Connection con6 = client.getCon(source);
+        Connection con7 = client.getCon(source);
+        Connection con8 = client.getCon(source);
+        Connection con9 = client.getCon(source);
+        Connection con10 = client.getCon(source);
+        con1.close();
+        Connection con11 = client.getCon(source);
+        String con11JdbcConn = con11.toString().split("wrapping")[1];
+        assert con1JdbcConn.equals(con11JdbcConn);
+        con2.close();
+        con3.close();
+        con4.close();
+        con5.close();
+        con6.close();
+        con7.close();
+        con8.close();
+        con9.close();
+        con10.close();
+        con11.close();
     }
 
     @Test
@@ -72,7 +96,7 @@ public class ImpalaTest {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi01").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("ch02").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -80,7 +104,7 @@ public class ImpalaTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi01").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("ch02").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
@@ -88,7 +112,7 @@ public class ImpalaTest {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi01").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("ch02").build();
         String tableMetaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(tableMetaComment);
     }
@@ -96,7 +120,7 @@ public class ImpalaTest {
     @Test
     public void getPreview() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("nanqi01").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("ch02").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }

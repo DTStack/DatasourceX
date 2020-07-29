@@ -19,18 +19,17 @@ import java.util.Map;
 
 /**
  * @company: www.dtstack.com
- * @Author ：Nanqi
- * @Date ：Created in 03:41 2020/2/29
- * @Description：MySQL 5 测试
+ * @Author ：wangchuan
+ * @Date ：Created in 上午9:42 2020/7/29
+ * @Description：
  */
-public class Mysql5Test {
-    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
+public class TiDBTest {
 
+    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
     Mysql5SourceDTO source = Mysql5SourceDTO.builder()
-            .url("jdbc:mysql://172.16.101.249:3306/streamapp")
-            .username("drpeco")
-            .password("DT@Stack#123")
-            .schema("streamapp")
+            .url("jdbc:mysql://121.41.87.224:4000/test")
+            .username("test")
+            .password("abc123")
             .cpConfig(CpConfig.builder().build())
             .build();
 
@@ -78,7 +77,7 @@ public class Mysql5Test {
     @Test(expected = DtCenterDefException.class)
     public void testErrorCon() {
         IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
-        source.setUsername("nanqi233");
+        source.setUsername("wangchuan");
         client.testCon(source);
     }
 
@@ -108,7 +107,7 @@ public class Mysql5Test {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("demo").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -116,7 +115,7 @@ public class Mysql5Test {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("demo").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
@@ -124,7 +123,7 @@ public class Mysql5Test {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("demo").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
@@ -132,7 +131,7 @@ public class Mysql5Test {
     @Test
     public void testGetDownloader() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from rdos_dict").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from demo").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         downloader.configure();
         List<String> metaInfo = downloader.getMetaInfo();
@@ -143,6 +142,7 @@ public class Mysql5Test {
                 System.out.println(list);
             }
         }
+        downloader.close();
     }
 
     /**
@@ -152,19 +152,9 @@ public class Mysql5Test {
     @Test
     public void testGetPreview() throws Exception{
         IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("demo").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }
 
-    /**
-     * 根据自定义sql获取表字段信息
-     */
-    @Test
-    public void getColumnMetaDataWithSql() throws Exception{
-        IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select a.*,b.role_name from rdos_dict a join rdos_role b on 1=1").build();
-        List sql = client.getColumnMetaDataWithSql(source, queryDTO);
-        System.out.println(sql);
-    }
 }

@@ -86,13 +86,6 @@ public class MaxComputerTest {
     }
 
     @Test
-    public void getConn() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.MAXCOMPUTE.getPluginName());
-        Connection con = client.getCon(source);
-        System.out.println(con);
-    }
-
-    @Test
     public void getPreview() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.MAXCOMPUTE.getPluginName());
         HashMap<String, String> map = new HashMap<>();

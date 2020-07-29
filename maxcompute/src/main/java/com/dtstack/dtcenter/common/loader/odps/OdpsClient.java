@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @company: www.dtstack.com
@@ -64,6 +65,10 @@ public class OdpsClient extends AbsRdbmsClient {
     private final static String KEY_ACCOUNT_TYPE = "accountType";
 
     private static final String DEFAULT_ACCOUNT_TYPE = "aliyun";
+
+    private static final String ODPS_KEY = "endPoint:%s,accessId:%s,accessKey:%s,project:%s,packageAuthorizedProject:%s,accountType:%s";
+
+    private static ConcurrentHashMap<String, Odps> odpsDataSources = new ConcurrentHashMap<>();
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -91,9 +96,21 @@ public class OdpsClient extends AbsRdbmsClient {
 
 
     public static Odps initOdps(JSONObject odpsConfig) {
-        Odps odps = initOdps(odpsConfig.getString(KEY_ODPS_SERVER), odpsConfig.getString(KEY_ACCESS_ID),
+        String primaryKey = getPrimaryKey(odpsConfig.getString(KEY_ODPS_SERVER), odpsConfig.getString(KEY_ACCESS_ID),
                 odpsConfig.getString(KEY_ACCESS_KEY), odpsConfig.getString(KEY_PROJECT),
                 odpsConfig.getString(PACKAGE_AUTHORIZED_PROJECT), odpsConfig.getString(KEY_ACCOUNT_TYPE));
+        Odps odps = odpsDataSources.get(primaryKey);
+        if (odps == null) {
+            synchronized (OdpsClient.class) {
+                odps = odpsDataSources.get(primaryKey);
+                if (odps == null) {
+                    odps = initOdps(odpsConfig.getString(KEY_ODPS_SERVER), odpsConfig.getString(KEY_ACCESS_ID),
+                            odpsConfig.getString(KEY_ACCESS_KEY), odpsConfig.getString(KEY_PROJECT),
+                            odpsConfig.getString(PACKAGE_AUTHORIZED_PROJECT), odpsConfig.getString(KEY_ACCOUNT_TYPE));
+                    odpsDataSources.put(primaryKey, odps);
+                }
+            }
+        }
         return odps;
     }
 
@@ -141,6 +158,21 @@ public class OdpsClient extends AbsRdbmsClient {
         odps.setEndpoint(odpsServer);
 
         return odps;
+    }
+
+    /**
+     * 获取唯一key
+     * @param odpsServer
+     * @param accessId
+     * @param accessKey
+     * @param project
+     * @param packageAuthorizedProject
+     * @param accountType
+     * @return
+     */
+    private static String getPrimaryKey (String odpsServer, String accessId, String accessKey, String project,
+                                         String packageAuthorizedProject, String accountType) {
+        return String.format(ODPS_KEY, odpsServer, accessId, accessKey, project, packageAuthorizedProject, accountType);
     }
 
     @Override

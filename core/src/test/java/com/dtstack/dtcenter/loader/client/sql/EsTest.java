@@ -21,10 +21,10 @@ public class EsTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     ESSourceDTO source = ESSourceDTO.builder()
-            .url("172.16.8.89:9200")
+            .url("172.16.8.193:9201,172.16.8.193:9202,172.16.8.193:9203")
             //.username("elastic")
             //.password("abc123")
-            //.schema("family_tree")
+            //.schema("tools")
             //.id("id_1")
             .build();
 
@@ -40,21 +40,21 @@ public class EsTest {
     @Test
     public void getTableList() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.ES6.getPluginName());
-        List tableList = client.getTableList(source, SqlQueryDTO.builder().build());
+        List tableList = client.getTableList(source, SqlQueryDTO.builder().tableName("tools").build());
         System.out.println(tableList);
     }
 
     @Test
     public void getPreview() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.ES6.getPluginName());
-        List viewList = client.getPreview(source, SqlQueryDTO.builder().tableName("family_tree").previewNum(5).build());
+        List viewList = client.getPreview(source, SqlQueryDTO.builder().tableName("tools").previewNum(5).build());
         System.out.println(viewList);
     }
 
     @Test
     public void getColumnMetaData() throws Exception{
         IClient client = clientCache.getClient(DataSourceClientType.ES6.getPluginName());
-        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("family_tree").build());
+        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("tools").build());
         System.out.println(metaData);
     }
 

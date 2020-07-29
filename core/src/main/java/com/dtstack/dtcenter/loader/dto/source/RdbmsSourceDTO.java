@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.loader.dto.source;
 import com.dtstack.dtcenter.loader.cache.cp.CpConfig;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -32,6 +33,12 @@ public class RdbmsSourceDTO implements ISourceDTO {
      * 密码
      */
     protected String password;
+
+    /**
+     * 是否缓存
+     */
+    @Builder.Default
+    protected Boolean isCache = false;
 
     /**
      * 地址

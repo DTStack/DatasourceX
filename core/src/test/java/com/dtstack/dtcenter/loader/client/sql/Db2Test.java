@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.cache.cp.CpConfig;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -29,14 +30,37 @@ public class Db2Test {
             .username("DB2INST1")
             .password("abc123")
             .schema("mqTest")
+            .cpConfig(CpConfig.builder().build())
             .build();
 
     @Test
     public void getCon() throws Exception {
         IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
-        Connection con = client.getCon(source);
-        con.createStatement().close();
-        con.close();
+        Connection con1 = client.getCon(source);
+        String con1JdbcConn = con1.toString().split("wrapping")[1];
+        Connection con2 = client.getCon(source);
+        Connection con3 = client.getCon(source);
+        Connection con4 = client.getCon(source);
+        Connection con5 = client.getCon(source);
+        Connection con6 = client.getCon(source);
+        Connection con7 = client.getCon(source);
+        Connection con8 = client.getCon(source);
+        Connection con9 = client.getCon(source);
+        Connection con10 = client.getCon(source);
+        con1.close();
+        Connection con11 = client.getCon(source);
+        String con11JdbcConn = con11.toString().split("wrapping")[1];
+        assert con1JdbcConn.equals(con11JdbcConn);
+        con2.close();
+        con3.close();
+        con4.close();
+        con5.close();
+        con6.close();
+        con7.close();
+        con8.close();
+        con9.close();
+        con10.close();
+        con11.close();
     }
 
     @Test
@@ -97,6 +121,12 @@ public class Db2Test {
             for (List<String> list:o)
                 System.out.println(list);
         }
+    }
 
+    @Test
+    public void preview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
+        List preview = client.getPreview(source, SqlQueryDTO.builder().tableName("WANGCHUAN01").build());
+        System.out.println(preview);
     }
 }

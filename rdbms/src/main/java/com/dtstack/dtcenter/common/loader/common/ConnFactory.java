@@ -75,7 +75,7 @@ public class ConnFactory {
      */
     protected Connection getCpConn(ISourceDTO source) throws Exception {
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
-        String poolKey = getPrimaryKey(source);
+        String poolKey = getPrimaryKey(rdbmsSourceDTO);
         HikariDataSource hikariData = (HikariDataSource) hikariDataSources.get(poolKey);
         if (hikariData == null) {
             synchronized (ConnFactory.class) {

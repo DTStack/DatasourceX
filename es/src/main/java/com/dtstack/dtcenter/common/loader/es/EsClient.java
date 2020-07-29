@@ -34,11 +34,13 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @company: www.dtstack.com
@@ -61,13 +63,19 @@ public class EsClient extends AbsRdbmsClient {
         return DataSourceType.ES;
     }
 
+    private static ConcurrentHashMap<String, RestHighLevelClient> esDataSources = new ConcurrentHashMap<>();
+
+    private static final String ES_KEY = "address:%s,username:%s,password:%s";
+
+    private static final String cacheFieldName = "isCache";
+
     @Override
     public Boolean testCon(ISourceDTO iSource) {
         ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return false;
         }
-        return checkConnection(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
+        return checkConnect(getClient(esSourceDTO));
     }
 
     /**
@@ -83,12 +91,7 @@ public class EsClient extends AbsRdbmsClient {
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return new ArrayList<>();
         }
-        RestHighLevelClient client;
-        if (StringUtils.isNotBlank(esSourceDTO.getUsername()) && StringUtils.isNotBlank(esSourceDTO.getPassword())) {
-            client = getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
-        } else {
-            client = getClient(esSourceDTO.getUrl());
-        }
+        RestHighLevelClient client = getClient(esSourceDTO);
         List<String> typeList = Lists.newArrayList();
         //es索引
         String index = queryDTO.getTableName();
@@ -122,12 +125,7 @@ public class EsClient extends AbsRdbmsClient {
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return new ArrayList<>();
         }
-        RestHighLevelClient client;
-        if (StringUtils.isNotBlank(esSourceDTO.getUsername()) && StringUtils.isNotBlank(esSourceDTO.getPassword())) {
-            client = getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
-        } else {
-            client = getClient(esSourceDTO.getUrl());
-        }
+        RestHighLevelClient client = getClient(esSourceDTO);
         ArrayList<String> dbs = new ArrayList<>();
         try {
             GetAliasesRequest aliasesRequest = new GetAliasesRequest();
@@ -153,12 +151,7 @@ public class EsClient extends AbsRdbmsClient {
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return new ArrayList<>();
         }
-        RestHighLevelClient client;
-        if (StringUtils.isNotBlank(esSourceDTO.getUsername()) && StringUtils.isNotBlank(esSourceDTO.getPassword())) {
-            client = getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
-        } else {
-            client = getClient(esSourceDTO.getUrl());
-        }
+        RestHighLevelClient client = getClient(esSourceDTO);
         //索引
         String index = queryDTO.getTableName();
         if (StringUtils.isBlank(index)){
@@ -208,7 +201,7 @@ public class EsClient extends AbsRdbmsClient {
         if (StringUtils.isNotBlank(esSourceDTO.getUsername()) && StringUtils.isNotBlank(esSourceDTO.getPassword())) {
             client = getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
         } else {
-            client = getClient(esSourceDTO.getUrl());
+            client = getClient(esSourceDTO);
         }
         //索引
         String index = queryDTO.getTableName();
@@ -260,25 +253,22 @@ public class EsClient extends AbsRdbmsClient {
         return check;
     }
 
-    /**
-     * 根据地址确认连接性
-     *
-     * @param address
-     * @return
-     */
-    private static boolean checkConnection(String address, String username, String password) {
-        RestHighLevelClient client;
-        if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
-            client = getClient(address, username, password);
-        } else {
-            client = getClient(address);
+    private static RestHighLevelClient getClient (ESSourceDTO esSourceDTO) {
+        boolean isCache = false;
+        //适配之前的版本，判断ESSourceDTO类中有无isCache字段
+        Field[] fields = ESSourceDTO.class.getDeclaredFields();
+        for (Field field:fields) {
+            if (cacheFieldName.equals(field.getName())) {
+                isCache = esSourceDTO.getIsCache();
+            }
         }
-
-        return checkConnect(client);
+        return isCache ? getClientFromCache(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword())
+                :getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
     }
 
     /**
-     * 根据用户名密码获取连接
+     * 1. 根据地址、用户名和密码连接 esClient
+     * 2. username或者password为空时，根据地址获取esClient
      *
      * @param address
      * @param username
@@ -286,27 +276,44 @@ public class EsClient extends AbsRdbmsClient {
      * @return
      */
     private static RestHighLevelClient getClient(String address, String username, String password) {
-        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(AuthScope.ANY,
-                new UsernamePasswordCredentials(username, password));
         List<HttpHost> httpHosts = dealHost(address);
-        RestHighLevelClient client =
-                new RestHighLevelClient(RestClient.builder(httpHosts.toArray(new HttpHost[httpHosts.size()]))
-                        .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)));
-        return client;
+        //有用户名密码情况
+        if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
+            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(AuthScope.ANY,
+                    new UsernamePasswordCredentials(username, password));
+            return new RestHighLevelClient(RestClient.builder(httpHosts.toArray(new HttpHost[httpHosts.size()]))
+                            .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)));
+        }
+        //无用户名密码
+        return new RestHighLevelClient(RestClient.builder(httpHosts.toArray(new HttpHost[httpHosts.size()])));
     }
 
     /**
-     * 根据地质获取连接
+     * 1. 获取esClient - 开启缓存情况下通过次方法从缓存中获取esClient
      *
      * @param address
+     * @param username
+     * @param password
      * @return
      */
-    private static RestHighLevelClient getClient(String address) {
-        List<HttpHost> httpHosts = dealHost(address);
-        RestHighLevelClient client = new RestHighLevelClient(
-                RestClient.builder(httpHosts.toArray(new HttpHost[httpHosts.size()])));
+    private static RestHighLevelClient getClientFromCache(String address, String username, String password) {
+        String primaryKey = getprimaryKey(address, username, password);
+        RestHighLevelClient client = esDataSources.get(primaryKey);
+        if (client == null) {
+            synchronized (EsClient.class) {
+                client = esDataSources.get(primaryKey);
+                if (client == null) {
+                    client = getClient(address, username, password);
+                    esDataSources.put(primaryKey, client);
+                }
+            }
+        }
         return client;
+    }
+
+    private static String getprimaryKey(String address, String username, String password) {
+        return String.format(ES_KEY, address, username, password);
     }
 
     private static List<HttpHost> dealHost(String address) {
