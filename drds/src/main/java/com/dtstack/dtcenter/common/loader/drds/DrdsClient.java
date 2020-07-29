@@ -1,8 +1,8 @@
 package com.dtstack.dtcenter.common.loader.drds;
 
-import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 
 /**
  * @company: www.dtstack.com
