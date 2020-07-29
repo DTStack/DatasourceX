@@ -25,9 +25,9 @@ public class PostgreSQLTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     PostgresqlSourceDTO source = PostgresqlSourceDTO.builder()
-            .url("jdbc:postgresql://172.16.8.193:5432/DTstack?currentSchema=public")
+            .url("jdbc:postgresql://172.16.8.193:5432/database")
             .username("root")
-            .password("abc123")
+            .password("postgresql")
             .build();
 
     @Test
@@ -117,5 +117,12 @@ public class PostgreSQLTest {
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
 
+    }
+
+    @Test
+    public void getAllDatabases() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.PostgreSQL.getPluginName());
+        List<String> databases = client.getAllDatabases(source, SqlQueryDTO.builder().build());
+        System.out.println(databases);
     }
 }

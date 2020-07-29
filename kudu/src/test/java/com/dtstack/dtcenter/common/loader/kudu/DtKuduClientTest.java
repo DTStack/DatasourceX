@@ -58,4 +58,5 @@ public class DtKuduClientTest {
         List list = rdbsClient.getPreview(source, queryDTO);
         System.out.println(list);
     }
+
 }

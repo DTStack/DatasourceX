@@ -100,4 +100,23 @@ public class ImpalaTest {
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }
+
+    @Test
+    public void getAllDatabases() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
+        System.out.println(client.getAllDatabases(source, SqlQueryDTO.builder().build()));
+    }
+
+    @Test
+    public void getPartitionColumn() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
+        System.out.println(client.getPartitionColumn(source, SqlQueryDTO.builder().tableName("import").build()));
+    }
+
+
+    @Test
+    public void getCreateSql() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.IMPALA.getPluginName());
+        System.out.println(client.getCreateTableSql(source, SqlQueryDTO.builder().tableName("day").build()));
+    }
 }

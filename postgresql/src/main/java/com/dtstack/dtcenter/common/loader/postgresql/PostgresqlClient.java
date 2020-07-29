@@ -5,10 +5,12 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -32,6 +34,8 @@ import java.util.Set;
 @Slf4j
 public class PostgresqlClient extends AbsRdbmsClient {
     private static final String BIGSERIAL = "bigserial";
+
+    private static final String DATABASE_QUERY = "select nspname from pg_namespace";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -159,5 +163,21 @@ public class PostgresqlClient extends AbsRdbmsClient {
         PostgresqlDownloader postgresqlDownloader = new PostgresqlDownloader(getCon(postgresqlSourceDTO), queryDTO.getSql(), postgresqlSourceDTO.getSchema());
         postgresqlDownloader.configure();
         return postgresqlDownloader;
+    }
+
+    @Override
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        queryDTO.setSql(DATABASE_QUERY);
+        return super.getAllDatabases(source, queryDTO);
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
     }
 }
