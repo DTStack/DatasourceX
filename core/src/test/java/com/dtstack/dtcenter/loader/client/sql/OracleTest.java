@@ -25,9 +25,10 @@ public class OracleTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     OracleSourceDTO source = OracleSourceDTO.builder()
-            .url("jdbc:oracle:thin:@172.16.8.178:1521:xe")
+            .url("jdbc:oracle:thin:@172.16.8.193:1521:orcl")
             .username("system")
             .password("oracle")
+            .schema("MDSYS")
             .build();
 
     @Test
@@ -138,4 +139,19 @@ public class OracleTest {
 
         System.out.println(list);
     }
+
+    @Test
+    public void getAllDatabases() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        System.out.println(client.getAllDatabases(source,queryDTO));
+    }
+
+    @Test
+    public void getCreateTableSql() throws Exception {
+        IClient client = clientCache.getClient(DataSourceClientType.Oracle.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("SDO_CS_SRS").build();
+        System.out.println(client.getCreateTableSql(source,queryDTO));
+    }
+
 }

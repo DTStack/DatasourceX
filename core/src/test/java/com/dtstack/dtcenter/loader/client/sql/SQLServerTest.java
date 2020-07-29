@@ -25,9 +25,9 @@ public class SQLServerTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     SqlserverSourceDTO source = SqlserverSourceDTO.builder()
-            .url("jdbc:jtds:sqlserver://172.16.8.149:1433;DatabaseName=DTstack")
+            .url("jdbc:jtds:sqlserver://172.16.8.190:1401;DatabaseName=cc")
             .username("sa")
-            .password("Dtstack2018")
+            .password("<admin123ADMIN!>")
             .build();
 
     @Test

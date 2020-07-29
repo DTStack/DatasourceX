@@ -14,7 +14,7 @@ public class ImpalaClientTest {
     @Test
     public void getConnFactory() throws Exception {
         ImpalaSourceDTO source = ImpalaSourceDTO.builder()
-                .url("jdbc:impala://cdh-impala1:21050/ceshis_pri;AuthMech=3")
+                .url("jdbc:impala://cdh-impala1:21050/ceshis_pri123;AuthMech=3")
                 .username("root")
                 .password("abc123")
                 .build();
@@ -24,4 +24,51 @@ public class ImpalaClientTest {
                 "nanqi200228").build());
         System.out.println(tableList.size());
     }
+
+    @Test
+    public void getAllDatabases() throws Exception {
+        ImpalaSourceDTO source = ImpalaSourceDTO.builder()
+                .url("jdbc:impala://172.16.101.13:21050/default;AuthMech=3")
+                .username("hxb")
+                .password("admin123")
+                .build();
+        System.out.println(rdbsClient.getAllDatabases(source, SqlQueryDTO.builder().build()));
+    }
+
+    @Test
+    public void getAllTables() throws Exception {
+        ImpalaSourceDTO source = ImpalaSourceDTO.builder()
+                .url("jdbc:impala://172.16.101.13:21050/default;AuthMech=3")
+                .username("hxb")
+                .password("admin123")
+                .build();
+        System.out.println(rdbsClient.getTableList(source, null));
+    }
+
+    @Test
+    public void getPartitionColumn() throws Exception {
+        ImpalaSourceDTO source = ImpalaSourceDTO.builder()
+                .url("jdbc:impala://172.16.101.13:21050/nanqi;AuthMech=3")
+                .username("hxb")
+                .password("admin123")
+                .build();
+        System.out.println(rdbsClient.getPartitionColumn(source, SqlQueryDTO.builder().tableName("import").build()));
+    }
+
+
+    @Test
+    public void getCreateSql() throws Exception {
+        ImpalaSourceDTO source = ImpalaSourceDTO.builder()
+                .url("jdbc:impala://172.16.101.13:21050/nanqi;AuthMech=3")
+                .username("hxb")
+                .password("admin123")
+                .schema("default")
+                .build();
+        System.out.println(rdbsClient.getCreateTableSql(source, SqlQueryDTO.builder().tableName("day").build()));
+    }
+
+
+
+
+
 }

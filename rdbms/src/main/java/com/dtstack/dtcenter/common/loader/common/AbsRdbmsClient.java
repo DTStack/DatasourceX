@@ -387,9 +387,8 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         try {
             statement = rdbmsSourceDTO.getConnection().createStatement();
             rs = statement.executeQuery(sql);
-            int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
-                databaseList.add(rs.getString(columnSize == 1 ? 1 : 2));
+                databaseList.add(rs.getString(1));
             }
         } catch (Exception e) {
             throw new DtCenterDefException("获取库异常", e);
@@ -405,7 +404,13 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
 
         // 获取表信息需要通过show databases 语句
-        String sql = queryDTO.getSql()==null?"show create table "+queryDTO.getTableName():queryDTO.getSql();
+        String tableName ;
+        if (StringUtils.isNotEmpty(rdbmsSourceDTO.getSchema())) {
+            tableName = rdbmsSourceDTO.getSchema() + "." + queryDTO.getTableName();
+        } else {
+            tableName = queryDTO.getTableName();
+        }
+        String sql = queryDTO.getSql()==null?"show create table "+tableName:queryDTO.getSql();
         Statement statement = null;
         ResultSet rs = null;
         String createTableSql =null;

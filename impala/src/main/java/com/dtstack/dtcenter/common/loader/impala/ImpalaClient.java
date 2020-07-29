@@ -189,4 +189,25 @@ public class ImpalaClient extends AbsRdbmsClient {
         }
         return db;
     }
+
+
+    @Override
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        List<String> databases = super.getAllDatabases(source, queryDTO);
+        databases.remove(0);
+        return databases;
+    }
+
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        List<ColumnMetaDTO> columnMetaDTOS = getColumnMetaData(source,queryDTO);
+        List<ColumnMetaDTO> partitionColumnMeta = new ArrayList<>();
+        columnMetaDTOS.forEach(columnMetaDTO -> {
+            if(columnMetaDTO.getPart()){
+                partitionColumnMeta.add(columnMetaDTO);
+            }
+        });
+        return partitionColumnMeta;
+    }
 }
