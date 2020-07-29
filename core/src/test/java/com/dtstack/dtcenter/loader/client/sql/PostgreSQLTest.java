@@ -121,7 +121,7 @@ public class PostgreSQLTest {
 
     @Test
     public void getAllDatabases() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.PostgreSQL.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.PostgreSQL.getPluginName());
         List<String> databases = client.getAllDatabases(source, SqlQueryDTO.builder().build());
         System.out.println(databases);
     }
