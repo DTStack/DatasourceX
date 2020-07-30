@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.loader.dto.source;
 import com.dtstack.dtcenter.loader.cache.cp.CpConfig;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -34,6 +35,12 @@ public class RdbmsSourceDTO implements ISourceDTO {
     protected String password;
 
     /**
+     * 是否缓存
+     */
+    @Builder.Default
+    protected Boolean isCache = false;
+
+    /**
      * 地址
      */
     protected String url;
@@ -54,12 +61,7 @@ public class RdbmsSourceDTO implements ISourceDTO {
     private Map<String, Object> kerberosConfig;
 
     /**
-     * 连接池的 KEY，如果不为空，则必填
-     */
-    private String cpKey;
-
-    /**
-     * 连接池配置信息
+     * 连接池配置信息，如果传入则认为开启连接池
      */
     private CpConfig cpConfig;
 

@@ -42,6 +42,12 @@ public class KafkaSourceDTO implements ISourceDTO {
     private String password;
 
     /**
+     * 是否缓存
+     */
+    @Builder.Default
+    protected Boolean isCache = false;
+
+    /**
      * kerberos 配置信息
      */
     private Map<String, Object> kerberosConfig;
