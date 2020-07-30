@@ -201,7 +201,7 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 
     @Test
     public void getMysqlConnection() throws Exception {
-    IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
+    IClient client = clientCache.getClient(DataSourceType.MySql5.getPluginName());
         Mysql5SourceDTO source = Mysql5SourceDTO.builder()
             .url("jdbc:mysql://172.16.8.109:3306/ide")
             .username("dtstack")
@@ -217,7 +217,7 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 
     @Test
     public void getMysqlConnection() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.MySql5.getPluginName());
         Mysql5SourceDTO source = Mysql5SourceDTO.builder()
             .url("jdbc:mysql://172.16.8.109:3306/ide")
             .username("dtstack")
@@ -232,7 +232,7 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 
     @Test
     public void getTopicList() throws Exception {
-        IKafka client = kafkaClientCache.getKafka(DataSourceClientType.KAFKA_09.getPluginName());
+        IKafka client = kafkaClientCache.getKafka(DataSourceType.KAFKA_09.getPluginName());
         KafkaSourceDTO source = KafkaSourceDTO.builder()
                         .url("172.16.8.107:2181/kafka")
                         .build();

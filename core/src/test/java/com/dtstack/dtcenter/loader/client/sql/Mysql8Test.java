@@ -35,7 +35,7 @@ public class Mysql8Test {
 
     @Test
     public void getCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySql8.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
         Connection con1 = client.getCon(source);
         String con1JdbcConn = con1.toString().split("wrapping")[1];
         Connection con2 = client.getCon(source);
@@ -97,7 +97,7 @@ public class Mysql8Test {
 
     @Test
     public void getColumnClassInfo() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySql8.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
@@ -105,7 +105,7 @@ public class Mysql8Test {
 
     @Test
     public void getColumnMetaData() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySql8.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
@@ -113,7 +113,7 @@ public class Mysql8Test {
 
     @Test
     public void getTableMetaComment() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySql8.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
@@ -121,7 +121,7 @@ public class Mysql8Test {
 
     @Test
     public void testGetDownloader() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySql8.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from rdos_dict").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         downloader.configure();

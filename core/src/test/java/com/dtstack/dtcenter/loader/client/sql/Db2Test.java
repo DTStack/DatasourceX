@@ -125,7 +125,7 @@ public class Db2Test {
 
     @Test
     public void preview() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.DB2.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
         List preview = client.getPreview(source, SqlQueryDTO.builder().tableName("WANGCHUAN01").build());
         System.out.println(preview);
     }

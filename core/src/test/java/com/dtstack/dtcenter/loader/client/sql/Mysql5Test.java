@@ -40,7 +40,7 @@ public class Mysql5Test {
      */
     @Test
     public void getCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySql5.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.MySQL.getPluginName());
         Connection con1 = client.getCon(source);
         String con1JdbcConn = con1.toString().split("wrapping")[1];
         Connection con2 = client.getCon(source);
