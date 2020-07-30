@@ -31,6 +31,12 @@ public class RedisSourceDTO implements ISourceDTO {
     private String password;
 
     /**
+     * 是否缓存
+     */
+    @Builder.Default
+    protected Boolean isCache = false;
+
+    /**
      * 端口号
      */
     private String hostPort;

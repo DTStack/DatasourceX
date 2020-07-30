@@ -29,6 +29,12 @@ public class FtpSourceDTO implements ISourceDTO {
     private String password;
 
     /**
+     * 是否缓存
+     */
+    @Builder.Default
+    protected Boolean isCache = false;
+
+    /**
      * 地址
      */
     private String url;

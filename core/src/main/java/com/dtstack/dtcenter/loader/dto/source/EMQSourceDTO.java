@@ -29,6 +29,12 @@ public class EMQSourceDTO implements ISourceDTO {
     protected String password;
 
     /**
+     * 是否缓存
+     */
+    @Builder.Default
+    protected Boolean isCache = false;
+
+    /**
      * 地址
      */
     protected String url;
