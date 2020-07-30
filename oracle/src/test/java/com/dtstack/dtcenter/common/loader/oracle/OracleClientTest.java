@@ -1,5 +1,4 @@
 package com.dtstack.dtcenter.common.loader.oracle;
-
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
@@ -42,6 +41,28 @@ public class OracleClientTest {
         List columnMetaData = rdbsClient.getColumnMetaData(source, sqlQueryDTO);
         System.out.println(columnMetaData);
 
+    }
+
+    @Test
+    public void getAllDatabases() throws Exception {
+        OracleSourceDTO source = OracleSourceDTO.builder()
+                .url("jdbc:oracle:thin:@172.16.8.193:1521:orcl")
+                .username("system")
+                .password("oracle")
+                .build();
+        List<String> databases = rdbsClient.getAllDatabases(source, SqlQueryDTO.builder().build());
+        System.out.println(databases);
+    }
+
+    @Test
+    public void getCreateTableSql() throws Exception {
+        OracleSourceDTO source = OracleSourceDTO.builder()
+                .url("jdbc:oracle:thin:@172.16.8.193:1521:orcl")
+                .username("system")
+                .password("oracle")
+                .schema("MDSYS")
+                .build();
+        System.out.println(rdbsClient.getCreateTableSql(source, SqlQueryDTO.builder().tableName("SDO_CS_SRS").build()));
     }
 
 }

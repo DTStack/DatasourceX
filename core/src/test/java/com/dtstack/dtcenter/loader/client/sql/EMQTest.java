@@ -1,11 +1,11 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
-import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.source.EMQSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
 
 /**
@@ -22,7 +22,7 @@ public class EMQTest {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.EMQ.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.EMQ.getPluginName());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtCenterDefException("连接异常");

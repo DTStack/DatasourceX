@@ -1,8 +1,8 @@
 package com.dtstack.dtcenter.common.loader.mysql;
 
-import com.dtstack.dtcenter.common.enums.DataBaseType;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
+import com.dtstack.dtcenter.loader.source.DataBaseType;
 import org.apache.commons.lang.StringUtils;
 
 /**

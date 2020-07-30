@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.common.loader.common;
 
-import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -12,6 +11,7 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.dtstack.dtcenter.loader.utils.CollectionUtil;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import com.google.common.collect.Lists;
@@ -387,9 +387,8 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         try {
             statement = rdbmsSourceDTO.getConnection().createStatement();
             rs = statement.executeQuery(sql);
-            int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
-                databaseList.add(rs.getString(columnSize == 1 ? 1 : 2));
+                databaseList.add(rs.getString(1));
             }
         } catch (Exception e) {
             throw new DtCenterDefException("获取库异常", e);
@@ -405,7 +404,13 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
 
         // 获取表信息需要通过show databases 语句
-        String sql = queryDTO.getSql()==null?"show create table "+queryDTO.getTableName():queryDTO.getSql();
+        String tableName ;
+        if (StringUtils.isNotEmpty(rdbmsSourceDTO.getSchema())) {
+            tableName = rdbmsSourceDTO.getSchema() + "." + queryDTO.getTableName();
+        } else {
+            tableName = queryDTO.getTableName();
+        }
+        String sql = queryDTO.getSql()==null?"show create table "+tableName:queryDTO.getSql();
         Statement statement = null;
         ResultSet rs = null;
         String createTableSql =null;

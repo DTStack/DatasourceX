@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
-import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
@@ -9,6 +8,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -40,7 +40,7 @@ public class HiveTest {
 
     @Test
     public void getCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         Connection con = client.getCon(source);
         con.createStatement().close();
         con.close();
@@ -48,7 +48,7 @@ public class HiveTest {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtCenterDefException("连接异常");
@@ -57,7 +57,7 @@ public class HiveTest {
 
     @Test
     public void executeQuery() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
@@ -65,14 +65,14 @@ public class HiveTest {
 
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList);
@@ -80,7 +80,7 @@ public class HiveTest {
 
     @Test
     public void getColumnClassInfo() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("yuebai").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
@@ -88,7 +88,7 @@ public class HiveTest {
 
     @Test
     public void getColumnMetaData() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("yuebai").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
@@ -96,7 +96,7 @@ public class HiveTest {
 
     @Test
     public void getTableMetaComment() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("yuebai").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
@@ -104,7 +104,7 @@ public class HiveTest {
 
     @Test
     public void getDownloader() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         for (int i = 1; i < 8; i++) {
             System.out.println("============================wangchuan00"+i+"============================");
             SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("wangchuan00"+i).build();
@@ -118,7 +118,7 @@ public class HiveTest {
 
     @Test
     public void getPreview() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("wangchuan002").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
@@ -126,14 +126,14 @@ public class HiveTest {
 
     @Test
     public void getPartitionColumn() throws Exception{
-        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         List<ColumnMetaDTO> data = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("wangchuan002").build());
         data.forEach(x-> System.out.println(x.getKey()+"=="+x.getPart()));
     }
 
     @Test
     public void getPreview2() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         HashMap<String, String> map = new HashMap<>();
         map.put("month", "3");
         map.put("day", "5");
@@ -143,16 +143,30 @@ public class HiveTest {
 
     @Test
     public void query() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         List list = client.executeQuery(source, SqlQueryDTO.builder().sql("select month,day from wangchuan007").build());
         System.out.println(list);
     }
 
     @Test
     public void getColumnMetaDataWithSql() throws Exception{
-        IClient client = clientCache.getClient(DataSourceClientType.HIVE.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().sql("select a.id,b.name,b.email,b.pt from userinfo_4_sanyue a left join userinfo_3 b on a.id=b.id ").build();
         List list = client.getColumnMetaDataWithSql(source, sqlQueryDTO);
         System.out.println(list);
+    }
+
+    @Test
+    public void getCreateTableSql() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("dirty_mysql_kafka11_id_1395").build();
+        System.out.println(client.getCreateTableSql(source, sqlQueryDTO));
+    }
+
+    @Test
+    public void getAllDataBases() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().build();
+        System.out.println(client.getAllDatabases(source, sqlQueryDTO));
     }
 }

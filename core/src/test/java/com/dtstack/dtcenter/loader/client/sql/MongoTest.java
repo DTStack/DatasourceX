@@ -1,12 +1,12 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
-import com.dtstack.dtcenter.common.enums.DataSourceClientType;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.MongoSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class MongoTest {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.MONGODB.getPluginName());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtCenterDefException("连接异常");
@@ -39,7 +39,7 @@ public class MongoTest {
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.MONGODB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList);
@@ -47,7 +47,7 @@ public class MongoTest {
 
     @Test
     public void getDatabaseList() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.MONGODB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("system.profile").build();
         List list = client.getAllDatabases(source, queryDTO);
         System.out.println(list);
@@ -55,7 +55,7 @@ public class MongoTest {
 
     @Test
     public void getPreview() throws Exception{
-        IClient client = clientCache.getClient(DataSourceClientType.MONGODB.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.MONGODB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("system.users").build();
         List<List<Object>> preview = client.getPreview(source, queryDTO);
         System.out.println(preview);

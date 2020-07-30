@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.common.loader.hive1;
 
-import com.dtstack.dtcenter.common.enums.DataSourceType;
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
@@ -15,6 +14,7 @@ import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.MapUtils;
@@ -334,5 +334,17 @@ public class HiveClient extends AbsRdbmsClient {
         }
         return "select * from " + sqlQueryDTO.getTableName()
                 +partSql.toString() + " limit " + sqlQueryDTO.getPreviewNum();
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        List<ColumnMetaDTO> columnMetaDTOS = getColumnMetaData(source,queryDTO);
+        List<ColumnMetaDTO> partitionColumnMeta = new ArrayList<>();
+        columnMetaDTOS.forEach(columnMetaDTO -> {
+            if(columnMetaDTO.getPart()){
+                partitionColumnMeta.add(columnMetaDTO);
+            }
+        });
+        return partitionColumnMeta;
     }
 }

@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.phoenix;
 
-import com.dtstack.dtcenter.common.enums.DataBaseType;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.loader.source.DataBaseType;
 
 /**
  * @company: www.dtstack.com
