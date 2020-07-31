@@ -41,7 +41,7 @@ public class DataSourceClientFactory {
 
             IClient client = iClientIterator.next();
             return new DataSourceClientProxy(client);
-        }, classLoader, false);
+        }, classLoader, true);
     }
 
     public static void addClassLoader(String pluginName, ClassLoader classLoader) {
