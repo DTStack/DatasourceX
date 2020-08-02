@@ -12,6 +12,13 @@
     <!-- 历史版本 core 增加类处理 -->
     <artifactId>common.loader.transition</artifactId>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
@@ -84,4 +91,15 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <url>http://nexus.dev.dtstack.cn/nexus/content/repositories/dtstack-release/</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshot</id>
+            <url>http://nexus.dev.dtstack.cn/nexus/content/repositories/dtstack-snapshot/</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>
