@@ -40,6 +40,7 @@
         <module>emq</module>
         <module>phoenix5</module>
         <module>hbase2</module>
+        <module>transition</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -138,6 +139,13 @@
                 <artifactId>common.loader.core</artifactId>
                 <version>${project.version}</version>
                 <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.dtstack.dtcenter</groupId>
+                <artifactId>common.loader.transition</artifactId>
+                <version>${project.version}</version>
+                <scope>compile</scope>
             </dependency>
 
             <dependency>
