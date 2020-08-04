@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -198,19 +199,24 @@ public class HiveClient extends AbsRdbmsClient {
         if (!testCon) {
             return Boolean.FALSE;
         }
+
         Hive1SourceDTO hive1SourceDTO = (Hive1SourceDTO) iSource;
+        if (MapUtils.isEmpty(hive1SourceDTO.getKerberosConfig())) {
+            return Boolean.TRUE;
+        }
 
         // 校验高可用配置
-        Properties properties = combineHdfsConfig(hive1SourceDTO.getConfig(), hive1SourceDTO.getKerberosConfig());
-        if (properties.size() > 0) {
-            Configuration conf = new HdfsOperator.HadoopConf().setConf(hive1SourceDTO.getDefaultFS(), properties);
-            //不在做重复认证
-            conf.set("hadoop.security.authorization", "false");
-            //必须添加
-            conf.set("dfs.namenode.kerberos.principal.pattern", "*");
-            return HdfsOperator.checkConnection(conf);
-        }
-        return Boolean.TRUE;
+        return KerberosUtil.loginKerberosWithUGI(hive1SourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    Properties properties = combineHdfsConfig(hive1SourceDTO.getConfig(), hive1SourceDTO.getKerberosConfig());
+                    Configuration conf = new HdfsOperator.HadoopConf().setConf(hive1SourceDTO.getDefaultFS(), properties);
+                    //不在做重复认证
+                    conf.set("hadoop.security.authorization", "false");
+                    //必须添加
+                    conf.set("dfs.namenode.kerberos.principal.pattern", "*");
+                    return HdfsOperator.checkConnection(conf);
+                }
+        );
     }
 
     /**
@@ -279,7 +285,7 @@ public class HiveClient extends AbsRdbmsClient {
         if (!hiveSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
             throw new DtCenterDefException("defaultFS格式不正确");
         }
-        //kerberos认证
+        //kerberos认证，目前暂不支持多次不同认证，下个版本做 TODO
         if (MapUtils.isNotEmpty(hiveSourceDTO.getKerberosConfig())) {
             DtKerberosUtils.loginKerberos(hiveSourceDTO.getKerberosConfig());
         }
