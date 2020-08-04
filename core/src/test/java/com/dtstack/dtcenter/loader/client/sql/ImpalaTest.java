@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.loader.cache.cp.CpConfig;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -28,7 +28,7 @@ public class ImpalaTest {
             .url("jdbc:impala://172.16.100.242:21050/default;AuthMech=3")
             .username("hxb")
             .password("admin123")
-            .cpConfig(CpConfig.builder().build())
+            .poolConfig(new PoolConfig())
             .build();
 
     @Test

@@ -21,10 +21,14 @@ import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.common.loader.odps.common.OdpsFields;
+import com.dtstack.dtcenter.common.loader.odps.pool.OdpsManager;
+import com.dtstack.dtcenter.common.loader.odps.pool.OdpsPool;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.OdpsSourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
@@ -35,13 +39,13 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @company: www.dtstack.com
@@ -51,27 +55,12 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 public class OdpsClient extends AbsRdbmsClient {
-    private final static String DEFAULT_ODPS_SERVER = "http://service.odps.aliyun.com/api";
 
-    private final static String KEY_ODPS_SERVER = "endPoint";
+    private static final String poolConfigFieldName = "poolConfig";
 
-    private final static String KEY_ACCESS_ID = "accessId";
+    public static final ThreadLocal<Boolean> isOpenPool = new ThreadLocal<>();
 
-    private final static String KEY_ACCESS_KEY = "accessKey";
-
-    private static final String KEY_PROJECT = "project";
-
-    private static final String PACKAGE_AUTHORIZED_PROJECT = "packageAuthorizedProject";
-
-    private final static String KEY_ACCOUNT_TYPE = "accountType";
-
-    private static final String DEFAULT_ACCOUNT_TYPE = "aliyun";
-
-    private static final String ODPS_KEY = "endPoint:%s,accessId:%s,accessKey:%s,project:%s,packageAuthorizedProject:%s,accountType:%s";
-
-    private static final String cacheMethodName = "getIsCache";
-
-    private static ConcurrentHashMap<String, Odps> odpsDataSources = new ConcurrentHashMap<>();
+    private static OdpsManager odpsManager = OdpsManager.getInstance();
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -86,50 +75,44 @@ public class OdpsClient extends AbsRdbmsClient {
     @Override
     public Boolean testCon(ISourceDTO iSource) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
+        Odps odps = null;
         try {
-            Odps odps = initOdps(odpsSourceDTO);
+            odps = initOdps(odpsSourceDTO);
             Tables tables = odps.tables();
             tables.iterator().hasNext();
             return true;
         } catch (Exception ex) {
             log.error("检查odps连接失败..{}", odpsSourceDTO, ex);
+        } finally {
+            closeResource(odps, odpsSourceDTO);
         }
         return false;
     }
 
 
     public static Odps initOdps(OdpsSourceDTO odpsSourceDTO) {
-        boolean isCache = false;
-        //适配之前的版本，判断ISourceDTO类中有无获取isCache字段的方法
-        Method[] methods = ISourceDTO.class.getDeclaredMethods();
-        for (Method method:methods) {
-            if (cacheMethodName.equals(method.getName())) {
-                isCache = odpsSourceDTO.getIsCache();
+        JSONObject odpsConfig = JSON.parseObject(odpsSourceDTO.getConfig());
+
+        Field[] fields = RdbmsSourceDTO.class.getDeclaredFields();
+        boolean check = false;
+        for (Field field:fields) {
+            if (poolConfigFieldName.equals(field.getName())) {
+                check = odpsSourceDTO.getPoolConfig() != null;
                 break;
             }
         }
-        JSONObject odpsConfig = JSON.parseObject(odpsSourceDTO.getConfig());
-        //不开启缓存
-        if (!isCache) {
-            return initOdps(odpsConfig.getString(KEY_ODPS_SERVER), odpsConfig.getString(KEY_ACCESS_ID),
-                    odpsConfig.getString(KEY_ACCESS_KEY), odpsConfig.getString(KEY_PROJECT),
-                    odpsConfig.getString(PACKAGE_AUTHORIZED_PROJECT), odpsConfig.getString(KEY_ACCOUNT_TYPE));
+        isOpenPool.set(check);
+        //不开启连接池
+        if (!check) {
+            return initOdps(odpsConfig.getString(OdpsFields.KEY_ODPS_SERVER), odpsConfig.getString(OdpsFields.KEY_ACCESS_ID),
+                    odpsConfig.getString(OdpsFields.KEY_ACCESS_KEY), odpsConfig.getString(OdpsFields.KEY_PROJECT),
+                    odpsConfig.getString(OdpsFields.PACKAGE_AUTHORIZED_PROJECT), odpsConfig.getString(OdpsFields.KEY_ACCOUNT_TYPE));
         }
-        //开启缓存
-        String primaryKey = getPrimaryKey(odpsConfig.getString(KEY_ODPS_SERVER), odpsConfig.getString(KEY_ACCESS_ID),
-                odpsConfig.getString(KEY_ACCESS_KEY), odpsConfig.getString(KEY_PROJECT),
-                odpsConfig.getString(PACKAGE_AUTHORIZED_PROJECT), odpsConfig.getString(KEY_ACCOUNT_TYPE));
-        Odps odps = odpsDataSources.get(primaryKey);
-        if (odps == null) {
-            synchronized (OdpsClient.class) {
-                odps = odpsDataSources.get(primaryKey);
-                if (odps == null) {
-                    odps = initOdps(odpsConfig.getString(KEY_ODPS_SERVER), odpsConfig.getString(KEY_ACCESS_ID),
-                            odpsConfig.getString(KEY_ACCESS_KEY), odpsConfig.getString(KEY_PROJECT),
-                            odpsConfig.getString(PACKAGE_AUTHORIZED_PROJECT), odpsConfig.getString(KEY_ACCOUNT_TYPE));
-                    odpsDataSources.put(primaryKey, odps);
-                }
-            }
+        //开启连接池
+        OdpsPool odpsPool = odpsManager.getConnection(odpsSourceDTO);
+        Odps odps = odpsPool.getResource();
+        if (Objects.isNull(odps)) {
+            throw new DtCenterDefException("没有可用的数据库连接");
         }
         return odps;
     }
@@ -137,7 +120,7 @@ public class OdpsClient extends AbsRdbmsClient {
     public static Odps initOdps(String odpsServer, String accessId, String accessKey, String project,
                                 String packageAuthorizedProject, String accountType) {
         if (StringUtils.isBlank(odpsServer)) {
-            odpsServer = DEFAULT_ODPS_SERVER;
+            odpsServer = OdpsFields.DEFAULT_ODPS_SERVER;
         }
 
         if (StringUtils.isBlank(accessId)) {
@@ -160,11 +143,11 @@ public class OdpsClient extends AbsRdbmsClient {
         }
 
         if (StringUtils.isBlank(accountType)) {
-            accountType = DEFAULT_ACCOUNT_TYPE;
+            accountType = OdpsFields.DEFAULT_ACCOUNT_TYPE;
         }
 
         Account account = null;
-        if (accountType.equalsIgnoreCase(DEFAULT_ACCOUNT_TYPE)) {
+        if (accountType.equalsIgnoreCase(OdpsFields.DEFAULT_ACCOUNT_TYPE)) {
             account = new AliyunAccount(accessId, accessKey);
         } else {
             throw new IllegalArgumentException("Unsupported account type: " + accountType);
@@ -176,23 +159,7 @@ public class OdpsClient extends AbsRdbmsClient {
         odps.getRestClient().setRetryTimes(2);
         odps.setDefaultProject(defaultProject);
         odps.setEndpoint(odpsServer);
-
         return odps;
-    }
-
-    /**
-     * 获取唯一key
-     * @param odpsServer
-     * @param accessId
-     * @param accessKey
-     * @param project
-     * @param packageAuthorizedProject
-     * @param accountType
-     * @return
-     */
-    private static String getPrimaryKey (String odpsServer, String accessId, String accessKey, String project,
-                                         String packageAuthorizedProject, String accountType) {
-        return String.format(ODPS_KEY, odpsServer, accessId, accessKey, project, packageAuthorizedProject, accountType);
     }
 
     @Override
@@ -200,8 +167,15 @@ public class OdpsClient extends AbsRdbmsClient {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeQuery(odpsSourceDTO, queryDTO, false);
         List<String> tableList = new ArrayList<>();
-        Odps odps = initOdps(odpsSourceDTO);
-        odps.tables().forEach((Table table) -> tableList.add(table.getName()));
+        Odps odps = null;
+        try {
+            odps = initOdps(odpsSourceDTO);
+            odps.tables().forEach((Table table) -> tableList.add(table.getName()));
+        } catch (Exception e){
+            throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            closeResource(odps, odpsSourceDTO);
+        }
         return tableList;
     }
 
@@ -210,26 +184,33 @@ public class OdpsClient extends AbsRdbmsClient {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeColumnQuery(odpsSourceDTO, queryDTO);
         List<ColumnMetaDTO> columnList = new ArrayList<>();
-        Odps odps = initOdps(odpsSourceDTO);
-        Table table = odps.tables().get(queryDTO.getTableName());
-        //获取非分区字段
-        table.getSchema()
-                .getColumns().forEach(column -> {
-            ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
-            columnMetaDTO.setKey(column.getName());
-            columnMetaDTO.setType(column.getTypeInfo().getTypeName());
-            columnList.add(columnMetaDTO);
-        });
-        //获取分区字段
-        table.getSchema()
-                .getPartitionColumns().forEach(partitionColumn -> {
-            ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
-            columnMetaDTO.setKey(partitionColumn.getName());
-            columnMetaDTO.setType(partitionColumn.getTypeInfo().getTypeName());
-            //设置为分区字段
-            columnMetaDTO.setPart(true);
-            columnList.add(columnMetaDTO);
-        });
+        Odps odps = null;
+        try {
+            odps = initOdps(odpsSourceDTO);
+            Table table = odps.tables().get(queryDTO.getTableName());
+            //获取非分区字段
+            table.getSchema()
+                    .getColumns().forEach(column -> {
+                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+                columnMetaDTO.setKey(column.getName());
+                columnMetaDTO.setType(column.getTypeInfo().getTypeName());
+                columnList.add(columnMetaDTO);
+            });
+            //获取分区字段
+            table.getSchema()
+                    .getPartitionColumns().forEach(partitionColumn -> {
+                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+                columnMetaDTO.setKey(partitionColumn.getName());
+                columnMetaDTO.setType(partitionColumn.getTypeInfo().getTypeName());
+                //设置为分区字段
+                columnMetaDTO.setPart(true);
+                columnList.add(columnMetaDTO);
+            });
+        } catch (Exception e){
+            throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            closeResource(odps, odpsSourceDTO);
+        }
         return columnList;
     }
 
@@ -238,8 +219,10 @@ public class OdpsClient extends AbsRdbmsClient {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeQuery(odpsSourceDTO, queryDTO, true);
         List<ColumnMetaDTO> columnList = new ArrayList<>();
+        Odps odps = null;
         try {
-            Instance instance = runOdpsTask(odpsSourceDTO, queryDTO);
+            odps = initOdps(odpsSourceDTO);
+            Instance instance = runOdpsTask(odps, queryDTO);
             ResultSet records = SQLTask.getResultSet(instance);
             TableSchema tableSchema = records.getTableSchema();
             //获取非分区字段
@@ -260,6 +243,8 @@ public class OdpsClient extends AbsRdbmsClient {
             });
         } catch (OdpsException e) {
             throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+        } finally {
+            closeResource(odps, odpsSourceDTO);
         }
         return columnList;
     }
@@ -269,9 +254,11 @@ public class OdpsClient extends AbsRdbmsClient {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(odpsSourceDTO, queryDTO);
         List<String> columnClassInfo = Lists.newArrayList();
+        Odps odps = null;
         try {
+            odps = initOdps(odpsSourceDTO);
             queryDTO.setSql("select * from " + queryDTO.getTableName());
-            Instance instance = runOdpsTask(odpsSourceDTO, queryDTO);
+            Instance instance = runOdpsTask(odps, queryDTO);
             ResultSet records = SQLTask.getResultSet(instance);
             TableSchema tableSchema = records.getTableSchema();
             for (Column recordColumn : tableSchema.getColumns()) {
@@ -279,8 +266,9 @@ public class OdpsClient extends AbsRdbmsClient {
             }
         } catch (OdpsException e) {
             throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+        } finally {
+            closeResource(odps, odpsSourceDTO);
         }
-
         return columnClassInfo;
     }
 
@@ -294,8 +282,9 @@ public class OdpsClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(queryDTO.getTableName())) {
             return dataList;
         }
+        Odps odps = null;
         try {
-            Odps odps = initOdps(odpsSourceDTO);
+            odps = initOdps(odpsSourceDTO);
             Table t = odps.tables().get(queryDTO.getTableName());
             DefaultRecordReader recordReader;
             Map<String, String> partitionColumns = queryDTO.getPartitionColumns();
@@ -324,6 +313,8 @@ public class OdpsClient extends AbsRdbmsClient {
             return dataList;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
+        } finally {
+            closeResource(odps, odpsSourceDTO);
         }
     }
 
@@ -332,8 +323,10 @@ public class OdpsClient extends AbsRdbmsClient {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeQuery(odpsSourceDTO, queryDTO, true);
         List<Map<String, Object>> result = Lists.newArrayList();
+        Odps odps = null;
         try {
-            Instance instance = runOdpsTask(odpsSourceDTO, queryDTO);
+            odps = initOdps(odpsSourceDTO);
+            Instance instance = runOdpsTask(odps, queryDTO);
             ResultSet records = SQLTask.getResultSet(instance);
             TableSchema tableSchema = records.getTableSchema();
             while (records.hasNext()) {
@@ -347,8 +340,9 @@ public class OdpsClient extends AbsRdbmsClient {
             }
         } catch (OdpsException e) {
             throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+        } finally {
+            closeResource(odps, odpsSourceDTO);
         }
-
         return result;
     }
 
@@ -377,20 +371,37 @@ public class OdpsClient extends AbsRdbmsClient {
     @Override
     public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         beforeQuery(source, queryDTO, true);
-        Instance instance = runOdpsTask(source, queryDTO);
-        return instance.isSuccessful();
+        OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) source;
+        Odps odps = null;
+        boolean isSuccessful = false;
+        try {
+            odps = initOdps(odpsSourceDTO);
+            Instance instance = runOdpsTask(odps, queryDTO);
+            isSuccessful = instance.isSuccessful();
+        } catch (Exception e) {
+            throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+        } finally {
+            closeResource(odps, odpsSourceDTO);
+        }
+
+        return isSuccessful;
+    }
+
+    private void closeResource (Odps odps, OdpsSourceDTO odpsSourceDTO){
+        //归还对象
+        if (isOpenPool.get() && odps != null) {
+            OdpsPool odpsPool = odpsManager.getConnection(odpsSourceDTO);
+            odpsPool.returnResource(odps);
+        }
     }
 
     /**
      * 以任务的形式运行 SQL
-     * @param iSource
      * @param queryDTO
      * @return
      * @throws OdpsException
      */
-    private Instance runOdpsTask(ISourceDTO iSource, SqlQueryDTO queryDTO) throws OdpsException {
-        OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
-        Odps odps = initOdps(odpsSourceDTO);
+    private Instance runOdpsTask(Odps odps, SqlQueryDTO queryDTO) throws OdpsException {
         // 查询 SQL 必须以 分号结尾
         String queryDTOSql = queryDTO.getSql();
         queryDTOSql = queryDTOSql.trim().endsWith(";") ? queryDTOSql : queryDTOSql.trim() + ";";
@@ -403,12 +414,15 @@ public class OdpsClient extends AbsRdbmsClient {
     public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeColumnQuery(odpsSourceDTO, queryDTO);
+        Odps odps = null;
         try {
-            Odps odps = initOdps(odpsSourceDTO);
+            odps = initOdps(odpsSourceDTO);
             Table t = odps.tables().get(queryDTO.getTableName());
             return t.getComment();
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
+        }finally {
+            closeResource(odps, odpsSourceDTO);
         }
     }
 

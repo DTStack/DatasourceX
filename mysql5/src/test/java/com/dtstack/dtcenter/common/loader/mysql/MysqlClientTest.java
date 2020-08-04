@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.mysql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.cache.cp.CpConfig;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.dto.source.Mysql5SourceDTO;
 import org.junit.Test;
 
@@ -15,7 +15,7 @@ public class MysqlClientTest {
             .url("jdbc:mysql://172.16.101.249:3306/ide?useUnicode=true&characterEncoding=utf-8&tinyInt1isBit=false")
             .username("drpeco")
             .password("DT@Stack#123")
-            .cpConfig(CpConfig.builder().build())
+            .poolConfig(PoolConfig.builder().build())
             .build();
 
     @Test

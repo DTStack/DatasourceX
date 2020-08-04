@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
-import com.dtstack.dtcenter.loader.cache.cp.CpConfig;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,12 +35,6 @@ public class RdbmsSourceDTO implements ISourceDTO {
     protected String password;
 
     /**
-     * 是否缓存
-     */
-    @Builder.Default
-    protected Boolean isCache = false;
-
-    /**
      * 地址
      */
     protected String url;
@@ -63,7 +57,7 @@ public class RdbmsSourceDTO implements ISourceDTO {
     /**
      * 连接池配置信息，如果传入则认为开启连接池
      */
-    private CpConfig cpConfig;
+    private PoolConfig poolConfig;
 
     /**
      * 获取连接并清除当前对象中的连接

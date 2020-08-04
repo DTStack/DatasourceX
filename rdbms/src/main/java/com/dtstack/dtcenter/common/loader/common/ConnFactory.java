@@ -34,7 +34,7 @@ public class ConnFactory {
 
     private static final String cpPoolKey = "url:%s,username:%s,password:%s";
 
-    private static final String cpConfigFieldName = "cpConfig";
+    private static final String poolConfigFieldName = "poolConfig";
 
     protected void init() throws ClassNotFoundException {
         // 减少加锁开销
@@ -58,8 +58,8 @@ public class ConnFactory {
         boolean isStart = false;
         Field[] fields = RdbmsSourceDTO.class.getDeclaredFields();
         for (Field field:fields) {
-            if (cpConfigFieldName.equals(field.getName())) {
-                isStart = rdbmsSourceDTO.getCpConfig() != null;
+            if (poolConfigFieldName.equals(field.getName())) {
+                isStart = rdbmsSourceDTO.getPoolConfig() != null;
                 break;
             }
         }
@@ -155,12 +155,12 @@ public class ConnFactory {
         hikariData.setJdbcUrl(rdbmsSourceDTO.getUrl());
         hikariData.setConnectionInitSql(testSql);
 
-        hikariData.setConnectionTimeout(rdbmsSourceDTO.getCpConfig().getConnectionTimeout());
-        hikariData.setIdleTimeout(rdbmsSourceDTO.getCpConfig().getIdleTimeout());
-        hikariData.setMaxLifetime(rdbmsSourceDTO.getCpConfig().getMaxLifetime());
-        hikariData.setMaximumPoolSize(rdbmsSourceDTO.getCpConfig().getMaximumPoolSize());
-        hikariData.setMinimumIdle(rdbmsSourceDTO.getCpConfig().getMinimumIdle());
-        hikariData.setReadOnly(rdbmsSourceDTO.getCpConfig().getReadOnly());
+        hikariData.setConnectionTimeout(rdbmsSourceDTO.getPoolConfig().getConnectionTimeout());
+        hikariData.setIdleTimeout(rdbmsSourceDTO.getPoolConfig().getIdleTimeout());
+        hikariData.setMaxLifetime(rdbmsSourceDTO.getPoolConfig().getMaxLifetime());
+        hikariData.setMaximumPoolSize(rdbmsSourceDTO.getPoolConfig().getMaximumPoolSize());
+        hikariData.setMinimumIdle(rdbmsSourceDTO.getPoolConfig().getMinimumIdle());
+        hikariData.setReadOnly(rdbmsSourceDTO.getPoolConfig().getReadOnly());
         return hikariData;
     }
 

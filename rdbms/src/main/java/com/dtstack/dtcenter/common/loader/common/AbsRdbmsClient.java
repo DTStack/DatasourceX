@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -45,6 +46,8 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     protected abstract DataSourceType getSourceType();
 
     private static final String DONT_EXIST = "doesn't exist";
+
+    private static final String preFieldsName = "preFields";
 
     @Override
     public Connection getCon(ISourceDTO iSource) throws Exception {
@@ -79,7 +82,20 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         if (rdbmsSourceDTO.getConnection().isClosed()) {
             return Lists.newArrayList();
         }
-
+        /*todo 适配1.1.0版本的core*/
+        Field[] fields = SqlQueryDTO.class.getDeclaredFields();
+        List<Object> preFields = null;
+        for (Field field:fields) {
+            if (preFieldsName.equals(field.getName())) {
+                preFields = queryDTO.getPreFields();
+                break;
+            }
+        }
+        //预编译查询
+        if (preFields != null) {
+            return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
+                    ConnectionClearStatus.CLOSE.getValue().equals(clearStatus), preFields);
+        }
         return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
                 ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
     }

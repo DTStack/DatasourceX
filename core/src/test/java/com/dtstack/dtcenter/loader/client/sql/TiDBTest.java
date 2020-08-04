@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.cache.cp.CpConfig;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -30,7 +30,7 @@ public class TiDBTest {
             .url("jdbc:mysql://121.41.87.224:4000/test")
             .username("test")
             .password("abc123")
-            .cpConfig(CpConfig.builder().build())
+            .poolConfig(new PoolConfig())
             .build();
 
     /**

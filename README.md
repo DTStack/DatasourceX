@@ -177,7 +177,7 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 ```$xml
 <dependency>
     <groupId>com.dtstack.dtcenter</groupId>
-    <artifactId>common-loader</artifactId>
+    <artifactId>common.loader.core</artifactId>
     <version>1.2.0-SNAPSHOT</version>
 </dependency>
 ```

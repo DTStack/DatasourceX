@@ -56,6 +56,11 @@
             <artifactId>elasticsearch</artifactId>
             <version>6.8.10</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

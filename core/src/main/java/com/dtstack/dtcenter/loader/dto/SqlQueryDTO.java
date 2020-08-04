@@ -63,6 +63,13 @@ public class SqlQueryDTO {
      */
     private Integer previewNum;
 
+    /**
+     * 预编译字段
+     * todo 修改executeQuery方法为支持预编译
+     * time :2020-08-04 15:49:00
+     */
+    private List<Object> preFields;
+
     public Boolean getView() {
         if (ArrayUtils.isEmpty(getTableTypes())) {
             return Boolean.TRUE.equals(view);

@@ -1,28 +1,41 @@
 package com.dtstack.dtcenter.common.loader.es;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.parser.Feature;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.common.loader.es.pool.ElasticSearchManager;
+import com.dtstack.dtcenter.common.loader.es.pool.ElasticSearchPool;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.util.Pair;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.nio.entity.NStringEntity;
+import org.apache.http.util.EntityUtils;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.GetAliasesResponse;
+import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.GetMappingsRequest;
@@ -34,13 +47,14 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @company: www.dtstack.com
@@ -53,6 +67,18 @@ public class EsClient extends AbsRdbmsClient {
 
     private static final int MAX_NUM = 10000;
 
+    private static final String POST = "post";
+
+    private static final String ENDPOINT_SEARCH_FORMAT = "/%s/_search";
+
+    private static final String RESULT_KEY = "result";
+
+    private static final String poolConfigFieldName = "poolConfig";
+
+    private static ElasticSearchManager elasticSearchManager = ElasticSearchManager.getInstance();
+
+    public static final ThreadLocal<Boolean> isOpenPool = new ThreadLocal<>();
+
     @Override
     protected ConnFactory getConnFactory() {
         return null;
@@ -63,19 +89,21 @@ public class EsClient extends AbsRdbmsClient {
         return DataSourceType.ES;
     }
 
-    private static ConcurrentHashMap<String, RestHighLevelClient> esDataSources = new ConcurrentHashMap<>();
-
-    private static final String ES_KEY = "address:%s,username:%s,password:%s";
-
-    private static final String cacheMethodName = "getIsCache";
-
     @Override
     public Boolean testCon(ISourceDTO iSource) {
         ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return false;
         }
-        return checkConnect(getClient(esSourceDTO));
+        RestHighLevelClient client = getClient(esSourceDTO);
+        boolean check = false;
+        try {
+            check = checkConnect(client);
+        }
+        finally {
+            closeResource(null, client, esSourceDTO);
+        }
+        return check;
     }
 
     /**
@@ -100,7 +128,11 @@ public class EsClient extends AbsRdbmsClient {
             throw new DtCenterDefException("未指定es的index，获取失败");
         }
         try {
-            GetMappingsResponse res = client.indices().getMapping(new GetMappingsRequest(), RequestOptions.DEFAULT);
+            GetMappingsRequest request = new GetMappingsRequest();
+            // 为了兼容7.x之前的版本，所以把参数设置为null
+            request.setMasterTimeout(null);
+            request.indicesOptions(null);
+            GetMappingsResponse res = client.indices().getMapping(request, RequestOptions.DEFAULT);
             MappingMetaData data = res.mappings().get(index);
             typeList.add(data.type());
         }catch (NullPointerException e){
@@ -108,6 +140,8 @@ public class EsClient extends AbsRdbmsClient {
             throw new DtCenterDefException("index不存在");
         }catch (Exception e){
             log.error("获取type异常", e);
+        }finally {
+            closeResource(null, client, esSourceDTO);
         }
         return typeList;
     }
@@ -135,6 +169,8 @@ public class EsClient extends AbsRdbmsClient {
             dbs = new ArrayList<>(set);
         }catch (Exception e){
             log.error("获取es索引失败", e);
+        }finally {
+            closeResource(null, client, esSourceDTO);
         }
         return dbs;
     }
@@ -180,6 +216,8 @@ public class EsClient extends AbsRdbmsClient {
             }
         }catch (Exception e){
             log.error("获取文档异常", e);
+        }finally {
+            closeResource(null, client, esSourceDTO);
         }
         return documentList;
     }
@@ -206,7 +244,11 @@ public class EsClient extends AbsRdbmsClient {
         List<ColumnMetaDTO> columnMetaDTOS = new ArrayList<>();
         try {
             //根据index进行查询
-            GetMappingsResponse res = client.indices().getMapping(new GetMappingsRequest(), RequestOptions.DEFAULT);
+            GetMappingsRequest request = new GetMappingsRequest();
+            // 为了兼容7.x之前的版本，所以把参数设置为null
+            request.setMasterTimeout(null);
+            request.indicesOptions(null);
+            GetMappingsResponse res = client.indices().getMapping(request, RequestOptions.DEFAULT);
             MappingMetaData data = res.mappings().get(index);
             Map<String, Object> metaDataMap = (Map<String, Object>) data.getSourceAsMap().get("properties");
             Set<String> metaData = metaDataMap.keySet();
@@ -220,9 +262,52 @@ public class EsClient extends AbsRdbmsClient {
             }
         }catch (Exception e){
             log.error("获取文档异常", e);
+        }finally {
+            closeResource(null, client, esSourceDTO);
         }
         return columnMetaDTOS;
     }
+
+    @Override
+    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+        ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
+        List<Map<String, Object>> list = Lists.newArrayList();
+        HashMap<String, Object> map = Maps.newHashMap();
+        if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
+            return new ArrayList<>();
+        }
+        String dsl = doDealPageSql(queryDTO.getSql());
+        //索引
+        String index = queryDTO.getTableName();
+        if (StringUtils.isBlank(index)){
+            throw new DtCenterDefException("未指定es的index,获取字段信息失败,请在sqlQueryDTO中指定tableName作为索引");
+        }
+        RestHighLevelClient client = null;
+        RestClient lowLevelClient = null;
+        JSONObject resultJsonObject = null;
+        try {
+            client = getClient(esSourceDTO);
+            if (Objects.isNull(client)) {
+                throw new DtCenterDefException("没有可用的数据库连接");
+            }
+            lowLevelClient = client.getLowLevelClient();
+            HttpEntity entity = new NStringEntity(dsl, ContentType.APPLICATION_JSON);
+            Request request = new Request(POST, String.format(ENDPOINT_SEARCH_FORMAT, index));
+            request.setEntity(entity);
+            Response response = lowLevelClient.performRequest(request);
+            String result = EntityUtils.toString(response.getEntity());
+            resultJsonObject = JSONObject.parseObject(result);
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            throw new DtCenterDefException(e.getMessage(), e);
+        } finally {
+            closeResource(lowLevelClient, client, esSourceDTO);
+        }
+        map.put(RESULT_KEY, resultJsonObject);
+        list.add(map);
+        return list;
+    }
+
     /**
      * 根据连接确定连接成功性
      *
@@ -236,30 +321,30 @@ public class EsClient extends AbsRdbmsClient {
             check = true;
         } catch (Exception e) {
             log.error("", e);
-        } finally {
-            if (client != null) {
-                try {
-                    client.close();
-                } catch (IOException e) {
-                    log.error("", e);
-                }
-            }
         }
         return check;
     }
 
     private static RestHighLevelClient getClient (ESSourceDTO esSourceDTO) {
-        boolean isCache = false;
-        //适配之前的版本，判断ISourceDTO类中有无获取isCache字段的方法
-        Method[] methods = ISourceDTO.class.getDeclaredMethods();
-        for (Method method:methods) {
-            if (cacheMethodName.equals(method.getName())) {
-                isCache = esSourceDTO.getIsCache();
+        Field[] fields = RdbmsSourceDTO.class.getDeclaredFields();
+        boolean check = false;
+        for (Field field:fields) {
+            if (poolConfigFieldName.equals(field.getName())) {
+                check = esSourceDTO.getPoolConfig() != null;
                 break;
             }
         }
-        return isCache ? getClientFromCache(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword())
-                :getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
+        isOpenPool.set(check);
+        if (!check) {
+            return getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
+        }
+        ElasticSearchPool elasticSearchPool = elasticSearchManager.getConnection(esSourceDTO);
+        RestHighLevelClient restHighLevelClient = elasticSearchPool.getResource();
+        if (Objects.isNull(restHighLevelClient)) {
+            throw new DtCenterDefException("没有可用的数据库连接");
+        }
+        return restHighLevelClient;
+
     }
 
     /**
@@ -285,33 +370,6 @@ public class EsClient extends AbsRdbmsClient {
         return new RestHighLevelClient(RestClient.builder(httpHosts.toArray(new HttpHost[httpHosts.size()])));
     }
 
-    /**
-     * 1. 获取esClient - 开启缓存情况下通过次方法从缓存中获取esClient
-     *
-     * @param address
-     * @param username
-     * @param password
-     * @return
-     */
-    private static RestHighLevelClient getClientFromCache(String address, String username, String password) {
-        String primaryKey = getprimaryKey(address, username, password);
-        RestHighLevelClient client = esDataSources.get(primaryKey);
-        if (client == null) {
-            synchronized (EsClient.class) {
-                client = esDataSources.get(primaryKey);
-                if (client == null) {
-                    client = getClient(address, username, password);
-                    esDataSources.put(primaryKey, client);
-                }
-            }
-        }
-        return client;
-    }
-
-    private static String getprimaryKey(String address, String username, String password) {
-        return String.format(ES_KEY, address, username, password);
-    }
-
     private static List<HttpHost> dealHost(String address) {
         List<HttpHost> httpHostList = new ArrayList<>();
         String[] addr = address.split(",");
@@ -322,14 +380,45 @@ public class EsClient extends AbsRdbmsClient {
         return httpHostList;
     }
 
+    private void closeResource(RestClient lowLevelClient, RestHighLevelClient restHighLevelClient, ESSourceDTO esSourceDTO){
+        if (!isOpenPool.get() && restHighLevelClient != null) {
+            try {
+                if (Objects.nonNull(lowLevelClient)) {
+                    lowLevelClient.close();
+                }
+                if (Objects.nonNull(restHighLevelClient)) {
+                    restHighLevelClient.close();
+                }
+            }catch (IOException e) {
+                log.error(e.getMessage(), e);
+            }
+        }else {
+            ElasticSearchPool elasticSearchPool = elasticSearchManager.getConnection(esSourceDTO);
+            try {
+                if (Objects.nonNull(lowLevelClient)) {
+                    lowLevelClient.close();
+                }
+                if (Objects.nonNull(restHighLevelClient) && Objects.nonNull(elasticSearchPool)) {
+                    elasticSearchPool.returnResource(restHighLevelClient);
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+    }
+
+    private String doDealPageSql(String dsl) {
+        if (StringUtil.isNotBlank(dsl)) {
+            // Feature.OrderedField 是为了保证格式化后 json 中的字段顺序不变
+            JSONObject jsonObject = JSONObject.parseObject(dsl, Feature.OrderedField);
+            return JSONObject.toJSONString(jsonObject, true);
+        }
+        return "";
+    }
+
     /******************** 未支持的方法 **********************/
     @Override
     public Connection getCon(ISourceDTO iSource) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 

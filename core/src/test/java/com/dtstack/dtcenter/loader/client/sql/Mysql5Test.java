@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.cache.cp.CpConfig;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public class Mysql5Test {
             .username("drpeco")
             .password("DT@Stack#123")
             .schema("streamapp")
-            .cpConfig(CpConfig.builder().build())
+            .poolConfig(new PoolConfig())
             .build();
 
     /**
@@ -85,9 +86,13 @@ public class Mysql5Test {
     @Test
     public void executeQuery() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
+        String sql = "select * from rdos_dict where id > ? and id < ?;";
+        List<Object> preFields = new ArrayList<>();
+        preFields.add(2);
+        preFields.add(5);
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).preFields(preFields).build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
-        System.out.println(mapList.size());
+        System.out.println(mapList);
     }
 
     @Test
@@ -118,7 +123,7 @@ public class Mysql5Test {
         IClient client = clientCache.getClient(DataSourceType.MySQL.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        System.out.println(columnMetaData);
     }
 
     @Test

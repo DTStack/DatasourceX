@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.cache.cp.CpConfig;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -26,10 +26,10 @@ public class SQLServerTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     SqlserverSourceDTO source = SqlserverSourceDTO.builder()
-            .url("jdbc:jtds:sqlserver://172.16.8.190:1401;DatabaseName=cc")
+            .url("jdbc:jtds:sqlserver://172.16.8.149:1433;DatabaseName=DTstack")
             .username("sa")
             .password("Dtstack2018")
-            .cpConfig(CpConfig.builder().connectionTimeout(null).build())
+            .poolConfig(new PoolConfig())
             .build();
 
     @Test

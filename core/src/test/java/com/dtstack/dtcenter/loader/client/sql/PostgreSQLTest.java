@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.cache.cp.CpConfig;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -29,7 +29,7 @@ public class PostgreSQLTest {
             .url("jdbc:postgresql://172.16.8.193:5432/database?currentSchema=public")
             .username("root")
             .password("postgresql")
-            .cpConfig(CpConfig.builder().build())
+            .poolConfig(new PoolConfig())
             .build();
 
     @Test
