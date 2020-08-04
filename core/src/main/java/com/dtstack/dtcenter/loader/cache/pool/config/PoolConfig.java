@@ -63,12 +63,12 @@ public class PoolConfig implements Serializable {
     /**
      * 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒。 对es、odps有效
      */
-    public Long timeBetweenEvictionRunsMillis = SECONDS.toMillis(30);;
+    public Long timeBetweenEvictionRunsMillis = SECONDS.toMillis(30);
 
     /**
      * 配置一个连接在池中最小生存的时间，单位是毫秒，默认五分钟 对es、odps有效
      */
-    public Long minEvictableIdleTimeMillis = MINUTES.toMillis(30);;
+    public Long minEvictableIdleTimeMillis = MINUTES.toMillis(30);
 
     public Integer getMinimumIdle() {
         return minimumIdle < 0 || minimumIdle > getMaximumPoolSize() ? getMaximumPoolSize() : minimumIdle;
