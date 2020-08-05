@@ -75,6 +75,16 @@ public class SqlQueryDTO {
      */
     private Integer queryTimeout;
 
+    /**
+     * mongodb，executorQuery 分页查询，开始行
+     */
+    private Integer startRow;
+
+    /**
+     * mongodb，executorQuery 分页查询，限制条数
+     */
+    private Integer limit;
+
     public Boolean getView() {
         if (ArrayUtils.isEmpty(getTableTypes())) {
             return Boolean.TRUE.equals(view);

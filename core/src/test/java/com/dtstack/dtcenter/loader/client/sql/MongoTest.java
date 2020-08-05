@@ -70,7 +70,7 @@ public class MongoTest {
     @Test
     public void executorQuery() throws Exception {
         IClient<List> client = clientCache.getClient(DataSourceType.MONGODB.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("db.user.find({'name':{$gt:'22'}}).skip(2).limit(2).count();").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("db.user.find({});").startRow(1).limit(5).build();
         List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
         result.forEach(map->{
             map.keySet().forEach(x->{

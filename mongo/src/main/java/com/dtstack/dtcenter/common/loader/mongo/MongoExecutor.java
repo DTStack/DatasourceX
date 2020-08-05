@@ -23,8 +23,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -56,6 +58,8 @@ public class MongoExecutor {
 
     private static final String EXECUTE_KEY = "result";
 
+    private static final String COUNT_KEY = "count";
+
     private MongoExecutor() {}
 
     public static MongoExecutor getInstance() {
@@ -85,6 +89,8 @@ public class MongoExecutor {
         String sqlQuery = mongoQueryInfo.getSqlQuery();
         List<Map<String, Object>> list = new ArrayList<>();
 
+        Integer startRow = queryDTO.getStartRow();
+        Integer limit = queryDTO.getLimit();
         MongoClient mongoClient = MongoDBUtils.getClient(mongoSourceDTO);
         MongoDatabase mongoDatabase = mongoClient.getDatabase(dataBaseName);
         MongoCollection<Document> collection = mongoDatabase.getCollection(collectionName);
@@ -92,10 +98,10 @@ public class MongoExecutor {
         try {
             switch (operationName) {
                 case FIND:
-                    find(sqlQuery, list, collection, false);
+                    find(sqlQuery, startRow, limit, list, collection, false);
                     break;
                 case FIND_ONE:
-                    find(sqlQuery, list, collection, true);
+                    find(sqlQuery, startRow, limit, list, collection, true);
                     break;
                 case COUNT:
                 case COUNT_DOCUMENTS:
@@ -121,7 +127,7 @@ public class MongoExecutor {
         return list;
     }
 
-    private void find(String sqlQuery, List<Map<String, Object>> list, MongoCollection<Document> collection, boolean isOne) {
+    private void find(String sqlQuery, Integer startRow, Integer limit, List<Map<String, Object>> list, MongoCollection<Document> collection, boolean isOne) {
         FindIterable<Document> findIterable;
         String queryStr = String.format("[%s]", RegExpUtil.getQuery(sqlQuery));
         BasicDBList queryList = (BasicDBList) JSON.parse(queryStr);
@@ -138,16 +144,13 @@ public class MongoExecutor {
             findIterable = findIterable.projection((Bson) queryList.get(1));
         }
 
-        String skip = RegExpUtil.getSkip(sqlQuery);
-        String limit = RegExpUtil.getLimit(sqlQuery);
-
         //skip|limit
         if (isOne) {
             findIterable.limit(1);
         } else {
             findIterable
-                    .skip(StringUtils.isNotBlank(skip) ? Integer.valueOf(skip) : 0)
-                    .limit(StringUtils.isNotBlank(limit) ? Integer.valueOf(limit) : 0);
+                    .skip(!Objects.isNull(startRow) ? startRow : 0)
+                    .limit(!Objects.isNull(limit) ? limit : 0);
         }
 
         //sort
@@ -175,6 +178,11 @@ public class MongoExecutor {
             list.add(document);
         }
 
+        //count -
+        long count = collection.count(findObject);
+        Map<String, Object> countMap = Maps.newHashMap();
+        countMap.put(COUNT_KEY, count);
+        list.add(0, countMap);
     }
 
     private void count(String sqlQuery, List<Map<String, Object>> list, MongoCollection<Document> collection) {
