@@ -90,7 +90,7 @@ public class Mysql5Test {
         List<Object> preFields = new ArrayList<>();
         preFields.add(2);
         preFields.add(5);
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).preFields(preFields).build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).preFields(preFields).queryTimeout(1).build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList);
     }
