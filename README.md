@@ -141,6 +141,8 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 
 ### 4.5 数据源插件开启连接池
 1. 支持的数据源(已测试)：
+    ClickHouse
+    Oracle
     MySQL
     Oracle
     SQLServer2017
