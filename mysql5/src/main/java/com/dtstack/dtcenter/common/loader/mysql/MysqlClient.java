@@ -40,12 +40,6 @@ public class MysqlClient extends AbsRdbmsClient {
 
     @Override
     protected String transferTableName(String tableName) {
-        if (tableName.contains(".")) {
-            String[] tables = tableName.split("\\.");
-            tableName = tables[1];
-            return String.format("%s.%s", tables[0], tableName.contains("`") ? tableName : String.format("`%s`",
-                    tableName));
-        }
         return tableName.contains("`") ? tableName : String.format("`%s`", tableName);
     }
 

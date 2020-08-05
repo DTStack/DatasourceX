@@ -33,6 +33,11 @@ public class MysqlClient extends AbsRdbmsClient {
     }
 
     @Override
+    protected String transferTableName(String tableName) {
+        return tableName.contains("`") ? tableName : String.format("`%s`", tableName);
+    }
+
+    @Override
     public String getTableMetaComment(ISourceDTO ISource, SqlQueryDTO queryDTO) throws Exception {
         Mysql8SourceDTO mysql8SourceDTO = (Mysql8SourceDTO) ISource;
         Integer clearStatus = beforeColumnQuery(mysql8SourceDTO, queryDTO);

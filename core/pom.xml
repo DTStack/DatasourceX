@@ -102,6 +102,10 @@
                     <artifactId>spring-data-redis</artifactId>
                     <groupId>org.springframework.data</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>sdk-engine-client</artifactId>
+                    <groupId>com.dtstack.engine</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
