@@ -49,6 +49,8 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     private static final String preFieldsName = "preFields";
 
+    private static final String queryTimeoutFieldName = "queryTimeout";
+
     @Override
     public Connection getCon(ISourceDTO iSource) throws Exception {
         log.info("-------get connection success-----");
@@ -85,16 +87,21 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         /*todo 适配1.1.0版本的core*/
         Field[] fields = SqlQueryDTO.class.getDeclaredFields();
         List<Object> preFields = null;
+        Integer queryTimeout = null;
         for (Field field:fields) {
             if (preFieldsName.equals(field.getName())) {
                 preFields = queryDTO.getPreFields();
-                break;
+                continue;
+            }
+            if (queryTimeoutFieldName.equals(field.getName())) {
+                queryTimeout = queryDTO.getQueryTimeout();
+                continue;
             }
         }
         //预编译查询
-        if (preFields != null) {
+        if (preFields != null || queryTimeout!= null) {
             return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
-                    ConnectionClearStatus.CLOSE.getValue().equals(clearStatus), preFields);
+                    ConnectionClearStatus.CLOSE.getValue().equals(clearStatus), preFields, queryTimeout);
         }
         return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
                 ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));

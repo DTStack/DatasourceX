@@ -70,6 +70,11 @@ public class SqlQueryDTO {
      */
     private List<Object> preFields;
 
+    /**
+     * executorQuery查询超时时间,单位：秒
+     */
+    private Integer queryTimeout;
+
     public Boolean getView() {
         if (ArrayUtils.isEmpty(getTableTypes())) {
             return Boolean.TRUE.equals(view);

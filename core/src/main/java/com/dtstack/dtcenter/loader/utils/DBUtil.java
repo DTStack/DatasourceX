@@ -68,12 +68,16 @@ public class DBUtil {
      * @param closeConn 是否关闭连接
      * @return
      */
-    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Boolean closeConn, List<Object> preFields) {
+    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Boolean closeConn, List<Object> preFields, Integer queryTimeout) {
         List<Map<String, Object>> result = Lists.newArrayList();
         ResultSet res = null;
         PreparedStatement statement = null;
         try {
             statement = conn.prepareStatement(sql);
+            //设置查询超时时间
+            if (queryTimeout != null) {
+                statement.setQueryTimeout(queryTimeout);
+            }
             //todo 支持预编译sql
             if (preFields != null && !preFields.isEmpty()) {
                 for (int i = 0; i < preFields.size(); i++) {
