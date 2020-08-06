@@ -85,7 +85,7 @@ public class SQLServer2017Test {
         IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("kudu").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        System.out.println(columnMetaData);
     }
 
     @Test

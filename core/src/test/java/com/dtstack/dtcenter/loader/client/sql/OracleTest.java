@@ -74,7 +74,7 @@ public class OracleTest {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test_side").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("sidetest").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -82,9 +82,9 @@ public class OracleTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test_side").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("MVIEW$_ADV_TEMP").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        System.out.println(columnMetaData);
     }
 
     @Test
