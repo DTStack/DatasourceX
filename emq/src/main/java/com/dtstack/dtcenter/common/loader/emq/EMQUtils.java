@@ -1,12 +1,11 @@
 package com.dtstack.dtcenter.common.loader.emq;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Date: 2020/2/25
@@ -14,9 +13,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author xiaochen
  */
+@Slf4j
 public class EMQUtils {
-    private static Logger logger = LoggerFactory.getLogger(EMQUtils.class);
-
     public static Boolean checkConnection(String address, String userName, String password) {
 
         String clientId = "DTSTACK_" + System.currentTimeMillis();
@@ -35,14 +33,8 @@ public class EMQUtils {
             sampleClient.disconnect();
             return true;
         } catch (MqttException e) {
-            logger.error("connect to emq error", e);
+            log.error("connect to emq error", e);
         }
         return false;
     }
-
-
-//    public static void main(String[] args) {
-//        System.out.println(checkConnection("tcp://172.16.8.197:1883", null, null));
-//
-//    }
 }

@@ -1,18 +1,15 @@
 package com.dtstack.dtcenter.common.loader.hive1;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
-import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
 
 import java.security.PrivilegedAction;
 import java.sql.Connection;

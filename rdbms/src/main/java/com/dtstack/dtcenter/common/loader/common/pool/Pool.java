@@ -1,11 +1,10 @@
 package com.dtstack.dtcenter.common.loader.common.pool;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @company: www.dtstack.com
@@ -13,14 +12,13 @@ import org.slf4j.LoggerFactory;
  * @Date ：Created in 下午3:11 2020/8/3
  * @Description：自定义连接池
  */
+@Slf4j
 public class Pool<T> implements Cloneable {
 
     /**
      * 连接池
      */
     protected GenericObjectPool<T> internalPool;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Pool.class);
 
     public Pool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
         initPool(poolConfig, factory);
@@ -32,7 +30,7 @@ public class Pool<T> implements Cloneable {
             try {
                 closeInternalPool();
             } catch (Exception e) {
-                LOGGER.error("init pool error", e);
+                log.error("init pool error", e);
                 throw new DtCenterDefException("init pool error", e);
             }
         }
@@ -44,7 +42,7 @@ public class Pool<T> implements Cloneable {
         try {
             internalPool.close();
         } catch (Exception e) {
-            LOGGER.error("Could not destroy the pool", e);
+            log.error("Could not destroy the pool", e);
             throw new DtCenterDefException("Could not destroy the pool", e);
         }
     }
@@ -57,7 +55,7 @@ public class Pool<T> implements Cloneable {
         try {
             return internalPool.borrowObject();
         } catch (Exception e) {
-            LOGGER.error("Could not get a resource from the pool", e);
+            log.error("Could not get a resource from the pool", e);
             throw new DtCenterDefException("Could not get a resource from the pool", e);
         }
     }
@@ -79,7 +77,7 @@ public class Pool<T> implements Cloneable {
         try {
             internalPool.returnObject(resource);
         } catch (Exception e) {
-            LOGGER.error("Could not return the resource to the pool", e);
+            log.error("Could not return the resource to the pool", e);
             throw new DtCenterDefException("Could not return the resource to the pool", e);
         }
     }
@@ -98,7 +96,7 @@ public class Pool<T> implements Cloneable {
         try {
             internalPool.invalidateObject(resource);
         } catch (Exception e) {
-            LOGGER.error("Could not return the resource to the pool", e);
+            log.error("Could not return the resource to the pool", e);
             throw new DtCenterDefException("Could not return the resource to the pool", e);
         }
     }
@@ -163,7 +161,7 @@ public class Pool<T> implements Cloneable {
                 this.internalPool.addObject();
             }
         } catch (Exception e) {
-            LOGGER.error("Error trying to add idle objects", e);
+            log.error("Error trying to add idle objects", e);
             throw new DtCenterDefException("Error trying to add idle objects", e);
         }
     }
