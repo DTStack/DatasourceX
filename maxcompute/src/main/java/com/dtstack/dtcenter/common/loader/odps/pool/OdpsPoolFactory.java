@@ -4,11 +4,10 @@ import com.aliyun.odps.Odps;
 import com.aliyun.odps.Tables;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.odps.OdpsClient;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
@@ -18,10 +17,8 @@ import java.util.Objects;
  * @Date ：Created in 下午3:15 2020/8/3
  * @Description：
  */
+@Slf4j
 public class OdpsPoolFactory implements PooledObjectFactory<Odps> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(OdpsPoolFactory.class);
-
     private String odpsServer;
 
     private String accessId;
@@ -69,13 +66,13 @@ public class OdpsPoolFactory implements PooledObjectFactory<Odps> {
             tables.iterator().hasNext();
             check = true;
         } catch (Exception e) {
-            LOGGER.error("检查odps连接失败..{}", e);
+            log.error("检查odps连接失败..{}", e);
         }
         if (Objects.nonNull(odps) && !check) {
             try {
                 odps = null;
             } catch (Exception e) {
-                LOGGER.error("close client error", e);
+                log.error("close client error", e);
                 throw new DtCenterDefException("close client error", e);
             }
         }
@@ -99,7 +96,7 @@ public class OdpsPoolFactory implements PooledObjectFactory<Odps> {
             tables.iterator().hasNext();
             return true;
         } catch (Exception e) {
-            LOGGER.error("检查odps连接失败..{}", e);
+            log.error("检查odps连接失败..{}", e);
         }
         return false;
     }
@@ -121,7 +118,7 @@ public class OdpsPoolFactory implements PooledObjectFactory<Odps> {
             Tables tables = odps.tables();
             tables.iterator().hasNext();
         } catch (Exception e) {
-            //do nothing
+            log.error(e.getMessage(), e);
         }
     }
 

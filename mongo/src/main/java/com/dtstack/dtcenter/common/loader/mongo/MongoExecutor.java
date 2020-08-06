@@ -14,16 +14,14 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.util.JSON;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,6 +32,7 @@ import java.util.Objects;
  * @Date ：Created in 上午9:56 2020/8/4
  * @Description：mongodb自定义查询
  */
+@Slf4j
 public class MongoExecutor {
 
     private final static String FIND = "find";
@@ -53,8 +52,6 @@ public class MongoExecutor {
     private final List<String> OPERATIONS = Lists.newArrayList(FIND, FIND_ONE, COUNT, COUNT_DOCUMENTS, DISTINCT, AGGREGATE);
 
     private volatile static MongoExecutor mongoExecutor = null;
-
-    private static Logger logger = LoggerFactory.getLogger(MongoExecutor.class);
 
     private static final String EXECUTE_KEY = "result";
 
@@ -302,8 +299,8 @@ public class MongoExecutor {
         }
 
         public MongoQueryInfo build() {
-            if (logger.isInfoEnabled()) {
-                logger.info("mongodb request with sql [{}]", sqlQuery);
+            if (log.isInfoEnabled()) {
+                log.info("mongodb request with sql [{}]", sqlQuery);
             }
             //sql在传入时会去掉 ; , 解析数据时需要使用 ;
             if (!sqlQuery.endsWith(";")) {

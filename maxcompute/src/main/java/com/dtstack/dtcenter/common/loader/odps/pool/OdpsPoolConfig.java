@@ -3,9 +3,6 @@ package com.dtstack.dtcenter.common.loader.odps.pool;
 import lombok.Data;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * @company: www.dtstack.com
  * @Author ：wangchuan

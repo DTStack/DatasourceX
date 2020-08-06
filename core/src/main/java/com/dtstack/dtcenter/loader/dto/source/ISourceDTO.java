@@ -1,7 +1,5 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
-import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
-
 /**
  * @company: www.dtstack.com
  * @Author ：Nanqi

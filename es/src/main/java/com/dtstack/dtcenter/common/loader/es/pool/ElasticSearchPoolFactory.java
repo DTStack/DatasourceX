@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.es.pool;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import jodd.util.StringUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
@@ -14,8 +15,6 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.Set;
@@ -28,11 +27,10 @@ import java.util.stream.Collectors;
  * @Date ：Created in 下午3:15 2020/8/3
  * @Description：
  */
+@Slf4j
 public class ElasticSearchPoolFactory implements PooledObjectFactory<RestHighLevelClient> {
 
     private AtomicReference<Set<String>> nodesReference = new AtomicReference<>();
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ElasticSearchPoolFactory.class);
 
     private String clusterName;
 
@@ -86,7 +84,7 @@ public class ElasticSearchPoolFactory implements PooledObjectFactory<RestHighLev
             try {
                 client.close();
             } catch (Exception e) {
-                LOGGER.error("close client error", e);
+                log.error("close client error", e);
                 throw new DtCenterDefException("close client error", e);
             }
         }

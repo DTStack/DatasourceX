@@ -12,8 +12,7 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URLEncoder;
 import java.util.List;
@@ -28,10 +27,8 @@ import java.util.regex.Pattern;
  * @Date ：Created in 下午5:28 2020/8/3
  * @Description：池化管理类
  */
+@Slf4j
 public class MongoManager  implements Manager {
-
-    private static Logger logger = LoggerFactory.getLogger(MongoManager.class);
-
     private volatile static MongoManager manager;
 
     private volatile Map<String, MongoClient> sourcePool = Maps.newConcurrentMap();
@@ -80,7 +77,7 @@ public class MongoManager  implements Manager {
             }
             return mongoClient;
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         } finally {
             if (lock.isLocked()) {
                 lock.unlock();

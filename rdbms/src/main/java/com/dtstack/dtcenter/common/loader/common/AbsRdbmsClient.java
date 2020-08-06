@@ -84,7 +84,11 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         if (rdbmsSourceDTO.getConnection().isClosed()) {
             return Lists.newArrayList();
         }
-        /*todo 适配1.1.0版本的core*/
+        /**
+         *  适配1.1.0版本的core
+         *  后期删除
+         *  2020年08月06日
+         */
         Field[] fields = SqlQueryDTO.class.getDeclaredFields();
         List<Object> preFields = null;
         Integer queryTimeout = null;

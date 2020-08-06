@@ -56,6 +56,12 @@ public class ConnFactory {
         }
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
         boolean isStart = false;
+
+        /**
+         *  适配1.1.0版本的core
+         *  后期删除
+         *  2020年08月06日
+         */
         Field[] fields = RdbmsSourceDTO.class.getDeclaredFields();
         for (Field field:fields) {
             if (poolConfigFieldName.equals(field.getName())) {

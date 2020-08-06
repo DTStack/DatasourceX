@@ -2,7 +2,6 @@ package com.dtstack.dtcenter.common.loader.mysql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.dto.source.Mysql5SourceDTO;
 import org.junit.Test;
 
