@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SqlserverSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
@@ -17,7 +18,9 @@ import com.dtstack.dtcenter.loader.utils.DBUtil;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @company: www.dtstack.com
@@ -31,6 +34,10 @@ public class SqlServerClient extends AbsRdbmsClient {
     //获取所有的表和对应的schema-备用
     private static final String TABLE_QUERY_ALL_SCHEMA = "select sys.objects.name tableName,sys.schemas.name schemaName from sys.objects,sys.schemas where sys.objects.type='U' and sys.objects.schema_id=sys.schemas.schema_id";
     private static final String TABLE_QUERY_SCHEMA = "select sys.objects.name tableName,sys.schemas.name schemaName from sys.objects,sys.schemas where sys.objects.type='U' or type='V' and sys.objects.schema_id=sys.schemas.schema_id";
+
+    private static String SQL_SERVER_COLUMN_NAME = "column_name";
+    private static String SQL_SERVER_COLUMN_COMMENT = "column_description";
+    private static final String COMMENT_QUERY = "SELECT B.name AS column_name, C.value AS column_description FROM sys.tables A INNER JOIN sys.columns B ON B.object_id = A.object_id LEFT JOIN sys.extended_properties C ON C.major_id = B.object_id AND C.minor_id = B.column_id WHERE A.name = N";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -140,5 +147,34 @@ public class SqlServerClient extends AbsRdbmsClient {
     @Override
     public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeColumnQuery(sourceDTO, queryDTO);
+        Statement statement = null;
+        ResultSet rs = null;
+        Map<String, String> columnComments = new HashMap<>();
+        try {
+            statement = sourceDTO.getConnection().createStatement();
+            String queryColumnCommentSql = COMMENT_QUERY + addSingleQuotes(queryDTO.getTableName());
+            rs = statement.executeQuery(queryColumnCommentSql);
+            while (rs.next()) {
+                String columnName = rs.getString(SQL_SERVER_COLUMN_NAME);
+                String columnComment = rs.getString(SQL_SERVER_COLUMN_COMMENT);
+                columnComments.put(columnName, columnComment);
+            }
+
+        } catch (Exception e) {
+            //获取表字段注释失败
+        }finally {
+            DBUtil.closeDBResources(rs, statement, sourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        return columnComments;
+    }
+
+    private static String addSingleQuotes(String str) {
+        str = str.contains("'") ? str : String.format("'%s'", str);
+        return str;
     }
 }

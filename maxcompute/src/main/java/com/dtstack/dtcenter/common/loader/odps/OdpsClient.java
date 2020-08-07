@@ -166,6 +166,7 @@ public class OdpsClient extends AbsRdbmsClient {
             ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
             columnMetaDTO.setKey(column.getName());
             columnMetaDTO.setType(column.getTypeInfo().getTypeName());
+            columnMetaDTO.setComment(column.getComment());
             columnList.add(columnMetaDTO);
         });
         //获取分区字段
@@ -174,6 +175,7 @@ public class OdpsClient extends AbsRdbmsClient {
             ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
             columnMetaDTO.setKey(partitionColumn.getName());
             columnMetaDTO.setType(partitionColumn.getTypeInfo().getTypeName());
+            columnMetaDTO.setComment(partitionColumn.getComment());
             //设置为分区字段
             columnMetaDTO.setPart(true);
             columnList.add(columnMetaDTO);
@@ -195,6 +197,7 @@ public class OdpsClient extends AbsRdbmsClient {
                 ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
                 columnMetaDTO.setKey(column.getName());
                 columnMetaDTO.setType(column.getTypeInfo().getTypeName());
+                columnMetaDTO.setComment(column.getComment());
                 columnList.add(columnMetaDTO);
             });
             //获取分区字段-应该不会走到这
@@ -202,6 +205,7 @@ public class OdpsClient extends AbsRdbmsClient {
                 ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
                 columnMetaDTO.setKey(partitionColumn.getName());
                 columnMetaDTO.setType(partitionColumn.getTypeInfo().getTypeName());
+                columnMetaDTO.setComment(partitionColumn.getComment());
                 //设置为分区字段
                 columnMetaDTO.setPart(true);
                 columnList.add(columnMetaDTO);
