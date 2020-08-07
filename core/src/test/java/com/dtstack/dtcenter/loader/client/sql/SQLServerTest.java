@@ -29,7 +29,7 @@ public class SQLServerTest {
             .url("jdbc:jtds:sqlserver://172.16.8.149:1433;DatabaseName=DTstack")
             .username("sa")
             .password("Dtstack2018")
-            .poolConfig(new PoolConfig())
+            .poolConfig(PoolConfig.builder().build())
             .build();
 
     @Test
