@@ -90,7 +90,7 @@ public class Mysql5Test {
         IClient client = clientCache.getClient(DataSourceType.MySQL.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        System.out.println(columnMetaData);
     }
 
     @Test

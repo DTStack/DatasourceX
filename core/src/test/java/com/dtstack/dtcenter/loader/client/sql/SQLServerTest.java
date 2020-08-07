@@ -81,7 +81,7 @@ public class SQLServerTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.SQLServer.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("dbo.demo").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nonstd_cad97a77").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData);
     }
