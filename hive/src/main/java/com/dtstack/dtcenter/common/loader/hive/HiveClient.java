@@ -2,7 +2,6 @@ package com.dtstack.dtcenter.common.loader.hive;
 
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
@@ -19,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.security.PrivilegedAction;
@@ -199,21 +199,23 @@ public class HiveClient extends AbsRdbmsClient {
             return Boolean.FALSE;
         }
         HiveSourceDTO hiveSourceDTO= (HiveSourceDTO) iSource;
-        if (MapUtils.isEmpty(hiveSourceDTO.getKerberosConfig())) {
+        if (StringUtils.isBlank(hiveSourceDTO.getDefaultFS())) {
             return Boolean.TRUE;
+        }
+
+        Properties properties = combineHdfsConfig(hiveSourceDTO.getConfig(), hiveSourceDTO.getKerberosConfig());
+        Configuration conf = new HdfsOperator.HadoopConf().setConf(hiveSourceDTO.getDefaultFS(), properties);
+        //不在做重复认证 主要用于 HdfsOperator.checkConnection 中有一些数栈自己的逻辑
+        conf.set("hadoop.security.authorization", "false");
+        conf.set("dfs.namenode.kerberos.principal.pattern", "*");
+
+        if (MapUtils.isEmpty(hiveSourceDTO.getKerberosConfig())) {
+            return HdfsOperator.checkConnection(conf);
         }
 
         // 校验高可用配置
         return KerberosUtil.loginKerberosWithUGI(hiveSourceDTO.getKerberosConfig()).doAs(
-                (PrivilegedAction<Boolean>) () -> {
-                    Properties properties = combineHdfsConfig(hiveSourceDTO.getConfig(), hiveSourceDTO.getKerberosConfig());
-                    Configuration conf = new HdfsOperator.HadoopConf().setConf(hiveSourceDTO.getDefaultFS(), properties);
-                    //不在做重复认证
-                    conf.set("hadoop.security.authorization", "false");
-                    //必须添加
-                    conf.set("dfs.namenode.kerberos.principal.pattern", "*");
-                    return HdfsOperator.checkConnection(conf);
-                }
+                (PrivilegedAction<Boolean>) () -> HdfsOperator.checkConnection(conf)
         );
     }
 
@@ -245,26 +247,28 @@ public class HiveClient extends AbsRdbmsClient {
     public IDownloader getDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         HiveSourceDTO hiveSourceDTO= (HiveSourceDTO) iSource;
         List<Map<String, Object>> list = executeQuery(hiveSourceDTO, SqlQueryDTO.builder().sql("desc formatted " + queryDTO.getTableName()).build());
-        //获取表路径、字段分隔符、存储方式
+        // 获取表路径、字段分隔符、存储方式
         String tableLocation = null;
         String fieldDelimiter = "\001";
-        String StorageMode = null;
-        for (Map<String, Object> map:list){
+        String storageMode = null;
+        for (Map<String, Object> map : list) {
             String col_name = (String) map.get("col_name");
-            if (col_name.contains("Location")){
+            if (col_name.contains("Location")) {
                 tableLocation = (String) map.get("data_type");
                 continue;
             }
-            if (col_name.contains("InputFormat")){
-                StorageMode = (String) map.get("data_type");
+
+            if (col_name.contains("InputFormat")) {
+                storageMode = (String) map.get("data_type");
                 continue;
             }
-            if (col_name.contains("field.delim")){
+
+            if (col_name.contains("field.delim")) {
                 fieldDelimiter = (String) map.get("data_type");
                 break;
             }
         }
-        //获取表字段和分区字段
+        // 获取表字段和分区字段
         ArrayList<String> columnNames = new ArrayList<>();
         ArrayList<String> partitionColumns = new ArrayList<>();
         List<ColumnMetaDTO> columnMetaData = getColumnMetaData(hiveSourceDTO, queryDTO);
@@ -283,10 +287,6 @@ public class HiveClient extends AbsRdbmsClient {
         if (!hiveSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
             throw new DtCenterDefException("defaultFS格式不正确");
         }
-        //kerberos认证，目前暂不支持多次不同认证，下个版本做 TODO
-        if (MapUtils.isNotEmpty(hiveSourceDTO.getKerberosConfig())) {
-            DtKerberosUtils.loginKerberos(hiveSourceDTO.getKerberosConfig());
-        }
         Properties properties = combineHdfsConfig(hiveSourceDTO.getConfig(), hiveSourceDTO.getKerberosConfig());
         if (properties.size() > 0) {
             conf = new HdfsOperator.HadoopConf().setConf(hiveSourceDTO.getDefaultFS(), properties);
@@ -294,28 +294,63 @@ public class HiveClient extends AbsRdbmsClient {
             conf.set("hadoop.security.authorization", "false");
             //必须添加
             conf.set("dfs.namenode.kerberos.principal.pattern", "*");
-
         }
 
-        //根据存储格式创建对应的hiveDownloader
-        if (StringUtils.isBlank(StorageMode)) {
+        //kerberos认证，目前暂不支持多次不同认证，下个版本做 TODO
+        if (MapUtils.isNotEmpty(hiveSourceDTO.getKerberosConfig())) {
+            String finalStorageMode = storageMode;
+            Configuration finalConf = conf;
+            String finalTableLocation = tableLocation;
+            String finalFieldDelimiter = fieldDelimiter;
+            return KerberosUtil.loginKerberosWithUGI(hiveSourceDTO.getKerberosConfig()).doAs(
+                    (PrivilegedAction<IDownloader>) () -> {
+                        try {
+                            return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns);
+                        } catch (Exception e) {
+                            throw new DtCenterDefException("创建下载器异常", e);
+                        }
+                    }
+            );
+        }
+
+        return createDownloader(storageMode, conf, tableLocation, columnNames, fieldDelimiter, partitionColumns);
+    }
+
+    /**
+     * 根据存储格式创建对应的hiveDownloader
+     * @param storageMode
+     * @param conf
+     * @param tableLocation
+     * @param columnNames
+     * @param fieldDelimiter
+     * @param partitionColumns
+     * @return
+     * @throws Exception
+     */
+    private @NotNull IDownloader createDownloader(String storageMode, Configuration conf, String tableLocation, ArrayList<String> columnNames, String fieldDelimiter, ArrayList<String> partitionColumns) throws Exception {
+        // 根据存储格式创建对应的hiveDownloader
+        if (StringUtils.isBlank(storageMode)) {
             throw new DtCenterDefException("不支持该存储类型的hive表读取");
         }
-        if (StorageMode.contains("Text")){
+
+        if (storageMode.contains("Text")){
             HiveTextDownload hiveTextDownload = new HiveTextDownload(conf, tableLocation, columnNames, fieldDelimiter, partitionColumns);
             hiveTextDownload.configure();
             return hiveTextDownload;
         }
-        if (StorageMode.contains("Orc")){
+
+        if (storageMode.contains("Orc")){
             HiveORCDownload hiveORCDownload = new HiveORCDownload(conf, tableLocation, columnNames, partitionColumns);
             hiveORCDownload.configure();
             return hiveORCDownload;
         }
-        if (StorageMode.contains("Parquet")){
+
+        if (storageMode.contains("Parquet")){
             HiveParquetDownload hiveParquetDownload = new HiveParquetDownload(conf, tableLocation, columnNames, partitionColumns);
             hiveParquetDownload.configure();
             return hiveParquetDownload;
         }
+
         throw new DtCenterDefException("不支持该存储类型的hive表读取");
     }
 

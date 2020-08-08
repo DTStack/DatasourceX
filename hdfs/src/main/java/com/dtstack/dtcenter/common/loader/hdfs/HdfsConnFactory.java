@@ -1,7 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hdfs;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
@@ -14,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.util.Map;
 import java.util.Properties;
@@ -39,20 +39,19 @@ public class HdfsConnFactory extends ConnFactory {
             throw new DtCenterDefException("defaultFS格式不正确");
         }
 
-        //kerberos认证
-        if (MapUtils.isNotEmpty(hdfsSourceDTO.getKerberosConfig())) {
-            DtKerberosUtils.loginKerberos(hdfsSourceDTO.getKerberosConfig());
-        }
         Properties properties = combineHdfsConfig(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
-        if (properties.size() > 0) {
-            Configuration conf = new HdfsOperator.HadoopConf().setConf(hdfsSourceDTO.getDefaultFS(), properties);
-            //不在做重复认证
-            conf.set("hadoop.security.authorization", "false");
-            //必须添加
-            conf.set("dfs.namenode.kerberos.principal.pattern", "*");
+        Configuration conf = new HdfsOperator.HadoopConf().setConf(hdfsSourceDTO.getDefaultFS(), properties);
+        //不在做重复认证 主要用于 HdfsOperator.checkConnection 中有一些数栈自己的逻辑
+        conf.set("hadoop.security.authorization", "false");
+        conf.set("dfs.namenode.kerberos.principal.pattern", "*");
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
             return HdfsOperator.checkConnection(conf);
         }
-        return false;
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> HdfsOperator.checkConnection(conf)
+        );
     }
 
     /**
@@ -71,6 +70,7 @@ public class HdfsConnFactory extends ConnFactory {
                 throw new DtCenterDefException("高可用配置格式错误", e);
             }
         }
+
         if (confMap != null) {
             for (String key : confMap.keySet()) {
                 properties.setProperty(key, confMap.get(key).toString());
