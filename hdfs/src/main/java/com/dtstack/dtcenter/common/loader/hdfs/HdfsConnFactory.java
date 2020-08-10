@@ -39,7 +39,7 @@ public class HdfsConnFactory extends ConnFactory {
             throw new DtCenterDefException("defaultFS格式不正确");
         }
 
-        Properties properties = combineHdfsConfig(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
+        Properties properties = HdfsConnFactory.combineHdfsConfig(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
         Configuration conf = new HdfsOperator.HadoopConf().setConf(hdfsSourceDTO.getDefaultFS(), properties);
         //不在做重复认证 主要用于 HdfsOperator.checkConnection 中有一些数栈自己的逻辑
         conf.set("hadoop.security.authorization", "false");
@@ -61,7 +61,7 @@ public class HdfsConnFactory extends ConnFactory {
      * @param confMap
      * @return
      */
-    private Properties combineHdfsConfig(String hadoopConfig, Map<String, Object> confMap) {
+    public static Properties combineHdfsConfig(String hadoopConfig, Map<String, Object> confMap) {
         Properties properties = new Properties();
         if (StringUtils.isNotBlank(hadoopConfig)) {
             try {

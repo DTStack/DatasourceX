@@ -1,10 +1,11 @@
-package com.dtstack.dtcenter.loader.client.sql;
+package com.dtstack.dtcenter.loader.client.hdfs.mq;
 
 import com.dtstack.dtcenter.common.thread.RdosThreadFactory;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.client.IKafka;
+import com.dtstack.dtcenter.loader.client.sql.DataSourceClientFactory;
 import com.dtstack.dtcenter.loader.exception.ClientAccessException;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Maps;
@@ -22,18 +23,19 @@ import java.util.concurrent.TimeUnit;
 /**
  * @company: www.dtstack.com
  * @Author ：Nanqi
- * @Date ：Created in 15:40 2020/1/6
- * @Description：关系型数据库插件客户端
+ * @Date ：Created in 14:38 2020/8/10
+ * @Description： HDFS 文件操作插件客户端
  */
 @Slf4j
-public class DataSourceClientCache extends AbsClientCache {
-    private Map<String, IClient> defaultClientMap = Maps.newConcurrentMap();
+public class HdfsFileClientCache extends AbsClientCache {
+
+    private Map<String, IHdfsFile> defaultClientMap = Maps.newConcurrentMap();
 
     private static final ScheduledExecutorService sourceClientExecutor = new ScheduledThreadPoolExecutor(1,
-            new RdosThreadFactory("sourceClientCache"));
+            new RdosThreadFactory("kafkaClientCache"));
 
     static {
-        sourceClientExecutor.scheduleAtFixedRate(new DataSourceClientCache.CacheTimerTask(), 10, 10,
+        sourceClientExecutor.scheduleAtFixedRate(new HdfsFileClientCache.CacheTimerTask(), 10, 10,
                 TimeUnit.MINUTES);
     }
 
@@ -61,8 +63,8 @@ public class DataSourceClientCache extends AbsClientCache {
 
                 // 如果不空并且与当前值不同
                 if (StringUtils.isNotBlank(oldMd5) && StringUtils.isNotBlank(loaderMd5) && !oldMd5.equals(loaderMd5)) {
-                    IClient client = getInstance().buildPluginClient(pluginName);
-                    getInstance().replaceSourceClient(pluginName, client);
+                    IHdfsFile hdfsFile = getInstance().buildPluginClient(pluginName);
+                    getInstance().replaceSourceClient(pluginName, hdfsFile);
                 }
             } catch (Exception e) {
                 log.error("校验异常，保持原先数据源类型", e);
@@ -70,13 +72,33 @@ public class DataSourceClientCache extends AbsClientCache {
         }
     }
 
-    private static DataSourceClientCache singleton = new DataSourceClientCache();
+    private static HdfsFileClientCache singleton = new HdfsFileClientCache();
 
-    private DataSourceClientCache() {
+    private HdfsFileClientCache() {
     }
 
-    public static DataSourceClientCache getInstance() {
+    public static HdfsFileClientCache getInstance() {
         return singleton;
+    }
+
+    @Override
+    public IHdfsFile getHdfs(String pluginName) throws ClientAccessException {
+        try {
+            IHdfsFile hdfsFile = defaultClientMap.get(pluginName);
+            if (hdfsFile == null) {
+                synchronized (defaultClientMap) {
+                    hdfsFile = defaultClientMap.get(pluginName);
+                    if (hdfsFile == null) {
+                        hdfsFile = buildPluginClient(pluginName);
+                        defaultClientMap.put(pluginName, hdfsFile);
+                    }
+                }
+            }
+
+            return hdfsFile;
+        } catch (Throwable e) {
+            throw new ClientAccessException(e);
+        }
     }
 
     /**
@@ -84,40 +106,15 @@ public class DataSourceClientCache extends AbsClientCache {
      *
      * @param pluginName
      */
-    public void replaceSourceClient(String pluginName, IClient client) {
+    public void replaceSourceClient(String pluginName, IHdfsFile hdfsFile) {
         DataSourceClientFactory.removePlugin(pluginName);
-        getInstance().defaultClientMap.put(pluginName, client);
+        getInstance().defaultClientMap.put(pluginName, hdfsFile);
     }
 
-    /**
-     * 根据数据源类型获取对应的客户端
-     *
-     * @param pluginName
-     * @return
-     */
-    @Override
-    public IClient getClient(String pluginName) throws ClientAccessException {
-        try {
-            IClient client = defaultClientMap.get(pluginName);
-            if (client == null) {
-                synchronized (defaultClientMap) {
-                    client = defaultClientMap.get(pluginName);
-                    if (client == null) {
-                        client = buildPluginClient(pluginName);
-                        defaultClientMap.put(pluginName, client);
-                    }
-                }
-            }
 
-            return client;
-        } catch (Throwable e) {
-            throw new ClientAccessException(e);
-        }
-    }
-
-    private IClient buildPluginClient(String pluginName) throws Exception {
+    private IHdfsFile buildPluginClient(String pluginName) throws Exception {
         loadComputerPlugin(pluginName);
-        return DataSourceClientFactory.createPluginClass(pluginName);
+        return HdfsFileClientFactory.createPluginClass(pluginName);
     }
 
     /**
@@ -127,11 +124,11 @@ public class DataSourceClientCache extends AbsClientCache {
      * @throws Exception
      */
     private void loadComputerPlugin(String pluginName) throws Exception {
-        if (DataSourceClientFactory.checkContainClassLoader(pluginName)) {
+        if (HdfsFileClientFactory.checkContainClassLoader(pluginName)) {
             return;
         }
 
-        DataSourceClientFactory.addClassLoader(pluginName, getClassLoad(pluginName, getFileByPluginName(pluginName)));
+        HdfsFileClientFactory.addClassLoader(pluginName, getClassLoad(pluginName, getFileByPluginName(pluginName)));
     }
 
     /**
@@ -152,12 +149,12 @@ public class DataSourceClientCache extends AbsClientCache {
     }
 
     @Override
-    public IKafka getKafka(String sourceName) throws ClientAccessException {
-        throw  new DtLoaderException("请通过 kafkaClientCache 获取 kafka 客户端");
+    public IClient getClient(String sourceName) throws ClientAccessException {
+        throw new DtLoaderException("请通过 DataSourceClientCache 获取其他数据库客户端");
     }
 
     @Override
-    public IHdfsFile getHdfs(String sourceName) throws ClientAccessException {
-        throw  new DtLoaderException("请通过 HdfsClientCache 获取 Hdfs 文件客户端");
+    public IKafka getKafka(String sourceName) throws ClientAccessException {
+        throw  new DtLoaderException("请通过 kafkaClientCache 获取 kafka 客户端");
     }
 }
