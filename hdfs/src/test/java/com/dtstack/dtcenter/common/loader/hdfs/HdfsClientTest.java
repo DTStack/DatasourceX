@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.hdfs;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
+import com.dtstack.dtcenter.common.loader.hdfs.client.HdfsClient;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import org.junit.Test;
 

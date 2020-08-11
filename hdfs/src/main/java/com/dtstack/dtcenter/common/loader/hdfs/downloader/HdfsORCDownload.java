@@ -1,7 +1,9 @@
-package com.dtstack.dtcenter.common.loader.hive;
+package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
+import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import jodd.util.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -24,13 +26,14 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * 下载hive表:存储结构为ORC
- * Date: 2020/6/3
- * Company: www.dtstack.com
- * @author wangchuan
- * @// FIXME: 2020/8/11 : orc暂时不支持根据分区下载表数据，后面做，通过orcSplit.getPath().toString()拿到切片路径
+ * 下载hdfs文件：存储结构为ORC
+ *
+ * @author ：wangchuan
+ * date：Created in 下午01:50 2020/8/11
+ * company: www.dtstack.com
  */
-public class HiveORCDownload implements IDownloader {
+public class HdfsORCDownload implements IDownloader {
+
     private static final int SPLIT_NUM = 1;
 
     private OrcSerde orcSerde;
@@ -46,7 +49,7 @@ public class HiveORCDownload implements IDownloader {
 
     private String tableLocation;
     private List<String> columnNames;
-    private Configuration configuration;
+    private HdfsSourceDTO hdfsSourceDTO;
 
     private InputSplit[] splits;
     private int splitIndex = 0;
@@ -55,11 +58,11 @@ public class HiveORCDownload implements IDownloader {
 
     private List<String> partitionColumns;
 
-    public HiveORCDownload(Configuration configuration, String tableLocation, List<String> columnNames, List<String> partitionColumns){
+    public HdfsORCDownload(HdfsSourceDTO hdfsSourceDTO, String tableLocation, List<String> columnNames, List<String> partitionColumns){
+        this.hdfsSourceDTO = hdfsSourceDTO;
         this.tableLocation = tableLocation;
         this.columnNames = columnNames;
         this.partitionColumns = partitionColumns;
-        this.configuration = configuration;
     }
 
     @Override
@@ -67,6 +70,7 @@ public class HiveORCDownload implements IDownloader {
 
         this.orcSerde = new OrcSerde();
         this.inputFormat = new OrcInputFormat();
+        Configuration configuration = HadoopConfUtil.getFullConfiguration(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf());
         conf = new JobConf(configuration);
 
         Path targetFilePath = new Path(tableLocation);
@@ -124,6 +128,7 @@ public class HiveORCDownload implements IDownloader {
         if(splitIndex > splits.length){
             return false;
         }
+
         OrcSplit orcSplit = (OrcSplit)splits[splitIndex];
         currentSplit = splits[splitIndex];
         splitIndex++;

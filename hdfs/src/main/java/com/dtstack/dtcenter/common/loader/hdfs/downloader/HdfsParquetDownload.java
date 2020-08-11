@@ -1,8 +1,10 @@
-package com.dtstack.dtcenter.common.loader.hive;
+package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
 import com.dtstack.dtcenter.common.hadoop.GroupTypeIgnoreCase;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
+import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
@@ -25,23 +27,21 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 下载hive表:存储结构为PARQUET
- * Date: 2020/6/3
- * Company: www.dtstack.com
- * @author wangchuan
+ * 下载hdfs文件：存储结构为PARQUET
+ *
+ * @author ：wangchuan
+ * date：Created in 下午01:50 2020/8/11
+ * company: www.dtstack.com
  */
-
-public class HiveParquetDownload implements IDownloader {
+public class HdfsParquetDownload implements IDownloader {
 
     private int readNum = 0;
+
+    private HdfsSourceDTO hdfsSourceDTO;
 
     private String tableLocation;
 
@@ -51,8 +51,6 @@ public class HiveParquetDownload implements IDownloader {
 
     private List<String> partitionColumns;
 
-    private Configuration conf;
-
     private ParquetReader<Group> build;
 
     private Group currentLine;
@@ -61,9 +59,9 @@ public class HiveParquetDownload implements IDownloader {
 
     private JobConf jobConf;
 
-    private int currFileIndex = 0;
+    private Configuration conf;
 
-    private String currFile;
+    private int currFileIndex = 0;
 
     private List<String> currentPartData;
 
@@ -75,24 +73,16 @@ public class HiveParquetDownload implements IDownloader {
 
     private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
 
-    /**
-     * 按分区下载
-     */
-    private Map<String, String> filterPartition;
-
-    public HiveParquetDownload(Configuration conf, String tableLocation, List<String> columnNames,
-                               List<String> partitionColumns, Map<String, String> filterPartition){
+    public HdfsParquetDownload(HdfsSourceDTO hdfsSourceDTO, String tableLocation, List<String> columnNames, List<String> partitionColumns){
+        this.hdfsSourceDTO = hdfsSourceDTO;
         this.tableLocation = tableLocation;
         this.columnNames = columnNames;
         this.partitionColumns = partitionColumns;
-        this.conf = conf;
-        this.filterPartition = filterPartition;
     }
 
     @Override
     public void configure() throws Exception {
-
-
+        conf = HadoopConfUtil.getFullConfiguration(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf());
         jobConf = new JobConf(conf);
 
         paths = getAllPartitionPath(tableLocation);
@@ -102,22 +92,12 @@ public class HiveParquetDownload implements IDownloader {
     }
 
     private void nextSplitRecordReader() throws Exception{
-        if (currFileIndex > paths.size() - 1) {
-            return;
-        }
-
-        currFile = paths.get(currFileIndex);
-
-        if (!isRequiredPartition()) {
-            currFileIndex++;
-            nextSplitRecordReader();
-        }
-
-        ParquetReader.Builder<Group> reader = ParquetReader.builder(readSupport, new Path(currFile)).withConf(conf);
+        String path = paths.get(currFileIndex);
+        ParquetReader.Builder<Group> reader = ParquetReader.builder(readSupport, new Path(path)).withConf(conf);
         build = reader.build();
 
         if(CollectionUtils.isNotEmpty(partitionColumns)){
-            currentPartData = HdfsOperator.parsePartitionDataFromUrl(currFile, partitionColumns);
+            currentPartData = HdfsOperator.parsePartitionDataFromUrl(path,partitionColumns);
         }
 
         currFileIndex++;
@@ -294,35 +274,4 @@ public class HiveParquetDownload implements IDownloader {
             return pathList;
         }
     }
-
-    /**
-     * 判断是否是指定的分区，支持多级分区
-     * @return
-     */
-    private boolean isRequiredPartition(){
-        if (filterPartition != null && !filterPartition.isEmpty()) {
-            //获取当前路径下的分区信息
-            Map<String,String> partColDataMap = new HashMap<>();
-            for (String part : currFile.split("/")) {
-                if(part.contains("=")){
-                    String[] parts = part.split("=");
-                    partColDataMap.put(parts[0],parts[1]);
-                }
-            }
-
-            Set<String> keySet = filterPartition.keySet();
-            boolean check = true;
-            for (String key : keySet) {
-                String partition = partColDataMap.get(key);
-                String needPartition = filterPartition.get(key);
-                if (!Objects.equals(partition, needPartition)){
-                    check = false;
-                    break;
-                }
-            }
-            return check;
-        }
-        return true;
-    }
-
 }

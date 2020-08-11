@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client;
 
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.IHdfsWriter;
+import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.FileStatus;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -217,7 +218,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    IHdfsWriter getHdfsWriter(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) throws Exception;
+    IHdfsWriter getHdfsWriter(String fileFormat) throws Exception;
 
     /**
      * 根据文件格式获取对应的downlaoder
@@ -225,6 +226,16 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    IDownloader getDownloaderByFormat(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) throws Exception;
+    IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, String fieldDelimiter, String fileFormat) throws Exception;
+
+    /**
+     * 获取hdfs上存储文件的字段信息
+     * @param source
+     * @param queryDTO
+     * @param fileFormat
+     * @return
+     * @throws Exception
+     */
+    List<ColumnMetaDTO> getColumnList(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) throws Exception;
 
 }

@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.hdfs;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;

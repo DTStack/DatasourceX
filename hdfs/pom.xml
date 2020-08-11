@@ -357,6 +357,11 @@
             <groupId>org.apache.kerby</groupId>
             <artifactId>kerb-util</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>net.sourceforge.javacsv</groupId>
+            <artifactId>javacsv</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

@@ -12,7 +12,7 @@ public enum FileFormat {
 
     ORC("orc"),
 
-    TEST("test"),
+    TEXT("text"),
 
     PARQUET("parquet");
 

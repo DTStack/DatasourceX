@@ -1,7 +1,8 @@
-package com.dtstack.dtcenter.common.loader.hdfs;
+package com.dtstack.dtcenter.common.loader.hdfs.client;
 
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.common.loader.hdfs.HdfsConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;

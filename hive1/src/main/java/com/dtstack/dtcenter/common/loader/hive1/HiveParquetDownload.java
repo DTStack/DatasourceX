@@ -25,7 +25,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -59,6 +63,8 @@ public class HiveParquetDownload implements IDownloader {
 
     private int currFileIndex = 0;
 
+    private String currFile;
+
     private List<String> currentPartData;
 
     private GroupReadSupport readSupport = new GroupReadSupport();
@@ -69,11 +75,18 @@ public class HiveParquetDownload implements IDownloader {
 
     private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
 
-    public HiveParquetDownload(Configuration conf, String tableLocation, List<String> columnNames, List<String> partitionColumns){
+    /**
+     * 按分区下载
+     */
+    private Map<String, String> filterPartition;
+
+    public HiveParquetDownload(Configuration conf, String tableLocation, List<String> columnNames,
+                               List<String> partitionColumns, Map<String, String> filterPartition){
         this.tableLocation = tableLocation;
         this.columnNames = columnNames;
         this.partitionColumns = partitionColumns;
         this.conf = conf;
+        this.filterPartition = filterPartition;
     }
 
     @Override
@@ -89,12 +102,22 @@ public class HiveParquetDownload implements IDownloader {
     }
 
     private void nextSplitRecordReader() throws Exception{
-        String path = paths.get(currFileIndex);
-        ParquetReader.Builder<Group> reader = ParquetReader.builder(readSupport, new Path(path)).withConf(conf);
+        if (currFileIndex > paths.size() - 1) {
+            return;
+        }
+
+        currFile = paths.get(currFileIndex);
+
+        if (!isRequiredPartition()) {
+            currFileIndex++;
+            nextSplitRecordReader();
+        }
+
+        ParquetReader.Builder<Group> reader = ParquetReader.builder(readSupport, new Path(currFile)).withConf(conf);
         build = reader.build();
 
         if(CollectionUtils.isNotEmpty(partitionColumns)){
-            currentPartData = HdfsOperator.parsePartitionDataFromUrl(path,partitionColumns);
+            currentPartData = HdfsOperator.parsePartitionDataFromUrl(currFile, partitionColumns);
         }
 
         currFileIndex++;
@@ -270,6 +293,36 @@ public class HiveParquetDownload implements IDownloader {
             pathList.add(tableLocation);
             return pathList;
         }
+    }
+
+    /**
+     * 判断是否是指定的分区，支持多级分区
+     * @return
+     */
+    private boolean isRequiredPartition(){
+        if (filterPartition != null && !filterPartition.isEmpty()) {
+            //获取当前路径下的分区信息
+            Map<String,String> partColDataMap = new HashMap<>();
+            for (String part : currFile.split("/")) {
+                if(part.contains("=")){
+                    String[] parts = part.split("=");
+                    partColDataMap.put(parts[0],parts[1]);
+                }
+            }
+
+            Set<String> keySet = filterPartition.keySet();
+            boolean check = true;
+            for (String key : keySet) {
+                String partition = partColDataMap.get(key);
+                String needPartition = filterPartition.get(key);
+                if (!Objects.equals(partition, needPartition)){
+                    check = false;
+                    break;
+                }
+            }
+            return check;
+        }
+        return true;
     }
 
 }

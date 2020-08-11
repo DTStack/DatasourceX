@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.common.loader.hdfs;
+package com.dtstack.dtcenter.common.loader.hdfs.util;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;

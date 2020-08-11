@@ -1,1 +1,1 @@
-com.dtstack.dtcenter.common.loader.hdfs.HdfsClient
+com.dtstack.dtcenter.common.loader.hdfs.client.HdfsClient

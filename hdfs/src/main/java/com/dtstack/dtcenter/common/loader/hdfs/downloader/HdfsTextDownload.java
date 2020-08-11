@@ -1,7 +1,9 @@
-package com.dtstack.dtcenter.common.loader.hive;
+package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
+import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -19,20 +21,19 @@ import org.apache.hadoop.mapred.TextInputFormat;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 /**
- * 下载hive表:存储结构为Text
- * Date: 2020/6/3
- * Company: www.dtstack.com
- * @author wangchuan
+ * 下载hdfs文件：存储结构为text格式
+ *
+ * @author ：wangchuan
+ * date：Created in 下午01:50 2020/8/11
+ * company: www.dtstack.com
  */
 
-public class HiveTextDownload implements IDownloader {
+public class HdfsTextDownload implements IDownloader {
+
+    private static final String CRLF = System.lineSeparator();
     private static final int SPLIT_NUM = 1;
 
     private static final String IMPALA_INSERT_STAGING = "_impala_insert_staging";
@@ -47,8 +48,8 @@ public class HiveTextDownload implements IDownloader {
     private RecordReader recordReader;
     private String tableLocation;
     private String fieldDelimiter;
-    private Configuration configuration;
     private List<String> columnNames;
+    private HdfsSourceDTO hdfsSourceDTO;
 
     private List<String> paths;
     private String currFile;
@@ -58,24 +59,15 @@ public class HiveTextDownload implements IDownloader {
     private int splitIndex = 0;
     private List<String> partitionColumns;
 
-    /**
-     * 按分区下载
-     */
-    private Map<String, String> filterPartition;
-
-    /**
-     * 当前分区的值
-     */
     private List<String> currentPartData;
 
-    public HiveTextDownload(Configuration configuration, String tableLocation, List<String> columnNames, String fieldDelimiter,
-                            List<String> partitionColumns, Map<String, String> filterPartition){
+    public HdfsTextDownload(HdfsSourceDTO hdfsSourceDTO, String tableLocation, List<String> columnNames,
+                            String fieldDelimiter, List<String> partitionColumns){
+        this.hdfsSourceDTO = hdfsSourceDTO;
         this.tableLocation = tableLocation;
         this.columnNames = columnNames;
         this.fieldDelimiter = fieldDelimiter;
         this.partitionColumns = partitionColumns;
-        this.configuration = configuration;
-        this.filterPartition = filterPartition;
     }
 
     @Override
@@ -94,6 +86,8 @@ public class HiveTextDownload implements IDownloader {
     private List<String> getAllPartitionPath(String tableLocation) throws IOException {
 
         Path inputPath = new Path(tableLocation);
+        Configuration configuration = HadoopConfUtil.getFullConfiguration(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf());
+
         conf = new JobConf(configuration);
         FileSystem fs =  FileSystem.get(conf);
 
@@ -124,6 +118,8 @@ public class HiveTextDownload implements IDownloader {
         }
 
         Path inputPath = new Path(currFile);
+        Configuration configuration = HadoopConfUtil.getFullConfiguration(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf());
+
         conf = new JobConf(configuration);
         inputFormat = new TextInputFormat();
 
@@ -165,13 +161,7 @@ public class HiveTextDownload implements IDownloader {
         currFile = paths.get(currFileIndex);
 
         if(CollectionUtils.isNotEmpty(partitionColumns)){
-            currentPartData = HdfsOperator.parsePartitionDataFromUrl(currFile,partitionColumns);
-        }
-
-        if (!isRequiredPartition()){
-            currFileIndex++;
-            splitIndex = 0;
-            nextFile();
+            currentPartData = HdfsOperator.parsePartitionDataFromUrl(currFile, partitionColumns);
         }
 
         currFileIndex++;
@@ -251,35 +241,4 @@ public class HiveTextDownload implements IDownloader {
     public String getFileName() {
         return null;
     }
-
-    /**
-     * 判断是否是指定的分区，支持多级分区
-     * @return
-     */
-    private boolean isRequiredPartition(){
-        if (filterPartition != null && !filterPartition.isEmpty()) {
-            //获取当前路径下的分区信息
-            Map<String,String> partColDataMap = new HashMap<>();
-            for (String part : currFile.split("/")) {
-                if(part.contains("=")){
-                    String[] parts = part.split("=");
-                    partColDataMap.put(parts[0],parts[1]);
-                }
-            }
-
-            Set<String> keySet = filterPartition.keySet();
-            boolean check = true;
-            for (String key : keySet) {
-                String partition = partColDataMap.get(key);
-                String needPartition = filterPartition.get(key);
-                if (!Objects.equals(partition, needPartition)){
-                    check = false;
-                    break;
-                }
-            }
-            return check;
-        }
-        return true;
-    }
-
 }

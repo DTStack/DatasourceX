@@ -19,7 +19,11 @@ import org.apache.hadoop.mapred.TextInputFormat;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * 下载hive表:存储结构为Text
@@ -54,15 +58,24 @@ public class HiveTextDownload implements IDownloader {
     private int splitIndex = 0;
     private List<String> partitionColumns;
 
+    /**
+     * 按分区下载
+     */
+    private Map<String, String> filterPartition;
+
+    /**
+     * 当前分区的值
+     */
     private List<String> currentPartData;
 
     public HiveTextDownload(Configuration configuration, String tableLocation, List<String> columnNames, String fieldDelimiter,
-                            List<String> partitionColumns){
+                            List<String> partitionColumns, Map<String, String> filterPartition){
         this.tableLocation = tableLocation;
         this.columnNames = columnNames;
         this.fieldDelimiter = fieldDelimiter;
         this.partitionColumns = partitionColumns;
         this.configuration = configuration;
+        this.filterPartition = filterPartition;
     }
 
     @Override
@@ -155,6 +168,12 @@ public class HiveTextDownload implements IDownloader {
             currentPartData = HdfsOperator.parsePartitionDataFromUrl(currFile,partitionColumns);
         }
 
+        if (!isRequiredPartition()){
+            currFileIndex++;
+            splitIndex = 0;
+            nextFile();
+        }
+
         currFileIndex++;
         splitIndex = 0;
         return true;
@@ -232,4 +251,35 @@ public class HiveTextDownload implements IDownloader {
     public String getFileName() {
         return null;
     }
+
+    /**
+     * 判断是否是指定的分区，支持多级分区
+     * @return
+     */
+    private boolean isRequiredPartition(){
+        if (filterPartition != null && !filterPartition.isEmpty()) {
+            //获取当前路径下的分区信息
+            Map<String,String> partColDataMap = new HashMap<>();
+            for (String part : currFile.split("/")) {
+                if(part.contains("=")){
+                    String[] parts = part.split("=");
+                    partColDataMap.put(parts[0],parts[1]);
+                }
+            }
+
+            Set<String> keySet = filterPartition.keySet();
+            boolean check = true;
+            for (String key : keySet) {
+                String partition = partColDataMap.get(key);
+                String needPartition = filterPartition.get(key);
+                if (!Objects.equals(partition, needPartition)){
+                    check = false;
+                    break;
+                }
+            }
+            return check;
+        }
+        return true;
+    }
+
 }

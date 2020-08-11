@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.IHdfsWriter;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
+import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.FileStatus;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -218,9 +219,9 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public IHdfsWriter getHdfsWriter(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) throws Exception {
+    public IHdfsWriter getHdfsWriter(String fileFormat) throws Exception {
         try {
-            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getHdfsWriter(source, queryDTO, fileFormat),
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getHdfsWriter(fileFormat),
                     targetClient.getClass().getClassLoader(), true);
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
@@ -228,9 +229,19 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public IDownloader getDownloaderByFormat(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) throws Exception {
+    public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, String fieldDelimiter, String fileFormat) throws Exception {
         try {
-            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getDownloaderByFormat(source, queryDTO, fileFormat),
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getDownloaderByFormat(source, tableLocation, fieldDelimiter, fileFormat),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getColumnList(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) throws Exception {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnList(source, queryDTO, fileFormat),
                     targetClient.getClass().getClassLoader(), true);
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
