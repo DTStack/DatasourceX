@@ -29,8 +29,11 @@ import java.util.Map;
  * @Description：SqlServer 客户端
  */
 public class SqlServerClient extends AbsRdbmsClient {
-    private static final String TABLE_QUERY_ALL = "select * from sys.objects where type='U' or type='V'";
-    private static final String TABLE_QUERY = "select * from sys.objects where type='U'";
+    private static final String TABLE_QUERY_ALL = "select a.name, b.name from sys.objects a left join sys.schemas b on a.schema_id = b.schema_id where a.type='U' or a.type='V'";
+    private static final String TABLE_QUERY = "select a.name, b.name from sys.objects a left join sys.schemas b on a.schema_id = b.schema_id where a.type='U'";
+
+    private static final String TABLE_SHOW = "[%s].[%s]";
+
     //获取所有的表和对应的schema-备用
     private static final String TABLE_QUERY_ALL_SCHEMA = "select sys.objects.name tableName,sys.schemas.name schemaName from sys.objects,sys.schemas where sys.objects.type='U' and sys.objects.schema_id=sys.schemas.schema_id";
     private static final String TABLE_QUERY_SCHEMA = "select sys.objects.name tableName,sys.schemas.name schemaName from sys.objects,sys.schemas where sys.objects.type='U' or type='V' and sys.objects.schema_id=sys.schemas.schema_id";
@@ -63,7 +66,7 @@ public class SqlServerClient extends AbsRdbmsClient {
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
-                tableList.add(rs.getString(1));
+                tableList.add(String.format(TABLE_SHOW, rs.getString(2), rs.getString(1)));
             }
         } catch (Exception e) {
             throw new DtCenterDefException("获取表异常", e);
