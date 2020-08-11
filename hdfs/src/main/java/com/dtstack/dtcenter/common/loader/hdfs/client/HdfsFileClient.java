@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hdfs.client;
 
+import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hdfs.HdfsConnFactory;
@@ -71,7 +72,7 @@ public class HdfsFileClient implements IHdfsFile {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
 
         if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
-            YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType());
+            YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType());
             yarnDownload.configure();
             return yarnDownload;
         }
@@ -80,7 +81,7 @@ public class HdfsFileClient implements IHdfsFile {
         return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
-                        YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType());
+                        YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType());
                         yarnDownload.configure();
                         return yarnDownload;
                     } catch (Exception e) {

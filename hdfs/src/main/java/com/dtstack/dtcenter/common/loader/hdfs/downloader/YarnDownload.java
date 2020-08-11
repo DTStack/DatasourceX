@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
 import com.dtstack.dtcenter.common.kerberos.KerberosConfigVerify;
+import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -48,6 +49,8 @@ public class YarnDownload implements IDownloader {
 
     private Map<String, Object> yarnConf;
 
+    private String hdfsConfig;
+
     private static Configuration defaultConfiguration = new Configuration(false);
 
     private String appIdStr;
@@ -83,9 +86,10 @@ public class YarnDownload implements IDownloader {
     private static final String FS_HDFS_IMPL_DISABLE_CACHE = "fs.hdfs.impl.disable.cache";
     private static final String IPC_CLIENT_FALLBACK_TO_SIMPLE_AUTH_ALLOWED = "ipc.client.fallback-to-simple-auth-allowed";
 
-    private YarnDownload(Map<String, Object> yarnConf, String appIdStr, Integer readLimit) {
+    private YarnDownload(String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit) {
         this.appIdStr = appIdStr;
         this.yarnConf = yarnConf;
+        this.hdfsConfig = hdfsConfig;
 
         if (readLimit == null || readLimit < bufferSize) {
             log.warn("it is not available readLimit set,it must bigger then " + bufferSize + ", and use default :" + bufferSize);
@@ -94,14 +98,14 @@ public class YarnDownload implements IDownloader {
         }
     }
 
-    public YarnDownload(Map<String, Object> yarnConf, String appIdStr, Integer readLimit, String logType) {
-        this(yarnConf, appIdStr, readLimit);
+    public YarnDownload(String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit, String logType) {
+        this(hdfsConfig, yarnConf, appIdStr, readLimit);
         this.logType = logType;
     }
 
     @Override
     public void configure() throws Exception {
-        configuration = initYarnConf(yarnConf);
+        configuration = HadoopConfUtil.getFullConfiguration(hdfsConfig, yarnConf);
 
         //TODO 暂时在这个地方加上
         configuration.set("fs.AbstractFileSystem.hdfs.impl", "org.apache.hadoop.fs.Hdfs");
@@ -183,29 +187,6 @@ public class YarnDownload implements IDownloader {
     @Override
     public String getFileName() {
         return null;
-    }
-
-    /**
-     * 初始化 YARN 配置
-     *
-     * @param conf
-     * @return
-     */
-    private static Configuration initYarnConf(Map<String, Object> conf) {
-        KerberosConfigVerify.replaceHost(conf);
-
-        if (conf == null || conf.size() == 0) {
-            // 读取环境变量--走默认配置
-            return defaultConfiguration;
-        }
-
-        Configuration configuration = new Configuration(false);
-        setDefaultConf(configuration);
-
-        for (String key : conf.keySet()) {
-            configuration.set(key, conf.get(key).toString());
-        }
-        return configuration;
     }
 
     /**
