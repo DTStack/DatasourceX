@@ -2,8 +2,10 @@ package com.dtstack.dtcenter.common.loader.hdfs;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
+import com.dtstack.dtcenter.common.loader.hdfs.downloader.YarnDownload;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.IHdfsWriter;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.FileStatus;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
@@ -13,6 +15,7 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.conf.Configuration;
 
 import java.security.PrivilegedAction;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -98,5 +101,100 @@ public class HdfsFileClient implements IHdfsFile {
         );
 
         return hadoopFileStatus;
+    }
+
+    @Override
+    public boolean downloadFileFromHdfs(ISourceDTO source, String remotePath, String localDir) throws Exception {
+        return false;
+    }
+
+    @Override
+    public boolean uploadLocalFileToHdfs(ISourceDTO source, String localFilePath, String remotePath) throws Exception {
+        return false;
+    }
+
+    @Override
+    public boolean uploadInputStreamToHdfs(ISourceDTO source, byte[] bytes, String remotePath) throws Exception {
+        return false;
+    }
+
+    @Override
+    public boolean createDir(ISourceDTO source, String remotePath, Short permission) throws Exception {
+        return false;
+    }
+
+    @Override
+    public boolean isFileExist(ISourceDTO source, String remotePath) throws Exception {
+        return false;
+    }
+
+    @Override
+    public boolean checkAndDelete(ISourceDTO source, String remotePath) throws Exception {
+        return false;
+    }
+
+    @Override
+    public long getDirSize(ISourceDTO source, String remotePath) throws Exception {
+        return 0;
+    }
+
+    @Override
+    public boolean deleteFiles(ISourceDTO source, List<String> fileNames) throws Exception {
+        return false;
+    }
+
+    @Override
+    public boolean isDirExist(ISourceDTO source, String remotePath) throws Exception {
+        return false;
+    }
+
+    @Override
+    public boolean setPermission(ISourceDTO source, String remotePath, String mode) throws Exception {
+        return false;
+    }
+
+    @Override
+    public boolean rename(ISourceDTO source, String src, String dist) throws Exception {
+        return false;
+    }
+
+    @Override
+    public boolean copyFile(ISourceDTO source, String src, String dist, boolean isOverwrite) throws Exception {
+        return false;
+    }
+
+    @Override
+    public List<String> listAllFilePath(ISourceDTO source, String remotePath) throws Exception {
+        return null;
+    }
+
+    @Override
+    public List<FileStatus> listAllFiles(ISourceDTO source, String remotePath, boolean isIterate) throws Exception {
+        return null;
+    }
+
+    @Override
+    public boolean copyToLocal(ISourceDTO source, String srcPath, String dstPath) throws Exception {
+        return false;
+    }
+
+    @Override
+    public boolean copyFromLocal(ISourceDTO source, String srcPath, String dstPath, boolean overwrite) throws Exception {
+        return false;
+    }
+
+    @Override
+    public boolean copyInHDFS(ISourceDTO source1, ISourceDTO source2, String srcPath, String dstPath, String localPath, boolean overwrite) throws Exception {
+        return false;
+    }
+
+    @Override
+    public IHdfsWriter getHdfsWriter(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) throws Exception {
+        return null;
+    }
+
+    @Override
+    public IDownloader getDownloaderByFormat(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) throws Exception {
+        return null;
     }
 }

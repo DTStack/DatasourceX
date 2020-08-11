@@ -26,14 +26,14 @@ public class HiveTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     HiveSourceDTO source = HiveSourceDTO.builder()
-            .url("jdbc:hive2://node1:10000/data_science")
-            .schema("data_science")
+            .url("jdbc:hive2://172.16.100.219:10000/yeluo_test")
+            .schema("yeluo_test")
             .defaultFS("hdfs://ns1")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"node2:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.100.219:9000\",\n" +
                     "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"node1:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.100.204:9000\",\n" +
                     "    \"dfs.nameservices\": \"ns1\"\n" +
                     "}")
             .build();
@@ -107,7 +107,7 @@ public class HiveTest {
         IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         for (int i = 1; i < 8; i++) {
             System.out.println("============================wangchuan00"+i+"============================");
-            SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("wangchuan00"+i).build();
+            SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("yeluo_test_oracle_01_24909").build();
             IDownloader downloader = client.getDownloader(source, queryDTO);
             System.out.println(downloader.getMetaInfo());
             while (!downloader.reachedEnd()){

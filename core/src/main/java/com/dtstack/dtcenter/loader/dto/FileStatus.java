@@ -15,6 +15,11 @@ import java.io.Serializable;
 @Builder
 public class FileStatus implements Serializable {
     /**
+     * 路径
+     */
+    private String path;
+
+    /**
      * 文件大小 单位bytes
      */
     private long length = 0L;
@@ -53,4 +58,5 @@ public class FileStatus implements Serializable {
      * 组
      */
     private String group;
+
 }

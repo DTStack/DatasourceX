@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.enums;
 
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
+import com.dtstack.dtcenter.loader.client.hdfs.mq.HdfsFileClientCache;
 import com.dtstack.dtcenter.loader.client.mq.KafkaClientCache;
 import com.dtstack.dtcenter.loader.client.sql.DataSourceClientCache;
 
@@ -13,7 +14,8 @@ import com.dtstack.dtcenter.loader.client.sql.DataSourceClientCache;
 public enum ClientType {
 
     DATA_SOURCE_CLIENT(1, DataSourceClientCache.getInstance()),
-    KAFKA_CLIENT(2, KafkaClientCache.getInstance())
+    KAFKA_CLIENT(2, KafkaClientCache.getInstance()),
+    HDFS_CLIENT(3, HdfsFileClientCache.getInstance())
     ;
 
     private Integer clientType;
