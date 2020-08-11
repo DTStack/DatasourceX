@@ -21,7 +21,6 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
-import com.dtstack.sql.Twins;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
@@ -94,29 +93,21 @@ public class HdfsFileClient implements IHdfsFile {
     /**
      * 获取 HADOOP 文件信息
      *
-     * @param iSource
+     * @param source
      * @param location
      * @return
      * @throws Exception
      */
-    private org.apache.hadoop.fs.FileStatus getHadoopStatus(ISourceDTO iSource, String location) throws Exception {
-        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
-        if (!hdfsSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
-            throw new DtCenterDefException("defaultFS格式不正确");
-        }
-
-        Properties properties = HdfsConnFactory.combineHdfsConfig(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
-        Configuration conf = new HdfsOperator.HadoopConf().setConf(hdfsSourceDTO.getDefaultFS(), properties);
-        //不在做重复认证 主要用于 HdfsOperator.checkConnection 中有一些数栈自己的逻辑
-        conf.set("hadoop.security.authorization", "false");
-        conf.set("dfs.namenode.kerberos.principal.pattern", "*");
+    private org.apache.hadoop.fs.FileStatus getHadoopStatus(ISourceDTO source, String location) throws Exception {
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
 
         org.apache.hadoop.fs.FileStatus hadoopFileStatus = null;
         if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
-            hadoopFileStatus = HdfsOperator.getFileStatus(conf, location);
+            return HdfsOperator.getFileStatus(conf, location);
         }
 
-        hadoopFileStatus = KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<org.apache.hadoop.fs.FileStatus>) () -> {
                     try {
                         return HdfsOperator.getFileStatus(conf, location);
@@ -126,17 +117,51 @@ public class HdfsFileClient implements IHdfsFile {
                 }
         );
 
-        return hadoopFileStatus;
     }
 
     @Override
     public boolean downloadFileFromHdfs(ISourceDTO source, String remotePath, String localDir) throws Exception {
-        return false;
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            HdfsOperator.downloadFileFromHDFS(conf, remotePath, localDir);
+            return true;
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        HdfsOperator.downloadFileFromHDFS(conf, remotePath, localDir);
+                        return true;
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("获取 hdfs 文件状态异常", e);
+                    }
+                }
+        );
+
     }
 
     @Override
     public boolean uploadLocalFileToHdfs(ISourceDTO source, String localFilePath, String remotePath) throws Exception {
-        return false;
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            HdfsOperator.uploadLocalFileToHdfs(conf, localFilePath, remotePath);
+            return true;
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        HdfsOperator.uploadLocalFileToHdfs(conf, localFilePath, remotePath);
+                        return true;
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("获取 hdfs 文件状态异常", e);
+                    }
+                }
+        );
     }
 
     @Override
@@ -389,6 +414,19 @@ public class HdfsFileClient implements IHdfsFile {
         }
 
         return path;
+    }
+
+    private Configuration getHadoopConf(HdfsSourceDTO hdfsSourceDTO){
+
+        if (!hdfsSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
+            throw new DtCenterDefException("defaultFS格式不正确");
+        }
+        Properties properties = HdfsConnFactory.combineHdfsConfig(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
+        Configuration conf = new HdfsOperator.HadoopConf().setConf(hdfsSourceDTO.getDefaultFS(), properties);
+        //不在做重复认证 主要用于 HdfsOperator.checkConnection 中有一些数栈自己的逻辑
+        conf.set("hadoop.security.authorization", "false");
+        conf.set("dfs.namenode.kerberos.principal.pattern", "*");
+        return conf;
     }
 
 }
