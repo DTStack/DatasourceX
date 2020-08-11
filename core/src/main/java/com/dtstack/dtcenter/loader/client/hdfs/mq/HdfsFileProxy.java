@@ -209,16 +209,6 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean copyInHDFS(ISourceDTO source1, ISourceDTO source2, String srcPath, String dstPath, String localPath, boolean overwrite) throws Exception {
-        try {
-            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.copyInHDFS(source1, source2, srcPath, dstPath, localPath, overwrite),
-                    targetClient.getClass().getClassLoader(), true);
-        } catch (Exception e) {
-            throw new DtLoaderException(e.getMessage(), e);
-        }
-    }
-
-    @Override
     public IHdfsWriter getHdfsWriter(String fileFormat) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getHdfsWriter(fileFormat),

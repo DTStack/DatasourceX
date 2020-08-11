@@ -198,20 +198,6 @@ public interface IHdfsFile {
     boolean copyFromLocal(ISourceDTO source, String srcPath, String dstPath, boolean overwrite) throws Exception;
 
     /**
-     * 从hdfs copy 到hdfs
-     *
-     * @param source1
-     * @param source2
-     * @param srcPath
-     * @param dstPath
-     * @param localPath
-     * @param overwrite
-     * @throws Exception
-     */
-    boolean copyInHDFS(ISourceDTO source1, ISourceDTO source2, String srcPath, String dstPath, String localPath, boolean overwrite) throws Exception;
-
-
-    /**
      * 根据文件类型获取hdfsWriter
      *
      * @param fileFormat

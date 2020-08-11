@@ -135,7 +135,7 @@ public class HdfsFileClient implements IHdfsFile {
                         HdfsOperator.downloadFileFromHDFS(conf, remotePath, localDir);
                         return true;
                     } catch (Exception e) {
-                        throw new DtCenterDefException("获取 hdfs 文件状态异常", e);
+                        throw new DtCenterDefException("从hdfs下载文件异常", e);
                     }
                 }
         );
@@ -158,7 +158,7 @@ public class HdfsFileClient implements IHdfsFile {
                         HdfsOperator.uploadLocalFileToHdfs(conf, localFilePath, remotePath);
                         return true;
                     } catch (Exception e) {
-                        throw new DtCenterDefException("获取 hdfs 文件状态异常", e);
+                        throw new DtCenterDefException("上传文件到hdfs异常", e);
                     }
                 }
         );
@@ -166,77 +166,291 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean uploadInputStreamToHdfs(ISourceDTO source, byte[] bytes, String remotePath) throws Exception {
-        return false;
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            return HdfsOperator.uploadInputStreamToHdfs(conf, bytes, remotePath);
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        return HdfsOperator.uploadInputStreamToHdfs(conf, bytes, remotePath);
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("上传文件到hdfs异常", e);
+                    }
+                }
+        );
     }
 
     @Override
     public boolean createDir(ISourceDTO source, String remotePath, Short permission) throws Exception {
-        return false;
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            return HdfsOperator.createDir(conf, remotePath, permission);
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        return HdfsOperator.createDir(conf, remotePath, permission);
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("在hdfs创建文件夹异常", e);
+                    }
+                }
+        );
     }
 
     @Override
     public boolean isFileExist(ISourceDTO source, String remotePath) throws Exception {
-        return false;
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            return HdfsOperator.isFileExist(conf, remotePath);
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        return HdfsOperator.isFileExist(conf, remotePath);
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("获取文件是否存在异常", e);
+                    }
+                }
+        );
     }
 
     @Override
     public boolean checkAndDelete(ISourceDTO source, String remotePath) throws Exception {
-        return false;
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            return HdfsOperator.checkAndDele(conf, remotePath);
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        return HdfsOperator.checkAndDele(conf, remotePath);
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("文件检测异常", e);
+                    }
+                }
+        );
     }
 
     @Override
     public long getDirSize(ISourceDTO source, String remotePath) throws Exception {
-        return 0;
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            return HdfsOperator.getDirSize(conf, remotePath);
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Long>) () -> {
+                    try {
+                        return HdfsOperator.getDirSize(conf, remotePath);
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("获取 hdfs 文件大小异常", e);
+                    }
+                }
+        );
     }
 
     @Override
     public boolean deleteFiles(ISourceDTO source, List<String> fileNames) throws Exception {
-        return false;
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            HdfsOperator.deleteFiles(conf, fileNames);
+            return true;
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        HdfsOperator.deleteFiles(conf, fileNames);
+                        return true;
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("从 hdfs 删除文件异常", e);
+                    }
+                }
+        );
     }
 
     @Override
     public boolean isDirExist(ISourceDTO source, String remotePath) throws Exception {
-        return false;
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            return HdfsOperator.isDirExist(conf, remotePath);
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        return HdfsOperator.isDirExist(conf, remotePath);
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("判断文件夹是否存在异常", e);
+                    }
+                }
+        );
     }
 
     @Override
     public boolean setPermission(ISourceDTO source, String remotePath, String mode) throws Exception {
-        return false;
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            HdfsOperator.setPermission(conf, remotePath, mode);
+            return true;
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        HdfsOperator.setPermission(conf, remotePath, mode);
+                        return true;
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("hdfs权限设置异常", e);
+                    }
+                }
+        );
     }
 
     @Override
     public boolean rename(ISourceDTO source, String src, String dist) throws Exception {
-        return false;
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            return HdfsOperator.rename(conf, src, dist);
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        return HdfsOperator.rename(conf, src, dist);
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("hdfs 文件重命名异常", e);
+                    }
+                }
+        );
     }
 
     @Override
     public boolean copyFile(ISourceDTO source, String src, String dist, boolean isOverwrite) throws Exception {
-        return false;
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            HdfsOperator.copyFile(conf, src, dist, isOverwrite);
+            return true;
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        HdfsOperator.copyFile(conf, src, dist, isOverwrite);
+                        return true;
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("hdfs内 文件复制异常", e);
+                    }
+                }
+        );
     }
 
     @Override
     public List<String> listAllFilePath(ISourceDTO source, String remotePath) throws Exception {
-        return null;
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            return HdfsOperator.listAllFilePath(conf, remotePath);
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<List<String>>) () -> {
+                    try {
+                        return HdfsOperator.listAllFilePath(conf, remotePath);
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("获取 hdfs目录 文件异常", e);
+                    }
+                }
+        );
     }
 
     @Override
     public List<FileStatus> listAllFiles(ISourceDTO source, String remotePath, boolean isIterate) throws Exception {
-        return null;
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            return listFiles(conf, remotePath, isIterate);
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<List<FileStatus>>) () -> {
+                    try {
+                        return listFiles(conf, remotePath, isIterate);
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("获取 hdfs 目录下文件状态异常", e);
+                    }
+                }
+        );
     }
 
     @Override
     public boolean copyToLocal(ISourceDTO source, String srcPath, String dstPath) throws Exception {
-        return false;
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            HdfsOperator.copyToLocal(conf, srcPath, dstPath);
+            return true;
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        HdfsOperator.copyToLocal(conf, srcPath, dstPath);
+                        return true;
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("copy hdfs 文件到本地异常", e);
+                    }
+                }
+        );
     }
 
     @Override
     public boolean copyFromLocal(ISourceDTO source, String srcPath, String dstPath, boolean overwrite) throws Exception {
-        return false;
-    }
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
 
-    @Override
-    public boolean copyInHDFS(ISourceDTO source1, ISourceDTO source2, String srcPath, String dstPath, String localPath, boolean overwrite) throws Exception {
-        return false;
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            HdfsOperator.copyFromLocal(conf, srcPath, dstPath, overwrite);
+            return true;
+        }
+
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        HdfsOperator.copyFromLocal(conf, srcPath, dstPath, overwrite);
+                        return true;
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("从本地copy 文件到 hdfs异常", e);
+                    }
+                }
+        );
     }
 
     @Override
@@ -427,6 +641,26 @@ public class HdfsFileClient implements IHdfsFile {
         conf.set("hadoop.security.authorization", "false");
         conf.set("dfs.namenode.kerberos.principal.pattern", "*");
         return conf;
+    }
+
+    private List<FileStatus> listFiles(Configuration conf, String remotePath, boolean isIterate) throws IOException {
+        List<FileStatus> fileStatusList = new ArrayList<>();
+        List<org.apache.hadoop.fs.FileStatus> fileStatuses = HdfsOperator.listFiles(conf, remotePath, isIterate);
+        for (org.apache.hadoop.fs.FileStatus fileStatus : fileStatuses) {
+            FileStatus fileStatusTemp = FileStatus.builder()
+                    .length(fileStatus.getLen())
+                    .access_time(fileStatus.getAccessTime())
+                    .block_replication(fileStatus.getReplication())
+                    .blocksize(fileStatus.getBlockSize())
+                    .group(fileStatus.getGroup())
+                    .isdir(fileStatus.isDirectory())
+                    .modification_time(fileStatus.getModificationTime())
+                    .owner(fileStatus.getOwner())
+                    .path(fileStatus.getPath().toString())
+                    .build();
+            fileStatusList.add(fileStatusTemp);
+        }
+        return fileStatusList;
     }
 
 }
