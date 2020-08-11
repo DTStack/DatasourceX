@@ -41,6 +41,7 @@
         <module>phoenix5</module>
         <module>hbase2</module>
         <module>transition</module>
+        <module>spark</module>
     </modules>
     <packaging>pom</packaging>
 

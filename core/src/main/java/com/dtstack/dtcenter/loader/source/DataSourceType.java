@@ -19,6 +19,7 @@ public enum DataSourceType {
     RDBMS(5, "RDBMS", "mysql"),
     HDFS(6, "HDFS", "hdfs"),
     HIVE(7, "Hive2.x", "hive"),
+    Spark(1002, "Spark", "spark"),
     HBASE(8, "HBase1.x", "hbase"),
     FTP(9, "FTP", "ftp"),
     MAXCOMPUTE(10, "MaxCompute", "maxcompute"),
