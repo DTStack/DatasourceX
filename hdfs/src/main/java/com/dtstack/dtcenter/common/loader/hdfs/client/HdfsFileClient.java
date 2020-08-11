@@ -295,7 +295,7 @@ public class HdfsFileClient implements IHdfsFile {
             try {
                 return getColumnListOnFileFormat(hdfsSourceDTO, queryDTO, fileFormat);
             }catch (Exception e) {
-                throw new DtCenterDefException("创建下载器异常", e);
+                throw new DtCenterDefException("获取hdfs文件字段信息异常", e);
             }
         }
 
@@ -305,7 +305,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return getColumnListOnFileFormat(hdfsSourceDTO, queryDTO, fileFormat);
                     } catch (Exception e) {
-                        throw new DtCenterDefException("创建下载器异常", e);
+                        throw new DtCenterDefException("获取hdfs文件字段信息异常", e);
                     }
                 }
         );

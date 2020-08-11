@@ -306,7 +306,7 @@ public class HiveClient extends AbsRdbmsClient {
             return KerberosUtil.loginKerberosWithUGI(hiveSourceDTO.getKerberosConfig()).doAs(
                     (PrivilegedAction<IDownloader>) () -> {
                         try {
-                            return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns);
+                            return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns());
                         } catch (Exception e) {
                             throw new DtCenterDefException("创建下载器异常", e);
                         }
@@ -314,7 +314,7 @@ public class HiveClient extends AbsRdbmsClient {
             );
         }
 
-        return createDownloader(storageMode, conf, tableLocation, columnNames, fieldDelimiter, partitionColumns);
+        return createDownloader(storageMode, conf, tableLocation, columnNames, fieldDelimiter, partitionColumns, queryDTO.getPartitionColumns());
     }
 
     /**
@@ -328,14 +328,14 @@ public class HiveClient extends AbsRdbmsClient {
      * @return
      * @throws Exception
      */
-    private @NotNull IDownloader createDownloader(String storageMode, Configuration conf, String tableLocation, ArrayList<String> columnNames, String fieldDelimiter, ArrayList<String> partitionColumns) throws Exception {
+    private @NotNull IDownloader createDownloader(String storageMode, Configuration conf, String tableLocation, ArrayList<String> columnNames, String fieldDelimiter, ArrayList<String> partitionColumns, Map<String, String> filterPartitions) throws Exception {
         // 根据存储格式创建对应的hiveDownloader
         if (StringUtils.isBlank(storageMode)) {
             throw new DtCenterDefException("不支持该存储类型的hive表读取");
         }
 
         if (storageMode.contains("Text")){
-            HiveTextDownload hiveTextDownload = new HiveTextDownload(conf, tableLocation, columnNames, fieldDelimiter, partitionColumns);
+            HiveTextDownload hiveTextDownload = new HiveTextDownload(conf, tableLocation, columnNames, fieldDelimiter, partitionColumns, filterPartitions);
             hiveTextDownload.configure();
             return hiveTextDownload;
         }
@@ -347,7 +347,7 @@ public class HiveClient extends AbsRdbmsClient {
         }
 
         if (storageMode.contains("Parquet")){
-            HiveParquetDownload hiveParquetDownload = new HiveParquetDownload(conf, tableLocation, columnNames, partitionColumns);
+            HiveParquetDownload hiveParquetDownload = new HiveParquetDownload(conf, tableLocation, columnNames, partitionColumns, filterPartitions);
             hiveParquetDownload.configure();
             return hiveParquetDownload;
         }
