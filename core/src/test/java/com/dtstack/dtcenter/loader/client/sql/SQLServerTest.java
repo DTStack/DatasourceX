@@ -36,8 +36,7 @@ public class SQLServerTest {
     public void getCon() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.SQLServer.getPluginName());
         Connection con1 = client.getCon(source);
-        System.out.println(con1.toString());
-        String con1JdbcConn = con1.toString().split("@")[1];
+        String con1JdbcConn = con1.toString().split("wrapping")[1];
         Connection con2 = client.getCon(source);
         Connection con3 = client.getCon(source);
         Connection con4 = client.getCon(source);
@@ -49,9 +48,8 @@ public class SQLServerTest {
         Connection con10 = client.getCon(source);
         con1.close();
         Connection con11 = client.getCon(source);
-        String con11JdbcConn = con11.toString().split("@")[1];
-        System.out.println(con11.toString());
-        //assert con1JdbcConn.equals(con11JdbcConn);
+        String con11JdbcConn = con11.toString().split("wrapping")[1];
+        assert con1JdbcConn.equals(con11JdbcConn);
         con2.close();
         con3.close();
         con4.close();

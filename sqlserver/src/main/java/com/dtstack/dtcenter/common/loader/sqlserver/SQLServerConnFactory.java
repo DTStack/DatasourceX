@@ -17,15 +17,4 @@ public class SQLServerConnFactory extends ConnFactory {
         driverName = DataBaseType.SQLServer.getDriverClassName();
         testSql = DataBaseType.SQLServer.getTestSql();
     }
-
-    /**
-     * 不支持开启连接池
-     * @param source
-     * @return
-     * @throws Exception
-     */
-    @Override
-    protected Connection getCpConn(ISourceDTO source) throws Exception {
-        return super.getSimpleConn(source);
-    }
 }

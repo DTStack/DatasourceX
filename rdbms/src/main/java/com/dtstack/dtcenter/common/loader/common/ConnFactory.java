@@ -161,6 +161,7 @@ public class ConnFactory {
         hikariData.setJdbcUrl(rdbmsSourceDTO.getUrl());
         hikariData.setConnectionInitSql(testSql);
 
+        hikariData.setConnectionTestQuery(testSql);
         hikariData.setConnectionTimeout(rdbmsSourceDTO.getPoolConfig().getConnectionTimeout());
         hikariData.setIdleTimeout(rdbmsSourceDTO.getPoolConfig().getIdleTimeout());
         hikariData.setMaxLifetime(rdbmsSourceDTO.getPoolConfig().getMaxLifetime());
