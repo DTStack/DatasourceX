@@ -63,6 +63,28 @@ public class SqlQueryDTO {
      */
     private Integer previewNum;
 
+    /**
+     * 预编译字段
+     * todo 修改executeQuery方法为支持预编译
+     * time :2020-08-04 15:49:00
+     */
+    private List<Object> preFields;
+
+    /**
+     * executorQuery查询超时时间,单位：秒
+     */
+    private Integer queryTimeout;
+
+    /**
+     * mongodb，executorQuery 分页查询，开始行
+     */
+    private Integer startRow;
+
+    /**
+     * mongodb，executorQuery 分页查询，限制条数
+     */
+    private Integer limit;
+
     public Boolean getView() {
         if (ArrayUtils.isEmpty(getTableTypes())) {
             return Boolean.TRUE.equals(view);

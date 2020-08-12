@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,12 +31,6 @@ public class MongoSourceDTO  implements ISourceDTO {
     private String password;
 
     /**
-     * 是否缓存
-     */
-    @Builder.Default
-    protected Boolean isCache = false;
-
-    /**
      * 端口号
      */
     private String hostPort;
@@ -49,4 +44,9 @@ public class MongoSourceDTO  implements ISourceDTO {
      * 如果为 master slave 的则为 master 的地址
      */
     private String master;
+
+    /**
+     * 连接池配置信息，如果传入则认为开启连接池
+     */
+    private PoolConfig poolConfig;
 }

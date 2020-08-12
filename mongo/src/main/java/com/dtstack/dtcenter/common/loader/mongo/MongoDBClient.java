@@ -20,6 +20,9 @@ import java.util.Map;
  */
 @Slf4j
 public class MongoDBClient<T> implements IClient<T> {
+
+    private static MongoExecutor mongoExecutor = MongoExecutor.getInstance();
+
     @Override
     public Boolean testCon(ISourceDTO iSource) {
         return MongoDBUtils.checkConnection(iSource);
@@ -40,14 +43,14 @@ public class MongoDBClient<T> implements IClient<T> {
         return MongoDBUtils.getDatabaseList(iSource);
     }
 
+    @Override
+    public List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        return mongoExecutor.execute(source, queryDTO);
+    }
+
     /********************************* 非关系型数据库无需实现的方法 ******************************************/
     @Override
     public Connection getCon(ISourceDTO source) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 

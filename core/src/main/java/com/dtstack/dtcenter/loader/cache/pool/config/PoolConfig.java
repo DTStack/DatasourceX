@@ -1,7 +1,9 @@
-package com.dtstack.dtcenter.loader.cache.cp;
+package com.dtstack.dtcenter.loader.cache.pool.config;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -15,8 +17,10 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * @Description：连接池配置信息
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class CpConfig implements Serializable {
+public class PoolConfig implements Serializable {
     /**
      * 等待连接池分配连接的最大时长（毫秒）
      * 超过这个时长还没可用的连接则发生SQLException
@@ -49,7 +53,7 @@ public class CpConfig implements Serializable {
      * 小于 0 则会重置为最大连接数
      */
     @Builder.Default
-    private Integer minimumIdle = -1;
+    private Integer minimumIdle = 5;
 
     /**
      * 设置连接只读

@@ -10,6 +10,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
@@ -38,6 +39,52 @@ public class DBUtil {
         try {
             statement = conn.createStatement();
             res = statement.executeQuery(sql);
+            int columns = res.getMetaData().getColumnCount();
+            List<String> columnName = Lists.newArrayList();
+            for (int i = 0; i < columns; i++) {
+                columnName.add(res.getMetaData().getColumnName(i + 1));
+            }
+
+            while (res.next()) {
+                Map<String, Object> row = Maps.newLinkedHashMap();
+                for (int i = 0; i < columns; i++) {
+                    row.put(columnName.get(i), res.getObject(i + 1));
+                }
+                result.add(row);
+            }
+        } catch (Exception e) {
+            throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+        } finally {
+            DBUtil.closeDBResources(res, statement, closeConn ? conn : null);
+        }
+        return result;
+    }
+
+    /**
+     * 根据 SQL 查询 - 预编译查询
+     *
+     * @param conn
+     * @param sql
+     * @param closeConn 是否关闭连接
+     * @return
+     */
+    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Boolean closeConn, List<Object> preFields, Integer queryTimeout) {
+        List<Map<String, Object>> result = Lists.newArrayList();
+        ResultSet res = null;
+        PreparedStatement statement = null;
+        try {
+            statement = conn.prepareStatement(sql);
+            //设置查询超时时间
+            if (queryTimeout != null) {
+                statement.setQueryTimeout(queryTimeout);
+            }
+            //todo 支持预编译sql
+            if (preFields != null && !preFields.isEmpty()) {
+                for (int i = 0; i < preFields.size(); i++) {
+                    statement.setObject(i + 1, preFields.get(i));
+                }
+            }
+            res = statement.executeQuery();
             int columns = res.getMetaData().getColumnCount();
             List<String> columnName = Lists.newArrayList();
             for (int i = 0; i < columns; i++) {
