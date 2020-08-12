@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.mongo;
 
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.loader.mongo.pool.MongoManager;
 import com.dtstack.dtcenter.common.util.AddressUtil;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -21,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.bson.Document;
 
+import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,15 +49,18 @@ public class MongoDBUtils {
 
     public static final int TIME_OUT = 5 * 1000;
 
-    private static final String mongoRow = "%s=%s";
+    private static final String poolConfigFieldName = "poolConfig";
+
+    private static MongoManager mongoManager = MongoManager.getInstance();
+
+    public static final ThreadLocal<Boolean> isOpenPool = new ThreadLocal<>();
 
     public static boolean checkConnection(ISourceDTO iSource) {
         MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
         boolean check = false;
         MongoClient mongoClient = null;
         try {
-            mongoClient = getClient(mongoSourceDTO.getHostPort(), mongoSourceDTO.getUsername(), mongoSourceDTO.getPassword(),
-                    mongoSourceDTO.getSchema());
+            mongoClient = getClient(mongoSourceDTO);
             String schema = StringUtils.isBlank(mongoSourceDTO.getSchema()) ? dealSchema(mongoSourceDTO.getHostPort()) : mongoSourceDTO.getSchema();
             MongoDatabase mongoDatabase = mongoClient.getDatabase(schema);
             MongoIterable<String> mongoIterable = mongoDatabase.listCollectionNames();
@@ -64,7 +69,7 @@ public class MongoDBUtils {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
-            if (mongoClient != null) {
+            if (!isOpenPool.get() && mongoClient != null) {
                 mongoClient.close();
             }
         }
@@ -77,9 +82,7 @@ public class MongoDBUtils {
         MongoClient mongoClient = null;
         ArrayList<String> databases = new ArrayList<>();
         try {
-            mongoClient = getClient(mongoSourceDTO.getHostPort(), mongoSourceDTO.getUsername(), mongoSourceDTO.getPassword(),
-                    mongoSourceDTO.getSchema());
-
+            mongoClient = getClient(mongoSourceDTO);
             MongoIterable<String> dbNames = mongoClient.listDatabaseNames();
             for (String dbName:dbNames){
                 databases.add(dbName);
@@ -87,14 +90,16 @@ public class MongoDBUtils {
         }catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
-            if (mongoClient != null) {
+            if (!isOpenPool.get() && mongoClient != null) {
                 mongoClient.close();
             }
         }
         return databases;
     }
 
-    //预览数据
+    /**
+     * 预览数据
+     */
     public static List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO){
         MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
         List<List<Object>> dataList = new ArrayList<>();
@@ -104,8 +109,7 @@ public class MongoDBUtils {
         }
         MongoClient mongoClient = null;
         try {
-            mongoClient = getClient(mongoSourceDTO.getHostPort(), mongoSourceDTO.getUsername(), mongoSourceDTO.getPassword(),
-                    schema);
+            mongoClient = getClient(mongoSourceDTO);
             //获取指定数据库
             MongoDatabase mongoDatabase = mongoClient.getDatabase(schema);
             //获取指定表
@@ -119,7 +123,7 @@ public class MongoDBUtils {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
-            if (mongoClient != null) {
+            if (!isOpenPool.get() && mongoClient != null) {
                 mongoClient.close();
             }
         }
@@ -133,7 +137,7 @@ public class MongoDBUtils {
         MongoClient mongoClient = null;
         try {
             String db = StringUtils.isBlank(mongoSourceDTO.getSchema()) ? dealSchema(mongoSourceDTO.getHostPort()) : mongoSourceDTO.getSchema();
-            mongoClient = getClient(mongoSourceDTO.getHostPort(), mongoSourceDTO.getUsername(), mongoSourceDTO.getPassword(), db);
+            mongoClient = getClient(mongoSourceDTO);
             MongoDatabase mongoDatabase = mongoClient.getDatabase(db);
             MongoIterable<String> tableNames = mongoDatabase.listCollectionNames();
             for (String s : tableNames) {
@@ -142,15 +146,14 @@ public class MongoDBUtils {
         } catch (Exception e) {
             log.error("获取tablelist异常  {}", mongoSourceDTO, e);
         } finally {
-            if (mongoClient != null) {
+            if (!isOpenPool.get() && mongoClient != null) {
                 mongoClient.close();
             }
         }
-
         return tableList;
     }
 
-    protected static List<ServerAddress> getServerAddress(String hostPorts) {
+    public static List<ServerAddress> getServerAddress(String hostPorts) {
         List<ServerAddress> addresses = Lists.newArrayList();
 
         boolean isTelnet = true;
@@ -184,11 +187,34 @@ public class MongoDBUtils {
     }
 
 
+    public static MongoClient getClient(MongoSourceDTO mongoSourceDTO) {
+        String hostPorts = mongoSourceDTO.getHostPort();
+        String username = mongoSourceDTO.getUsername();
+        String password = mongoSourceDTO.getPassword();
+        String schema = mongoSourceDTO.getSchema();
+        boolean check = false;
+        //适配之前的版本，判断ISourceDTO类中有无获取isCache字段的方法
+        Field[] fields = MongoSourceDTO.class.getDeclaredFields();
+        for (Field field : fields) {
+            if (poolConfigFieldName.equals(field.getName())) {
+                check = mongoSourceDTO.getPoolConfig() != null;
+                break;
+            }
+        }
+        isOpenPool.set(check);
+        //不开启连接池
+        if (!check) {
+            return getClient(hostPorts, username, password, schema);
+        }
+        //开启连接池
+        return mongoManager.getConnection(mongoSourceDTO);
+    }
+
+
     /*
     1.  username:password@host:port,host:port/db?option
     2.  host:port,host:port/db?option
      */
-
     public static MongoClient getClient(String hostPorts, String username, String password, String db) {
         MongoClient mongoClient = null;
         hostPorts = hostPorts.trim();
@@ -229,7 +255,7 @@ public class MongoDBUtils {
      * @param hostPorts
      * @return
      */
-    private static String dealSchema(String hostPorts) {
+    public static String dealSchema(String hostPorts) {
         for (String hostPort : hostPorts.split(HOST_SPLIT_REGEX)) {
             if (hostPort.length() == 0) {
                 continue;
