@@ -92,8 +92,12 @@ public class MysqlDownloader implements IDownloader {
         } catch (Exception e) {
             throw new DtCenterDefException("构造 Mysql 下载器信息异常 : " + e.getMessage(), e);
         } finally {
-            columnsResultSet.close();
-            totalResultSet.close();
+            if (totalResultSet != null) {
+                totalResultSet.close();
+            }
+            if (columnsResultSet != null) {
+                columnsResultSet.close();
+            }
         }
     }
 
