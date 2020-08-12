@@ -33,4 +33,6 @@ public class HdfsWriterDTO {
 
     private List<HDFSImportColumn> keyList;
 
+    private String fileFormat;
+
 }

@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.common.loader.hdfs.client;
 
-import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hdfs.HdfsConnFactory;
@@ -13,11 +12,11 @@ import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsParquetWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsTextWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
-import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.IHdfsWriter;
+import com.dtstack.dtcenter.loader.downloader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.FileStatus;
+import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -455,24 +454,6 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     @Override
-    public IHdfsWriter getHdfsWriter(String fileFormat) throws Exception {
-        IHdfsWriter hdfsWriter = null;
-        if (FileFormat.ORC.getVal().equals(fileFormat)) {
-            hdfsWriter =  new HdfsOrcWriter();
-        }else if (FileFormat.PARQUET.getVal().equals(fileFormat)) {
-            hdfsWriter =  new HdfsParquetWriter();
-        }else if (FileFormat.TEXT.getVal().equals(fileFormat)) {
-            hdfsWriter =  new HdfsTextWriter();
-        }
-        if (hdfsWriter != null) {
-            return hdfsWriter;
-        }else {
-            throw new DtCenterDefException("暂不支持该存储类型文件写入hdfs");
-        }
-
-    }
-
-    @Override
     public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, String fieldDelimiter, String fileFormat) throws Exception {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
@@ -550,6 +531,80 @@ public class HdfsFileClient implements IHdfsFile {
                 }
         );
 
+    }
+
+    @Override
+    public int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception {
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            try {
+                return writeByPosWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
+            }catch (Exception e) {
+                throw new DtCenterDefException("写入hdfs异常", e);
+            }
+        }
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Integer>) () -> {
+                    try {
+                        return writeByPosWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("获取hdfs文件字段信息异常", e);
+                    }
+                }
+        );
+    }
+
+    @Override
+    public int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception {
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            try {
+                return writeByNameWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
+            }catch (Exception e) {
+                throw new DtCenterDefException("写入hdfs异常", e);
+            }
+        }
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Integer>) () -> {
+                    try {
+                        return writeByNameWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("获取hdfs文件字段信息异常", e);
+                    }
+                }
+        );
+    }
+
+    private int writeByPosWithFileFormat(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
+        if (FileFormat.ORC.getVal().equals(hdfsWriterDTO.getFileFormat())) {
+            return HdfsOrcWriter.writeByPos(source, hdfsWriterDTO);
+        }
+        if (FileFormat.PARQUET.getVal().equals(hdfsWriterDTO.getFileFormat())) {
+            return HdfsParquetWriter.writeByPos(source, hdfsWriterDTO);
+        }
+        if (FileFormat.TEXT.getVal().equals(hdfsWriterDTO.getFileFormat())) {
+            return HdfsTextWriter.writeByPos(source, hdfsWriterDTO);
+        }
+        throw new DtCenterDefException("暂不支持该存储类型文件写入hdfs");
+    }
+
+    private int writeByNameWithFileFormat(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
+        if (FileFormat.ORC.getVal().equals(hdfsWriterDTO.getFileFormat())) {
+            return HdfsOrcWriter.writeByName(source, hdfsWriterDTO);
+        }
+        if (FileFormat.PARQUET.getVal().equals(hdfsWriterDTO.getFileFormat())) {
+            return HdfsParquetWriter.writeByName(source, hdfsWriterDTO);
+        }
+        if (FileFormat.TEXT.getVal().equals(hdfsWriterDTO.getFileFormat())) {
+            return HdfsTextWriter.writeByName(source, hdfsWriterDTO);
+        }
+        throw new DtCenterDefException("暂不支持该存储类型文件写入hdfs");
     }
 
     private List<ColumnMetaDTO> getColumnListOnFileFormat(HdfsSourceDTO hdfsSourceDTO, SqlQueryDTO queryDTO, String fileFormat) throws IOException {
@@ -663,5 +718,4 @@ public class HdfsFileClient implements IHdfsFile {
         }
         return fileStatusList;
     }
-
 }

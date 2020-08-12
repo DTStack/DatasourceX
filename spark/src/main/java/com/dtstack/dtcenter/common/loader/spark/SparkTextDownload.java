@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.spark;
 
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
-import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.downloader.IDownloader;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -66,7 +66,7 @@ public class SparkTextDownload implements IDownloader {
     }
 
     @Override
-    public void configure() throws IOException {
+    public boolean configure() throws IOException {
 
         paths = getAllPartitionPath(tableLocation);
         if(paths.size() == 0){
@@ -76,6 +76,7 @@ public class SparkTextDownload implements IDownloader {
         nextRecordReader();
         key = new LongWritable();
         value = new Text();
+        return true;
     }
 
     private List<String> getAllPartitionPath(String tableLocation) throws IOException {
@@ -222,10 +223,11 @@ public class SparkTextDownload implements IDownloader {
     }
 
     @Override
-    public void close() throws IOException {
+    public boolean close() throws IOException {
         if(recordReader != null){
             recordReader.close();
         }
+        return true;
     }
 
     @Override

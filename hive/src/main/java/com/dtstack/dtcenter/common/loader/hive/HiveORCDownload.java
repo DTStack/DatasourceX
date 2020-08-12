@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hive;
 
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
-import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.downloader.IDownloader;
 import jodd.util.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -63,7 +63,7 @@ public class HiveORCDownload implements IDownloader {
     }
 
     @Override
-    public void configure() throws Exception {
+    public boolean configure() throws Exception {
 
         this.orcSerde = new OrcSerde();
         this.inputFormat = new OrcInputFormat();
@@ -84,6 +84,7 @@ public class HiveORCDownload implements IDownloader {
             this.inspector = (StructObjectInspector) orcSerde.getObjectInspector();
             fields = inspector.getAllStructFieldRefs();
         }
+        return true;
     }
 
     @Override
@@ -158,10 +159,11 @@ public class HiveORCDownload implements IDownloader {
     }
 
     @Override
-    public void close() throws IOException {
+    public boolean close() throws IOException {
         if(recordReader != null){
             recordReader.close();
         }
+        return true;
     }
 
     @Override

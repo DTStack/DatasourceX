@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
-import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.downloader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import jodd.util.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
@@ -66,7 +66,7 @@ public class HdfsORCDownload implements IDownloader {
     }
 
     @Override
-    public void configure() throws Exception {
+    public boolean configure() throws Exception {
 
         this.orcSerde = new OrcSerde();
         this.inputFormat = new OrcInputFormat();
@@ -88,6 +88,7 @@ public class HdfsORCDownload implements IDownloader {
             this.inspector = (StructObjectInspector) orcSerde.getObjectInspector();
             fields = inspector.getAllStructFieldRefs();
         }
+        return true;
     }
 
     @Override
@@ -163,10 +164,11 @@ public class HdfsORCDownload implements IDownloader {
     }
 
     @Override
-    public void close() throws IOException {
+    public boolean close() throws IOException {
         if(recordReader != null){
             recordReader.close();
         }
+        return true;
     }
 
     @Override

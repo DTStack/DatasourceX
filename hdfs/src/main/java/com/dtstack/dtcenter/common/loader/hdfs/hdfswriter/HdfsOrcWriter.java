@@ -1,12 +1,10 @@
 package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 
 import com.csvreader.CsvReader;
-import com.csvreader.CsvWriter;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
 import com.dtstack.dtcenter.common.util.DateUtil;
 import com.dtstack.dtcenter.common.util.MathUtil;
-import com.dtstack.dtcenter.loader.IHdfsWriter;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
@@ -41,7 +39,7 @@ import java.util.UUID;
  * date：Created in 下午01:50 2020/8/11
  * company: www.dtstack.com
  */
-public class HdfsOrcWriter implements IHdfsWriter {
+public class HdfsOrcWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(HdfsOrcWriter.class);
 
@@ -50,7 +48,7 @@ public class HdfsOrcWriter implements IHdfsWriter {
      **/
     public static final int FLUSH_LINE_NUM = 1000;
 
-    public int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
+    public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
 
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Boolean topLineIsTitle = hdfsWriterDTO.getTopLineIsTitle();
@@ -128,7 +126,7 @@ public class HdfsOrcWriter implements IHdfsWriter {
         return writeLineNum;
     }
 
-    public int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
+    public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
 
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = HadoopConfUtil.getHdfsConfiguration(hdfsSourceDTO.getConfig());

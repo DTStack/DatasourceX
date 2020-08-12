@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.loader.client.hdfs.mq;
+package com.dtstack.dtcenter.loader.client.hdfs;
 
 import com.dtstack.dtcenter.common.thread.RdosThreadFactory;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;

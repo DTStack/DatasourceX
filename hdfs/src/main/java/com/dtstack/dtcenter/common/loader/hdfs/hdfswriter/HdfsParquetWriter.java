@@ -4,7 +4,6 @@ package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 import com.csvreader.CsvReader;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
-import com.dtstack.dtcenter.loader.IHdfsWriter;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
@@ -54,7 +53,7 @@ import java.util.UUID;
  * date：Created in 下午01:40 2020/8/11
  * company: www.dtstack.com
  */
-public class HdfsParquetWriter implements IHdfsWriter {
+public class HdfsParquetWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(HdfsParquetWriter.class);
 
@@ -72,7 +71,7 @@ public class HdfsParquetWriter implements IHdfsWriter {
      *
      * @return
      */
-    public int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
+    public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         int startLine = hdfsWriterDTO.getStartLine();
         //首行是标题则内容从下一行开始
@@ -179,7 +178,7 @@ public class HdfsParquetWriter implements IHdfsWriter {
      *
      * @return
      */
-    public int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
+    public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         MessageType schema = buildSchema(hdfsWriterDTO.getColumnsList());
         ParquetWriter<Group> writer = getWriter(hdfsSourceDTO.getConfig(), hdfsWriterDTO.getHdfsDirPath(), hdfsWriterDTO.getColumnsList());

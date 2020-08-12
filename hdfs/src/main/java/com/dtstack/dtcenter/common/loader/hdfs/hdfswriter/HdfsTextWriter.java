@@ -3,7 +3,6 @@ package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 import com.csvreader.CsvReader;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
-import com.dtstack.dtcenter.loader.IHdfsWriter;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
@@ -33,7 +32,7 @@ import java.util.UUID;
  * company: www.dtstack.com
  */
 
-public class HdfsTextWriter implements IHdfsWriter {
+public class HdfsTextWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(HdfsTextWriter.class);
 
@@ -48,7 +47,7 @@ public class HdfsTextWriter implements IHdfsWriter {
      * @param hdfsWriterDTO
      * @throws IOException
      */
-    public int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
+    public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         int startLine = hdfsWriterDTO.getStartLine();
         if (hdfsWriterDTO.getTopLineIsTitle()) {//首行是标题则内容从下一行开始
@@ -114,7 +113,7 @@ public class HdfsTextWriter implements IHdfsWriter {
      * @return
      * @throws IOException
      */
-    public int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
+    public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         final boolean overwrite = false;
         final Configuration conf = HadoopConfUtil.getHdfsConfiguration(hdfsSourceDTO.getConfig());
@@ -210,7 +209,7 @@ public class HdfsTextWriter implements IHdfsWriter {
         return writeLineNum;
     }
 
-    private String transformColumn(final List<ColumnMetaDTO> tableColumns, final List<HDFSImportColumn> keyList, final String[] columnValArr, final String delimiter) throws ParseException {
+    private static String transformColumn(final List<ColumnMetaDTO> tableColumns, final List<HDFSImportColumn> keyList, final String[] columnValArr, final String delimiter) throws ParseException {
 
         if (columnValArr == null) {
             throw new DtCenterDefException("记录不应该为空");

@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.hive1;
 
 import com.dtstack.dtcenter.common.hadoop.GroupTypeIgnoreCase;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
-import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.downloader.IDownloader;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
@@ -90,7 +90,7 @@ public class HiveParquetDownload implements IDownloader {
     }
 
     @Override
-    public void configure() throws Exception {
+    public boolean configure() throws Exception {
 
 
         jobConf = new JobConf(conf);
@@ -99,6 +99,7 @@ public class HiveParquetDownload implements IDownloader {
         if(paths.size() == 0){
             throw new RuntimeException("非法路径:" + tableLocation);
         }
+        return true;
     }
 
     private void nextSplitRecordReader() throws Exception{
@@ -259,11 +260,12 @@ public class HiveParquetDownload implements IDownloader {
     }
 
     @Override
-    public void close() throws Exception {
+    public boolean close() throws Exception {
         if (build != null){
             build.close();
             HdfsOperator.release();
         }
+        return true;
     }
 
     @Override

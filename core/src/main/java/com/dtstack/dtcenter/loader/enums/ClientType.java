@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.loader.enums;
 
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
-import com.dtstack.dtcenter.loader.client.hdfs.mq.HdfsFileClientCache;
+import com.dtstack.dtcenter.loader.client.hdfs.HdfsFileClientCache;
 import com.dtstack.dtcenter.loader.client.mq.KafkaClientCache;
 import com.dtstack.dtcenter.loader.client.sql.DataSourceClientCache;
 

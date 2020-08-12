@@ -2,9 +2,8 @@ package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
-import com.dtstack.dtcenter.common.kerberos.KerberosConfigVerify;
 import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
-import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.downloader.IDownloader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -104,7 +103,7 @@ public class YarnDownload implements IDownloader {
     }
 
     @Override
-    public void configure() throws Exception {
+    public boolean configure() throws Exception {
         configuration = HadoopConfUtil.getFullConfiguration(hdfsConfig, yarnConf);
 
         //TODO 暂时在这个地方加上
@@ -135,6 +134,7 @@ public class YarnDownload implements IDownloader {
         } catch (FileNotFoundException fnf) {
             throw new DtCenterDefException("applicationId:" + appIdStr + " don't have any log file.");
         }
+        return true;
     }
 
     private void checkSize(String tableLocation) throws IOException {
@@ -178,10 +178,11 @@ public class YarnDownload implements IDownloader {
     }
 
     @Override
-    public void close() throws Exception {
+    public boolean close() throws Exception {
         if(currValueStream != null){
             currValueStream.close();
         }
+        return true;
     }
 
     @Override

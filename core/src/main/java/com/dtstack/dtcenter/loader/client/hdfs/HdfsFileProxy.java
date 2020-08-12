@@ -1,11 +1,12 @@
-package com.dtstack.dtcenter.loader.client.hdfs.mq;
+package com.dtstack.dtcenter.loader.client.hdfs;
 
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
-import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.IHdfsWriter;
+import com.dtstack.dtcenter.loader.downloader.DownloaderProxy;
+import com.dtstack.dtcenter.loader.downloader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.FileStatus;
+import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -41,7 +42,8 @@ public class HdfsFileProxy implements IHdfsFile {
     @Override
     public IDownloader getLogDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         try {
-            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getLogDownloader(source, queryDTO),
+            //这里返回给上层的是downLoader代理类
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> new DownloaderProxy(targetClient.getLogDownloader(source, queryDTO)),
                     targetClient.getClass().getClassLoader(), true);
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
@@ -209,19 +211,9 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public IHdfsWriter getHdfsWriter(String fileFormat) throws Exception {
-        try {
-            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getHdfsWriter(fileFormat),
-                    targetClient.getClass().getClassLoader(), true);
-        } catch (Exception e) {
-            throw new DtLoaderException(e.getMessage(), e);
-        }
-    }
-
-    @Override
     public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, String fieldDelimiter, String fileFormat) throws Exception {
         try {
-            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getDownloaderByFormat(source, tableLocation, fieldDelimiter, fileFormat),
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> new DownloaderProxy(targetClient.getDownloaderByFormat(source, tableLocation, fieldDelimiter, fileFormat)),
                     targetClient.getClass().getClassLoader(), true);
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
@@ -232,6 +224,26 @@ public class HdfsFileProxy implements IHdfsFile {
     public List<ColumnMetaDTO> getColumnList(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnList(source, queryDTO, fileFormat),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.writeByPos(source, hdfsWriterDTO),
+                    targetClient.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.writeByName(source, hdfsWriterDTO),
                     targetClient.getClass().getClassLoader(), true);
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);

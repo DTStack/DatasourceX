@@ -1,9 +1,9 @@
 package com.dtstack.dtcenter.loader.client;
 
-import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.IHdfsWriter;
+import com.dtstack.dtcenter.loader.downloader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.FileStatus;
+import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 
@@ -198,15 +198,6 @@ public interface IHdfsFile {
     boolean copyFromLocal(ISourceDTO source, String srcPath, String dstPath, boolean overwrite) throws Exception;
 
     /**
-     * 根据文件类型获取hdfsWriter
-     *
-     * @param fileFormat
-     * @return
-     * @throws Exception
-     */
-    IHdfsWriter getHdfsWriter(String fileFormat) throws Exception;
-
-    /**
      * 根据文件格式获取对应的downlaoder
      * @param fileFormat
      * @return
@@ -223,5 +214,23 @@ public interface IHdfsFile {
      * @throws Exception
      */
     List<ColumnMetaDTO> getColumnList(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) throws Exception;
+
+    /**
+     * 按位置写入
+     * @param source
+     * @param hdfsWriterDTO
+     * @return
+     */
+    int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception;
+
+    /**
+     * 从文件中读取行,根据提供的分隔符号分割,再根据提供的hdfs分隔符合并,写入hdfs
+     * ---需要根据column信息判断导入的数据是否符合要求
+     * @param source
+     * @param hdfsWriterDTO
+     * @return
+     * @throws Exception
+     */
+    int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception;
 
 }
