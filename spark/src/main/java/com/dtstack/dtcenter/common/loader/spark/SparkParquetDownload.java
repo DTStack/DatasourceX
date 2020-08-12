@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.spark;
 
+import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.GroupTypeIgnoreCase;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.loader.downloader.IDownloader;
@@ -7,6 +8,7 @@ import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -23,9 +25,14 @@ import org.apache.parquet.schema.Type;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.security.PrivilegedAction;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,7 +41,6 @@ import java.util.concurrent.TimeUnit;
  * Company: www.dtstack.com
  * @author wangchuan
  */
-
 public class SparkParquetDownload implements IDownloader {
 
     private int readNum = 0;
@@ -59,6 +65,8 @@ public class SparkParquetDownload implements IDownloader {
 
     private int currFileIndex = 0;
 
+    private String currFile;
+
     private List<String> currentPartData;
 
     private GroupReadSupport readSupport = new GroupReadSupport();
@@ -69,11 +77,21 @@ public class SparkParquetDownload implements IDownloader {
 
     private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
 
-    public SparkParquetDownload(Configuration conf, String tableLocation, List<String> columnNames, List<String> partitionColumns){
+    private Map<String, Object> kerberosConfig;
+
+    /**
+     * 按分区下载
+     */
+    private Map<String, String> filterPartition;
+
+    public SparkParquetDownload(Configuration conf, String tableLocation, List<String> columnNames,
+                               List<String> partitionColumns, Map<String, String> filterPartition, Map<String, Object> kerberosConfig){
         this.tableLocation = tableLocation;
         this.columnNames = columnNames;
         this.partitionColumns = partitionColumns;
         this.conf = conf;
+        this.filterPartition = filterPartition;
+        this.kerberosConfig = kerberosConfig;
     }
 
     @Override
@@ -90,12 +108,22 @@ public class SparkParquetDownload implements IDownloader {
     }
 
     private void nextSplitRecordReader() throws Exception{
-        String path = paths.get(currFileIndex);
-        ParquetReader.Builder<Group> reader = ParquetReader.builder(readSupport, new Path(path)).withConf(conf);
+        if (currFileIndex > paths.size() - 1) {
+            return;
+        }
+
+        currFile = paths.get(currFileIndex);
+
+        if (!isRequiredPartition()) {
+            currFileIndex++;
+            nextSplitRecordReader();
+        }
+
+        ParquetReader.Builder<Group> reader = ParquetReader.builder(readSupport, new Path(currFile)).withConf(conf);
         build = reader.build();
 
         if(CollectionUtils.isNotEmpty(partitionColumns)){
-            currentPartData = HdfsOperator.parsePartitionDataFromUrl(path,partitionColumns);
+            currentPartData = HdfsOperator.parsePartitionDataFromUrl(currFile, partitionColumns);
         }
 
         currFileIndex++;
@@ -131,6 +159,23 @@ public class SparkParquetDownload implements IDownloader {
 
     @Override
     public List<String> readNext() throws Exception {
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return readNextWithKerberos();
+        }
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<List<String>>) ()->{
+                    try {
+                        return readNextWithKerberos();
+                    } catch (Exception e){
+                        throw new DtCenterDefException("读取文件异常", e);
+                    }
+                });
+    }
+
+    private List<String> readNextWithKerberos(){
         readNum++;
 
         List<String> line = null;
@@ -233,16 +278,46 @@ public class SparkParquetDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws Exception {
-        return !nextRecord();
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return !nextRecord();
+        }
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) ()->{
+                    try {
+                        return !nextRecord();
+                    } catch (Exception e){
+                        throw new DtCenterDefException("下载文件异常", e);
+                    }
+                });
     }
 
     @Override
     public boolean close() throws Exception {
-        if (build != null){
-            build.close();
-            HdfsOperator.release();
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            if (build != null){
+                build.close();
+                HdfsOperator.release();
+            }
+            return true;
         }
-        return true;
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) ()->{
+                    try {
+                        if (build != null){
+                            build.close();
+                            HdfsOperator.release();
+                        }
+                        return true;
+                    } catch (Exception e){
+                        throw new DtCenterDefException("RecordReader 关闭异常", e);
+                    }
+                });
     }
 
     @Override
@@ -274,4 +349,33 @@ public class SparkParquetDownload implements IDownloader {
         }
     }
 
+    /**
+     * 判断是否是指定的分区，支持多级分区
+     * @return
+     */
+    private boolean isRequiredPartition(){
+        if (filterPartition != null && !filterPartition.isEmpty()) {
+            //获取当前路径下的分区信息
+            Map<String,String> partColDataMap = new HashMap<>();
+            for (String part : currFile.split("/")) {
+                if(part.contains("=")){
+                    String[] parts = part.split("=");
+                    partColDataMap.put(parts[0],parts[1]);
+                }
+            }
+
+            Set<String> keySet = filterPartition.keySet();
+            boolean check = true;
+            for (String key : keySet) {
+                String partition = partColDataMap.get(key);
+                String needPartition = filterPartition.get(key);
+                if (!Objects.equals(partition, needPartition)){
+                    check = false;
+                    break;
+                }
+            }
+            return check;
+        }
+        return true;
+    }
 }
