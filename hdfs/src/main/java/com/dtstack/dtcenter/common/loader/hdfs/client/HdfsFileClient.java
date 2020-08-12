@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -71,7 +72,7 @@ public class HdfsFileClient implements IHdfsFile {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
 
         if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
-            YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType());
+            YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), null);
             yarnDownload.configure();
             return yarnDownload;
         }
@@ -80,7 +81,7 @@ public class HdfsFileClient implements IHdfsFile {
         return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
-                        YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType());
+                        YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig());
                         yarnDownload.configure();
                         return yarnDownload;
                     } catch (Exception e) {
@@ -458,7 +459,7 @@ public class HdfsFileClient implements IHdfsFile {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
             try {
-                return createDownloader(hdfsSourceDTO, tableLocation, fieldDelimiter, fileFormat);
+                return createDownloader(hdfsSourceDTO, tableLocation, fieldDelimiter, fileFormat, null);
             }catch (Exception e) {
                 throw new DtCenterDefException("创建下载器异常", e);
             }
@@ -468,7 +469,7 @@ public class HdfsFileClient implements IHdfsFile {
         return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
-                        return createDownloader(hdfsSourceDTO, tableLocation, fieldDelimiter, fileFormat);
+                        return createDownloader(hdfsSourceDTO, tableLocation, fieldDelimiter, fileFormat, hdfsSourceDTO.getKerberosConfig());
                     } catch (Exception e) {
                         throw new DtCenterDefException("创建下载器异常", e);
                     }
@@ -486,21 +487,21 @@ public class HdfsFileClient implements IHdfsFile {
      * @param fileFormat
      * @return
      */
-    private IDownloader createDownloader(HdfsSourceDTO hdfsSourceDTO, String tableLocation, String fieldDelimiter, String fileFormat) throws Exception {
+    private IDownloader createDownloader(HdfsSourceDTO hdfsSourceDTO, String tableLocation, String fieldDelimiter, String fileFormat, Map<String, Object> kerberosConfig) throws Exception {
         if (FileFormat.TEXT.getVal().equals(fileFormat)) {
-            HdfsTextDownload hdfsTextDownload = new HdfsTextDownload(hdfsSourceDTO, tableLocation, null, fieldDelimiter, null);
+            HdfsTextDownload hdfsTextDownload = new HdfsTextDownload(hdfsSourceDTO, tableLocation, null, fieldDelimiter, null, kerberosConfig);
             hdfsTextDownload.configure();
             return hdfsTextDownload;
         }
 
         if (FileFormat.ORC.getVal().equals(fileFormat)) {
-            HdfsORCDownload hdfsORCDownload = new HdfsORCDownload(hdfsSourceDTO, tableLocation, null, null);
+            HdfsORCDownload hdfsORCDownload = new HdfsORCDownload(hdfsSourceDTO, tableLocation, null, null, kerberosConfig);
             hdfsORCDownload.configure();
             return hdfsORCDownload;
         }
 
         if (FileFormat.PARQUET.getVal().equals(fileFormat)) {
-            HdfsParquetDownload hdfsParquetDownload = new HdfsParquetDownload(hdfsSourceDTO, tableLocation, null, null);
+            HdfsParquetDownload hdfsParquetDownload = new HdfsParquetDownload(hdfsSourceDTO, tableLocation, null, null, kerberosConfig);
             hdfsParquetDownload.configure();
             return hdfsParquetDownload;
         }

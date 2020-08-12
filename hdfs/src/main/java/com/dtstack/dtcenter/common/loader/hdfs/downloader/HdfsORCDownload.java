@@ -1,11 +1,14 @@
 package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
+import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
+import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
 import com.dtstack.dtcenter.loader.downloader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import jodd.util.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -21,8 +24,10 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -58,11 +63,14 @@ public class HdfsORCDownload implements IDownloader {
 
     private List<String> partitionColumns;
 
-    public HdfsORCDownload(HdfsSourceDTO hdfsSourceDTO, String tableLocation, List<String> columnNames, List<String> partitionColumns){
+    private Map<String, Object> kerberosConfig;
+
+    public HdfsORCDownload(HdfsSourceDTO hdfsSourceDTO, String tableLocation, List<String> columnNames, List<String> partitionColumns, Map<String, Object> kerberosConfig){
         this.hdfsSourceDTO = hdfsSourceDTO;
         this.tableLocation = tableLocation;
         this.columnNames = columnNames;
         this.partitionColumns = partitionColumns;
+        this.kerberosConfig = kerberosConfig;
     }
 
     @Override
@@ -100,8 +108,27 @@ public class HdfsORCDownload implements IDownloader {
         return metaInfo;
     }
 
+
     @Override
     public List<String> readNext() throws Exception {
+
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return readNextWithKerberos();
+        }
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<List<String>>) ()->{
+                    try {
+                        return readNextWithKerberos();
+                    } catch (Exception e){
+                        throw new DtCenterDefException("读取文件异常", e);
+                    }
+                });
+    }
+
+    private List<String> readNextWithKerberos() {
         List<String> row = new ArrayList<>();
 
         int fieldsSize = fields.size();
@@ -160,15 +187,45 @@ public class HdfsORCDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-        return recordReader == null || !nextRecord();
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return recordReader == null || !nextRecord();
+        }
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) ()->{
+                    try {
+                        return recordReader == null || !nextRecord();
+                    } catch (Exception e){
+                        throw new DtCenterDefException("下载文件异常", e);
+                    }
+                });
     }
 
     @Override
     public boolean close() throws IOException {
-        if(recordReader != null){
-            recordReader.close();
+
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            if(recordReader != null){
+                recordReader.close();
+            }
+            return true;
         }
-        return true;
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) ()->{
+                    try {
+                        if(recordReader != null){
+                            recordReader.close();
+                        }
+                        return true;
+                    } catch (Exception e){
+                        throw new DtCenterDefException("下载文件异常", e);
+                    }
+                });
     }
 
     @Override

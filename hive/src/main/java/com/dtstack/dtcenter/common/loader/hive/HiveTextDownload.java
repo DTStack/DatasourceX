@@ -1,9 +1,11 @@
 package com.dtstack.dtcenter.common.loader.hive;
 
+import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.loader.downloader.IDownloader;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -18,6 +20,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TextInputFormat;
 
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +60,7 @@ public class HiveTextDownload implements IDownloader {
     private InputSplit[] splits;
     private int splitIndex = 0;
     private List<String> partitionColumns;
-
+    private Map<String, Object> kerberosConfig;
     /**
      * 按分区下载
      */
@@ -69,13 +72,14 @@ public class HiveTextDownload implements IDownloader {
     private List<String> currentPartData;
 
     public HiveTextDownload(Configuration configuration, String tableLocation, List<String> columnNames, String fieldDelimiter,
-                            List<String> partitionColumns, Map<String, String> filterPartition){
+                            List<String> partitionColumns, Map<String, String> filterPartition, Map<String, Object> kerberosConfig){
         this.tableLocation = tableLocation;
         this.columnNames = columnNames;
         this.fieldDelimiter = fieldDelimiter;
         this.partitionColumns = partitionColumns;
         this.configuration = configuration;
         this.filterPartition = filterPartition;
+        this.kerberosConfig = kerberosConfig;
     }
 
     @Override
@@ -212,8 +216,27 @@ public class HiveTextDownload implements IDownloader {
         return metaInfo;
     }
 
+
     @Override
     public List<String> readNext(){
+
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return readNextWithKerberos();
+        }
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<List<String>>) ()->{
+                    try {
+                        return readNextWithKerberos();
+                    } catch (Exception e){
+                        throw new DtCenterDefException("读取文件异常", e);
+                    }
+                });
+    }
+
+    private List<String> readNextWithKerberos(){
         readNum++;
         String line = value.toString();
         value.clear();
@@ -238,15 +261,44 @@ public class HiveTextDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-        return recordReader == null || !nextRecord();
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return recordReader == null || !nextRecord();
+        }
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) ()->{
+                    try {
+                        return recordReader == null || !nextRecord();
+                    } catch (Exception e){
+                        throw new DtCenterDefException("下载文件异常", e);
+                    }
+                });
     }
 
     @Override
     public boolean close() throws IOException {
-        if(recordReader != null){
-            recordReader.close();
+
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            if(recordReader != null){
+                recordReader.close();
+            }
+            return true;
         }
-        return true;
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) ()->{
+                    try {
+                        if(recordReader != null){
+                            recordReader.close();
+                        }
+                        return true;
+                    } catch (Exception e){
+                        throw new DtCenterDefException("RecordReader 关闭异常", e);
+                    }
+                });
     }
 
     @Override

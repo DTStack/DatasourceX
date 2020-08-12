@@ -3,8 +3,10 @@ package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
 import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
+import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
 import com.dtstack.dtcenter.loader.downloader.IDownloader;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
@@ -24,6 +26,7 @@ import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Map;
 
@@ -78,6 +81,8 @@ public class YarnDownload implements IDownloader {
 
     private String logType = null;
 
+    private Map<String, Object> kerberosConfig;
+
     private AggregatedLogFormat.LogKey currLogKey;
 
     private AggregatedLogFormat.LogReader currReader;
@@ -97,9 +102,10 @@ public class YarnDownload implements IDownloader {
         }
     }
 
-    public YarnDownload(String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit, String logType) {
+    public YarnDownload(String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit, String logType, Map<String, Object> kerberosConfig) {
         this(hdfsConfig, yarnConf, appIdStr, readLimit);
         this.logType = logType;
+        this.kerberosConfig = kerberosConfig;
     }
 
     @Override
@@ -174,15 +180,46 @@ public class YarnDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws Exception {
-        return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
+
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
+        }
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) ()->{
+                    try {
+                        return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
+                    } catch (Exception e){
+                        throw new DtCenterDefException("读取文件异常", e);
+                    }
+                });
     }
 
     @Override
     public boolean close() throws Exception {
-        if(currValueStream != null){
-            currValueStream.close();
+
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            if(currValueStream != null){
+                currValueStream.close();
+            }
+            return true;
         }
-        return true;
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) ()->{
+                    try {
+                        if(currValueStream != null){
+                            currValueStream.close();
+                        }
+                        return true;
+                    } catch (Exception e){
+                        throw new DtCenterDefException("读取文件异常", e);
+                    }
+                });
     }
 
     @Override
