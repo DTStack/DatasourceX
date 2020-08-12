@@ -1,9 +1,11 @@
 package com.dtstack.dtcenter.common.loader.spark;
 
+import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.loader.downloader.IDownloader;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -18,8 +20,13 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TextInputFormat;
 
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * 下载hive表:存储结构为Text
@@ -27,7 +34,6 @@ import java.util.List;
  * Company: www.dtstack.com
  * @author wangchuan
  */
-
 public class SparkTextDownload implements IDownloader {
     private static final int SPLIT_NUM = 1;
 
@@ -53,16 +59,26 @@ public class SparkTextDownload implements IDownloader {
     private InputSplit[] splits;
     private int splitIndex = 0;
     private List<String> partitionColumns;
+    private Map<String, Object> kerberosConfig;
+    /**
+     * 按分区下载
+     */
+    private Map<String, String> filterPartition;
 
+    /**
+     * 当前分区的值
+     */
     private List<String> currentPartData;
 
     public SparkTextDownload(Configuration configuration, String tableLocation, List<String> columnNames, String fieldDelimiter,
-                             List<String> partitionColumns){
+                            List<String> partitionColumns, Map<String, String> filterPartition, Map<String, Object> kerberosConfig){
         this.tableLocation = tableLocation;
         this.columnNames = columnNames;
         this.fieldDelimiter = fieldDelimiter;
         this.partitionColumns = partitionColumns;
         this.configuration = configuration;
+        this.filterPartition = filterPartition;
+        this.kerberosConfig = kerberosConfig;
     }
 
     @Override
@@ -156,6 +172,12 @@ public class SparkTextDownload implements IDownloader {
             currentPartData = HdfsOperator.parsePartitionDataFromUrl(currFile,partitionColumns);
         }
 
+        if (!isRequiredPartition()){
+            currFileIndex++;
+            splitIndex = 0;
+            nextFile();
+        }
+
         currFileIndex++;
         splitIndex = 0;
         return true;
@@ -193,8 +215,27 @@ public class SparkTextDownload implements IDownloader {
         return metaInfo;
     }
 
+
     @Override
     public List<String> readNext(){
+
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return readNextWithKerberos();
+        }
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<List<String>>) ()->{
+                    try {
+                        return readNextWithKerberos();
+                    } catch (Exception e){
+                        throw new DtCenterDefException("读取文件异常", e);
+                    }
+                });
+    }
+
+    private List<String> readNextWithKerberos(){
         readNum++;
         String line = value.toString();
         value.clear();
@@ -219,19 +260,78 @@ public class SparkTextDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-        return recordReader == null || !nextRecord();
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return recordReader == null || !nextRecord();
+        }
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) ()->{
+                    try {
+                        return recordReader == null || !nextRecord();
+                    } catch (Exception e){
+                        throw new DtCenterDefException("下载文件异常", e);
+                    }
+                });
     }
 
     @Override
     public boolean close() throws IOException {
-        if(recordReader != null){
-            recordReader.close();
+
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            if(recordReader != null){
+                recordReader.close();
+            }
+            return true;
         }
-        return true;
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) ()->{
+                    try {
+                        if(recordReader != null){
+                            recordReader.close();
+                        }
+                        return true;
+                    } catch (Exception e){
+                        throw new DtCenterDefException("RecordReader 关闭异常", e);
+                    }
+                });
     }
 
     @Override
     public String getFileName() {
         return null;
+    }
+
+    /**
+     * 判断是否是指定的分区，支持多级分区
+     * @return
+     */
+    private boolean isRequiredPartition(){
+        if (filterPartition != null && !filterPartition.isEmpty()) {
+            //获取当前路径下的分区信息
+            Map<String,String> partColDataMap = new HashMap<>();
+            for (String part : currFile.split("/")) {
+                if(part.contains("=")){
+                    String[] parts = part.split("=");
+                    partColDataMap.put(parts[0],parts[1]);
+                }
+            }
+
+            Set<String> keySet = filterPartition.keySet();
+            boolean check = true;
+            for (String key : keySet) {
+                String partition = partColDataMap.get(key);
+                String needPartition = filterPartition.get(key);
+                if (!Objects.equals(partition, needPartition)){
+                    check = false;
+                    break;
+                }
+            }
+            return check;
+        }
+        return true;
     }
 }

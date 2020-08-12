@@ -305,7 +305,7 @@ public class SparkClient extends AbsRdbmsClient {
             return KerberosUtil.loginKerberosWithUGI(hiveSourceDTO.getKerberosConfig()).doAs(
                     (PrivilegedAction<IDownloader>) () -> {
                         try {
-                            return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns);
+                            return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), hiveSourceDTO.getKerberosConfig());
                         } catch (Exception e) {
                             throw new DtCenterDefException("创建下载器异常", e);
                         }
@@ -313,7 +313,7 @@ public class SparkClient extends AbsRdbmsClient {
             );
         }
 
-        return createDownloader(storageMode, conf, tableLocation, columnNames, fieldDelimiter, partitionColumns);
+        return createDownloader(storageMode, conf, tableLocation, columnNames, fieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), hiveSourceDTO.getKerberosConfig());
     }
 
     /**
@@ -324,29 +324,31 @@ public class SparkClient extends AbsRdbmsClient {
      * @param columnNames
      * @param fieldDelimiter
      * @param partitionColumns
+     * @param filterPartitions
+     * @param kerberosConfig
      * @return
      * @throws Exception
      */
-    private @NotNull IDownloader createDownloader(String storageMode, Configuration conf, String tableLocation, ArrayList<String> columnNames, String fieldDelimiter, ArrayList<String> partitionColumns) throws Exception {
+    private @NotNull IDownloader createDownloader(String storageMode, Configuration conf, String tableLocation, ArrayList<String> columnNames, String fieldDelimiter, ArrayList<String> partitionColumns, Map<String, String> filterPartitions, Map<String, Object> kerberosConfig) throws Exception {
         // 根据存储格式创建对应的hiveDownloader
         if (StringUtils.isBlank(storageMode)) {
             throw new DtCenterDefException("不支持该存储类型的hive表读取");
         }
 
         if (storageMode.contains("Text")){
-            SparkTextDownload hiveTextDownload = new SparkTextDownload(conf, tableLocation, columnNames, fieldDelimiter, partitionColumns);
+            SparkTextDownload hiveTextDownload = new SparkTextDownload(conf, tableLocation, columnNames, fieldDelimiter, partitionColumns, filterPartitions,kerberosConfig);
             hiveTextDownload.configure();
             return hiveTextDownload;
         }
 
         if (storageMode.contains("Orc")){
-            SparkORCDownload hiveORCDownload = new SparkORCDownload(conf, tableLocation, columnNames, partitionColumns);
+            SparkORCDownload hiveORCDownload = new SparkORCDownload(conf, tableLocation, columnNames, partitionColumns, kerberosConfig);
             hiveORCDownload.configure();
             return hiveORCDownload;
         }
 
         if (storageMode.contains("Parquet")){
-            SparkParquetDownload hiveParquetDownload = new SparkParquetDownload(conf, tableLocation, columnNames, partitionColumns);
+            SparkParquetDownload hiveParquetDownload = new SparkParquetDownload(conf, tableLocation, columnNames, partitionColumns, filterPartitions, kerberosConfig);
             hiveParquetDownload.configure();
             return hiveParquetDownload;
         }
