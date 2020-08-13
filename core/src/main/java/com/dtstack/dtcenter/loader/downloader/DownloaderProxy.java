@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.downloader;
 
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 
 import java.util.List;
