@@ -9,7 +9,6 @@ import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.downloader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
-import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -199,23 +198,23 @@ public class SparkClient extends AbsRdbmsClient {
         if (!testCon) {
             return Boolean.FALSE;
         }
-        HiveSourceDTO hiveSourceDTO= (HiveSourceDTO) iSource;
-        if (StringUtils.isBlank(hiveSourceDTO.getDefaultFS())) {
+        SparkSourceDTO sparkSourceDTO = (SparkSourceDTO) iSource;
+        if (StringUtils.isBlank(sparkSourceDTO.getDefaultFS())) {
             return Boolean.TRUE;
         }
 
-        Properties properties = combineHdfsConfig(hiveSourceDTO.getConfig(), hiveSourceDTO.getKerberosConfig());
-        Configuration conf = new HdfsOperator.HadoopConf().setConf(hiveSourceDTO.getDefaultFS(), properties);
+        Properties properties = combineHdfsConfig(sparkSourceDTO.getConfig(), sparkSourceDTO.getKerberosConfig());
+        Configuration conf = new HdfsOperator.HadoopConf().setConf(sparkSourceDTO.getDefaultFS(), properties);
         //不在做重复认证 主要用于 HdfsOperator.checkConnection 中有一些数栈自己的逻辑
         conf.set("hadoop.security.authorization", "false");
         conf.set("dfs.namenode.kerberos.principal.pattern", "*");
 
-        if (MapUtils.isEmpty(hiveSourceDTO.getKerberosConfig())) {
+        if (MapUtils.isEmpty(sparkSourceDTO.getKerberosConfig())) {
             return HdfsOperator.checkConnection(conf);
         }
 
         // 校验高可用配置
-        return KerberosUtil.loginKerberosWithUGI(hiveSourceDTO.getKerberosConfig()).doAs(
+        return KerberosUtil.loginKerberosWithUGI(sparkSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Boolean>) () -> HdfsOperator.checkConnection(conf)
         );
     }
@@ -285,7 +284,7 @@ public class SparkClient extends AbsRdbmsClient {
         if (StringUtils.isEmpty(sparkSourceDTO.getConfig())){
             throw new DtLoaderException("hadoop配置信息不能为空");
         }
-        if (!sparkSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
+        if (StringUtils.isBlank(sparkSourceDTO.getDefaultFS()) || !sparkSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
             throw new DtCenterDefException("defaultFS格式不正确");
         }
         Properties properties = combineHdfsConfig(sparkSourceDTO.getConfig(), sparkSourceDTO.getKerberosConfig());

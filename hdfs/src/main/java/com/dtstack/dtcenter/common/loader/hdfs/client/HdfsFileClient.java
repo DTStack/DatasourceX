@@ -689,7 +689,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     private Configuration getHadoopConf(HdfsSourceDTO hdfsSourceDTO){
 
-        if (!hdfsSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
+        if (StringUtils.isBlank(hdfsSourceDTO.getDefaultFS()) || !hdfsSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
             throw new DtCenterDefException("defaultFS格式不正确");
         }
         Properties properties = HdfsConnFactory.combineHdfsConfig(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());

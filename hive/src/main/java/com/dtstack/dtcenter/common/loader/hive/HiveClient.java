@@ -284,7 +284,7 @@ public class HiveClient extends AbsRdbmsClient {
         if (StringUtils.isEmpty(hiveSourceDTO.getConfig())){
             throw new DtLoaderException("hadoop配置信息不能为空");
         }
-        if (!hiveSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
+        if (StringUtils.isBlank(hiveSourceDTO.getDefaultFS()) || !hiveSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
             throw new DtCenterDefException("defaultFS格式不正确");
         }
         Properties properties = combineHdfsConfig(hiveSourceDTO.getConfig(), hiveSourceDTO.getKerberosConfig());

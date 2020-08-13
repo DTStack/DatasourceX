@@ -21,7 +21,7 @@ public class HiveSourceDTO extends RdbmsSourceDTO {
     /**
      * Hadoop defaultFS
      */
-    private String defaultFS;
+    private String defaultFS = "";
 
     /**
      * Hadoop/ Hbase 配置信息
