@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.downloader.IDownloader;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -28,15 +29,38 @@ public class OracleTest {
             .url("jdbc:oracle:thin:@172.16.8.193:1521:orcl")
             .username("system")
             .password("oracle")
+            .poolConfig(new PoolConfig())
             .schema("MDSYS")
             .build();
 
     @Test
     public void getCon() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        Connection con = client.getCon(source);
-        con.createStatement().close();
-        con.close();
+        Connection con1 = client.getCon(source);
+        String con1JdbcConn = con1.toString().split("wrapping")[1];
+        Connection con2 = client.getCon(source);
+        Connection con3 = client.getCon(source);
+        Connection con4 = client.getCon(source);
+        Connection con5 = client.getCon(source);
+        Connection con6 = client.getCon(source);
+        Connection con7 = client.getCon(source);
+        Connection con8 = client.getCon(source);
+        Connection con9 = client.getCon(source);
+        Connection con10 = client.getCon(source);
+        con1.close();
+        Connection con11 = client.getCon(source);
+        String con11JdbcConn = con11.toString().split("wrapping")[1];
+        con2.close();
+        con3.close();
+        con4.close();
+        con5.close();
+        con6.close();
+        con7.close();
+        con8.close();
+        con9.close();
+        con10.close();
+        con11.close();
+        assert con1JdbcConn.equals(con11JdbcConn);
     }
 
     @Test
@@ -74,7 +98,7 @@ public class OracleTest {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test_side").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("sidetest").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -82,9 +106,9 @@ public class OracleTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test_side").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("MVIEW$_ADV_TEMP").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        System.out.println(columnMetaData);
     }
 
     @Test

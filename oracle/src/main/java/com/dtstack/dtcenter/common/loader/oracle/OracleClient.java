@@ -10,6 +10,8 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.dtstack.dtcenter.loader.utils.CollectionUtil;
@@ -23,7 +25,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @company: www.dtstack.com
@@ -39,6 +43,8 @@ public class OracleClient extends AbsRdbmsClient {
 
     private static String ORACLE_NUMBER_TYPE = "NUMBER";
     private static String ORACLE_NUMBER_FORMAT = "NUMBER(%d,%d)";
+    private static String ORACLE_COLUMN_NAME = "COLUMN_NAME";
+    private static String ORACLE_COLUMN_COMMENT = "COMMENTS";
     private static final String DONT_EXIST = "doesn't exist";
 
     private static final String DATABASE_QUERY = "select USERNAME from sys.dba_users order by USERNAME";
@@ -173,6 +179,37 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
+    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeColumnQuery(sourceDTO, queryDTO);
+        Statement statement = null;
+        ResultSet rs = null;
+        Map<String, String> columnComments = new HashMap<>();
+        try {
+            statement = sourceDTO.getConnection().createStatement();
+            String queryColumnCommentSql =
+                    "select * from all_col_comments where Table_Name =" + addSingleQuotes(queryDTO.getTableName());
+            rs = statement.executeQuery(queryColumnCommentSql);
+            while (rs.next()) {
+                String columnName = rs.getString(ORACLE_COLUMN_NAME);
+                String columnComment = rs.getString(ORACLE_COLUMN_COMMENT);
+                columnComments.put(columnName, columnComment);
+            }
+
+        } catch (Exception e) {
+            if (e.getMessage().contains(DONT_EXIST)) {
+                throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
+            } else {
+                throw new DtCenterDefException(String.format("获取表:%s 的字段的注释信息时失败. 请联系 DBA 核查该库、表信息.",
+                        queryDTO.getTableName()),
+                        DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            }
+        }finally {
+            DBUtil.closeDBResources(rs, statement, sourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        return columnComments;
+    }
+
+    @Override
     protected String transferTableName(String tableName) {
         //tableName 可能存在的情况 需要兼容
         //"db"."tableName"
@@ -193,6 +230,11 @@ public class OracleClient extends AbsRdbmsClient {
 
     private static String addQuotes(String str) {
         str =  str.contains("\"") ? str : String.format("\"%s\"", str);
+        return str;
+    }
+
+    private static String addSingleQuotes(String str) {
+        str = str.contains("'") ? str : String.format("'%s'", str);
         return str;
     }
 

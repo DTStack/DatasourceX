@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.downloader.IDownloader;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -13,6 +14,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,14 +32,41 @@ public class Mysql5Test {
             .username("drpeco")
             .password("DT@Stack#123")
             .schema("streamapp")
+            .poolConfig(new PoolConfig())
             .build();
 
+    /**
+     * 获取连接测试 - 使用连接池，默认最大开启十个连接
+     * @throws Exception
+     */
     @Test
     public void getCon() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL.getPluginName());
-        Connection con = client.getCon(source);
-        con.createStatement().close();
-        con.close();
+        Connection con1 = client.getCon(source);
+        String con1JdbcConn = con1.toString().split("wrapping")[1];
+        Connection con2 = client.getCon(source);
+        Connection con3 = client.getCon(source);
+        Connection con4 = client.getCon(source);
+        Connection con5 = client.getCon(source);
+        Connection con6 = client.getCon(source);
+        Connection con7 = client.getCon(source);
+        Connection con8 = client.getCon(source);
+        Connection con9 = client.getCon(source);
+        Connection con10 = client.getCon(source);
+        con1.close();
+        Connection con11 = client.getCon(source);
+        String con11JdbcConn = con11.toString().split("wrapping")[1];
+        assert con1JdbcConn.equals(con11JdbcConn);
+        con2.close();
+        con3.close();
+        con4.close();
+        con5.close();
+        con6.close();
+        con7.close();
+        con8.close();
+        con9.close();
+        con10.close();
+        con11.close();
     }
 
     @Test
@@ -57,9 +86,13 @@ public class Mysql5Test {
     @Test
     public void executeQuery() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
+        String sql = "select * from rdos_dict where id > ? and id < ?;";
+        List<Object> preFields = new ArrayList<>();
+        preFields.add(2);
+        preFields.add(5);
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).preFields(preFields).queryTimeout(1).build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
-        System.out.println(mapList.size());
+        System.out.println(mapList);
     }
 
     @Test
@@ -90,7 +123,7 @@ public class Mysql5Test {
         IClient client = clientCache.getClient(DataSourceType.MySQL.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        System.out.println(columnMetaData);
     }
 
     @Test

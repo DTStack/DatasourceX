@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.downloader.IDownloader;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -25,18 +26,41 @@ public class Mysql8Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     Mysql8SourceDTO source = Mysql8SourceDTO.builder()
-            .url("jdbc:mysql://172.16.8.109:3306/stream_new")
-            .schema("stream_new")
-            .username("dtstack")
-            .password("abc123")
+            .url("jdbc:mysql://172.16.101.249:3306/streamapp")
+            .username("drpeco")
+            .password("DT@Stack#123")
+            .schema("streamapp")
+            .poolConfig(new PoolConfig())
             .build();
 
     @Test
     public void getCon() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
-        Connection con = client.getCon(source);
-        con.createStatement().close();
-        con.close();
+        Connection con1 = client.getCon(source);
+        String con1JdbcConn = con1.toString().split("wrapping")[1];
+        Connection con2 = client.getCon(source);
+        Connection con3 = client.getCon(source);
+        Connection con4 = client.getCon(source);
+        Connection con5 = client.getCon(source);
+        Connection con6 = client.getCon(source);
+        Connection con7 = client.getCon(source);
+        Connection con8 = client.getCon(source);
+        Connection con9 = client.getCon(source);
+        Connection con10 = client.getCon(source);
+        con1.close();
+        Connection con11 = client.getCon(source);
+        String con11JdbcConn = con11.toString().split("wrapping")[1];
+        assert con1JdbcConn.equals(con11JdbcConn);
+        con2.close();
+        con3.close();
+        con4.close();
+        con5.close();
+        con6.close();
+        con7.close();
+        con8.close();
+        con9.close();
+        con10.close();
+        con11.close();
     }
 
     @Test
@@ -74,7 +98,7 @@ public class Mysql8Test {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_batch_job_backup").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -82,7 +106,7 @@ public class Mysql8Test {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_batch_job_backup").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
@@ -90,7 +114,7 @@ public class Mysql8Test {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_batch_job_backup").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
@@ -98,7 +122,7 @@ public class Mysql8Test {
     @Test
     public void testGetDownloader() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from rdos_batch_task").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from rdos_dict").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         downloader.configure();
         List<String> metaInfo = downloader.getMetaInfo();

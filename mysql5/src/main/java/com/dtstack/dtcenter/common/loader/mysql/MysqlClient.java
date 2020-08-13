@@ -10,8 +10,9 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.Mysql5SourceDTO;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 
 import java.sql.ResultSet;
@@ -19,7 +20,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @company: www.dtstack.com
@@ -28,6 +31,9 @@ import java.util.List;
  * @Description：Mysql 客户端
  */
 public class MysqlClient extends AbsRdbmsClient {
+
+    private static final String DONT_EXIST = "doesn't exist";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new MysqlConnFactory();
@@ -106,5 +112,36 @@ public class MysqlClient extends AbsRdbmsClient {
     @Override
     public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeColumnQuery(sourceDTO, queryDTO);
+        Statement statement = null;
+        ResultSet rs = null;
+        Map<String, String> columnComments = new HashMap<>();
+        try {
+            statement = sourceDTO.getConnection().createStatement();
+            String queryColumnCommentSql =
+                    "show full columns from " + transferTableName(queryDTO.getTableName());
+            rs = statement.executeQuery(queryColumnCommentSql);
+            while (rs.next()) {
+                String columnName = rs.getString("Field");
+                String columnComment = rs.getString("Comment");
+                columnComments.put(columnName, columnComment);
+            }
+
+        } catch (Exception e) {
+            if (e.getMessage().contains(DONT_EXIST)) {
+                throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
+            } else {
+                throw new DtCenterDefException(String.format("获取表:%s 的字段的注释信息时失败. 请联系 DBA 核查该库、表信息.",
+                        queryDTO.getTableName()),
+                        DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            }
+        }finally {
+            DBUtil.closeDBResources(rs, statement, sourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        return columnComments;
     }
 }

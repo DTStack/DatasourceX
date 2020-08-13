@@ -139,6 +139,78 @@
 4). 如果传过来的schema.tableName格式，则进行最大长度2切割，此时tableName中即使有"."或者被[]包裹，也不影响系统；
 ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 
+### 4.5 数据源插件开启连接池
+1. 支持的数据源(已测试)：
+    ClickHouse
+    Oracle
+    MySQL
+    Oracle
+    SQLServer2017
+    PostgreSQL
+    DB2
+    ImpalaSql
+    TiDB
+    Kylin
+    MaxCompute
+    ElasticSearch
+    MongoDB
+2. 开启池化需要在对应的SourceDTO传入poolConfig对象（默认不开启），配置如下
+```java
+    /**
+     * 等待连接池分配连接的最大时长（毫秒）
+     * 超过这个时长还没可用的连接则发生SQLException
+     */
+    private Long connectionTimeout = SECONDS.toMillis(3);
+
+    /**
+     * 控制允许连接在池中闲置的最长时间
+     * 此设置仅适用于 minimumIdle 设置为小于 maximumPoolSize 的情况
+     */
+    private Long idleTimeout = MINUTES.toMillis(10);
+
+    /**
+     * 一个连接的生命时长（毫秒），超时而且没被使用则被释放（retired）
+     * 建议设置比数据库超时时长少30秒
+     */
+    private Long maxLifetime = MINUTES.toMillis(30);
+
+    /**
+     * 连接池中允许的最大连接数(包括空闲和正在使用的连接)
+     */
+    private Integer maximumPoolSize = 10;
+
+    /**
+     * 池中维护的最小空闲连接数
+     * 小于 0 则会重置为最大连接数
+     */
+    private Integer minimumIdle = 5;
+
+    /**
+     * 设置连接只读
+     */
+    private Boolean readOnly = false;
+
+    /**
+     * 申请连接的时候检测，对es、odps有效，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。
+     */
+    private Boolean testWhileIdle = true;
+
+    /**
+     * 初始连接池大小，对es、odps有效
+     */
+    private Integer initialSize = 5;
+
+    /**
+     * 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒。 对es、odps有效
+     */
+    public Long timeBetweenEvictionRunsMillis = SECONDS.toMillis(30);
+
+    /**
+     * 配置一个连接在池中最小生存的时间，单位是毫秒，默认五分钟 对es、odps有效
+     */
+    public Long minEvictableIdleTimeMillis = MINUTES.toMillis(30);
+```
+
 ---
 ## 五、后续开发计划
 1. IClient DTO 优化，为 Kerberos 和 复用 Connection 准备 【已完成 200226】
@@ -153,6 +225,9 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 10. Hadoop 版本放入 loader 包不同插件自身去控制
 11. 实现 common 中的 IDownLoad
 12. hive、odps数据库支持数据分区预览功能【已完成】
+13. 支持池化【已完成】
+14. mongodb和es支持自定义sql【已完成】
+15. executorQuery方法支持预编译方式【已完成】
 ---
 
 ## 六、开发步骤说明
@@ -165,6 +240,9 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 5. 支持单独查询表的分区字段
 6. 支持获取建表语句
 7. kafka逻辑从IClient剥离
+8. 支持池化操作
+9. mongodb和es支持自定义sql
+10. executorQuery方法支持预编译方式，sql传入预编译sql，且需要在SqlQueryDTO中传入preFields对象
 
 #### 6.1.2 增加支持的数据源
 1. 在对应的关系型数据库模块或者非关系型模块增加子模块并按照其他模块修改对应的pom
@@ -177,8 +255,8 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 ```$xml
 <dependency>
     <groupId>com.dtstack.dtcenter</groupId>
-    <artifactId>common-loader</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <artifactId>common.loader.core</artifactId>
+    <version>1.2.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -201,7 +279,7 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 
     @Test
     public void getMysqlConnection() throws Exception {
-    IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
+    IClient client = clientCache.getClient(DataSourceType.MySql5.getPluginName());
         Mysql5SourceDTO source = Mysql5SourceDTO.builder()
             .url("jdbc:mysql://172.16.8.109:3306/ide")
             .username("dtstack")
@@ -217,7 +295,7 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 
     @Test
     public void getMysqlConnection() throws Exception {
-        IClient client = clientCache.getClient(DataSourceClientType.MySql5.getPluginName());
+        IClient client = clientCache.getClient(DataSourceType.MySql5.getPluginName());
         Mysql5SourceDTO source = Mysql5SourceDTO.builder()
             .url("jdbc:mysql://172.16.8.109:3306/ide")
             .username("dtstack")
@@ -232,7 +310,7 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 
     @Test
     public void getTopicList() throws Exception {
-        IKafka client = kafkaClientCache.getKafka(DataSourceClientType.KAFKA_09.getPluginName());
+        IKafka client = kafkaClientCache.getKafka(DataSourceType.KAFKA_09.getPluginName());
         KafkaSourceDTO source = KafkaSourceDTO.builder()
                         .url("172.16.8.107:2181/kafka")
                         .build();

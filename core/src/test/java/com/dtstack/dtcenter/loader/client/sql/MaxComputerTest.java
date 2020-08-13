@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -27,6 +28,7 @@ public class MaxComputerTest {
     OdpsSourceDTO source = OdpsSourceDTO.builder()
             .config("{\"accessId\":\"LTAINn0gjHA3Yxy6\",\"accessKey\":\"p1xcV89FzYyCInwA6YTyYawJnTwNzh\"," +
                     "\"project\":\"dtstack_dev\",\"endPoint\":\"\"}")
+            .poolConfig(new PoolConfig())
             .build();
 
     @Test

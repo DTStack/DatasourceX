@@ -13,3 +13,5 @@ run/*
 bin/*
 out/*
 *.iml
+.DS_Store
+logs

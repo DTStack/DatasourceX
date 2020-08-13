@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.downloader.IDownloader;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -25,18 +26,41 @@ public class Db2Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     Db2SourceDTO source = Db2SourceDTO.builder()
-            .url("jdbc:db2://172.16.10.168:50000/SAMPLE")
+            .url("jdbc:db2://172.16.10.251:50000/mqTest")
             .username("DB2INST1")
-            .password("db2root-pwd")
-            .schema("SHIFANG")
+            .password("abc123")
+            .schema("mqTest")
+            .poolConfig(new PoolConfig())
             .build();
 
     @Test
     public void getCon() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
-        Connection con = client.getCon(source);
-        con.createStatement().close();
-        con.close();
+        Connection con1 = client.getCon(source);
+        String con1JdbcConn = con1.toString().split("wrapping")[1];
+        Connection con2 = client.getCon(source);
+        Connection con3 = client.getCon(source);
+        Connection con4 = client.getCon(source);
+        Connection con5 = client.getCon(source);
+        Connection con6 = client.getCon(source);
+        Connection con7 = client.getCon(source);
+        Connection con8 = client.getCon(source);
+        Connection con9 = client.getCon(source);
+        Connection con10 = client.getCon(source);
+        con1.close();
+        Connection con11 = client.getCon(source);
+        String con11JdbcConn = con11.toString().split("wrapping")[1];
+        assert con1JdbcConn.equals(con11JdbcConn);
+        con2.close();
+        con3.close();
+        con4.close();
+        con5.close();
+        con6.close();
+        con7.close();
+        con8.close();
+        con9.close();
+        con10.close();
+        con11.close();
     }
 
     @Test
@@ -92,12 +116,18 @@ public class Db2Test {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from WANGCHUAN01").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         System.out.println(downloader.getMetaInfo());
-        while (!downloader.reachedEnd()){
-            List<List<String>> o = (List<List<String>>)downloader.readNext();
-            for (List<String> list:o)
+        while (!downloader.reachedEnd()) {
+            List<List<String>> o = (List<List<String>>) downloader.readNext();
+            for (List<String> list : o)
                 System.out.println(list);
         }
+    }
 
+    @Test
+    public void preview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
+        List preview = client.getPreview(source, SqlQueryDTO.builder().tableName("WANGCHUAN01").build());
+        System.out.println(preview);
     }
 
     @Test
@@ -106,7 +136,4 @@ public class Db2Test {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         System.out.println(client.getAllDatabases(source, queryDTO));
     }
-
-
-
 }

@@ -21,10 +21,4 @@ public interface ISourceDTO {
      */
     String getPassword();
 
-    /**
-     * 是否开启缓存 ：对odps和非关系型数据库有效
-     * @return
-     */
-    Boolean getIsCache();
-
 }

@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -27,8 +28,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -45,6 +48,10 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     protected abstract DataSourceType getSourceType();
 
     private static final String DONT_EXIST = "doesn't exist";
+
+    private static final String preFieldsName = "preFields";
+
+    private static final String queryTimeoutFieldName = "queryTimeout";
 
     @Override
     public Connection getCon(ISourceDTO iSource) throws Exception {
@@ -79,7 +86,29 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         if (rdbmsSourceDTO.getConnection().isClosed()) {
             return Lists.newArrayList();
         }
-
+        /**
+         *  适配1.1.0版本的core
+         *  后期删除
+         *  2020年08月06日
+         */
+        Field[] fields = SqlQueryDTO.class.getDeclaredFields();
+        List<Object> preFields = null;
+        Integer queryTimeout = null;
+        for (Field field:fields) {
+            if (preFieldsName.equals(field.getName())) {
+                preFields = queryDTO.getPreFields();
+                continue;
+            }
+            if (queryTimeoutFieldName.equals(field.getName())) {
+                queryTimeout = queryDTO.getQueryTimeout();
+                continue;
+            }
+        }
+        //预编译查询
+        if (preFields != null || queryTimeout!= null) {
+            return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
+                    ConnectionClearStatus.CLOSE.getValue().equals(clearStatus), preFields, queryTimeout);
+        }
         return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
                 ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
     }
@@ -181,7 +210,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         try {
             stmt = rdbmsSourceDTO.getConnection().createStatement();
             String queryColumnSql =
-                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + queryDTO.getTableName()
+                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferTableName(queryDTO.getTableName())
                             + " where 1=2";
             rs = stmt.executeQuery(queryColumnSql);
             ResultSetMetaData rsmd = rs.getMetaData();
@@ -272,8 +301,6 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
                 columns.add(columnMetaDTO);
             }
-            return columns;
-
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
                 throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
@@ -285,6 +312,19 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         } finally {
             DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
         }
+
+        //获取字段注释
+        Map<String, String> columnComments = getColumnComments(rdbmsSourceDTO, queryDTO);
+        if (Objects.isNull(columnComments)) {
+            return columns;
+        }
+        for (ColumnMetaDTO columnMetaDTO : columns) {
+            if (columnComments.containsKey(columnMetaDTO.getKey())) {
+                columnMetaDTO.setComment(columnComments.get(columnMetaDTO.getKey()));
+            }
+        }
+        return columns;
+
     }
 
     @Override
@@ -367,6 +407,10 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      */
     protected String doDealType(ResultSetMetaData rsMetaData, Integer los) throws SQLException {
         return rsMetaData.getColumnTypeName(los + 1);
+    }
+
+    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+        return null;
     }
 
     @Override
