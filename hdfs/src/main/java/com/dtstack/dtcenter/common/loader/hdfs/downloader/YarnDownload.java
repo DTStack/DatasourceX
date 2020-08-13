@@ -4,7 +4,7 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
 import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
-import com.dtstack.dtcenter.loader.downloader.IDownloader;
+import com.dtstack.dtcenter.loader.IDownloader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;

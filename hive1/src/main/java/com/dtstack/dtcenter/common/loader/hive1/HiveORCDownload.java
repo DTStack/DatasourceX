@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.hive1;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
-import com.dtstack.dtcenter.loader.downloader.IDownloader;
+import com.dtstack.dtcenter.loader.IDownloader;
 import jodd.util.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;

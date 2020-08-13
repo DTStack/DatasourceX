@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.loader.downloader;
+package com.dtstack.dtcenter.loader;
 
 import java.util.List;
 

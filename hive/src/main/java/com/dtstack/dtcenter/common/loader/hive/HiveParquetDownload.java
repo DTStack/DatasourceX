@@ -3,7 +3,7 @@ package com.dtstack.dtcenter.common.loader.hive;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.GroupTypeIgnoreCase;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
-import com.dtstack.dtcenter.loader.downloader.IDownloader;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;

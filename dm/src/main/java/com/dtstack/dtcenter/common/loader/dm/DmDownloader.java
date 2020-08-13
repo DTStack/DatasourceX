@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.dm;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.loader.downloader.IDownloader;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.Column;
 import com.dtstack.dtcenter.loader.utils.SqlFormatUtil;
 import org.apache.commons.collections.CollectionUtils;
