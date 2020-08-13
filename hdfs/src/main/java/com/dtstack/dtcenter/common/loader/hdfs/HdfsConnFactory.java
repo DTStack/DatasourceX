@@ -36,7 +36,7 @@ public class HdfsConnFactory extends ConnFactory {
     @Override
     public Boolean testConn(ISourceDTO iSource) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
-        if (!hdfsSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
+        if (StringUtils.isBlank(hdfsSourceDTO.getDefaultFS()) || !hdfsSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
             throw new DtCenterDefException("defaultFS格式不正确");
         }
 
