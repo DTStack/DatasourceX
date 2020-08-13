@@ -122,11 +122,20 @@ public abstract class AbsClientCache {
     public abstract IClient getClient(String sourceName) throws ClientAccessException;
 
     /**
-     * 获取kafka对应的客户端
+     * 获取 kafka 对应的客户端
      *
      * @param sourceName
      * @return
      * @throws ClientAccessException
      */
     public abstract IKafka getKafka(String sourceName) throws ClientAccessException;
+
+    /**
+     * 获取 HDFS 对应的客户端
+     *
+     * @param sourceName
+     * @return
+     * @throws ClientAccessException
+     */
+    public abstract IHdfsFile getHdfs(String sourceName) throws ClientAccessException;
 }

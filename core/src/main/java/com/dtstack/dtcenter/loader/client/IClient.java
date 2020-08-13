@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.loader.client;
 
-import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.downloader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;

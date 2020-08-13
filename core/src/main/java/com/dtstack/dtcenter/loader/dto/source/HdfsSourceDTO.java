@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
+import java.util.Map;
+
 /**
  * @company: www.dtstack.com
  * @Author ：Nanqi
@@ -27,4 +29,13 @@ public class HdfsSourceDTO extends RdbmsSourceDTO {
      * Hadoop/ Hbase 配置信息
      */
     private String config;
+
+    // TODO 临时处理 yarn 日志下载
+    private String appIdStr;
+
+    private int readLimit = 4095;
+
+    private String logType = null;
+
+    private Map<String, Object> yarnConf;
 }

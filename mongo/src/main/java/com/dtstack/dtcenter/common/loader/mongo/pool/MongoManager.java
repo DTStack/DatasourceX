@@ -33,8 +33,6 @@ public class MongoManager  implements Manager {
 
     private volatile Map<String, MongoClient> sourcePool = Maps.newConcurrentMap();
 
-    private volatile Map<String, ReentrantLock> lockPool = Maps.newConcurrentMap();
-
     private static final String MONGO_KEY = "hostPorts:%s,username:%s,password:%s,schema:%s";
 
     private static Pattern USER_PWD_PATTERN = Pattern.compile("(?<username>(.*)):(?<password>(.*))@(?<else>(.*))");
@@ -58,36 +56,22 @@ public class MongoManager  implements Manager {
     public MongoClient getConnection(ISourceDTO source) {
         MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) source;
         String key = getPrimaryKey(mongoSourceDTO).intern();
-        ReentrantLock lock = lockPool.get(key);
-        if (lock == null) {
-            synchronized (key) {
-                if (lock == null) {
-                    lock = new ReentrantLock();
-                    lockPool.put(key, lock);
+        MongoClient mongoClient = sourcePool.get(key);
+        if (mongoClient == null) {
+            synchronized (MongoManager.class) {
+                mongoClient = sourcePool.get(key);
+                if (mongoClient == null) {
+                    mongoClient = initSource(source);
+                    sourcePool.putIfAbsent(key, mongoClient);
                 }
             }
         }
-        MongoClient mongoClient = null;
-        try {
-            lock.lock();
-            mongoClient = sourcePool.get(key);
-            if (mongoClient == null) {
-                mongoClient = initSource(source);
-                sourcePool.putIfAbsent(key, mongoClient);
-            }
-            return mongoClient;
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            if (lock.isLocked()) {
-                lock.unlock();
-            }
-        }
+
         return mongoClient;
     }
 
     @Override
-    public synchronized MongoClient initSource(ISourceDTO source) {
+    public MongoClient initSource(ISourceDTO source) {
         MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) source;
         String hostPorts = mongoSourceDTO.getHostPort();
         String username = mongoSourceDTO.getUsername();

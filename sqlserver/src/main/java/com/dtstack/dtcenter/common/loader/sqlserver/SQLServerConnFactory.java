@@ -1,10 +1,7 @@
 package com.dtstack.dtcenter.common.loader.sqlserver;
 
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
-import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
-
-import java.sql.Connection;
 
 /**
  * @company: www.dtstack.com

@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.loader;
+package com.dtstack.dtcenter.loader.downloader;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface IDownloader {
 
-    void configure() throws Exception;
+    boolean configure() throws Exception;
 
     List<String> getMetaInfo() throws Exception;
 
@@ -18,7 +18,7 @@ public interface IDownloader {
 
     boolean reachedEnd() throws Exception;
 
-    void close() throws Exception;
+    boolean close() throws Exception;
 
     String getFileName();
 

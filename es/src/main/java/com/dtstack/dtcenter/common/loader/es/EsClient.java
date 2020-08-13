@@ -16,7 +16,6 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.util.Pair;
@@ -408,7 +407,7 @@ public class EsClient extends AbsRdbmsClient {
     }
 
     private String doDealPageSql(String dsl) {
-        if (StringUtil.isNotBlank(dsl)) {
+        if (StringUtils.isNotBlank(dsl)) {
             // Feature.OrderedField 是为了保证格式化后 json 中的字段顺序不变
             JSONObject jsonObject = JSONObject.parseObject(dsl, Feature.OrderedField);
             return JSONObject.toJSONString(jsonObject, true);

@@ -2,8 +2,9 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
-import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.downloader.DownloaderProxy;
+import com.dtstack.dtcenter.loader.downloader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -141,7 +142,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     @Override
     public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) {
         try {
-            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getDownloader(source, queryDTO),
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> new DownloaderProxy(targetClient.getDownloader(source, queryDTO)),
                     targetClient.getClass().getClassLoader(), true);
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);

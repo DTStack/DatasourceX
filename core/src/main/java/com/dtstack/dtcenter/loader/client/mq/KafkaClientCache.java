@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.loader.client.mq;
 import com.dtstack.dtcenter.common.thread.RdosThreadFactory;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.client.IKafka;
 import com.dtstack.dtcenter.loader.client.sql.DataSourceClientFactory;
 import com.dtstack.dtcenter.loader.exception.ClientAccessException;
@@ -102,8 +103,11 @@ public class KafkaClientCache extends AbsClientCache {
             IKafka kafka = defaultClientMap.get(pluginName);
             if (kafka == null) {
                 synchronized (defaultClientMap) {
-                    kafka = buildPluginClient(pluginName);
-                    defaultClientMap.put(pluginName, kafka);
+                    kafka = defaultClientMap.get(pluginName);
+                    if (kafka == null) {
+                        kafka = buildPluginClient(pluginName);
+                        defaultClientMap.put(pluginName, kafka);
+                    }
                 }
             }
 
@@ -151,6 +155,11 @@ public class KafkaClientCache extends AbsClientCache {
 
     @Override
     public IClient getClient(String sourceName) throws ClientAccessException {
-        throw new DtLoaderException("请通过DataSourceClientCache获取其他数据库客户端");
+        throw new DtLoaderException("请通过 DataSourceClientCache 获取其他数据库客户端");
+    }
+
+    @Override
+    public IHdfsFile getHdfs(String sourceName) throws ClientAccessException {
+        throw  new DtLoaderException("请通过 HdfsClientCache 获取 Hdfs 文件客户端");
     }
 }

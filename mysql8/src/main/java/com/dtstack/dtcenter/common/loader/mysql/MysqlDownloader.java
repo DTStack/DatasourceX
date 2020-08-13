@@ -1,9 +1,9 @@
 package com.dtstack.dtcenter.common.loader.mysql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.sql.Column;
-import com.dtstack.sql.utils.SqlFormatUtil;
+import com.dtstack.dtcenter.loader.downloader.IDownloader;
+import com.dtstack.dtcenter.loader.dto.Column;
+import com.dtstack.dtcenter.loader.utils.SqlFormatUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -51,7 +51,7 @@ public class MysqlDownloader implements IDownloader {
     }
 
     @Override
-    public void configure() throws Exception {
+    public boolean configure() throws Exception {
         if (null == connection || StringUtils.isEmpty(sql)) {
             throw new DtCenterDefException("文件不存在");
         }
@@ -99,6 +99,7 @@ public class MysqlDownloader implements IDownloader {
                 columnsResultSet.close();
             }
         }
+        return true;
     }
 
     @Override
@@ -137,9 +138,10 @@ public class MysqlDownloader implements IDownloader {
     }
 
     @Override
-    public void close() throws Exception {
+    public boolean close() throws Exception {
         statement.close();
         connection.close();
+        return true;
     }
 
     @Override

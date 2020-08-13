@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 import com.dtstack.dtcenter.common.thread.RdosThreadFactory;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.client.IKafka;
 import com.dtstack.dtcenter.loader.exception.ClientAccessException;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -100,8 +101,11 @@ public class DataSourceClientCache extends AbsClientCache {
             IClient client = defaultClientMap.get(pluginName);
             if (client == null) {
                 synchronized (defaultClientMap) {
-                    client = buildPluginClient(pluginName);
-                    defaultClientMap.put(pluginName, client);
+                    client = defaultClientMap.get(pluginName);
+                    if (client == null) {
+                        client = buildPluginClient(pluginName);
+                        defaultClientMap.put(pluginName, client);
+                    }
                 }
             }
 
@@ -149,6 +153,11 @@ public class DataSourceClientCache extends AbsClientCache {
 
     @Override
     public IKafka getKafka(String sourceName) throws ClientAccessException {
-        throw  new DtLoaderException("请通过kafkaClientCache获取kafka客户端");
+        throw  new DtLoaderException("请通过 kafkaClientCache 获取 kafka 客户端");
+    }
+
+    @Override
+    public IHdfsFile getHdfs(String sourceName) throws ClientAccessException {
+        throw  new DtLoaderException("请通过 HdfsClientCache 获取 Hdfs 文件客户端");
     }
 }
