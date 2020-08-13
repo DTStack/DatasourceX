@@ -1,9 +1,9 @@
 package com.dtstack.dtcenter.loader.client.hdfs;
 
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
+import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.downloader.DownloaderProxy;
 import com.dtstack.dtcenter.loader.downloader.IDownloader;
-import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.FileStatus;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;

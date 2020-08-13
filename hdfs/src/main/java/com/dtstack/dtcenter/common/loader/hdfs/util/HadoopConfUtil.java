@@ -1,12 +1,12 @@
 package com.dtstack.dtcenter.common.loader.hdfs.util;
 
+import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
 import com.dtstack.dtcenter.common.kerberos.KerberosConfigVerify;
-import org.apache.hadoop.conf.Configuration;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.slf4j.Logger;

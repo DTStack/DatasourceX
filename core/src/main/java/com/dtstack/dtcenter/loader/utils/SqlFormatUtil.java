@@ -1,13 +1,14 @@
 package com.dtstack.dtcenter.loader.utils;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
 
 public class SqlFormatUtil {
     private String sql;

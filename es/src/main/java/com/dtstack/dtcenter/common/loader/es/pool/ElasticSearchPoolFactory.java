@@ -1,8 +1,8 @@
 package com.dtstack.dtcenter.common.loader.es.pool;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
@@ -61,7 +61,7 @@ public class ElasticSearchPoolFactory implements PooledObjectFactory<RestHighLev
         RestClientBuilder builder = RestClient.builder(nodes);
 
         // 有密码就增加密码
-        if (StringUtil.isNotBlank(username) && StringUtil.isNotBlank(password)) {
+        if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
             CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
             credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
             builder = builder.setHttpClientConfigCallback(e -> e.setDefaultCredentialsProvider(credentialsProvider));
