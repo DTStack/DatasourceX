@@ -1,7 +1,6 @@
 package com.dtstack.dtcenter.common.loader.es.pool;
 
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
-import com.dtstack.dtcenter.loader.cache.pool.manager.Manager;
 import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.google.common.collect.Maps;
@@ -20,7 +19,7 @@ import java.util.Map;
  */
 @Slf4j
 @NoArgsConstructor
-public class ElasticSearchManager implements Manager{
+public class ElasticSearchManager{
     private volatile static ElasticSearchManager manager;
 
     private volatile Map<String, ElasticSearchPool> sourcePool = Maps.newConcurrentMap();
@@ -38,7 +37,6 @@ public class ElasticSearchManager implements Manager{
         return manager;
     }
 
-    @Override
     public ElasticSearchPool getConnection(ISourceDTO source) {
         String key = getPrimaryKey(source).intern();
         ElasticSearchPool elasticSearchPool = sourcePool.get(key);
@@ -60,7 +58,6 @@ public class ElasticSearchManager implements Manager{
      * @param source
      * @return
      */
-    @Override
     public ElasticSearchPool initSource(ISourceDTO source) {
         ESSourceDTO esSourceDTO = (ESSourceDTO) source;
         PoolConfig poolConfig = esSourceDTO.getPoolConfig();
