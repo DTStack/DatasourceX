@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.loader.odps.common.OdpsFields;
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
-import com.dtstack.dtcenter.loader.cache.pool.manager.Manager;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.OdpsSourceDTO;
 import com.google.common.collect.Maps;
@@ -21,7 +20,7 @@ import java.util.Map;
  */
 @Slf4j
 @NoArgsConstructor
-public class OdpsManager implements Manager{
+public class OdpsManager {
     private volatile static OdpsManager manager;
 
     private volatile Map<String, OdpsPool> sourcePool = Maps.newConcurrentMap();
@@ -39,7 +38,6 @@ public class OdpsManager implements Manager{
         return manager;
     }
 
-    @Override
     public OdpsPool getConnection(ISourceDTO source) {
         String key = getPrimaryKey(source).intern();
         OdpsPool odpsPool = sourcePool.get(key);
@@ -60,7 +58,6 @@ public class OdpsManager implements Manager{
      * @param source
      * @return odps pool
      */
-    @Override
     public OdpsPool initSource(ISourceDTO source) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) source;
         PoolConfig poolConfig = odpsSourceDTO.getPoolConfig();

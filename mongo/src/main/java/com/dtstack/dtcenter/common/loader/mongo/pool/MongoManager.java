@@ -2,7 +2,6 @@ package com.dtstack.dtcenter.common.loader.mongo.pool;
 
 import com.dtstack.dtcenter.common.loader.mongo.MongoDBUtils;
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
-import com.dtstack.dtcenter.loader.cache.pool.manager.Manager;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.MongoSourceDTO;
 import com.google.common.collect.Lists;
@@ -17,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,7 +26,7 @@ import java.util.regex.Pattern;
  * @Description：池化管理类
  */
 @Slf4j
-public class MongoManager  implements Manager {
+public class MongoManager {
     private volatile static MongoManager manager;
 
     private volatile Map<String, MongoClient> sourcePool = Maps.newConcurrentMap();
@@ -52,7 +50,6 @@ public class MongoManager  implements Manager {
         return manager;
     }
 
-    @Override
     public MongoClient getConnection(ISourceDTO source) {
         MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) source;
         String key = getPrimaryKey(mongoSourceDTO).intern();
@@ -70,7 +67,6 @@ public class MongoManager  implements Manager {
         return mongoClient;
     }
 
-    @Override
     public MongoClient initSource(ISourceDTO source) {
         MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) source;
         String hostPorts = mongoSourceDTO.getHostPort();
