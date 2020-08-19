@@ -119,7 +119,9 @@ public abstract class AbsClientCache {
      * @return
      * @throws ClientAccessException
      */
-    public abstract IClient getClient(String sourceName) throws ClientAccessException;
+    public IClient getClient(String sourceName) throws ClientAccessException {
+        throw new DtLoaderException("请通过 DataSourceClientCache 获取其他数据库客户端");
+    }
 
     /**
      * 获取 kafka 对应的客户端
@@ -128,7 +130,9 @@ public abstract class AbsClientCache {
      * @return
      * @throws ClientAccessException
      */
-    public abstract IKafka getKafka(String sourceName) throws ClientAccessException;
+    public IKafka getKafka(String sourceName) throws ClientAccessException {
+        throw  new DtLoaderException("请通过 kafkaClientCache 获取 kafka 客户端");
+    }
 
     /**
      * 获取 HDFS 对应的客户端
@@ -137,5 +141,24 @@ public abstract class AbsClientCache {
      * @return
      * @throws ClientAccessException
      */
-    public abstract IHdfsFile getHdfs(String sourceName) throws ClientAccessException;
+    public IHdfsFile getHdfs(String sourceName) throws ClientAccessException {
+        throw  new DtLoaderException("请通过 HdfsClientCache 获取 Hdfs 文件客户端");
+    }
+
+    /**
+     * 根据插件名称获取文件
+     *
+     * @param pluginName
+     * @return
+     * @throws Exception
+     */
+    @NotNull
+    protected static File getFileByPluginName(String pluginName) throws Exception {
+        String plugin = String.format("%s/%s", userDir, pluginName).replaceAll("//*", "/");
+        File finput = new File(plugin);
+        if (!finput.exists()) {
+            throw new Exception(String.format("%s directory not found", plugin));
+        }
+        return finput;
+    }
 }
