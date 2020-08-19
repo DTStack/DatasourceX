@@ -126,7 +126,7 @@
 2. 使用完请使用 stop 关闭缓存，如果使用了 start 则必须使用 stop 关闭线程池，否则会存储到缓存池中，轮询超时销毁
 3. 如果 VertX 等服务有线程池的情况，需要再请求技术之后，不管有没有 stop 都需要一次 removeCacheConnection()
 
-### 4.3 插件文件校验
+### ~~4.3 插件文件校验~~ 已去除
 [AbsClientCache](http://gitlab.prod.dtstack.cn/dt-insight-web/dt-center-common-loader/blob/master/core/src/main/java/com/dtstack/dtcenter/loader/client/AbsClientCache.java)
 如果需要开启插件校验，请使用 startCheckFile 来校验文件
 默认十分钟一次校验，首次开启不校验，用到的缓存连接才会校验
