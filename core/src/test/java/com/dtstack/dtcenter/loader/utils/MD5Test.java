@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.loader.client.sql.com.dtstack.dtcenter.loader.utils;
+package com.dtstack.dtcenter.loader.utils;
 
 import com.dtstack.dtcenter.loader.utils.MD5Util;
 import lombok.extern.slf4j.Slf4j;

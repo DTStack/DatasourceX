@@ -41,7 +41,7 @@ public class KafkaClientCache extends AbsClientCache {
                 synchronized (defaultClientMap) {
                     kafka = defaultClientMap.get(pluginName);
                     if (kafka == null) {
-                        kafka = buildPluginClient(pluginName);
+                        kafka = KafkaClientFactory.createPluginClass(pluginName);
                         defaultClientMap.put(pluginName, kafka);
                     }
                 }
@@ -51,24 +51,5 @@ public class KafkaClientCache extends AbsClientCache {
         } catch (Throwable e) {
             throw new ClientAccessException(e);
         }
-    }
-
-    private IKafka buildPluginClient(String pluginName) throws Exception {
-        loadComputerPlugin(pluginName);
-        return KafkaClientFactory.createPluginClass(pluginName);
-    }
-
-    /**
-     * 加载 ClassLoader 到 数据源插件工厂
-     *
-     * @param pluginName
-     * @throws Exception
-     */
-    private void loadComputerPlugin(String pluginName) throws Exception {
-        if (KafkaClientFactory.checkContainClassLoader(pluginName)) {
-            return;
-        }
-
-        KafkaClientFactory.addClassLoader(pluginName, getClassLoad(pluginName, getFileByPluginName(pluginName)));
     }
 }

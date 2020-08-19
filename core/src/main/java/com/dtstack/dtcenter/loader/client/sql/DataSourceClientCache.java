@@ -40,7 +40,7 @@ public class DataSourceClientCache extends AbsClientCache {
                 synchronized (defaultClientMap) {
                     client = defaultClientMap.get(pluginName);
                     if (client == null) {
-                        client = buildPluginClient(pluginName);
+                        client = DataSourceClientFactory.createPluginClass(pluginName);
                         defaultClientMap.put(pluginName, client);
                     }
                 }
@@ -50,24 +50,5 @@ public class DataSourceClientCache extends AbsClientCache {
         } catch (Throwable e) {
             throw new ClientAccessException(e);
         }
-    }
-
-    private IClient buildPluginClient(String pluginName) throws Exception {
-        loadComputerPlugin(pluginName);
-        return DataSourceClientFactory.createPluginClass(pluginName);
-    }
-
-    /**
-     * 加载 ClassLoader 到 数据源插件工厂
-     *
-     * @param pluginName
-     * @throws Exception
-     */
-    private void loadComputerPlugin(String pluginName) throws Exception {
-        if (DataSourceClientFactory.checkContainClassLoader(pluginName)) {
-            return;
-        }
-
-        DataSourceClientFactory.addClassLoader(pluginName, getClassLoad(pluginName, getFileByPluginName(pluginName)));
     }
 }

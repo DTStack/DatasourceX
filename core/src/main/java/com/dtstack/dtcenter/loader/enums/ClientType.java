@@ -13,8 +13,19 @@ import com.dtstack.dtcenter.loader.client.sql.DataSourceClientCache;
  */
 public enum ClientType {
 
+    /**
+     * 数据源测试连通性相关，大部分使用这个
+     */
     DATA_SOURCE_CLIENT(1, DataSourceClientCache.getInstance()),
+
+    /**
+     * KAFKA 的一些操作
+     */
     KAFKA_CLIENT(2, KafkaClientCache.getInstance()),
+
+    /**
+     * HDFS 文件的一些操作，具体见
+     */
     HDFS_CLIENT(3, HdfsFileClientCache.getInstance())
     ;
 

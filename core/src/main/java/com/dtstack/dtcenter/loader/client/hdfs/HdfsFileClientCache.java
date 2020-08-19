@@ -35,7 +35,7 @@ public class HdfsFileClientCache extends AbsClientCache {
                 synchronized (defaultClientMap) {
                     hdfsFile = defaultClientMap.get(pluginName);
                     if (hdfsFile == null) {
-                        hdfsFile = buildPluginClient(pluginName);
+                        hdfsFile = HdfsFileClientFactory.createPluginClass(pluginName);
                         defaultClientMap.put(pluginName, hdfsFile);
                     }
                 }
@@ -45,24 +45,5 @@ public class HdfsFileClientCache extends AbsClientCache {
         } catch (Throwable e) {
             throw new ClientAccessException(e);
         }
-    }
-
-    private IHdfsFile buildPluginClient(String pluginName) throws Exception {
-        loadComputerPlugin(pluginName);
-        return HdfsFileClientFactory.createPluginClass(pluginName);
-    }
-
-    /**
-     * 加载 ClassLoader 到 数据源插件工厂
-     *
-     * @param pluginName
-     * @throws Exception
-     */
-    private void loadComputerPlugin(String pluginName) throws Exception {
-        if (HdfsFileClientFactory.checkContainClassLoader(pluginName)) {
-            return;
-        }
-
-        HdfsFileClientFactory.addClassLoader(pluginName, getClassLoad(pluginName, getFileByPluginName(pluginName)));
     }
 }

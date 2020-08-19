@@ -2,11 +2,10 @@ package com.dtstack.dtcenter.loader.client.hdfs;
 
 import com.dtstack.dtcenter.loader.ClassLoaderCallBack;
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
+import com.dtstack.dtcenter.loader.client.ClientFactory;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
-import com.google.common.collect.Maps;
 
 import java.util.Iterator;
-import java.util.Map;
 import java.util.ServiceLoader;
 
 /**
@@ -15,24 +14,10 @@ import java.util.ServiceLoader;
  * @Date ：Created in 14:40 2020/8/10
  * @Description：Hdfs 文件操作客户端工厂
  */
-public class HdfsFileClientFactory {
-
-    /**
-     * 存储 插件名称 - ClassLoader 键值对信息
-     */
-    private static Map<String, ClassLoader> pluginClassLoader = Maps.newConcurrentMap();
-
-    /**
-     * 去除特定的插件缓存
-     *
-     * @param pluginName
-     */
-    public static void removePlugin(String pluginName) {
-        pluginClassLoader.remove(pluginName);
-    }
+public class HdfsFileClientFactory extends ClientFactory {
 
     public static IHdfsFile createPluginClass(String pluginName) throws Exception {
-        ClassLoader classLoader = pluginClassLoader.get(pluginName);
+        ClassLoader classLoader = getClassLoader(pluginName);
         return ClassLoaderCallBackMethod.callbackAndReset((ClassLoaderCallBack<IHdfsFile>) () -> {
             ServiceLoader<IHdfsFile> kafkas = ServiceLoader.load(IHdfsFile.class);
             Iterator<IHdfsFile> iClientIterator = kafkas.iterator();
@@ -43,17 +28,5 @@ public class HdfsFileClientFactory {
             IHdfsFile hdfsFile = iClientIterator.next();
             return new HdfsFileProxy(hdfsFile);
         }, classLoader, true);
-    }
-
-    public static void addClassLoader(String pluginName, ClassLoader classLoader) {
-        if (pluginClassLoader.containsKey(pluginName)) {
-            return;
-        }
-
-        pluginClassLoader.put(pluginName, classLoader);
-    }
-
-    public static boolean checkContainClassLoader(String pluginName) {
-        return pluginClassLoader.containsKey(pluginName);
     }
 }
