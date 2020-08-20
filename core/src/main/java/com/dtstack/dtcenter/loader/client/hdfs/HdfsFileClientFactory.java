@@ -14,10 +14,10 @@ import java.util.ServiceLoader;
  * @Date ：Created in 14:40 2020/8/10
  * @Description：Hdfs 文件操作客户端工厂
  */
-public class HdfsFileClientFactory extends ClientFactory {
+public class HdfsFileClientFactory {
 
     public static IHdfsFile createPluginClass(String pluginName) throws Exception {
-        ClassLoader classLoader = getClassLoader(pluginName);
+        ClassLoader classLoader = ClientFactory.getClassLoader(pluginName);
         return ClassLoaderCallBackMethod.callbackAndReset((ClassLoaderCallBack<IHdfsFile>) () -> {
             ServiceLoader<IHdfsFile> kafkas = ServiceLoader.load(IHdfsFile.class);
             Iterator<IHdfsFile> iClientIterator = kafkas.iterator();

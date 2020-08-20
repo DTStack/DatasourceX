@@ -14,9 +14,9 @@ import java.util.ServiceLoader;
  * @Date ：Created in 下午2:23 2020/6/2
  * @Description：kafka客户端工厂
  */
-public class KafkaClientFactory extends ClientFactory {
+public class KafkaClientFactory {
     public static IKafka createPluginClass(String pluginName) throws Exception {
-        ClassLoader classLoader = getClassLoader(pluginName);
+        ClassLoader classLoader = ClientFactory.getClassLoader(pluginName);
         return ClassLoaderCallBackMethod.callbackAndReset((ClassLoaderCallBack<IKafka>) () -> {
             ServiceLoader<IKafka> kafkas = ServiceLoader.load(IKafka.class);
             Iterator<IKafka> iClientIterator = kafkas.iterator();
