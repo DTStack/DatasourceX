@@ -1,9 +1,9 @@
 package com.dtstack.dtcenter.common.loader.hdfs.util;
 
 import com.alibaba.fastjson.JSONObject;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
 import com.dtstack.dtcenter.common.kerberos.KerberosConfigVerify;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -117,7 +117,7 @@ public class HadoopConfUtil {
             initYarnConfiguration((YarnConfiguration)yarnConf, yarnConfig);
         }catch (Exception e){
             logger.error("{}", e);
-            throw new DtCenterDefException("获取yarn配置信息失败", e);
+            throw new DtLoaderException("获取yarn配置信息失败", e);
         }
         return (YarnConfiguration) yarnConf;
     }

@@ -1,7 +1,5 @@
 package com.dtstack.dtcenter.common.loader.oracle;
 
-import com.dtstack.dtcenter.common.exception.DBErrorCode;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
@@ -77,7 +75,7 @@ public class OracleClient extends AbsRdbmsClient {
                 tableList.add(rs.getString(1));
             }
         } catch (Exception e) {
-            throw new DtCenterDefException("获取表异常", e);
+            throw new DtLoaderException("获取表异常", e);
         } finally {
             DBUtil.closeDBResources(rs, statement, oracleSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -106,9 +104,8 @@ public class OracleClient extends AbsRdbmsClient {
                 return comment;
             }
         } catch (Exception e) {
-            throw new DtCenterDefException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
-                    queryDTO.getTableName()),
-                    DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+                    queryDTO.getTableName()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, oracleSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -166,11 +163,10 @@ public class OracleClient extends AbsRdbmsClient {
 
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
+                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
             } else {
-                throw new DtCenterDefException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
-                        queryDTO.getTableName()),
-                        DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+                throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
+                        queryDTO.getTableName()), e);
             }
         } finally {
             DBUtil.closeDBResources(rs, statement, oracleSourceDTO.clearAfterGetConnection(clearStatus));
@@ -196,11 +192,10 @@ public class OracleClient extends AbsRdbmsClient {
 
         } catch (Exception e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
+                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
             } else {
-                throw new DtCenterDefException(String.format("获取表:%s 的字段的注释信息时失败. 请联系 DBA 核查该库、表信息.",
-                        queryDTO.getTableName()),
-                        DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+                throw new DtLoaderException(String.format("获取表:%s 的字段的注释信息时失败. 请联系 DBA 核查该库、表信息.",
+                        queryDTO.getTableName()), e);
             }
         }finally {
             DBUtil.closeDBResources(rs, statement, sourceDTO.clearAfterGetConnection(clearStatus));

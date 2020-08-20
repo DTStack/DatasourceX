@@ -1,9 +1,9 @@
 package com.dtstack.dtcenter.common.loader.hbase;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -38,7 +38,7 @@ public class HbaseClientTest {
     public void testCon() throws Exception {
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {
-            throw new DtCenterDefException("数据源连接异常");
+            throw new DtLoaderException("数据源连接异常");
         }
     }
 

@@ -2,7 +2,6 @@ package com.dtstack.dtcenter.common.loader.es;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.common.loader.es.pool.ElasticSearchManager;
@@ -124,7 +123,7 @@ public class EsClient extends AbsRdbmsClient {
         String index = queryDTO.getTableName();
         //不指定index抛异常
         if (StringUtils.isBlank(index)){
-            throw new DtCenterDefException("未指定es的index，获取失败");
+            throw new DtLoaderException("未指定es的index，获取失败");
         }
         try {
             GetMappingsRequest request = new GetMappingsRequest();
@@ -136,7 +135,7 @@ public class EsClient extends AbsRdbmsClient {
             typeList.add(data.type());
         }catch (NullPointerException e){
             log.error("index不存在", e);
-            throw new DtCenterDefException("index不存在");
+            throw new DtLoaderException("index不存在");
         }catch (Exception e){
             log.error("获取type异常", e);
         }finally {
@@ -190,7 +189,7 @@ public class EsClient extends AbsRdbmsClient {
         //索引
         String index = queryDTO.getTableName();
         if (StringUtils.isBlank(index)){
-            throw new DtCenterDefException("未指定es的index，数据预览失败");
+            throw new DtLoaderException("未指定es的index，数据预览失败");
         }
         //限制条数，最大10000条
         int previewNum = queryDTO.getPreviewNum() > MAX_NUM ? MAX_NUM:queryDTO.getPreviewNum();
@@ -238,7 +237,7 @@ public class EsClient extends AbsRdbmsClient {
         //索引
         String index = queryDTO.getTableName();
         if (StringUtils.isBlank(index)){
-            throw new DtCenterDefException("未指定es的index,获取字段信息失败");
+            throw new DtLoaderException("未指定es的index,获取字段信息失败");
         }
         List<ColumnMetaDTO> columnMetaDTOS = new ArrayList<>();
         try {
@@ -279,7 +278,7 @@ public class EsClient extends AbsRdbmsClient {
         //索引
         String index = queryDTO.getTableName();
         if (StringUtils.isBlank(index)){
-            throw new DtCenterDefException("未指定es的index,获取字段信息失败,请在sqlQueryDTO中指定tableName作为索引");
+            throw new DtLoaderException("未指定es的index,获取字段信息失败,请在sqlQueryDTO中指定tableName作为索引");
         }
         RestHighLevelClient client = null;
         RestClient lowLevelClient = null;
@@ -287,7 +286,7 @@ public class EsClient extends AbsRdbmsClient {
         try {
             client = getClient(esSourceDTO);
             if (Objects.isNull(client)) {
-                throw new DtCenterDefException("没有可用的数据库连接");
+                throw new DtLoaderException("没有可用的数据库连接");
             }
             lowLevelClient = client.getLowLevelClient();
             HttpEntity entity = new NStringEntity(dsl, ContentType.APPLICATION_JSON);
@@ -298,7 +297,7 @@ public class EsClient extends AbsRdbmsClient {
             resultJsonObject = JSONObject.parseObject(result);
         } catch (IOException e) {
             log.error(e.getMessage(), e);
-            throw new DtCenterDefException(e.getMessage(), e);
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             closeResource(lowLevelClient, client, esSourceDTO);
         }
@@ -340,7 +339,7 @@ public class EsClient extends AbsRdbmsClient {
         ElasticSearchPool elasticSearchPool = elasticSearchManager.getConnection(esSourceDTO);
         RestHighLevelClient restHighLevelClient = elasticSearchPool.getResource();
         if (Objects.isNull(restHighLevelClient)) {
-            throw new DtCenterDefException("没有可用的数据库连接");
+            throw new DtLoaderException("没有可用的数据库连接");
         }
         return restHighLevelClient;
 

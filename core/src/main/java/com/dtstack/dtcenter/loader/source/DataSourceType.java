@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.loader.source;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -84,7 +84,7 @@ public enum DataSourceType {
             }
         }
 
-        throw new DtCenterDefException("不支持数据源类型");
+        throw new DtLoaderException("不支持数据源类型");
     }
 
     public int getVal() {

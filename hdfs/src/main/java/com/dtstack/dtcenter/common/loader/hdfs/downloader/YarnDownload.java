@@ -1,10 +1,10 @@
 package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
 import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
@@ -138,7 +138,7 @@ public class YarnDownload implements IDownloader {
             nodeFiles = FileContext.getFileContext(qualifiedLogDir.toUri(), configuration).listStatus(remoteAppLogDir);
             nextLogFile();
         } catch (FileNotFoundException fnf) {
-            throw new DtCenterDefException("applicationId:" + appIdStr + " don't have any log file.");
+            throw new DtLoaderException("applicationId:" + appIdStr + " don't have any log file.");
         }
         return true;
     }
@@ -164,13 +164,13 @@ public class YarnDownload implements IDownloader {
         if (thr) {
             // 文件大小为0的时候不允许下载，需要重新调用configure接口
             log.error("path:{} size = 0", tableLocation);
-            throw new DtCenterDefException("path：" + tableLocation + " size = 0 ");
+            throw new DtLoaderException("path：" + tableLocation + " size = 0 ");
         }
     }
 
     @Override
     public List<String> getMetaInfo() throws Exception {
-        throw new DtCenterDefException("not support getMetaInfo of App log download");
+        throw new DtLoaderException("not support getMetaInfo of App log download");
     }
 
     @Override
@@ -192,7 +192,7 @@ public class YarnDownload implements IDownloader {
                     try {
                         return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
                     } catch (Exception e){
-                        throw new DtCenterDefException("读取文件异常", e);
+                        throw new DtLoaderException("读取文件异常", e);
                     }
                 });
     }
@@ -217,7 +217,7 @@ public class YarnDownload implements IDownloader {
                         }
                         return true;
                     } catch (Exception e){
-                        throw new DtCenterDefException("读取文件异常", e);
+                        throw new DtLoaderException("读取文件异常", e);
                     }
                 });
     }

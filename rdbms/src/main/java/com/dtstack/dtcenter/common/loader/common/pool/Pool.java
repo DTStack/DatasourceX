@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.common.loader.common.pool;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPool;
@@ -31,7 +31,7 @@ public class Pool<T> implements Cloneable {
                 closeInternalPool();
             } catch (Exception e) {
                 log.error("init pool error", e);
-                throw new DtCenterDefException("init pool error", e);
+                throw new DtLoaderException("init pool error", e);
             }
         }
 
@@ -43,7 +43,7 @@ public class Pool<T> implements Cloneable {
             internalPool.close();
         } catch (Exception e) {
             log.error("Could not destroy the pool", e);
-            throw new DtCenterDefException("Could not destroy the pool", e);
+            throw new DtLoaderException("Could not destroy the pool", e);
         }
     }
 
@@ -56,7 +56,7 @@ public class Pool<T> implements Cloneable {
             return internalPool.borrowObject();
         } catch (Exception e) {
             log.error("Could not get a resource from the pool", e);
-            throw new DtCenterDefException("Could not get a resource from the pool", e);
+            throw new DtLoaderException("Could not get a resource from the pool", e);
         }
     }
 
@@ -78,7 +78,7 @@ public class Pool<T> implements Cloneable {
             internalPool.returnObject(resource);
         } catch (Exception e) {
             log.error("Could not return the resource to the pool", e);
-            throw new DtCenterDefException("Could not return the resource to the pool", e);
+            throw new DtLoaderException("Could not return the resource to the pool", e);
         }
     }
 
@@ -97,7 +97,7 @@ public class Pool<T> implements Cloneable {
             internalPool.invalidateObject(resource);
         } catch (Exception e) {
             log.error("Could not return the resource to the pool", e);
-            throw new DtCenterDefException("Could not return the resource to the pool", e);
+            throw new DtLoaderException("Could not return the resource to the pool", e);
         }
     }
 
@@ -162,7 +162,7 @@ public class Pool<T> implements Cloneable {
             }
         } catch (Exception e) {
             log.error("Error trying to add idle objects", e);
-            throw new DtCenterDefException("Error trying to add idle objects", e);
+            throw new DtLoaderException("Error trying to add idle objects", e);
         }
     }
 }

@@ -1,8 +1,8 @@
 package com.dtstack.dtcenter.common.loader.hive1;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.commons.lang3.BooleanUtils;
 import org.junit.Test;
 
@@ -18,7 +18,7 @@ public class HiveClientTest {
                 .build();
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {
-            throw new DtCenterDefException("数据源连接异常");
+            throw new DtLoaderException("数据源连接异常");
         }
     }
 

@@ -2,13 +2,13 @@ package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 
 
 import com.csvreader.CsvReader;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -165,7 +165,7 @@ public class HdfsParquetWriter {
             }
         } catch (Exception e) {
             logger.error("", e);
-            throw new DtCenterDefException("第" + currLineNum + "行数据异常:" + e.getMessage());
+            throw new DtLoaderException("第" + currLineNum + "行数据异常:" + e.getMessage());
         } finally {
             closeResource(writer, inputStreamReader, reader);
         }
@@ -295,7 +295,7 @@ public class HdfsParquetWriter {
             }
         } catch (Exception e) {
             logger.error("", e);
-            throw new DtCenterDefException("第" + currLineNum + "行数据异常:" + e.getMessage());
+            throw new DtLoaderException("第" + currLineNum + "行数据异常:" + e.getMessage());
         } finally {
             closeResource(writer, inputStreamReader, reader);
         }

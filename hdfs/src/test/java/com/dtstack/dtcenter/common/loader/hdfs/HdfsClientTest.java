@@ -1,9 +1,9 @@
 package com.dtstack.dtcenter.common.loader.hdfs;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.hdfs.client.HdfsClient;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.junit.Test;
 
 /**
@@ -30,7 +30,7 @@ public class HdfsClientTest {
                 .build();
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {
-            throw new DtCenterDefException("数据源连接异常");
+            throw new DtLoaderException("数据源连接异常");
         }
     }
 }

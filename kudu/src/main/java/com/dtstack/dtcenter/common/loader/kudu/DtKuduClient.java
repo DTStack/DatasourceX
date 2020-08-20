@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.common.loader.kudu;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
@@ -74,7 +73,7 @@ public class DtKuduClient extends AbsRdbmsClient {
     @Override
     public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         if (queryDTO == null || StringUtils.isBlank(queryDTO.getTableName())) {
-            throw new DtCenterDefException("表名称不能为空");
+            throw new DtLoaderException("表名称不能为空");
         }
         try (KuduClient client = getConnection(iSource);) {
             return getTableColumns(client, queryDTO.getTableName());
@@ -102,7 +101,7 @@ public class DtKuduClient extends AbsRdbmsClient {
                 metaDTOS.add(metaDTO);
             });
         } catch (KuduException e) {
-            throw new DtCenterDefException(e.getMessage(), e);
+            throw new DtLoaderException(e.getMessage(), e);
         }
         return metaDTOS;
     }
@@ -120,7 +119,7 @@ public class DtKuduClient extends AbsRdbmsClient {
     private static KuduClient getConnection(ISourceDTO iSource) {
         KuduSourceDTO kuduSourceDTO = (KuduSourceDTO) iSource;
         if (kuduSourceDTO == null || StringUtils.isBlank(kuduSourceDTO.getUrl())) {
-            throw new DtCenterDefException("集群地址不能为空");
+            throw new DtLoaderException("集群地址不能为空");
         }
 
         if (MapUtils.isNotEmpty(kuduSourceDTO.getKerberosConfig())) {
@@ -164,7 +163,7 @@ public class DtKuduClient extends AbsRdbmsClient {
                 }
             }
         } catch (KuduException e) {
-            throw new DtCenterDefException(e.getMessage(), e);
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             closeClient(client, null, scanner);
         }

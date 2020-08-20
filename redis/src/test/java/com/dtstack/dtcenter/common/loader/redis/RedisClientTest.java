@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.redis;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.dto.source.RedisSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 
 public class RedisClientTest {
     private static RedisClient nosqlClient = new RedisClient();
@@ -14,7 +14,7 @@ public class RedisClientTest {
                 .build();
         Boolean isConnected = nosqlClient.testCon(source);
         if (!isConnected) {
-            throw new DtCenterDefException("数据源连接异常");
+            throw new DtLoaderException("数据源连接异常");
         }
     }
 }

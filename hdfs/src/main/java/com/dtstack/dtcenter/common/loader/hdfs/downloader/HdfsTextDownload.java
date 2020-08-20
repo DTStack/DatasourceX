@@ -1,11 +1,11 @@
 package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -223,7 +223,7 @@ public class HdfsTextDownload implements IDownloader {
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
-                        throw new DtCenterDefException("读取文件异常", e);
+                        throw new DtLoaderException("读取文件异常", e);
                     }
                 });
     }
@@ -264,7 +264,7 @@ public class HdfsTextDownload implements IDownloader {
             try {
                 return recordReader == null || !nextRecord();
             } catch (Exception e){
-                throw new DtCenterDefException("下载文件异常", e);
+                throw new DtLoaderException("下载文件异常", e);
             }
         });
 
@@ -290,7 +290,7 @@ public class HdfsTextDownload implements IDownloader {
                         }
                         return true;
                     } catch (Exception e){
-                        throw new DtCenterDefException("RecordReader 关闭异常", e);
+                        throw new DtLoaderException("RecordReader 关闭异常", e);
                     }
                 });
     }

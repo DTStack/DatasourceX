@@ -1,8 +1,8 @@
 package com.dtstack.dtcenter.common.loader.kylin;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.Column;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.utils.SqlFormatUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -52,7 +52,7 @@ public class KylinDownloader implements IDownloader {
     @Override
     public boolean configure() throws Exception {
         if (null == connection || StringUtils.isEmpty(sql)) {
-            throw new DtCenterDefException("文件不存在");
+            throw new DtLoaderException("文件不存在");
         }
         totalLine = 0;
         pageSize = 100;
@@ -83,7 +83,7 @@ public class KylinDownloader implements IDownloader {
             //获取总页数
             pageAll = (int) Math.ceil(totalLine / (double) pageSize);
         } catch (Exception e) {
-            throw new DtCenterDefException("构造 Kylin 下载器信息异常 : " + e.getMessage(), e);
+            throw new DtLoaderException("构造 Kylin 下载器信息异常 : " + e.getMessage(), e);
         } finally {
             if (totalResultSet != null) {
                 totalResultSet.close();
@@ -118,7 +118,7 @@ public class KylinDownloader implements IDownloader {
                 pageTemp.add(columns);
             }
         } catch (Exception e) {
-            throw new DtCenterDefException("读取 Kylin 信息异常 : " + e.getMessage(), e);
+            throw new DtLoaderException("读取 Kylin 信息异常 : " + e.getMessage(), e);
         }
 
         pageNum++;

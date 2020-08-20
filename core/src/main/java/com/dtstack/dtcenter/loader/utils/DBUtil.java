@@ -1,8 +1,7 @@
 package com.dtstack.dtcenter.loader.utils;
 
-import com.dtstack.dtcenter.common.exception.DBErrorCode;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +52,7 @@ public class DBUtil {
                 result.add(row);
             }
         } catch (Exception e) {
-            throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+            throw new DtLoaderException("SQL 执行异常", e);
         } finally {
             DBUtil.closeDBResources(res, statement, closeConn ? conn : null);
         }
@@ -99,7 +98,7 @@ public class DBUtil {
                 result.add(row);
             }
         } catch (Exception e) {
-            throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+            throw new DtLoaderException("SQL 执行异常", e);
         } finally {
             DBUtil.closeDBResources(res, statement, closeConn ? conn : null);
         }
@@ -121,7 +120,7 @@ public class DBUtil {
             statement = conn.createStatement();
             statement.execute(sql);
         } catch (Exception e) {
-            throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+            throw new DtLoaderException("SQL 执行异常", e);
         } finally {
             DBUtil.closeDBResources(null, statement, closeConn ? conn : null);
         }

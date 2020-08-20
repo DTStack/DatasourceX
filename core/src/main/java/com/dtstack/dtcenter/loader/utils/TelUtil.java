@@ -1,8 +1,7 @@
 package com.dtstack.dtcenter.loader.utils;
 
-import com.dtstack.dtcenter.common.exception.DBErrorCode;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.util.AddressUtil;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 
 /**
  * @company: www.dtstack.com
@@ -17,7 +16,7 @@ public class TelUtil {
         for (String addr : addrs) {
             String[] ad = addr.split(":", 2);
             if (ad.length != 2) {
-                throw new DtCenterDefException(addr + "地址格式错误", DBErrorCode.IP_PORT_FORMAT_ERROR);
+                throw new DtLoaderException(addr + "地址格式错误");
             }
             String ip = ad[0].trim();
             String port = ad[1].trim();
@@ -26,7 +25,7 @@ public class TelUtil {
             }
             result = AddressUtil.telnet(ip, Integer.parseInt(port));
             if (!result) {
-                throw new DtCenterDefException(addr + "无法联通", DBErrorCode.IP_PORT_CONN_ERROR);
+                throw new DtLoaderException(addr + "无法联通");
             }
         }
         return result;

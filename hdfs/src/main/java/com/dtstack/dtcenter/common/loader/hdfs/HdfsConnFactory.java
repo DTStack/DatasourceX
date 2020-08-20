@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.common.loader.hdfs;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
@@ -37,7 +36,7 @@ public class HdfsConnFactory extends ConnFactory {
     public Boolean testConn(ISourceDTO iSource) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
         if (StringUtils.isBlank(hdfsSourceDTO.getDefaultFS()) || !hdfsSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
-            throw new DtCenterDefException("defaultFS格式不正确");
+            throw new DtLoaderException("defaultFS格式不正确");
         }
 
         Properties properties = HdfsConnFactory.combineHdfsConfig(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
@@ -68,7 +67,7 @@ public class HdfsConnFactory extends ConnFactory {
             try {
                 properties = objectMapper.readValue(hadoopConfig, Properties.class);
             } catch (IOException e) {
-                throw new DtCenterDefException("高可用配置格式错误", e);
+                throw new DtLoaderException("高可用配置格式错误", e);
             }
         }
 

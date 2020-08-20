@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.kafka;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.utils.TelUtil;
 import com.google.common.collect.Lists;
 import kafka.admin.AdminUtils;
@@ -70,7 +70,7 @@ public class KakfaUtil {
      */
     public static String getAllBrokersAddressFromZk(String zkUrls) {
         if (StringUtils.isBlank(zkUrls) || !TelUtil.checkTelnetAddr(zkUrls)) {
-            throw new DtCenterDefException("请配置正确的 zookeeper 地址");
+            throw new DtLoaderException("请配置正确的 zookeeper 地址");
         }
 
         ZkUtils zkUtils = null;
@@ -186,7 +186,7 @@ public class KakfaUtil {
                     new Properties(), RackAwareMode.Enforced$.MODULE$);
             return true;
         } catch (Exception e) {
-            throw new DtCenterDefException(e.getMessage(), e);
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             if (zkUtils != null) {
                 zkUtils.close();
@@ -278,7 +278,7 @@ public class KakfaUtil {
 
             return kafkaOffsetDTOMap.values().stream().collect(Collectors.toList());
         } catch (Exception e) {
-            throw new DtCenterDefException(e.getMessage(), e);
+            throw new DtLoaderException(e.getMessage(), e);
         }
     }
 
@@ -363,7 +363,7 @@ public class KakfaUtil {
             FileUtils.write(jaas, String.format(KafkaConsistent.KAFKA_JAAS_CONTENT, keytabConf, principal));
             kafkaLoginConf = jaas.getAbsolutePath();
         } catch (IOException e) {
-            throw new DtCenterDefException("写入kafka配置文件异常", e);
+            throw new DtLoaderException("写入kafka配置文件异常", e);
         }
         log.info("Init Kafka Kerberos:login-conf:{}\n --sasl.kerberos.service.name:{}",
                 keytabConf, kafkaKbrServiceName);

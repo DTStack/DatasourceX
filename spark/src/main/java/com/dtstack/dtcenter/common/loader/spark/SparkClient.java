@@ -1,7 +1,5 @@
 package com.dtstack.dtcenter.common.loader.spark;
 
-import com.dtstack.dtcenter.common.exception.DBErrorCode;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
@@ -72,7 +70,7 @@ public class SparkClient extends AbsRdbmsClient {
                 tableList.add(rs.getString(columnSize == 1 ? 1 : 2));
             }
         } catch (Exception e) {
-            throw new DtCenterDefException("获取表异常", e);
+            throw new DtLoaderException("获取表异常", e);
         } finally {
             DBUtil.closeDBResources(rs, statement, sparkSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -107,9 +105,8 @@ public class SparkClient extends AbsRdbmsClient {
                 }
             }
         } catch (Exception e) {
-            throw new DtCenterDefException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
-                    queryDTO.getTableName()),
-                    DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+                    queryDTO.getTableName()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, sparkSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -183,9 +180,8 @@ public class SparkClient extends AbsRdbmsClient {
 
             return columnMetaDTOS.stream().filter(column -> !queryDTO.getFilterPartitionColumns() || !column.getPart()).collect(Collectors.toList());
         } catch (SQLException e) {
-            throw new DtCenterDefException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
-                    queryDTO.getTableName()),
-                    DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
+                    queryDTO.getTableName()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, stmt, sparkSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -232,7 +228,7 @@ public class SparkClient extends AbsRdbmsClient {
             try {
                 properties = objectMapper.readValue(hadoopConfig, Properties.class);
             } catch (IOException e) {
-                throw new DtCenterDefException("高可用配置格式错误", e);
+                throw new DtLoaderException("高可用配置格式错误", e);
             }
         }
         if (confMap != null) {
@@ -285,7 +281,7 @@ public class SparkClient extends AbsRdbmsClient {
             throw new DtLoaderException("hadoop配置信息不能为空");
         }
         if (StringUtils.isBlank(sparkSourceDTO.getDefaultFS()) || !sparkSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
-            throw new DtCenterDefException("defaultFS格式不正确");
+            throw new DtLoaderException("defaultFS格式不正确");
         }
         Properties properties = combineHdfsConfig(sparkSourceDTO.getConfig(), sparkSourceDTO.getKerberosConfig());
         if (properties.size() > 0) {
@@ -307,7 +303,7 @@ public class SparkClient extends AbsRdbmsClient {
                         try {
                             return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), sparkSourceDTO.getKerberosConfig());
                         } catch (Exception e) {
-                            throw new DtCenterDefException("创建下载器异常", e);
+                            throw new DtLoaderException("创建下载器异常", e);
                         }
                     }
             );
@@ -332,7 +328,7 @@ public class SparkClient extends AbsRdbmsClient {
     private @NotNull IDownloader createDownloader(String storageMode, Configuration conf, String tableLocation, ArrayList<String> columnNames, String fieldDelimiter, ArrayList<String> partitionColumns, Map<String, String> filterPartitions, Map<String, Object> kerberosConfig) throws Exception {
         // 根据存储格式创建对应的hiveDownloader
         if (StringUtils.isBlank(storageMode)) {
-            throw new DtCenterDefException("不支持该存储类型的hive表读取");
+            throw new DtLoaderException("不支持该存储类型的hive表读取");
         }
 
         if (storageMode.contains("Text")){
@@ -353,7 +349,7 @@ public class SparkClient extends AbsRdbmsClient {
             return hiveParquetDownload;
         }
 
-        throw new DtCenterDefException("不支持该存储类型的hive表读取");
+        throw new DtLoaderException("不支持该存储类型的hive表读取");
     }
 
     /**

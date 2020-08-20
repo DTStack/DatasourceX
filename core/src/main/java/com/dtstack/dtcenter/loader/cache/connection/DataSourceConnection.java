@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.loader.cache.connection;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 
@@ -48,7 +48,7 @@ public class DataSourceConnection {
      */
     public void updateSessionKey(String sessionKey) {
         if (StringUtils.isBlank(sessionKey)) {
-            throw new DtCenterDefException("数据源连接主键(sessionKey)不能为空");
+            throw new DtLoaderException("数据源连接主键(sessionKey)不能为空");
         }
 
         this.sessionKey = sessionKey;

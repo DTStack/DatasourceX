@@ -1,12 +1,11 @@
 package com.dtstack.dtcenter.common.loader.mongo;
 
-import com.dtstack.dtcenter.common.exception.DBErrorCode;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.mongo.pool.MongoManager;
 import com.dtstack.dtcenter.common.util.AddressUtil;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.MongoSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
@@ -180,7 +179,7 @@ public class MongoDBUtils {
         }
 
         if (!isTelnet) {
-            throw new DtCenterDefException("连接信息：" + errorHost.toString(), DBErrorCode.IP_PORT_CONN_ERROR);
+            throw new DtLoaderException("数据库服务器端口连接失败,请检查您的数据库配置或服务状态 : 连接信息：" + errorHost.toString());
         }
 
         return addresses;

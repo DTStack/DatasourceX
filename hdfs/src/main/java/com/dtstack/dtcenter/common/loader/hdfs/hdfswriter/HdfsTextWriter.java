@@ -1,13 +1,13 @@
 package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 
 import com.csvreader.CsvReader;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.google.common.collect.Lists;
 import org.apache.commons.compress.utils.Charsets;
 import org.apache.commons.lang3.StringUtils;
@@ -88,7 +88,7 @@ public class HdfsTextWriter {
             }
         } catch (final Exception e) {
             logger.error("", e);
-            throw new DtCenterDefException("第" + currLineNum + "行数据异常,请检查, 数据导入失败");
+            throw new DtLoaderException("第" + currLineNum + "行数据异常,请检查, 数据导入失败");
         } finally {
             stream.close();
 
@@ -194,7 +194,7 @@ public class HdfsTextWriter {
             }
         } catch (final Exception e) {
             logger.error("", e);
-            throw new DtCenterDefException("(第" + currLineNum + "行数据异常,请检查。数据导入失败)");
+            throw new DtLoaderException("(第" + currLineNum + "行数据异常,请检查。数据导入失败)");
         } finally {
             stream.close();
 
@@ -212,7 +212,7 @@ public class HdfsTextWriter {
     private static String transformColumn(final List<ColumnMetaDTO> tableColumns, final List<HDFSImportColumn> keyList, final String[] columnValArr, final String delimiter) throws ParseException {
 
         if (columnValArr == null) {
-            throw new DtCenterDefException("记录不应该为空");
+            throw new DtLoaderException("记录不应该为空");
         }
 
         final int length = columnValArr.length > tableColumns.size() ? tableColumns.size() : columnValArr.length;

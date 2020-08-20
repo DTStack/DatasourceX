@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.loader.utils;
 
-import com.dtstack.dtcenter.loader.utils.MD5Util;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;

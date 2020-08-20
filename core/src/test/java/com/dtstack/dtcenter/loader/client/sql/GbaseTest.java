@@ -1,11 +1,11 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.GBaseSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
 
@@ -30,7 +30,7 @@ public class GbaseTest {
         IClient client = clientCache.getClient(DataSourceType.GBase_8a.getPluginName());
         Boolean isConnected = client.testCon(source);
         if (!isConnected) {
-            throw new DtCenterDefException("数据源连接异常");
+            throw new DtLoaderException("数据源连接异常");
         }
     }
 

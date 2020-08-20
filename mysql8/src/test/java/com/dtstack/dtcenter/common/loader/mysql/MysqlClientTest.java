@@ -1,8 +1,8 @@
 package com.dtstack.dtcenter.common.loader.mysql;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.loader.dto.source.Mysql8SourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.junit.Test;
 
 public class MysqlClientTest {
@@ -17,7 +17,7 @@ public class MysqlClientTest {
                 .build();
         Boolean isConnected = rdbsClient.testCon(source);
         if (!isConnected) {
-            throw new DtCenterDefException("数据源连接异常");
+            throw new DtLoaderException("数据源连接异常");
         }
     }
 }

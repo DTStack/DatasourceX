@@ -17,8 +17,6 @@ import com.aliyun.odps.data.DefaultRecordReader;
 import com.aliyun.odps.data.Record;
 import com.aliyun.odps.data.ResultSet;
 import com.aliyun.odps.task.SQLTask;
-import com.dtstack.dtcenter.common.exception.DBErrorCode;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.common.loader.odps.common.OdpsFields;
@@ -112,7 +110,7 @@ public class OdpsClient extends AbsRdbmsClient {
         OdpsPool odpsPool = odpsManager.getConnection(odpsSourceDTO);
         Odps odps = odpsPool.getResource();
         if (Objects.isNull(odps)) {
-            throw new DtCenterDefException("没有可用的数据库连接");
+            throw new DtLoaderException("没有可用的数据库连接");
         }
         return odps;
     }
@@ -246,7 +244,7 @@ public class OdpsClient extends AbsRdbmsClient {
                 columnList.add(columnMetaDTO);
             });
         } catch (OdpsException e) {
-            throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+            throw new DtLoaderException("SQL 执行异常", e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -269,7 +267,7 @@ public class OdpsClient extends AbsRdbmsClient {
                 columnClassInfo.add(recordColumn.getTypeInfo().getTypeName());
             }
         } catch (OdpsException e) {
-            throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+            throw new DtLoaderException("SQL 执行异常", e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -343,7 +341,7 @@ public class OdpsClient extends AbsRdbmsClient {
                 result.add(row);
             }
         } catch (OdpsException e) {
-            throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+            throw new DtLoaderException("SQL 执行异常", e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -383,7 +381,7 @@ public class OdpsClient extends AbsRdbmsClient {
             Instance instance = runOdpsTask(odps, queryDTO);
             isSuccessful = instance.isSuccessful();
         } catch (Exception e) {
-            throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+            throw new DtLoaderException("SQL 执行异常", e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }

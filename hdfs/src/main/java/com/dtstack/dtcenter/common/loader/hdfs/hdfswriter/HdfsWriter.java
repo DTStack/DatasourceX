@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -58,11 +58,11 @@ public class HdfsWriter {
     public static InputStreamReader getReader(String fromFileName, String oriCharSet) throws Exception {
         File fromFile = new File(fromFileName);
         if (!fromFile.exists()) {
-            throw new DtCenterDefException("文件不存在");
+            throw new DtLoaderException("文件不存在");
         }
 
         if (fromFile.isDirectory()) {
-            throw new DtCenterDefException("不能选择文件夹");
+            throw new DtLoaderException("不能选择文件夹");
         }
 
         return new InputStreamReader(new BOMInputStream(new FileInputStream(fromFile)), oriCharSet);
@@ -72,7 +72,7 @@ public class HdfsWriter {
         char delim = DEFAULT_DELIM;
         if (delimStr != null) {
             if (delimStr.length() > 1) {
-                throw new DtCenterDefException("分隔符的长度不能大于1");
+                throw new DtLoaderException("分隔符的长度不能大于1");
             } else {
                 delim = delimStr.charAt(0);
             }
@@ -141,7 +141,7 @@ public class HdfsWriter {
             //binary 类型用文件类型导入只能导入字符串
             return columnVal;
         } else {
-            throw new DtCenterDefException("not support of column type" + columnType);
+            throw new DtLoaderException("not support of column type" + columnType);
         }
     }
 }

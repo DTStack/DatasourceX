@@ -1,10 +1,10 @@
 package com.dtstack.dtcenter.common.loader.hive;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +46,7 @@ public class HiveConnFactory extends ConnFactory {
                             return DriverManager.getConnection(hiveSourceDTO.getUrl(), hiveSourceDTO.getUsername(),
                                     hiveSourceDTO.getPassword());
                         } catch (SQLException e) {
-                            throw new DtCenterDefException("getHiveConnection error : " + e.getMessage(), e);
+                            throw new DtLoaderException("getHiveConnection error : " + e.getMessage(), e);
                         }
                     }
             );

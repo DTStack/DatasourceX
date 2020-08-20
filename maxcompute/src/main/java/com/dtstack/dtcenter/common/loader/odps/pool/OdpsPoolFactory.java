@@ -2,8 +2,8 @@ package com.dtstack.dtcenter.common.loader.odps.pool;
 
 import com.aliyun.odps.Odps;
 import com.aliyun.odps.Tables;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.odps.OdpsClient;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
@@ -73,7 +73,7 @@ public class OdpsPoolFactory implements PooledObjectFactory<Odps> {
                 odps = null;
             } catch (Exception e) {
                 log.error("close client error", e);
-                throw new DtCenterDefException("close client error", e);
+                throw new DtLoaderException("close client error", e);
             }
         }
     }

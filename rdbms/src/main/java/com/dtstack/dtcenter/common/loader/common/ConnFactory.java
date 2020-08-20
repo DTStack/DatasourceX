@@ -1,8 +1,8 @@
 package com.dtstack.dtcenter.common.loader.common;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +52,7 @@ public class ConnFactory {
 
     public Connection getConn(ISourceDTO source) throws Exception {
         if (source == null) {
-            throw new DtCenterDefException("数据源信息为 NULL");
+            throw new DtLoaderException("数据源信息为 NULL");
         }
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
         boolean isStart = false;
@@ -140,7 +140,7 @@ public class ConnFactory {
 
             return true;
         } catch (Exception e) {
-            throw new DtCenterDefException("数据源连接异常:" + e.getMessage(), e);
+            throw new DtLoaderException("数据源连接异常:" + e.getMessage(), e);
         } finally {
             DBUtil.closeDBResources(null, statement, conn);
         }

@@ -1,10 +1,8 @@
 package com.dtstack.dtcenter.common.loader.common;
 
-import com.dtstack.dtcenter.common.exception.DBErrorCode;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.connection.CacheConnectionHelper;
 import com.dtstack.dtcenter.loader.client.IClient;
-import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -59,7 +57,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
             try {
                 return connFactory.getConn(iSource);
             } catch (Exception e) {
-                throw new DtCenterDefException("获取数据库连接异常", e);
+                throw new DtLoaderException("获取数据库连接异常", e);
             }
         }
 
@@ -67,7 +65,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
             try {
                 return connFactory.getConn(iSource);
             } catch (Exception e) {
-                throw new DtCenterDefException("获取数据库连接异常", e);
+                throw new DtLoaderException("获取数据库连接异常", e);
             }
         });
     }
@@ -259,11 +257,10 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
+                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
             } else {
-                throw new DtCenterDefException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
-                        queryDTO.getTableName()),
-                        DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+                throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
+                        queryDTO.getTableName()), e);
             }
         } finally {
             DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
@@ -302,11 +299,10 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
             }
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
+                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
             } else {
-                throw new DtCenterDefException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
-                        queryDTO.getTableName()),
-                        DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+                throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
+                        queryDTO.getTableName()), e);
             }
         } finally {
             DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
@@ -434,7 +430,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                 databaseList.add(rs.getString(1));
             }
         } catch (Exception e) {
-            throw new DtCenterDefException("获取库异常", e);
+            throw new DtLoaderException("获取库异常", e);
         } finally {
             DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -466,7 +462,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                 break;
             }
         } catch (Exception e) {
-            throw new DtCenterDefException("获取库异常", e);
+            throw new DtLoaderException("获取库异常", e);
         } finally {
             DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
         }

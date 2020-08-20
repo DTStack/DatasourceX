@@ -2,7 +2,6 @@ package com.dtstack.dtcenter.common.loader.hbase;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
@@ -90,7 +89,7 @@ public class HbaseConnFactory extends ConnFactory {
             hbaseMap.putAll(jsonObject);
         } else {
             if (StringUtils.isBlank(hbaseSourceDTO.getUrl())) {
-                throw new DtCenterDefException("集群地址不能为空");
+                throw new DtLoaderException("集群地址不能为空");
             }
             // 设置集群地址
             hbaseMap.put(DtClassConsistent.HBaseConsistent.KEY_HBASE_ZOOKEEPER_QUORUM, hbaseSourceDTO.getUrl());

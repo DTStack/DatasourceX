@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.common.loader.hdfs.client;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hdfs.HdfsConnFactory;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsORCDownload;
@@ -12,8 +11,8 @@ import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsParquetWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsTextWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
-import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.FileStatus;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
@@ -21,6 +20,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
@@ -85,7 +85,7 @@ public class HdfsFileClient implements IHdfsFile {
                         yarnDownload.configure();
                         return yarnDownload;
                     } catch (Exception e) {
-                        throw new DtCenterDefException("创建下载器异常", e);
+                        throw new DtLoaderException("创建下载器异常", e);
                     }
                 }
         );
@@ -113,7 +113,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return HdfsOperator.getFileStatus(conf, location);
                     } catch (Exception e) {
-                        throw new DtCenterDefException("获取 hdfs 文件状态异常", e);
+                        throw new DtLoaderException("获取 hdfs 文件状态异常", e);
                     }
                 }
         );
@@ -136,7 +136,7 @@ public class HdfsFileClient implements IHdfsFile {
                         HdfsOperator.downloadFileFromHDFS(conf, remotePath, localDir);
                         return true;
                     } catch (Exception e) {
-                        throw new DtCenterDefException("从hdfs下载文件异常", e);
+                        throw new DtLoaderException("从hdfs下载文件异常", e);
                     }
                 }
         );
@@ -159,7 +159,7 @@ public class HdfsFileClient implements IHdfsFile {
                         HdfsOperator.uploadLocalFileToHdfs(conf, localFilePath, remotePath);
                         return true;
                     } catch (Exception e) {
-                        throw new DtCenterDefException("上传文件到hdfs异常", e);
+                        throw new DtLoaderException("上传文件到hdfs异常", e);
                     }
                 }
         );
@@ -179,7 +179,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return HdfsOperator.uploadInputStreamToHdfs(conf, bytes, remotePath);
                     } catch (Exception e) {
-                        throw new DtCenterDefException("上传文件到hdfs异常", e);
+                        throw new DtLoaderException("上传文件到hdfs异常", e);
                     }
                 }
         );
@@ -199,7 +199,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return HdfsOperator.createDir(conf, remotePath, permission);
                     } catch (Exception e) {
-                        throw new DtCenterDefException("在hdfs创建文件夹异常", e);
+                        throw new DtLoaderException("在hdfs创建文件夹异常", e);
                     }
                 }
         );
@@ -219,7 +219,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return HdfsOperator.isFileExist(conf, remotePath);
                     } catch (Exception e) {
-                        throw new DtCenterDefException("获取文件是否存在异常", e);
+                        throw new DtLoaderException("获取文件是否存在异常", e);
                     }
                 }
         );
@@ -239,7 +239,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return HdfsOperator.checkAndDele(conf, remotePath);
                     } catch (Exception e) {
-                        throw new DtCenterDefException("文件检测异常", e);
+                        throw new DtLoaderException("文件检测异常", e);
                     }
                 }
         );
@@ -259,7 +259,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return HdfsOperator.getDirSize(conf, remotePath);
                     } catch (Exception e) {
-                        throw new DtCenterDefException("获取 hdfs 文件大小异常", e);
+                        throw new DtLoaderException("获取 hdfs 文件大小异常", e);
                     }
                 }
         );
@@ -281,7 +281,7 @@ public class HdfsFileClient implements IHdfsFile {
                         HdfsOperator.deleteFiles(conf, fileNames);
                         return true;
                     } catch (Exception e) {
-                        throw new DtCenterDefException("从 hdfs 删除文件异常", e);
+                        throw new DtLoaderException("从 hdfs 删除文件异常", e);
                     }
                 }
         );
@@ -301,7 +301,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return HdfsOperator.isDirExist(conf, remotePath);
                     } catch (Exception e) {
-                        throw new DtCenterDefException("判断文件夹是否存在异常", e);
+                        throw new DtLoaderException("判断文件夹是否存在异常", e);
                     }
                 }
         );
@@ -323,7 +323,7 @@ public class HdfsFileClient implements IHdfsFile {
                         HdfsOperator.setPermission(conf, remotePath, mode);
                         return true;
                     } catch (Exception e) {
-                        throw new DtCenterDefException("hdfs权限设置异常", e);
+                        throw new DtLoaderException("hdfs权限设置异常", e);
                     }
                 }
         );
@@ -343,7 +343,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return HdfsOperator.rename(conf, src, dist);
                     } catch (Exception e) {
-                        throw new DtCenterDefException("hdfs 文件重命名异常", e);
+                        throw new DtLoaderException("hdfs 文件重命名异常", e);
                     }
                 }
         );
@@ -365,7 +365,7 @@ public class HdfsFileClient implements IHdfsFile {
                         HdfsOperator.copyFile(conf, src, dist, isOverwrite);
                         return true;
                     } catch (Exception e) {
-                        throw new DtCenterDefException("hdfs内 文件复制异常", e);
+                        throw new DtLoaderException("hdfs内 文件复制异常", e);
                     }
                 }
         );
@@ -385,7 +385,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return HdfsOperator.listAllFilePath(conf, remotePath);
                     } catch (Exception e) {
-                        throw new DtCenterDefException("获取 hdfs目录 文件异常", e);
+                        throw new DtLoaderException("获取 hdfs目录 文件异常", e);
                     }
                 }
         );
@@ -404,7 +404,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return listFiles(conf, remotePath, isIterate);
                     } catch (Exception e) {
-                        throw new DtCenterDefException("获取 hdfs 目录下文件状态异常", e);
+                        throw new DtLoaderException("获取 hdfs 目录下文件状态异常", e);
                     }
                 }
         );
@@ -426,7 +426,7 @@ public class HdfsFileClient implements IHdfsFile {
                         HdfsOperator.copyToLocal(conf, srcPath, dstPath);
                         return true;
                     } catch (Exception e) {
-                        throw new DtCenterDefException("copy hdfs 文件到本地异常", e);
+                        throw new DtLoaderException("copy hdfs 文件到本地异常", e);
                     }
                 }
         );
@@ -448,7 +448,7 @@ public class HdfsFileClient implements IHdfsFile {
                         HdfsOperator.copyFromLocal(conf, srcPath, dstPath, overwrite);
                         return true;
                     } catch (Exception e) {
-                        throw new DtCenterDefException("从本地copy 文件到 hdfs异常", e);
+                        throw new DtLoaderException("从本地copy 文件到 hdfs异常", e);
                     }
                 }
         );
@@ -461,7 +461,7 @@ public class HdfsFileClient implements IHdfsFile {
             try {
                 return createDownloader(hdfsSourceDTO, tableLocation, fieldDelimiter, fileFormat, null);
             }catch (Exception e) {
-                throw new DtCenterDefException("创建下载器异常", e);
+                throw new DtLoaderException("创建下载器异常", e);
             }
         }
 
@@ -471,7 +471,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return createDownloader(hdfsSourceDTO, tableLocation, fieldDelimiter, fileFormat, hdfsSourceDTO.getKerberosConfig());
                     } catch (Exception e) {
-                        throw new DtCenterDefException("创建下载器异常", e);
+                        throw new DtLoaderException("创建下载器异常", e);
                     }
                 }
         );
@@ -506,7 +506,7 @@ public class HdfsFileClient implements IHdfsFile {
             return hdfsParquetDownload;
         }
 
-        throw new DtCenterDefException("暂不支持该存储类型文件写入hdfs");
+        throw new DtLoaderException("暂不支持该存储类型文件写入hdfs");
     }
 
     @Override
@@ -517,7 +517,7 @@ public class HdfsFileClient implements IHdfsFile {
             try {
                 return getColumnListOnFileFormat(hdfsSourceDTO, queryDTO, fileFormat);
             }catch (Exception e) {
-                throw new DtCenterDefException("获取hdfs文件字段信息异常", e);
+                throw new DtLoaderException("获取hdfs文件字段信息异常", e);
             }
         }
 
@@ -527,7 +527,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return getColumnListOnFileFormat(hdfsSourceDTO, queryDTO, fileFormat);
                     } catch (Exception e) {
-                        throw new DtCenterDefException("获取hdfs文件字段信息异常", e);
+                        throw new DtLoaderException("获取hdfs文件字段信息异常", e);
                     }
                 }
         );
@@ -542,7 +542,7 @@ public class HdfsFileClient implements IHdfsFile {
             try {
                 return writeByPosWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
             }catch (Exception e) {
-                throw new DtCenterDefException("写入hdfs异常", e);
+                throw new DtLoaderException("写入hdfs异常", e);
             }
         }
 
@@ -552,7 +552,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return writeByPosWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
                     } catch (Exception e) {
-                        throw new DtCenterDefException("获取hdfs文件字段信息异常", e);
+                        throw new DtLoaderException("获取hdfs文件字段信息异常", e);
                     }
                 }
         );
@@ -566,7 +566,7 @@ public class HdfsFileClient implements IHdfsFile {
             try {
                 return writeByNameWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
             }catch (Exception e) {
-                throw new DtCenterDefException("写入hdfs异常", e);
+                throw new DtLoaderException("写入hdfs异常", e);
             }
         }
 
@@ -576,7 +576,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return writeByNameWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
                     } catch (Exception e) {
-                        throw new DtCenterDefException("获取hdfs文件字段信息异常", e);
+                        throw new DtLoaderException("获取hdfs文件字段信息异常", e);
                     }
                 }
         );
@@ -592,7 +592,7 @@ public class HdfsFileClient implements IHdfsFile {
         if (FileFormat.TEXT.getVal().equals(hdfsWriterDTO.getFileFormat())) {
             return HdfsTextWriter.writeByPos(source, hdfsWriterDTO);
         }
-        throw new DtCenterDefException("暂不支持该存储类型文件写入hdfs");
+        throw new DtLoaderException("暂不支持该存储类型文件写入hdfs");
     }
 
     private int writeByNameWithFileFormat(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
@@ -605,7 +605,7 @@ public class HdfsFileClient implements IHdfsFile {
         if (FileFormat.TEXT.getVal().equals(hdfsWriterDTO.getFileFormat())) {
             return HdfsTextWriter.writeByName(source, hdfsWriterDTO);
         }
-        throw new DtCenterDefException("暂不支持该存储类型文件写入hdfs");
+        throw new DtLoaderException("暂不支持该存储类型文件写入hdfs");
     }
 
     private List<ColumnMetaDTO> getColumnListOnFileFormat(HdfsSourceDTO hdfsSourceDTO, SqlQueryDTO queryDTO, String fileFormat) throws IOException {
@@ -614,7 +614,7 @@ public class HdfsFileClient implements IHdfsFile {
             return getOrcColumnList(hdfsSourceDTO, queryDTO);
         }
 
-        throw new DtCenterDefException("暂时不支持该存储类型的文件字段信息获取");
+        throw new DtLoaderException("暂时不支持该存储类型的文件字段信息获取");
     }
 
     private List<ColumnMetaDTO> getOrcColumnList(HdfsSourceDTO hdfsSourceDTO, SqlQueryDTO queryDTO) throws IOException {
@@ -644,7 +644,7 @@ public class HdfsFileClient implements IHdfsFile {
                 }
             }
             if(reader == null) {
-                throw new DtCenterDefException("orcfile dir is empty!");
+                throw new DtLoaderException("orcfile dir is empty!");
             }
 
         } else {
@@ -653,7 +653,7 @@ public class HdfsFileClient implements IHdfsFile {
         }
 
         if (StringUtils.isEmpty(typeStruct)) {
-            throw new DtCenterDefException("can't retrieve type struct from " + path);
+            throw new DtLoaderException("can't retrieve type struct from " + path);
         }
 
         int startIndex = typeStruct.indexOf("<") + 1;
@@ -690,7 +690,7 @@ public class HdfsFileClient implements IHdfsFile {
     private Configuration getHadoopConf(HdfsSourceDTO hdfsSourceDTO){
 
         if (StringUtils.isBlank(hdfsSourceDTO.getDefaultFS()) || !hdfsSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
-            throw new DtCenterDefException("defaultFS格式不正确");
+            throw new DtLoaderException("defaultFS格式不正确");
         }
         Properties properties = HdfsConnFactory.combineHdfsConfig(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
         Configuration conf = new HdfsOperator.HadoopConf().setConf(hdfsSourceDTO.getDefaultFS(), properties);
