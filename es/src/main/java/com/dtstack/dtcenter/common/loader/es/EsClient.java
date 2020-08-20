@@ -18,7 +18,6 @@ import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.util.Pair;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -97,8 +96,7 @@ public class EsClient extends AbsRdbmsClient {
         boolean check = false;
         try {
             check = checkConnect(client);
-        }
-        finally {
+        } finally {
             closeResource(null, client, esSourceDTO);
         }
         return check;
@@ -106,6 +104,7 @@ public class EsClient extends AbsRdbmsClient {
 
     /**
      * 获取es某一索引下所有type（也就是表），6.0版本之后不允许一个index下多个type
+     *
      * @param iSource
      * @param queryDTO
      * @return
@@ -122,7 +121,7 @@ public class EsClient extends AbsRdbmsClient {
         //es索引
         String index = queryDTO.getTableName();
         //不指定index抛异常
-        if (StringUtils.isBlank(index)){
+        if (StringUtils.isBlank(index)) {
             throw new DtLoaderException("未指定es的index，获取失败");
         }
         try {
@@ -133,12 +132,12 @@ public class EsClient extends AbsRdbmsClient {
             GetMappingsResponse res = client.indices().getMapping(request, RequestOptions.DEFAULT);
             MappingMetaData data = res.mappings().get(index);
             typeList.add(data.type());
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
             log.error("index不存在", e);
             throw new DtLoaderException("index不存在");
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("获取type异常", e);
-        }finally {
+        } finally {
             closeResource(null, client, esSourceDTO);
         }
         return typeList;
@@ -147,12 +146,13 @@ public class EsClient extends AbsRdbmsClient {
 
     /**
      * 获取es所有索引（也就是数据库）
+     *
      * @param iSource
      * @param queryDTO
      * @return
      */
     @Override
-    public List<String> getAllDatabases(ISourceDTO iSource, SqlQueryDTO queryDTO){
+    public List<String> getAllDatabases(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return new ArrayList<>();
@@ -165,9 +165,9 @@ public class EsClient extends AbsRdbmsClient {
             Map<String, Set<AliasMetaData>> aliases = alias.getAliases();
             Set<String> set = aliases.keySet();
             dbs = new ArrayList<>(set);
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("获取es索引失败", e);
-        }finally {
+        } finally {
             closeResource(null, client, esSourceDTO);
         }
         return dbs;
@@ -175,6 +175,7 @@ public class EsClient extends AbsRdbmsClient {
 
     /**
      * es数据预览，默认100条，最大10000条
+     *
      * @param iSource
      * @param queryDTO
      * @return
@@ -188,11 +189,11 @@ public class EsClient extends AbsRdbmsClient {
         RestHighLevelClient client = getClient(esSourceDTO);
         //索引
         String index = queryDTO.getTableName();
-        if (StringUtils.isBlank(index)){
+        if (StringUtils.isBlank(index)) {
             throw new DtLoaderException("未指定es的index，数据预览失败");
         }
         //限制条数，最大10000条
-        int previewNum = queryDTO.getPreviewNum() > MAX_NUM ? MAX_NUM:queryDTO.getPreviewNum();
+        int previewNum = queryDTO.getPreviewNum() > MAX_NUM ? MAX_NUM : queryDTO.getPreviewNum();
         //根据index进行查询
         SearchRequest searchRequest = new SearchRequest(index);
         SearchSourceBuilder query = new SearchSourceBuilder()
@@ -204,17 +205,17 @@ public class EsClient extends AbsRdbmsClient {
             SearchResponse search = client.search(source, RequestOptions.DEFAULT);
             //结果集
             SearchHit[] hits = search.getHits().getHits();
-            for (SearchHit hit:hits){
+            for (SearchHit hit : hits) {
                 //一行数据
                 List<Object> document = Lists.newArrayList();
                 Map<String, Object> sourceAsMap = hit.getSourceAsMap();
-                sourceAsMap.keySet().forEach(key->
+                sourceAsMap.keySet().forEach(key ->
                         document.add(new Pair<String, Object>(key, sourceAsMap.get(key))));
                 documentList.add(document);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("获取文档异常", e);
-        }finally {
+        } finally {
             closeResource(null, client, esSourceDTO);
         }
         return documentList;
@@ -222,6 +223,7 @@ public class EsClient extends AbsRdbmsClient {
 
     /**
      * 获取es字段信息
+     *
      * @param iSource
      * @param queryDTO
      * @return
@@ -236,7 +238,7 @@ public class EsClient extends AbsRdbmsClient {
         RestHighLevelClient client = getClient(esSourceDTO);
         //索引
         String index = queryDTO.getTableName();
-        if (StringUtils.isBlank(index)){
+        if (StringUtils.isBlank(index)) {
             throw new DtLoaderException("未指定es的index,获取字段信息失败");
         }
         List<ColumnMetaDTO> columnMetaDTOS = new ArrayList<>();
@@ -250,17 +252,17 @@ public class EsClient extends AbsRdbmsClient {
             MappingMetaData data = res.mappings().get(index);
             Map<String, Object> metaDataMap = (Map<String, Object>) data.getSourceAsMap().get("properties");
             Set<String> metaData = metaDataMap.keySet();
-            for (String meta:metaData){
+            for (String meta : metaData) {
                 ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
                 columnMetaDTO.setKey(meta);
-                Map<String, Object> map = (Map<String, Object>)metaDataMap.get(meta);
+                Map<String, Object> map = (Map<String, Object>) metaDataMap.get(meta);
                 String type = (String) map.get("type");
                 columnMetaDTO.setType(type);
                 columnMetaDTOS.add(columnMetaDTO);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("获取文档异常", e);
-        }finally {
+        } finally {
             closeResource(null, client, esSourceDTO);
         }
         return columnMetaDTOS;
@@ -277,19 +279,18 @@ public class EsClient extends AbsRdbmsClient {
         String dsl = doDealPageSql(queryDTO.getSql());
         //索引
         String index = queryDTO.getTableName();
-        if (StringUtils.isBlank(index)){
+        if (StringUtils.isBlank(index)) {
             throw new DtLoaderException("未指定es的index,获取字段信息失败,请在sqlQueryDTO中指定tableName作为索引");
         }
         RestHighLevelClient client = null;
         RestClient lowLevelClient = null;
         JSONObject resultJsonObject = null;
-        try {
+        try (NStringEntity entity = new NStringEntity(dsl, ContentType.APPLICATION_JSON)) {
             client = getClient(esSourceDTO);
             if (Objects.isNull(client)) {
                 throw new DtLoaderException("没有可用的数据库连接");
             }
             lowLevelClient = client.getLowLevelClient();
-            HttpEntity entity = new NStringEntity(dsl, ContentType.APPLICATION_JSON);
             Request request = new Request(POST, String.format(ENDPOINT_SEARCH_FORMAT, index));
             request.setEntity(entity);
             Response response = lowLevelClient.performRequest(request);
@@ -323,10 +324,10 @@ public class EsClient extends AbsRdbmsClient {
         return check;
     }
 
-    private static RestHighLevelClient getClient (ESSourceDTO esSourceDTO) {
+    private static RestHighLevelClient getClient(ESSourceDTO esSourceDTO) {
         Field[] fields = RdbmsSourceDTO.class.getDeclaredFields();
         boolean check = false;
-        for (Field field:fields) {
+        for (Field field : fields) {
             if (poolConfigFieldName.equals(field.getName())) {
                 check = esSourceDTO.getPoolConfig() != null;
                 break;
@@ -362,7 +363,7 @@ public class EsClient extends AbsRdbmsClient {
             credentialsProvider.setCredentials(AuthScope.ANY,
                     new UsernamePasswordCredentials(username, password));
             return new RestHighLevelClient(RestClient.builder(httpHosts.toArray(new HttpHost[httpHosts.size()]))
-                            .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)));
+                    .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)));
         }
         //无用户名密码
         return new RestHighLevelClient(RestClient.builder(httpHosts.toArray(new HttpHost[httpHosts.size()])));
@@ -378,7 +379,7 @@ public class EsClient extends AbsRdbmsClient {
         return httpHostList;
     }
 
-    private void closeResource(RestClient lowLevelClient, RestHighLevelClient restHighLevelClient, ESSourceDTO esSourceDTO){
+    private void closeResource(RestClient lowLevelClient, RestHighLevelClient restHighLevelClient, ESSourceDTO esSourceDTO) {
         if (!isOpenPool.get() && restHighLevelClient != null) {
             try {
                 if (Objects.nonNull(lowLevelClient)) {
@@ -387,10 +388,11 @@ public class EsClient extends AbsRdbmsClient {
                 if (Objects.nonNull(restHighLevelClient)) {
                     restHighLevelClient.close();
                 }
-            }catch (IOException e) {
+            } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }
-        }else {
+            isOpenPool.remove();
+        } else {
             ElasticSearchPool elasticSearchPool = elasticSearchManager.getConnection(esSourceDTO);
             try {
                 if (Objects.nonNull(lowLevelClient)) {

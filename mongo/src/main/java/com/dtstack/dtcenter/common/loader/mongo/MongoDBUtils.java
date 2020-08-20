@@ -48,11 +48,11 @@ public class MongoDBUtils {
 
     public static final int TIME_OUT = 5 * 1000;
 
-    private static final String poolConfigFieldName = "poolConfig";
+    private static final String POOL_CONFIG_FIELD_NAME = "poolConfig";
 
     private static MongoManager mongoManager = MongoManager.getInstance();
 
-    public static final ThreadLocal<Boolean> isOpenPool = new ThreadLocal<>();
+    public static final ThreadLocal<Boolean> IS_OPEN_POOL = new ThreadLocal<>();
 
     public static boolean checkConnection(ISourceDTO iSource) {
         MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
@@ -68,14 +68,20 @@ public class MongoDBUtils {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
-            if (!isOpenPool.get() && mongoClient != null) {
+            if (!IS_OPEN_POOL.get() && mongoClient != null) {
                 mongoClient.close();
+                IS_OPEN_POOL.remove();
             }
         }
         return check;
     }
 
-    //获取数据库
+    /**
+     * 获取数据库
+     *
+     * @param iSource
+     * @return
+     */
     public static List<String> getDatabaseList(ISourceDTO iSource){
         MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
         MongoClient mongoClient = null;
@@ -89,8 +95,9 @@ public class MongoDBUtils {
         }catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
-            if (!isOpenPool.get() && mongoClient != null) {
+            if (!IS_OPEN_POOL.get() && mongoClient != null) {
                 mongoClient.close();
+                IS_OPEN_POOL.remove();
             }
         }
         return databases;
@@ -122,14 +129,20 @@ public class MongoDBUtils {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
-            if (!isOpenPool.get() && mongoClient != null) {
+            if (!IS_OPEN_POOL.get() && mongoClient != null) {
                 mongoClient.close();
+                IS_OPEN_POOL.remove();
             }
         }
         return dataList;
     }
 
-    //获取指定库下的表名
+    /**
+     * 获取指定库下的表名
+     *
+     * @param iSource
+     * @return
+     */
     public static List<String> getTableList(ISourceDTO iSource) {
         MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
         List<String> tableList = Lists.newArrayList();
@@ -145,7 +158,7 @@ public class MongoDBUtils {
         } catch (Exception e) {
             log.error("获取tablelist异常  {}", mongoSourceDTO, e);
         } finally {
-            if (!isOpenPool.get() && mongoClient != null) {
+            if (!IS_OPEN_POOL.get() && mongoClient != null) {
                 mongoClient.close();
             }
         }
@@ -185,7 +198,6 @@ public class MongoDBUtils {
         return addresses;
     }
 
-
     public static MongoClient getClient(MongoSourceDTO mongoSourceDTO) {
         String hostPorts = mongoSourceDTO.getHostPort();
         String username = mongoSourceDTO.getUsername();
@@ -195,12 +207,12 @@ public class MongoDBUtils {
         //适配之前的版本，判断ISourceDTO类中有无获取isCache字段的方法
         Field[] fields = MongoSourceDTO.class.getDeclaredFields();
         for (Field field : fields) {
-            if (poolConfigFieldName.equals(field.getName())) {
+            if (POOL_CONFIG_FIELD_NAME.equals(field.getName())) {
                 check = mongoSourceDTO.getPoolConfig() != null;
                 break;
             }
         }
-        isOpenPool.set(check);
+        IS_OPEN_POOL.set(check);
         //不开启连接池
         if (!check) {
             return getClient(hostPorts, username, password, schema);
@@ -209,10 +221,9 @@ public class MongoDBUtils {
         return mongoManager.getConnection(mongoSourceDTO);
     }
 
-
-    /*
-    1.  username:password@host:port,host:port/db?option
-    2.  host:port,host:port/db?option
+    /**
+     * 1.  username:password@host:port,host:port/db?option
+     * 2.  host:port,host:port/db?option
      */
     public static MongoClient getClient(String hostPorts, String username, String password, String db) {
         MongoClient mongoClient = null;

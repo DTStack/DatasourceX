@@ -192,8 +192,6 @@ public class DtKuduClient extends AbsRdbmsClient {
                         row.add(String.valueOf(rowResult.getLong(columnSchema.getName())));
                         break;
                     case BINARY:
-                        //二进制字段不显示
-//						row.add(rowResult.getBinary(columnSchema.getName()));
                         row.add("[BINARY]");
                         break;
                     case STRING:

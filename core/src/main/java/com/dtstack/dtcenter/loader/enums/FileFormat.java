@@ -10,10 +10,19 @@ package com.dtstack.dtcenter.loader.enums;
  */
 public enum FileFormat {
 
+    /**
+     * ORC
+     */
     ORC("orc"),
 
+    /**
+     * TEXT
+     */
     TEXT("text"),
 
+    /**
+     * PARQUET
+     */
     PARQUET("parquet");
 
     private String val;

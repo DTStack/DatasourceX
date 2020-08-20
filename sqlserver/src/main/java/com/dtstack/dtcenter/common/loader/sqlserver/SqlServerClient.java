@@ -32,7 +32,9 @@ public class SqlServerClient extends AbsRdbmsClient {
 
     private static final String TABLE_SHOW = "[%s].[%s]";
 
-    //获取所有的表和对应的schema-备用
+    /**
+     * 获取所有的表和对应的schema-备用
+     */
     private static final String TABLE_QUERY_ALL_SCHEMA = "select sys.objects.name tableName,sys.schemas.name schemaName from sys.objects,sys.schemas where sys.objects.type='U' and sys.objects.schema_id=sys.schemas.schema_id";
     private static final String TABLE_QUERY_SCHEMA = "select sys.objects.name tableName,sys.schemas.name schemaName from sys.objects,sys.schemas where sys.objects.type='U' or type='V' and sys.objects.schema_id=sys.schemas.schema_id";
 

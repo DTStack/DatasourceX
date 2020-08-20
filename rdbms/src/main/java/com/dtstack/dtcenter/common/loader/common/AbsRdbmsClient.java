@@ -40,8 +40,18 @@ import java.util.Objects;
 public abstract class AbsRdbmsClient<T> implements IClient<T> {
     private ConnFactory connFactory = getConnFactory();
 
+    /**
+     * 获取连接工厂
+     *
+     * @return
+     */
     protected abstract ConnFactory getConnFactory();
 
+    /**
+     * 获取数据源类型
+     *
+     * @return
+     */
     protected abstract DataSourceType getSourceType();
 
     private static final String DONT_EXIST = "doesn't exist";

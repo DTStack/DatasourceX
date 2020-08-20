@@ -42,16 +42,18 @@ public interface IHdfsFile {
      * @param source
      * @param remotePath
      * @param localDir
+     * @return
      * @throws Exception
      */
     boolean downloadFileFromHdfs(ISourceDTO source, String remotePath, String localDir) throws Exception;
 
     /**
-     * 上传问价到 HDFS
+     * 上传文件到 HDFS
      *
      * @param source
      * @param localFilePath
      * @param remotePath
+     * @return
      * @throws Exception
      */
     boolean uploadLocalFileToHdfs(ISourceDTO source, String localFilePath, String remotePath) throws Exception;
@@ -91,6 +93,8 @@ public interface IHdfsFile {
     /**
      * 文件检测并删除
      *
+     * @param source
+     * @param remotePath
      * @return
      * @throws Exception
      */
@@ -99,6 +103,8 @@ public interface IHdfsFile {
     /**
      * 获取路径文件大小
      *
+     * @param source
+     * @param remotePath
      * @return
      * @throws Exception
      */
@@ -109,6 +115,7 @@ public interface IHdfsFile {
      *
      * @param source
      * @param fileNames
+     * @return
      * @throws Exception
      */
     boolean deleteFiles(ISourceDTO source, List<String> fileNames) throws Exception;
@@ -129,6 +136,7 @@ public interface IHdfsFile {
      * @param source
      * @param remotePath
      * @param mode
+     * @return
      * @throws Exception
      */
     boolean setPermission(ISourceDTO source, String remotePath, String mode) throws Exception;
@@ -142,7 +150,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    boolean rename(ISourceDTO source, String src,String dist) throws Exception;
+    boolean rename(ISourceDTO source, String src, String dist) throws Exception;
 
     /**
      * 复制文件
@@ -151,6 +159,7 @@ public interface IHdfsFile {
      * @param src
      * @param dist
      * @param isOverwrite
+     * @return
      * @throws Exception
      */
     boolean copyFile(ISourceDTO source, String src, String dist, boolean isOverwrite) throws Exception;
@@ -170,7 +179,7 @@ public interface IHdfsFile {
      *
      * @param source
      * @param remotePath
-     * @param isIterate 是否递归
+     * @param isIterate  是否递归
      * @return
      * @throws Exception
      */
@@ -182,6 +191,7 @@ public interface IHdfsFile {
      * @param source
      * @param srcPath
      * @param dstPath
+     * @return
      * @throws Exception
      */
     boolean copyToLocal(ISourceDTO source, String srcPath, String dstPath) throws Exception;
@@ -193,12 +203,17 @@ public interface IHdfsFile {
      * @param srcPath
      * @param dstPath
      * @param overwrite 是否重写
+     * @return
      * @throws Exception
      */
     boolean copyFromLocal(ISourceDTO source, String srcPath, String dstPath, boolean overwrite) throws Exception;
 
     /**
      * 根据文件格式获取对应的downlaoder
+     *
+     * @param source
+     * @param tableLocation
+     * @param fieldDelimiter
      * @param fileFormat
      * @return
      * @throws Exception
@@ -207,6 +222,7 @@ public interface IHdfsFile {
 
     /**
      * 获取hdfs上存储文件的字段信息
+     *
      * @param source
      * @param queryDTO
      * @param fileFormat
@@ -217,15 +233,18 @@ public interface IHdfsFile {
 
     /**
      * 按位置写入
+     *
      * @param source
      * @param hdfsWriterDTO
      * @return
+     * @throws Exception
      */
     int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception;
 
     /**
      * 从文件中读取行,根据提供的分隔符号分割,再根据提供的hdfs分隔符合并,写入hdfs
      * ---需要根据column信息判断导入的数据是否符合要求
+     *
      * @param source
      * @param hdfsWriterDTO
      * @return

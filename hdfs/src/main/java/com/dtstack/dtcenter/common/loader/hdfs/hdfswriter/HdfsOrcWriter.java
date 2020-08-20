@@ -53,7 +53,8 @@ public class HdfsOrcWriter {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Boolean topLineIsTitle = hdfsWriterDTO.getTopLineIsTitle();
         int startLine = hdfsWriterDTO.getStartLine();
-        if (topLineIsTitle) {//首行是标题则内容从下一行开始
+        // 首行是标题则内容从下一行开始
+        if (topLineIsTitle) {
             startLine++;
         }
 
@@ -159,8 +160,9 @@ public class HdfsOrcWriter {
                 }
 
                 String[] columnArr = reader.getValues();
-                if (currLineNum == (startLine - 1)) {//首行为标题行
-                    //计算出需要使用的索引位置
+                // 首行为标题行
+                if (currLineNum == (startLine - 1)) {
+                    // 计算出需要使用的索引位置
                     for (HDFSImportColumn importColum : hdfsWriterDTO.getKeyList()) {
                         if (StringUtils.isBlank(importColum.getKey())) {
                             indexList.add(-1);

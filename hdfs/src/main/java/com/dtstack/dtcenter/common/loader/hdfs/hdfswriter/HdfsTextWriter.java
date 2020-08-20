@@ -36,7 +36,9 @@ public class HdfsTextWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(HdfsTextWriter.class);
 
-    //换行符
+    /**
+     * 换行符
+     */
     private static final int NEWLINE = 10;
 
     /**
@@ -139,8 +141,9 @@ public class HdfsTextWriter {
                 }
 
                 final String[] columnArr = reader.getValues();
-                if (currLineNum == (startLine - 1)) {//首行为标题行
-                    //计算出需要使用的索引位置
+                // 首行为标题行
+                if (currLineNum == (startLine - 1)) {
+                    // 计算出需要使用的索引位置
                     for (final HDFSImportColumn importColum : hdfsWriterDTO.getKeyList()) {
                         if (StringUtils.isBlank(importColum.getKey())) {
                             indexList.add(-1);

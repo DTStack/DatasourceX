@@ -10,7 +10,20 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
  */
 public interface Manager<T> {
 
+    /**
+     * 获取连接
+     *
+     * @param source
+     * @return
+     * @throws Exception
+     */
     T getConnection(ISourceDTO source) throws Exception;
 
+    /**
+     * 初始化数据源连接池
+     *
+     * @param source
+     * @return
+     */
     T initSource(ISourceDTO source);
 }

@@ -116,7 +116,7 @@ public class MongoExecutor {
         }catch (Exception e){
             throw new DtLoaderException(e.getMessage(),e);
         } finally {
-            if (!MongoDBUtils.isOpenPool.get() && mongoClient != null) {
+            if (!MongoDBUtils.IS_OPEN_POOL.get() && mongoClient != null) {
                 mongoClient.close();
             }
         }

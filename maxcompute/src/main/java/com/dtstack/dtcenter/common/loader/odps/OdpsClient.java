@@ -93,7 +93,7 @@ public class OdpsClient extends AbsRdbmsClient {
 
         Field[] fields = RdbmsSourceDTO.class.getDeclaredFields();
         boolean check = false;
-        for (Field field:fields) {
+        for (Field field : fields) {
             if (poolConfigFieldName.equals(field.getName())) {
                 check = odpsSourceDTO.getPoolConfig() != null;
                 break;
@@ -169,7 +169,7 @@ public class OdpsClient extends AbsRdbmsClient {
         try {
             odps = initOdps(odpsSourceDTO);
             odps.tables().forEach((Table table) -> tableList.add(table.getName()));
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
@@ -206,7 +206,7 @@ public class OdpsClient extends AbsRdbmsClient {
                 columnMetaDTO.setPart(true);
                 columnList.add(columnMetaDTO);
             });
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
@@ -290,19 +290,19 @@ public class OdpsClient extends AbsRdbmsClient {
             Table t = odps.tables().get(queryDTO.getTableName());
             DefaultRecordReader recordReader;
             Map<String, String> partitionColumns = queryDTO.getPartitionColumns();
-            if (MapUtils.isNotEmpty(partitionColumns)){
+            if (MapUtils.isNotEmpty(partitionColumns)) {
                 PartitionSpec partitionSpec = new PartitionSpec();
                 Set<String> partSet = partitionColumns.keySet();
-                for (String part:partSet){
+                for (String part : partSet) {
                     partitionSpec.set(part, partitionColumns.get(part));
                 }
                 recordReader = (DefaultRecordReader) t.read(partitionSpec, null, previewNum);
-            }else {
+            } else {
                 recordReader = (DefaultRecordReader) t.read(previewNum);
             }
 
             List<ColumnMetaDTO> metaData = getColumnMetaData(odpsSourceDTO, queryDTO);
-            for (ColumnMetaDTO columnMetaDTO:metaData){
+            for (ColumnMetaDTO columnMetaDTO : metaData) {
                 columnMeta.add(columnMetaDTO.getKey());
             }
             dataList.add(columnMeta);
@@ -348,11 +348,16 @@ public class OdpsClient extends AbsRdbmsClient {
         return result;
     }
 
-    //odps类型转换java类型
+    /**
+     * odps类型转换java类型
+     * @param record
+     * @param recordColumn
+     * @return
+     */
     private Object dealColumnType(Record record, Column recordColumn) {
         OdpsType odpsType = recordColumn.getTypeInfo().getOdpsType();
         String columnName = recordColumn.getName();
-        switch (odpsType){
+        switch (odpsType) {
             case STRING:
                 return record.getString(columnName);
             case DOUBLE:
@@ -389,16 +394,18 @@ public class OdpsClient extends AbsRdbmsClient {
         return isSuccessful;
     }
 
-    private void closeResource (Odps odps, OdpsSourceDTO odpsSourceDTO){
+    private void closeResource(Odps odps, OdpsSourceDTO odpsSourceDTO) {
         //归还对象
         if (isOpenPool.get() && odps != null) {
             OdpsPool odpsPool = odpsManager.getConnection(odpsSourceDTO);
             odpsPool.returnResource(odps);
+            isOpenPool.remove();
         }
     }
 
     /**
      * 以任务的形式运行 SQL
+     *
      * @param queryDTO
      * @return
      * @throws OdpsException
@@ -423,7 +430,7 @@ public class OdpsClient extends AbsRdbmsClient {
             return t.getComment();
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
-        }finally {
+        } finally {
             closeResource(odps, odpsSourceDTO);
         }
     }

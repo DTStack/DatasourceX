@@ -1,4 +1,5 @@
 package com.dtstack.dtcenter.common.loader.mongo;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.regex.Pattern;
  * @author: 遥远
  * @create: 2020-05-14 21:06
  */
-
+@Slf4j
 public class RegExpUtil {
 
     static String collectionRegExp = "getCollection\\('(\\w+?)'\\)";
@@ -28,9 +29,8 @@ public class RegExpUtil {
 
     public static void main(String[] args) {
         String sql = "db.getCollection('table_name').find({'age':20});";
-        System.out.println(getQuery(sql));
-        System.out.println(getCollectionName(sql));
-
+        log.info(getQuery(sql));
+        log.info(getCollectionName(sql));
     }
 
     public static String getQuery(String sql) {

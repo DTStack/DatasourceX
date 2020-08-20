@@ -40,7 +40,6 @@ import java.util.Map;
 public class YarnDownload implements IDownloader {
     private static final int bufferSize = 4095;
 
-    //限制字节数
     private int readLimit = bufferSize;
 
     private Configuration configuration;
@@ -188,10 +187,10 @@ public class YarnDownload implements IDownloader {
 
         // kerberos认证
         return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) ()->{
+                (PrivilegedAction<Boolean>) () -> {
                     try {
                         return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         throw new DtLoaderException("读取文件异常", e);
                     }
                 });
@@ -202,7 +201,7 @@ public class YarnDownload implements IDownloader {
 
         // 无kerberos认证
         if (MapUtils.isEmpty(kerberosConfig)) {
-            if(currValueStream != null){
+            if (currValueStream != null) {
                 currValueStream.close();
             }
             return true;
@@ -210,13 +209,13 @@ public class YarnDownload implements IDownloader {
 
         // kerberos认证
         return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) ()->{
+                (PrivilegedAction<Boolean>) () -> {
                     try {
-                        if(currValueStream != null){
+                        if (currValueStream != null) {
                             currValueStream.close();
                         }
                         return true;
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         throw new DtLoaderException("读取文件异常", e);
                     }
                 });
@@ -324,34 +323,34 @@ public class YarnDownload implements IDownloader {
     }
 
     private boolean nextRecord() throws IOException {
-        if(currValueStream == null && !nextLogFile()){
+        if (currValueStream == null && !nextLogFile()) {
             isReachedEnd = true;
             currLineValue = null;
             return false;
         }
 
-        if(currFileLength == curRead && logPreInfo != null){
+        if (currFileLength == curRead && logPreInfo != null) {
             currLineValue = logPreInfo;
             logPreInfo = null;
             return true;
         }
 
         //当前logtype已经读取完
-        if(currFileLength == curRead){
+        if (currFileLength == curRead) {
             logEndInfo = "End of LogType:" + currFileType + "\n";
-            try{
+            try {
                 nextLogType();
-            }catch (EOFException e){
+            } catch (EOFException e) {
                 //当前logfile已经读取完
                 currLineValue = logEndInfo;
                 logEndInfo = null;
-                if(!nextStream()){
+                if (!nextStream()) {
                     return nextLogFile();
                 }
                 try {
                     nextLogType();
                 } catch (EOFException e1) {
-                    if(!nextStream()){
+                    if (!nextStream()) {
                         return nextLogFile();
                     }
                     return false;
@@ -360,7 +359,7 @@ public class YarnDownload implements IDownloader {
             }
         }
 
-        if(currFileLength == 0){
+        if (currFileLength == 0) {
             currLineValue = logEndInfo;
             return true;
         }
@@ -371,14 +370,14 @@ public class YarnDownload implements IDownloader {
         int readNum = currValueStream.read(buf, 0, toRead);
         curRead += readNum;
 
-        if(readNum <= 0){
+        if (readNum <= 0) {
             //close stream
-            if(currValueStream != null){
+            if (currValueStream != null) {
                 currValueStream.close();
             }
 
             boolean hasNext = nextLogFile();
-            if(!hasNext){
+            if (!hasNext) {
                 isReachedEnd = true;
                 return false;
             }
@@ -389,12 +388,12 @@ public class YarnDownload implements IDownloader {
         String readLine = new String(buf, 0, readNum);
         totalReadByte += readNum;
 
-        if(logPreInfo != null){
+        if (logPreInfo != null) {
             readLine = logPreInfo + readLine;
             logPreInfo = null;
         }
 
-        if(logEndInfo != null){
+        if (logEndInfo != null) {
             readLine = logEndInfo + readLine;
             logEndInfo = null;
         }

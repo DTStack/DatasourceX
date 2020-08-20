@@ -57,10 +57,6 @@ public class HdfsParquetWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(HdfsParquetWriter.class);
 
-    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
-    private static SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
     private static final String KEY_PRECISION = "precision";
 
     private static final String KEY_SCALE = "scale";
@@ -381,6 +377,7 @@ public class HdfsParquetWriter {
         } else {
             Date date;
             if (dateFormat == null) {
+                SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 date = sdf2.parse(val);
             } else {
                 date = dateFormat.parse(val);
@@ -451,7 +448,7 @@ public class HdfsParquetWriter {
 
     private static int computeMinBytesForPrecision(int precision) {
         int numBytes = 1;
-        while (Math.pow(2.0, 8 * numBytes - 1) < Math.pow(10.0, precision)) {
+        while (Math.pow(2.0, 8.0 * numBytes - 1) < Math.pow(10.0, precision)) {
             numBytes += 1;
         }
         return numBytes;
@@ -462,6 +459,7 @@ public class HdfsParquetWriter {
         if (dateFormat != null) {
             date = dateFormat.parse(dateStr);
         } else {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             date = sdf.parse(dateStr);
         }
 

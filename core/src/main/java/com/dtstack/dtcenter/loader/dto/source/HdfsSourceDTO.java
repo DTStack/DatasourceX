@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -23,6 +24,7 @@ public class HdfsSourceDTO extends RdbmsSourceDTO {
     /**
      * Hadoop defaultFS
      */
+    @Builder.Default
     private String defaultFS = "";
 
     /**
@@ -30,12 +32,25 @@ public class HdfsSourceDTO extends RdbmsSourceDTO {
      */
     private String config;
 
-    // TODO 临时处理 yarn 日志下载
+    /************************************临时处理 yarn 日志下载*********************************************/
+    /**
+     * appid 字符串
+     */
     private String appIdStr;
 
-    private int readLimit = 4095;
+    /**
+     * 读取长度限制
+     */
+    @Builder.Default
+    private Integer readLimit = 4095;
 
+    /**
+     * 日志类型
+     */
     private String logType = null;
 
+    /**
+     * yarn 配置
+     */
     private Map<String, Object> yarnConf;
 }

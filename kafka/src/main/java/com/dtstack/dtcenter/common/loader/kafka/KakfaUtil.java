@@ -210,13 +210,12 @@ public class KakfaUtil {
 
 
     /**
-     * 通过 ZK 获取 分区信息
+     * 通过 ZK 获取 分区信息 (目前没有地方使用到)
      *
      * @param zkUrls
      * @param topic
      * @return
      */
-    //目前没有地方使用到
     @Deprecated
     public static List<MetadataResponse.PartitionMetadata> getAllPartitionsFromZk(String zkUrls, String topic) {
         ZkUtils zkUtils = null;
