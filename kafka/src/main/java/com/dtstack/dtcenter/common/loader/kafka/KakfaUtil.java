@@ -119,6 +119,8 @@ public class KakfaUtil {
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+        } finally {
+            destroyProperty();
         }
         return results;
     }
@@ -279,6 +281,8 @@ public class KakfaUtil {
             return kafkaOffsetDTOMap.values().stream().collect(Collectors.toList());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
+        } finally {
+            destroyProperty();
         }
     }
 
@@ -298,6 +302,8 @@ public class KakfaUtil {
             check = true;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+        } finally {
+            destroyProperty();
         }
         return check;
     }
@@ -314,6 +320,11 @@ public class KakfaUtil {
             bootstrapServers = brokerUrls;
         }
         return initProperties(bootstrapServers, conf);
+    }
+
+    private static void destroyProperty() {
+        System.clearProperty("java.security.auth.login.config");
+        System.clearProperty("javax.security.auth.useSubjectCredsOnly");
     }
 
     /**
@@ -423,6 +434,8 @@ public class KakfaUtil {
             }
         } catch (Exception e) {
             log.error("从kafka消费数据异常 zkUrls:{} \nbrokerUrls:{} \ntopic:{} \nautoReset:{} \n ", zkUrls, brokerUrls, topic, autoReset, e);
+        } finally {
+            destroyProperty();
         }
         return result;
     }
