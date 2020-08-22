@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.kafka;
 
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.utils.FileUtils;
 import com.dtstack.dtcenter.loader.utils.TelUtil;
 import com.google.common.collect.Lists;
 import kafka.admin.AdminUtils;
@@ -12,7 +13,6 @@ import kafka.utils.ZkUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -412,7 +412,7 @@ public class KakfaUtil {
             ConsumerRecords<String, String> records = consumer.poll(1000);
             for (ConsumerRecord<String, String> record : records) {
                 String value = record.value();
-                if (org.apache.commons.lang.StringUtils.isBlank(value)) {
+                if (StringUtils.isBlank(value)) {
                     continue;
                 }
                 if (result.size() >= MAX_POOL_RECORDS) {

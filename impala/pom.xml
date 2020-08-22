@@ -28,8 +28,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.dtstack.dtcenter</groupId>
-            <artifactId>common.loader.rdbms</artifactId>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
         </dependency>
 
         <dependency>
@@ -38,8 +38,15 @@
         </dependency>
 
         <dependency>
+            <groupId>com.dtstack.dtcenter</groupId>
+            <artifactId>common.loader.rdbms</artifactId>
+        </dependency>
+
+        <!-- 类隔离 jar 包 -->
+        <dependency>
             <groupId>com.cloudera.impala.jdbc</groupId>
             <artifactId>ImpalaJDBC41</artifactId>
+            <version>2.6.12</version>
         </dependency>
 
         <dependency>

@@ -28,6 +28,16 @@
         </dependency>
 
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
             <artifactId>common.loader.core</artifactId>
         </dependency>
@@ -95,7 +105,7 @@
                         <configuration>
                             <tasks>
                                 <move file="${basedir}/target/${project.name}-${project.version}.jar"
-                                      tofile="${basedir}/target/${jar.name}.jar" />
+                                      tofile="${basedir}/target/${jar.name}.jar"/>
                                 <copy todir="${basedir}/../core/pluginLibs/${jar.package.name}/"
                                       file="${basedir}/target/${jar.name}.jar"/>
                                 <delete>

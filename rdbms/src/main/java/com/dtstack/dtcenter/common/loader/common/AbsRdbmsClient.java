@@ -15,9 +15,8 @@ import com.dtstack.dtcenter.loader.utils.DBUtil;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -56,10 +55,6 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     private static final String DONT_EXIST = "doesn't exist";
 
-    private static final String preFieldsName = "preFields";
-
-    private static final String queryTimeoutFieldName = "queryTimeout";
-
     @Override
     public Connection getCon(ISourceDTO iSource) throws Exception {
         log.info("-------get connection success-----");
@@ -93,28 +88,9 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         if (rdbmsSourceDTO.getConnection().isClosed()) {
             return Lists.newArrayList();
         }
-        /**
-         *  适配1.1.0版本的core
-         *  后期删除
-         *  2020年08月06日
-         */
-        Field[] fields = SqlQueryDTO.class.getDeclaredFields();
-        List<Object> preFields = null;
-        Integer queryTimeout = null;
-        for (Field field:fields) {
-            if (preFieldsName.equals(field.getName())) {
-                preFields = queryDTO.getPreFields();
-                continue;
-            }
-            if (queryTimeoutFieldName.equals(field.getName())) {
-                queryTimeout = queryDTO.getQueryTimeout();
-                continue;
-            }
-        }
-        //预编译查询
-        if (preFields != null || queryTimeout!= null) {
+        if (queryDTO.getPreFields() != null || queryDTO.getQueryTimeout()!= null) {
             return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
-                    ConnectionClearStatus.CLOSE.getValue().equals(clearStatus), preFields, queryTimeout);
+                    ConnectionClearStatus.CLOSE.getValue().equals(clearStatus), queryDTO.getPreFields(), queryDTO.getQueryTimeout());
         }
         return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
                 ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
@@ -354,7 +330,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
         List<List<Object>> previewList = new ArrayList<>();
-        if (org.apache.commons.lang3.StringUtils.isBlank(queryDTO.getTableName())) {
+        if (StringUtils.isBlank(queryDTO.getTableName())) {
             return previewList;
         }
         Statement stmt = null;

@@ -43,8 +43,8 @@ public class MysqlClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO ISource, SqlQueryDTO queryDTO) throws Exception {
-        Mysql8SourceDTO mysql8SourceDTO = (Mysql8SourceDTO) ISource;
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Mysql8SourceDTO mysql8SourceDTO = (Mysql8SourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(mysql8SourceDTO, queryDTO);
         Statement statement = null;
         ResultSet resultSet = null;

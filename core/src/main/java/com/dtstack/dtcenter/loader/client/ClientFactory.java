@@ -73,6 +73,13 @@ public class ClientFactory {
             throw new DtLoaderException("插件文件夹设置异常，请二次处理");
         }
 
+        for (File f : files) {
+            String jarName = f.getName();
+            if (f.isFile() && jarName.endsWith(".jar")) {
+                urlList.add(f.toURI().toURL());
+            }
+        }
+
         return new DtClassLoader(urlList.toArray(new URL[urlList.size()]), Thread.currentThread().getContextClassLoader());
     }
 

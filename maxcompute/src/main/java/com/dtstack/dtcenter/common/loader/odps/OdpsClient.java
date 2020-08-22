@@ -26,7 +26,6 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.OdpsSourceDTO;
-import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
@@ -37,7 +36,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -54,9 +52,7 @@ import java.util.Set;
 @Slf4j
 public class OdpsClient extends AbsRdbmsClient {
 
-    private static final String poolConfigFieldName = "poolConfig";
-
-    public static final ThreadLocal<Boolean> isOpenPool = new ThreadLocal<>();
+    public static final ThreadLocal<Boolean> IS_OPEN_POOL = new ThreadLocal<>();
 
     private static OdpsManager odpsManager = OdpsManager.getInstance();
 
@@ -91,15 +87,8 @@ public class OdpsClient extends AbsRdbmsClient {
     public static Odps initOdps(OdpsSourceDTO odpsSourceDTO) {
         JSONObject odpsConfig = JSON.parseObject(odpsSourceDTO.getConfig());
 
-        Field[] fields = RdbmsSourceDTO.class.getDeclaredFields();
-        boolean check = false;
-        for (Field field : fields) {
-            if (poolConfigFieldName.equals(field.getName())) {
-                check = odpsSourceDTO.getPoolConfig() != null;
-                break;
-            }
-        }
-        isOpenPool.set(check);
+        boolean check = odpsSourceDTO.getPoolConfig() != null;
+        IS_OPEN_POOL.set(check);
         //不开启连接池
         if (!check) {
             return initOdps(odpsConfig.getString(OdpsFields.KEY_ODPS_SERVER), odpsConfig.getString(OdpsFields.KEY_ACCESS_ID),
@@ -396,10 +385,10 @@ public class OdpsClient extends AbsRdbmsClient {
 
     private void closeResource(Odps odps, OdpsSourceDTO odpsSourceDTO) {
         //归还对象
-        if (isOpenPool.get() && odps != null) {
+        if (IS_OPEN_POOL.get() && odps != null) {
             OdpsPool odpsPool = odpsManager.getConnection(odpsSourceDTO);
             odpsPool.returnResource(odps);
-            isOpenPool.remove();
+            IS_OPEN_POOL.remove();
         }
     }
 

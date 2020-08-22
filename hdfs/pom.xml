@@ -28,6 +28,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
             <artifactId>common.loader.core</artifactId>
             <exclusions>
@@ -224,6 +229,7 @@
             <artifactId>kerb-util</artifactId>
         </dependency>
 
+        <!-- 类隔离 jar 包 -->
         <dependency>
             <groupId>net.sourceforge.javacsv</groupId>
             <artifactId>javacsv</artifactId>

@@ -50,10 +50,14 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <dtstack.common>4.0.3-SNAPSHOT</dtstack.common>
         <spring.version>4.1.9.RELEASE</spring.version>
+
+        <!--将所有jacoco定位到同样的父目录位置-->
+        <sonar.jacoco.reportPaths>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPaths>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- Junit 测试相关 -->
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
@@ -63,14 +67,102 @@
 
             <dependency>
                 <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>1.7.21</version>
+                <artifactId>slf4j-simple</artifactId>
+                <version>1.7.26</version>
+                <scope>test</scope>
             </dependency>
 
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.21</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- Junit 测试相关结束 -->
+
+            <!-- 不参与编译相关 -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.8</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>1.2.73</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.dtstack.dtcenter</groupId>
+                <artifactId>common.loader.core</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- Spring 相关-->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${spring.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>
+                <version>${spring.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-tx</artifactId>
+                <version>${spring.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jdbc</artifactId>
+                <version>${spring.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context-support</artifactId>
+                <version>${spring.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <!-- 不参与编译相关结束 -->
+
+            <!-- core 包依赖相关 -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>3.4</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-math3</artifactId>
+                <version>3.6.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-pool2</artifactId>
+                <version>2.4.2</version>
             </dependency>
 
             <dependency>
@@ -80,27 +172,28 @@
             </dependency>
 
             <dependency>
-                <artifactId>jedis</artifactId>
-                <groupId>redis.clients</groupId>
-                <version>2.9.0</version>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>3.2.2</version>
             </dependency>
 
             <dependency>
-                <groupId>org.mongodb</groupId>
-                <artifactId>mongodb-driver</artifactId>
-                <version>3.12.4</version>
+                <groupId>commons-net</groupId>
+                <artifactId>commons-net</artifactId>
+                <version>3.6</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>17.0.0</version>
+            </dependency>
+            <!-- core 包依赖相关结束 -->
 
             <dependency>
                 <groupId>com.dtstack.dtcenter</groupId>
                 <artifactId>common.loader.rdbms</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.dtstack.dtcenter</groupId>
-                <artifactId>common.base</artifactId>
-                <version>${dtstack.common}</version>
             </dependency>
 
             <dependency>
@@ -117,151 +210,15 @@
             </dependency>
 
             <dependency>
-                <groupId>com.dtstack.dtcenter</groupId>
-                <artifactId>common.loader.core</artifactId>
-                <version>${project.version}</version>
-                <scope>provided</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>42.2.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.ibm.db2</groupId>
-                <artifactId>jcc</artifactId>
-                <version>11.5.0.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>ru.yandex.clickhouse</groupId>
-                <artifactId>clickhouse-jdbc</artifactId>
-                <version>0.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.aliyun.odps</groupId>
-                <artifactId>odps-sdk-core</artifactId>
-                <version>0.33.7-public</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-simple</artifactId>
-                <version>1.7.26</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>com.pivotal</groupId>
-                <artifactId>greenplum-jdbc</artifactId>
-                <version>5.1.4</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.esen.jdbc</groupId>
-                <artifactId>gbase</artifactId>
-                <version>8.3.81.53</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.kylin</groupId>
-                <artifactId>kylin-jdbc</artifactId>
-                <version>3.0.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.cloudera.impala.jdbc</groupId>
-                <artifactId>ImpalaJDBC41</artifactId>
-                <version>2.6.12</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>1.18.8</version>
-                <scope>provided</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka_2.11</artifactId>
-                <version>0.11.0.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-core</artifactId>
-                <version>${spring.version}</version>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-beans</artifactId>
-                <version>${spring.version}</version>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-context</artifactId>
-                <version>${spring.version}</version>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-tx</artifactId>
-                <version>${spring.version}</version>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-jdbc</artifactId>
-                <version>${spring.version}</version>
-                <scope>compile</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-context-support</artifactId>
-                <version>${spring.version}</version>
-                <scope>compile</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>2.6</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.apache.kerby</groupId>
                 <artifactId>kerb-util</artifactId>
                 <version>2.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>org.apache.hive</groupId>
-                <artifactId>hive-exec</artifactId>
-                <version>2.1.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.dtstack</groupId>
-                <artifactId>shaded-elasticsearch-client</artifactId>
-                <version>6.1.3</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.kudu</groupId>
-                <artifactId>kudu-client</artifactId>
-                <version>1.9.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-pool2</artifactId>
-                <version>2.4.2</version>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-1.2-api</artifactId>
+                <version>2.10.0</version>
             </dependency>
 
             <dependency>
@@ -271,17 +228,10 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-math3</artifactId>
-                <version>3.6.1</version>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka_2.11</artifactId>
+                <version>0.11.0.2</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-1.2-api</artifactId>
-                <version>2.10.0</version>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -324,6 +274,12 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <!--使用前面定义的位置-->
+                    <destFile>${sonar.jacoco.reportPaths}</destFile>
+                    <!--重要！用追加的模式-->
+                    <append>true</append>
+                </configuration>
             </plugin>
         </plugins>
     </build>

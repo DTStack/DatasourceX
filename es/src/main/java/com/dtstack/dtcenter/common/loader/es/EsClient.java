@@ -10,13 +10,12 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
-import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -44,7 +43,6 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,11 +68,9 @@ public class EsClient extends AbsRdbmsClient {
 
     private static final String RESULT_KEY = "result";
 
-    private static final String poolConfigFieldName = "poolConfig";
-
     private static ElasticSearchManager elasticSearchManager = ElasticSearchManager.getInstance();
 
-    public static final ThreadLocal<Boolean> isOpenPool = new ThreadLocal<>();
+    public static final ThreadLocal<Boolean> IS_OPEN_POOL = new ThreadLocal<>();
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -325,15 +321,8 @@ public class EsClient extends AbsRdbmsClient {
     }
 
     private static RestHighLevelClient getClient(ESSourceDTO esSourceDTO) {
-        Field[] fields = RdbmsSourceDTO.class.getDeclaredFields();
-        boolean check = false;
-        for (Field field : fields) {
-            if (poolConfigFieldName.equals(field.getName())) {
-                check = esSourceDTO.getPoolConfig() != null;
-                break;
-            }
-        }
-        isOpenPool.set(check);
+        boolean check = esSourceDTO.getPoolConfig() != null;
+        IS_OPEN_POOL.set(check);
         if (!check) {
             return getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
         }
@@ -380,7 +369,7 @@ public class EsClient extends AbsRdbmsClient {
     }
 
     private void closeResource(RestClient lowLevelClient, RestHighLevelClient restHighLevelClient, ESSourceDTO esSourceDTO) {
-        if (!isOpenPool.get() && restHighLevelClient != null) {
+        if (!IS_OPEN_POOL.get() && restHighLevelClient != null) {
             try {
                 if (Objects.nonNull(lowLevelClient)) {
                     lowLevelClient.close();
@@ -391,7 +380,7 @@ public class EsClient extends AbsRdbmsClient {
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }
-            isOpenPool.remove();
+            IS_OPEN_POOL.remove();
         } else {
             ElasticSearchPool elasticSearchPool = elasticSearchManager.getConnection(esSourceDTO);
             try {

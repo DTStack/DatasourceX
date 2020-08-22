@@ -27,9 +27,10 @@ public class TiDBTest {
 
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
     Mysql5SourceDTO source = Mysql5SourceDTO.builder()
-            .url("jdbc:mysql://121.41.87.224:4000/test")
-            .username("test")
-            .password("abc123")
+            .url("jdbc:mysql://172.16.101.249:3306/streamapp")
+            .username("drpeco")
+            .password("DT@Stack#123")
+            .schema("streamapp")
             .poolConfig(new PoolConfig())
             .build();
 

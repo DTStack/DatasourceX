@@ -26,7 +26,7 @@ public class SparkTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     SparkSourceDTO source = SparkSourceDTO.builder()
-            .url("jdbc:hive2://172.16.8.107:10000/default")
+            .url("jdbc:hive2://172.16.8.107:10000/dev")
             .schema("default")
             .defaultFS("hdfs://ns1")
             .config("{\n" +

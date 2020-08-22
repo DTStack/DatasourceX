@@ -7,7 +7,7 @@ import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
@@ -38,9 +38,9 @@ import java.util.Map;
  */
 @Slf4j
 public class YarnDownload implements IDownloader {
-    private static final int bufferSize = 4095;
+    private static final int BUFFER_SIZE = 4095;
 
-    private int readLimit = bufferSize;
+    private int readLimit = BUFFER_SIZE;
 
     private Configuration configuration;
 
@@ -74,7 +74,7 @@ public class YarnDownload implements IDownloader {
 
     private Integer totalReadByte = 0;
 
-    private byte[] buf = new byte[bufferSize];
+    private byte[] buf = new byte[BUFFER_SIZE];
 
     private long curRead = 0L;
 
@@ -94,8 +94,8 @@ public class YarnDownload implements IDownloader {
         this.yarnConf = yarnConf;
         this.hdfsConfig = hdfsConfig;
 
-        if (readLimit == null || readLimit < bufferSize) {
-            log.warn("it is not available readLimit set,it must bigger then " + bufferSize + ", and use default :" + bufferSize);
+        if (readLimit == null || readLimit < BUFFER_SIZE) {
+            log.warn("it is not available readLimit set,it must bigger then " + BUFFER_SIZE + ", and use default :" + BUFFER_SIZE);
         } else {
             this.readLimit = readLimit;
         }

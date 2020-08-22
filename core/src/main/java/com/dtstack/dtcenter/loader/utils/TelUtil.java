@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.loader.utils;
 
-import com.dtstack.dtcenter.common.util.AddressUtil;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 
 /**

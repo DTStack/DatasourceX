@@ -9,7 +9,7 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 
 import java.io.IOException;
@@ -25,7 +25,7 @@ import java.util.Properties;
  * @Description：HDFS 连接工厂
  */
 public class HdfsConnFactory extends ConnFactory {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Override
     public Connection getConn(ISourceDTO source) throws Exception {
@@ -65,7 +65,7 @@ public class HdfsConnFactory extends ConnFactory {
         Properties properties = new Properties();
         if (StringUtils.isNotBlank(hadoopConfig)) {
             try {
-                properties = objectMapper.readValue(hadoopConfig, Properties.class);
+                properties = OBJECT_MAPPER.readValue(hadoopConfig, Properties.class);
             } catch (IOException e) {
                 throw new DtLoaderException("高可用配置格式错误", e);
             }

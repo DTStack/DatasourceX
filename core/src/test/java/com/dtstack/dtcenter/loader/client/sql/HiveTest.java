@@ -26,14 +26,16 @@ public class HiveTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     HiveSourceDTO source = HiveSourceDTO.builder()
-            .url("jdbc:hive2://172.16.100.219:10000/yeluo_test")
-            .schema("yeluo_test")
+            .url("jdbc:hive2://kudu1:10000/dev")
+            .schema("dev")
             .defaultFS("hdfs://ns1")
+            .username("admin")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.100.219:9000\",\n" +
-                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.100.204:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"kudu2:9000\",\n" +
+                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha" +
+                    ".ConfiguredFailoverProxyProvider\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"kudu1:9000\",\n" +
                     "    \"dfs.nameservices\": \"ns1\"\n" +
                     "}")
             .build();

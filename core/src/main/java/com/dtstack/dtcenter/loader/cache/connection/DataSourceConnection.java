@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.loader.cache.connection;
 
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
 import java.util.ArrayList;

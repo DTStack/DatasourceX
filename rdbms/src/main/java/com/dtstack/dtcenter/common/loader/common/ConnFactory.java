@@ -7,9 +7,8 @@ import com.dtstack.dtcenter.loader.utils.DBUtil;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -32,9 +31,7 @@ public class ConnFactory {
 
     private AtomicBoolean isFirstLoaded = new AtomicBoolean(true);
 
-    private static final String cpPoolKey = "url:%s,username:%s,password:%s";
-
-    private static final String poolConfigFieldName = "poolConfig";
+    private static final String CP_POOL_KEY = "url:%s,username:%s,password:%s";
 
     protected void init() throws ClassNotFoundException {
         // 减少加锁开销
@@ -55,20 +52,7 @@ public class ConnFactory {
             throw new DtLoaderException("数据源信息为 NULL");
         }
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
-        boolean isStart = false;
-
-        /**
-         *  适配1.1.0版本的core
-         *  后期删除
-         *  2020年08月06日
-         */
-        Field[] fields = RdbmsSourceDTO.class.getDeclaredFields();
-        for (Field field:fields) {
-            if (poolConfigFieldName.equals(field.getName())) {
-                isStart = rdbmsSourceDTO.getPoolConfig() != null;
-                break;
-            }
-        }
+        boolean isStart = rdbmsSourceDTO.getPoolConfig() != null;
         return isStart && MapUtils.isEmpty(rdbmsSourceDTO.getKerberosConfig()) ?
                 getCpConn(rdbmsSourceDTO) : getSimpleConn(rdbmsSourceDTO);
     }
@@ -107,7 +91,7 @@ public class ConnFactory {
     protected Connection getSimpleConn(ISourceDTO source) throws Exception {
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
         init();
-        DriverManager.setLoginTimeout(5);
+        DriverManager.setLoginTimeout(30);
         String url = dealSourceUrl(rdbmsSourceDTO);
         if (StringUtils.isBlank(rdbmsSourceDTO.getUsername())) {
             return DriverManager.getConnection(url);
@@ -179,6 +163,6 @@ public class ConnFactory {
      */
     protected String getPrimaryKey(ISourceDTO source) {
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
-        return String.format(cpPoolKey, rdbmsSourceDTO.getUrl(), rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getPassword());
+        return String.format(CP_POOL_KEY, rdbmsSourceDTO.getUrl(), rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getPassword());
     }
 }

@@ -1,13 +1,13 @@
 package com.dtstack.dtcenter.common.loader.redis;
 
-import com.dtstack.dtcenter.common.util.AddressUtil;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RedisSourceDTO;
 import com.dtstack.dtcenter.loader.enums.RedisMode;
+import com.dtstack.dtcenter.loader.utils.AddressUtil;
 import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;

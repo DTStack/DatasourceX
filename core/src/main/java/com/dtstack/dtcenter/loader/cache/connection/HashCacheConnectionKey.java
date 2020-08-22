@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.loader.cache.connection;
 
-import com.dtstack.dtcenter.common.thread.RdosThreadFactory;
+import com.dtstack.dtcenter.loader.factory.DtThreadFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +24,7 @@ public class HashCacheConnectionKey {
     private static final Map<String, DataSourceConnection> SESSION_CONN_MAP = new ConcurrentHashMap<>();
 
     private static final ScheduledExecutorService SCHEDULED_THREADPOOL_EXECUTOR = new ScheduledThreadPoolExecutor(1,
-            new RdosThreadFactory("hashCacheConnectionKey"));
+            new DtThreadFactory("hashCacheConnectionKey"));
 
     static {
         SCHEDULED_THREADPOOL_EXECUTOR.scheduleAtFixedRate(new HashCacheConnectionKey.CacheTimerTask(), 0, 10,

@@ -52,7 +52,8 @@ public class HdfsTextWriter {
     public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         int startLine = hdfsWriterDTO.getStartLine();
-        if (hdfsWriterDTO.getTopLineIsTitle()) {//首行是标题则内容从下一行开始
+        //首行是标题则内容从下一行开始
+        if (hdfsWriterDTO.getTopLineIsTitle()) {
             startLine++;
         }
 

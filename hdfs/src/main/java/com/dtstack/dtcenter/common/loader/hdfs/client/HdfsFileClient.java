@@ -23,7 +23,7 @@ import com.dtstack.dtcenter.loader.enums.FileFormat;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -48,7 +48,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     private static final String PATH_DELIMITER = "/";
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Override
     public FileStatus getStatus(ISourceDTO iSource, String location) throws Exception {
@@ -619,7 +619,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     private List<ColumnMetaDTO> getOrcColumnList(HdfsSourceDTO hdfsSourceDTO, SqlQueryDTO queryDTO) throws IOException {
         ArrayList<ColumnMetaDTO> columnList = new ArrayList<>();
-        Properties props = objectMapper.readValue(hdfsSourceDTO.getConfig(), Properties.class);
+        Properties props = OBJECT_MAPPER.readValue(hdfsSourceDTO.getConfig(), Properties.class);
         Configuration conf = new HdfsOperator.HadoopConf().setConf(hdfsSourceDTO.getDefaultFS(), props);
         FileSystem fs = HdfsOperator.getFileSystem(conf);
         OrcFile.ReaderOptions readerOptions = OrcFile.readerOptions(conf);

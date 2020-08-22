@@ -17,7 +17,7 @@ import org.junit.Test;
 public class FtpTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
     FtpSourceDTO source = FtpSourceDTO.builder()
-            .url("kudu1")
+            .url("kudu4")
             .hostPort("22")
             .username("root")
             .password("abc123")

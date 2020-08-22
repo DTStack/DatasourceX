@@ -28,6 +28,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
             <artifactId>common.loader.core</artifactId>
         </dependency>
@@ -37,9 +42,11 @@
             <artifactId>common.loader.rdbms</artifactId>
         </dependency>
 
+        <!-- 类隔离 jar 包 -->
         <dependency>
             <groupId>ru.yandex.clickhouse</groupId>
             <artifactId>clickhouse-jdbc</artifactId>
+            <version>0.2</version>
         </dependency>
     </dependencies>
 

@@ -73,8 +73,8 @@ public class MysqlClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO ISource, SqlQueryDTO queryDTO) throws Exception {
-        Mysql5SourceDTO mysql5SourceDTO = (Mysql5SourceDTO) ISource;
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        Mysql5SourceDTO mysql5SourceDTO = (Mysql5SourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(mysql5SourceDTO, queryDTO);
         Statement statement = null;
         ResultSet resultSet = null;

@@ -14,7 +14,7 @@ import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.dtstack.dtcenter.loader.utils.CollectionUtil;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import oracle.jdbc.OracleResultSetMetaData;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -59,8 +59,8 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO ISource, SqlQueryDTO queryDTO) throws Exception {
-        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) ISource;
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) iSource;
         Integer clearStatus = beforeQuery(oracleSourceDTO, queryDTO, false);
 
         Statement statement = null;
@@ -83,8 +83,8 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO ISource, SqlQueryDTO queryDTO) throws Exception {
-        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) ISource;
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(oracleSourceDTO, queryDTO);
 
         String tableName = queryDTO.getTableName();
@@ -113,8 +113,8 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO ISource, SqlQueryDTO queryDTO) throws Exception {
-        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) ISource;
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(oracleSourceDTO, queryDTO);
         Statement statement = null;
         ResultSet rs = null;

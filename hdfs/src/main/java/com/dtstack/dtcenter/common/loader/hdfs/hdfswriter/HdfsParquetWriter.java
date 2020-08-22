@@ -11,7 +11,6 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -372,7 +371,7 @@ public class HdfsParquetWriter {
     }
 
     private static long getTime(String val, SimpleDateFormat dateFormat) throws ParseException {
-        if (NumberUtils.isNumber(val)) {
+        if (StringUtils.isNumeric(val)) {
             return Long.parseLong(val);
         } else {
             Date date;

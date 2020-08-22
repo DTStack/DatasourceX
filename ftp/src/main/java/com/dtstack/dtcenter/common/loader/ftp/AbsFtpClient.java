@@ -1,7 +1,5 @@
 package com.dtstack.dtcenter.common.loader.ftp;
 
-import com.dtstack.dtcenter.common.sftp.SFTPHandler;
-import com.dtstack.dtcenter.common.util.AddressUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -9,6 +7,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.FtpSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.utils.AddressUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
@@ -32,12 +31,13 @@ public abstract class AbsFtpClient<T> implements IClient<T> {
 
     @Override
     public Boolean testCon(ISourceDTO iSource) {
-        boolean check = false;
         FtpSourceDTO ftpSourceDTO = (FtpSourceDTO) iSource;
         if (ftpSourceDTO == null || !AddressUtil.telnet(ftpSourceDTO.getUrl(), Integer.valueOf(ftpSourceDTO.getHostPort()))) {
-            return check;
+            return Boolean.FALSE;
         }
-        if (ftpSourceDTO.getProtocol() != null && ftpSourceDTO.getProtocol().equalsIgnoreCase("sftp")) {
+
+        boolean check = false;
+        if (ftpSourceDTO.getProtocol() != null && "sftp".equalsIgnoreCase(ftpSourceDTO.getProtocol())) {
             SFTPHandler instance = null;
             try {
                 Integer finalPort = Integer.valueOf(ftpSourceDTO.getHostPort());

@@ -14,7 +14,7 @@ import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * @Description：Hive 连接
  */
 public class HiveClient extends AbsRdbmsClient {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -227,7 +227,7 @@ public class HiveClient extends AbsRdbmsClient {
         Properties properties = new Properties();
         if (StringUtils.isNotBlank(hadoopConfig)) {
             try {
-                properties = objectMapper.readValue(hadoopConfig, Properties.class);
+                properties = OBJECT_MAPPER.readValue(hadoopConfig, Properties.class);
             } catch (IOException e) {
                 throw new DtLoaderException("高可用配置格式错误", e);
             }
@@ -249,18 +249,18 @@ public class HiveClient extends AbsRdbmsClient {
         String fieldDelimiter = "\001";
         String storageMode = null;
         for (Map<String, Object> map : list) {
-            String col_name = (String) map.get("col_name");
-            if (col_name.contains("Location")) {
+            String colName = (String) map.get("col_name");
+            if (colName.contains("Location")) {
                 tableLocation = (String) map.get("data_type");
                 continue;
             }
 
-            if (col_name.contains("InputFormat")) {
+            if (colName.contains("InputFormat")) {
                 storageMode = (String) map.get("data_type");
                 continue;
             }
 
-            if (col_name.contains("field.delim")) {
+            if (colName.contains("field.delim")) {
                 fieldDelimiter = (String) map.get("data_type");
                 break;
             }
