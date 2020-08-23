@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -25,7 +26,7 @@ import java.util.Map;
 public class SparkTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    SparkSourceDTO source = SparkSourceDTO.builder()
+    private static SparkSourceDTO source = SparkSourceDTO.builder()
             .url("jdbc:hive2://172.16.8.107:10000/dev")
             .schema("default")
             .defaultFS("hdfs://ns1")
@@ -38,6 +39,17 @@ public class SparkTest {
                     "}")
             .username("admin")
             .build();
+
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.Spark.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int, name string)").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+    }
 
     @Test
     public void getCon() throws Exception {
@@ -82,7 +94,7 @@ public class SparkTest {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Spark.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi_partition").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -90,7 +102,7 @@ public class SparkTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Spark.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi_partition").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
@@ -98,7 +110,7 @@ public class SparkTest {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Spark.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi_partition").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
@@ -106,7 +118,7 @@ public class SparkTest {
     @Test
     public void getDownloader() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Spark.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi_partition").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         System.out.println(downloader.getMetaInfo());
         while (!downloader.reachedEnd()){
@@ -117,7 +129,7 @@ public class SparkTest {
     @Test
     public void getPreview() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Spark.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi_partition").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }
@@ -125,7 +137,7 @@ public class SparkTest {
     @Test
     public void getPartitionColumn() throws Exception{
         IClient client = clientCache.getClient(DataSourceType.Spark.getPluginName());
-        List<ColumnMetaDTO> data = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("nanqi_partition").build());
+        List<ColumnMetaDTO> data = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("nanqi").build());
         data.forEach(x-> System.out.println(x.getKey()+"=="+x.getPart()));
     }
 
@@ -133,23 +145,22 @@ public class SparkTest {
     public void getPreview2() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Spark.getPluginName());
         HashMap<String, String> map = new HashMap<>();
-        map.put("pt1", "1");
-        map.put("pt2", "2");
-        List list = client.getPreview(source, SqlQueryDTO.builder().tableName("nanqi_partition").partitionColumns(map).build());
+        map.put("id", "1");
+        List list = client.getPreview(source, SqlQueryDTO.builder().tableName("nanqi").partitionColumns(map).build());
         System.out.println(list);
     }
 
     @Test
     public void query() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Spark.getPluginName());
-        List list = client.executeQuery(source, SqlQueryDTO.builder().sql("select * from nanqi_partition").build());
+        List list = client.executeQuery(source, SqlQueryDTO.builder().sql("select * from nanqi").build());
         System.out.println(list);
     }
 
     @Test
     public void getColumnMetaDataWithSql() throws Exception{
         IClient client = clientCache.getClient(DataSourceType.Spark.getPluginName());
-        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().sql("select * from nanqi_partition").build();
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().sql("select * from nanqi").build();
         List list = client.getColumnMetaDataWithSql(source, sqlQueryDTO);
         System.out.println(list);
     }
@@ -157,7 +168,7 @@ public class SparkTest {
     @Test
     public void getCreateTableSql() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Spark.getPluginName());
-        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("nanqi_partition").build();
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         System.out.println(client.getCreateTableSql(source, sqlQueryDTO));
     }
 

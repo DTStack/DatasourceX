@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.common.loader.db2;
 
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
 
 /**

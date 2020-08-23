@@ -11,6 +11,7 @@ import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -26,13 +27,24 @@ import java.util.Map;
 public class TiDBTest {
 
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
-    Mysql5SourceDTO source = Mysql5SourceDTO.builder()
+    private static Mysql5SourceDTO source = Mysql5SourceDTO.builder()
             .url("jdbc:mysql://172.16.101.249:3306/streamapp")
             .username("drpeco")
             .password("DT@Stack#123")
             .schema("streamapp")
             .poolConfig(new PoolConfig())
             .build();
+
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int COMMENT 'id', name varchar(50) COMMENT '姓名') comment 'table comment'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+    }
 
     /**
      * 获取连接测试 - 使用连接池，默认最大开启十个连接
@@ -42,30 +54,7 @@ public class TiDBTest {
     public void getCon() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
         Connection con1 = client.getCon(source);
-        String con1JdbcConn = con1.toString().split("wrapping")[1];
-        Connection con2 = client.getCon(source);
-        Connection con3 = client.getCon(source);
-        Connection con4 = client.getCon(source);
-        Connection con5 = client.getCon(source);
-        Connection con6 = client.getCon(source);
-        Connection con7 = client.getCon(source);
-        Connection con8 = client.getCon(source);
-        Connection con9 = client.getCon(source);
-        Connection con10 = client.getCon(source);
         con1.close();
-        Connection con11 = client.getCon(source);
-        String con11JdbcConn = con11.toString().split("wrapping")[1];
-        assert con1JdbcConn.equals(con11JdbcConn);
-        con2.close();
-        con3.close();
-        con4.close();
-        con5.close();
-        con6.close();
-        con7.close();
-        con8.close();
-        con9.close();
-        con10.close();
-        con11.close();
     }
 
     @Test
@@ -78,7 +67,7 @@ public class TiDBTest {
     @Test(expected = DtLoaderException.class)
     public void testErrorCon() {
         IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
-        source.setUsername("wangchuan");
+        source.setUsername("nanqi");
         client.testCon(source);
     }
 
@@ -108,7 +97,7 @@ public class TiDBTest {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("demo").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -116,7 +105,7 @@ public class TiDBTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("demo").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
@@ -124,7 +113,7 @@ public class TiDBTest {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("demo").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
@@ -132,7 +121,7 @@ public class TiDBTest {
     @Test
     public void testGetDownloader() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from demo").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         downloader.configure();
         List<String> metaInfo = downloader.getMetaInfo();
@@ -153,7 +142,7 @@ public class TiDBTest {
     @Test
     public void testGetPreview() throws Exception{
         IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("demo").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }

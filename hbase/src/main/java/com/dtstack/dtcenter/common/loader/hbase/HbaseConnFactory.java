@@ -2,7 +2,6 @@ package com.dtstack.dtcenter.common.loader.hbase;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -14,11 +13,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.ClusterStatus;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 
 import java.io.IOException;
 import java.security.PrivilegedAction;
-import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,12 +28,11 @@ import java.util.Map;
  * @Description：Hbase 连接工厂
  */
 @Slf4j
-public class HbaseConnFactory extends ConnFactory {
-    @Override
+public class HbaseConnFactory {
     public Boolean testConn(ISourceDTO iSource) {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) iSource;
         boolean check = false;
-        org.apache.hadoop.hbase.client.Connection hConn = null;
+        Connection hConn = null;
         try {
             hConn = getHbaseConn(hbaseSourceDTO);
             ClusterStatus clusterStatus = hConn.getAdmin().getClusterStatus();
@@ -53,7 +51,7 @@ public class HbaseConnFactory extends ConnFactory {
         return check;
     }
 
-    public static org.apache.hadoop.hbase.client.Connection getHbaseConn(HbaseSourceDTO source) throws Exception {
+    public static Connection getHbaseConn(HbaseSourceDTO source) throws Exception {
         Map<String, Object> sourceToMap = sourceToMap(source);
         if (MapUtils.isEmpty(source.getKerberosConfig())) {
             Configuration hConfig = HBaseConfiguration.create();
@@ -61,7 +59,7 @@ public class HbaseConnFactory extends ConnFactory {
                 hConfig.set(entry.getKey(), (String) entry.getValue());
             }
 
-            org.apache.hadoop.hbase.client.Connection hConn = null;
+            Connection hConn = null;
             try {
                 hConn = ConnectionFactory.createConnection(hConfig);
                 return hConn;
@@ -71,13 +69,13 @@ public class HbaseConnFactory extends ConnFactory {
         }
 
         return KerberosUtil.loginKerberosWithUGI(new HashMap<>(source.getKerberosConfig())).doAs(
-                (PrivilegedAction<org.apache.hadoop.hbase.client.Connection>) () -> {
+                (PrivilegedAction<Connection>) () -> {
                     Configuration hConfig = HBaseConfiguration.create();
                     for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {
                         hConfig.set(entry.getKey(), (String) entry.getValue());
                     }
 
-                    org.apache.hadoop.hbase.client.Connection hConn = null;
+                    Connection hConn = null;
                     try {
                         hConn = ConnectionFactory.createConnection(hConfig);
                         return hConn;
@@ -135,10 +133,5 @@ public class HbaseConnFactory extends ConnFactory {
         hbaseMap.put("hbase.client.pause", "100");
         hbaseMap.put("zookeeper.recovery.retry", "3");
         return hbaseMap;
-    }
-
-    @Override
-    public Connection getConn(ISourceDTO source) throws Exception {
-        throw new DtLoaderException("Not Support");
     }
 }

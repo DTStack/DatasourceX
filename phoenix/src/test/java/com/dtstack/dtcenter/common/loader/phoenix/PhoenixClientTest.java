@@ -1,8 +1,6 @@
 package com.dtstack.dtcenter.common.loader.phoenix;
 
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.source.PhoenixSourceDTO;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import org.junit.Test;
 
 /**
@@ -15,13 +13,7 @@ public class PhoenixClientTest {
     private static AbsRdbmsClient rdbsClient = new PhoenixClient();
 
     @Test
-    public void testConnection() throws Exception {
-        PhoenixSourceDTO source = PhoenixSourceDTO.builder()
-                .url("jdbc:phoenix:node01,node02,node03:2181")
-                .build();
-        Boolean isConnected = rdbsClient.testCon(source);
-        if (!isConnected) {
-            throw new DtLoaderException("数据源连接异常");
-        }
+    public void test_issue() throws Exception {
+        // 简单测试代码使用，具体全覆盖使用 core 包下面的
     }
 }

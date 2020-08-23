@@ -1,11 +1,8 @@
 package com.dtstack.dtcenter.common.loader.mysql;
 
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
+import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.loader.dto.source.Mysql5SourceDTO;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.junit.Test;
-
-import java.sql.Connection;
 
 public class MysqlClientTest {
     private static AbsRdbmsClient rdbsClient = new MysqlClient();
@@ -18,25 +15,7 @@ public class MysqlClientTest {
             .build();
 
     @Test
-    public void getConnFactory() throws Exception {
-        Boolean isConnected = rdbsClient.testCon(source);
-        if (!isConnected) {
-            throw new DtLoaderException("数据源连接异常");
-        }
-    }
-
-    @Test(expected = DtLoaderException.class)
-    public void getConnection () throws Exception {
-        Connection con1 = rdbsClient.getCon(source);
-        Connection con2 = rdbsClient.getCon(source);
-        Connection con3 = rdbsClient.getCon(source);
-        Connection con4 = rdbsClient.getCon(source);
-        Connection con5 = rdbsClient.getCon(source);
-        Connection con6 = rdbsClient.getCon(source);
-        Connection con7 = rdbsClient.getCon(source);
-        Connection con8 = rdbsClient.getCon(source);
-        Connection con9 = rdbsClient.getCon(source);
-        Connection con10 = rdbsClient.getCon(source);
-        Connection con11 = rdbsClient.getCon(source);
+    public void test_issue() throws Exception {
+        // 简单测试代码使用，具体全覆盖使用 core 包下面的
     }
 }

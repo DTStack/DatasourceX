@@ -20,9 +20,8 @@ public class Hbase2Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     HbaseSourceDTO source = HbaseSourceDTO.builder()
-            .url("kudu1,kudu2,kudu3:2181")
+            .url("172.16.10.104:2181,172.16.10.224:2181,172.16.10.252:2181")
             .path("/hbase")
-            .schema("default")
             .build();
 
     @Test

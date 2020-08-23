@@ -11,7 +11,6 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
 
-import java.sql.Connection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,18 +87,10 @@ public class MaxComputerTest {
     }
 
     @Test
-    public void getConn() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MAXCOMPUTE.getPluginName());
-        Connection con = client.getCon(source);
-        System.out.println(con);
-    }
-
-    @Test
     public void getPreview() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MAXCOMPUTE.getPluginName());
         HashMap<String, String> map = new HashMap<>();
-        map.put("province", "henan");
-        map.put("province", "shandong");
+        map.put("province", "hubei");
         List data = client.getPreview(source, SqlQueryDTO.builder().partitionColumns(map).previewNum(1000).tableName("wangchuan_test").build());
         System.out.println(data);
     }

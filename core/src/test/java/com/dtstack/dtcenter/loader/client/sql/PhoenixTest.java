@@ -8,6 +8,7 @@ import com.dtstack.dtcenter.loader.dto.source.PhoenixSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -23,11 +24,22 @@ import java.util.Map;
 public class PhoenixTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    PhoenixSourceDTO source = PhoenixSourceDTO.builder()
+    private static PhoenixSourceDTO source = PhoenixSourceDTO.builder()
             .url("jdbc:phoenix:172.16.101.136:2181")
             .username("root")
             .password("abc123")
             .build();
+
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.Phoenix.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int, name string) comment 'table comment'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+    }
 
     @Test
     public void getCon() throws Exception {

@@ -10,6 +10,7 @@ import com.dtstack.dtcenter.loader.dto.source.SqlserverSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -25,41 +26,29 @@ import java.util.Map;
 public class SQLServerTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    SqlserverSourceDTO source = SqlserverSourceDTO.builder()
+    private static SqlserverSourceDTO source = SqlserverSourceDTO.builder()
             .url("jdbc:jtds:sqlserver://172.16.8.149:1433;DatabaseName=DTstack")
             .username("sa")
             .password("Dtstack2018")
             .poolConfig(PoolConfig.builder().build())
             .build();
 
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.SQLServer.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table nanqi").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int, name varchar(50))").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+    }
+
     @Test
     public void getCon() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.SQLServer.getPluginName());
         Connection con1 = client.getCon(source);
-        String con1JdbcConn = con1.toString().split("wrapping")[1];
-        Connection con2 = client.getCon(source);
-        Connection con3 = client.getCon(source);
-        Connection con4 = client.getCon(source);
-        Connection con5 = client.getCon(source);
-        Connection con6 = client.getCon(source);
-        Connection con7 = client.getCon(source);
-        Connection con8 = client.getCon(source);
-        Connection con9 = client.getCon(source);
-        Connection con10 = client.getCon(source);
         con1.close();
-        Connection con11 = client.getCon(source);
-        String con11JdbcConn = con11.toString().split("wrapping")[1];
-        assert con1JdbcConn.equals(con11JdbcConn);
-        con2.close();
-        con3.close();
-        con4.close();
-        con5.close();
-        con6.close();
-        con7.close();
-        con8.close();
-        con9.close();
-        con10.close();
-        con11.close();
     }
 
     @Test
@@ -97,7 +86,7 @@ public class SQLServerTest {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.SQLServer.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("jiangbo_dev_copy").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -105,7 +94,7 @@ public class SQLServerTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.SQLServer.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nonstd_cad97a77").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData);
     }
@@ -113,7 +102,7 @@ public class SQLServerTest {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.SQLServer.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("TempTable0").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
@@ -121,7 +110,7 @@ public class SQLServerTest {
     @Test
     public void getPreview() throws Exception{
         IClient client = clientCache.getClient(DataSourceType.SQLServer.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(20).tableName("dbo.[dd.dd]").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(20).tableName("nanqi").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }
@@ -138,7 +127,7 @@ public class SQLServerTest {
     @Test
     public void testGetDownloader() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.SQLServer.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from jiangbo_dev_copy").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         downloader.configure();
         List<String> metaInfo = downloader.getMetaInfo();

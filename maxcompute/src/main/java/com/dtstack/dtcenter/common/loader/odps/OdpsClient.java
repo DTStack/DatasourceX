@@ -17,25 +17,26 @@ import com.aliyun.odps.data.DefaultRecordReader;
 import com.aliyun.odps.data.Record;
 import com.aliyun.odps.data.ResultSet;
 import com.aliyun.odps.task.SQLTask;
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.common.loader.odps.common.OdpsFields;
 import com.dtstack.dtcenter.common.loader.odps.pool.OdpsManager;
 import com.dtstack.dtcenter.common.loader.odps.pool.OdpsPool;
+import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.OdpsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,21 +51,11 @@ import java.util.Set;
  * @Description：ODPS 客户端
  */
 @Slf4j
-public class OdpsClient extends AbsRdbmsClient {
+public class OdpsClient<T> implements IClient<T> {
 
     public static final ThreadLocal<Boolean> IS_OPEN_POOL = new ThreadLocal<>();
 
     private static OdpsManager odpsManager = OdpsManager.getInstance();
-
-    @Override
-    protected ConnFactory getConnFactory() {
-        return new OdpsConnFactory();
-    }
-
-    @Override
-    protected DataSourceType getSourceType() {
-        return DataSourceType.MAXCOMPUTE;
-    }
 
     @Override
     public Boolean testCon(ISourceDTO iSource) {
@@ -385,7 +376,7 @@ public class OdpsClient extends AbsRdbmsClient {
 
     private void closeResource(Odps odps, OdpsSourceDTO odpsSourceDTO) {
         //归还对象
-        if (IS_OPEN_POOL.get() && odps != null) {
+        if (BooleanUtils.isTrue(IS_OPEN_POOL.get()) && odps != null) {
             OdpsPool odpsPool = odpsManager.getConnection(odpsSourceDTO);
             odpsPool.returnResource(odps);
             IS_OPEN_POOL.remove();
@@ -424,7 +415,6 @@ public class OdpsClient extends AbsRdbmsClient {
         }
     }
 
-    @Override
     protected Integer beforeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO, boolean query) throws Exception {
         // 查询 SQL 不能为空
         if (query && StringUtils.isBlank(queryDTO.getSql())) {
@@ -434,7 +424,6 @@ public class OdpsClient extends AbsRdbmsClient {
         return ConnectionClearStatus.CLOSE.getValue();
     }
 
-    @Override
     protected Integer beforeColumnQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         Integer clearStatus = beforeQuery(odpsSourceDTO, queryDTO, false);
@@ -445,5 +434,35 @@ public class OdpsClient extends AbsRdbmsClient {
         queryDTO.setColumns(CollectionUtils.isEmpty(queryDTO.getColumns()) ? Collections.singletonList("*") :
                 queryDTO.getColumns());
         return clearStatus;
+    }
+
+    @Override
+    public Connection getCon(ISourceDTO source) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
     }
 }

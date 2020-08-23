@@ -1,7 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hdfs;
 
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
@@ -14,7 +13,6 @@ import org.apache.hadoop.conf.Configuration;
 
 import java.io.IOException;
 import java.security.PrivilegedAction;
-import java.sql.Connection;
 import java.util.Map;
 import java.util.Properties;
 
@@ -24,15 +22,9 @@ import java.util.Properties;
  * @Date ：Created in 16:53 2020/2/27
  * @Description：HDFS 连接工厂
  */
-public class HdfsConnFactory extends ConnFactory {
+public class HdfsConnFactory {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    @Override
-    public Connection getConn(ISourceDTO source) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
     public Boolean testConn(ISourceDTO iSource) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
         if (StringUtils.isBlank(hdfsSourceDTO.getDefaultFS()) || !hdfsSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {

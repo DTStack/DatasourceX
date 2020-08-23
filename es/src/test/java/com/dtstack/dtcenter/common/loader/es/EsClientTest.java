@@ -1,8 +1,6 @@
 package com.dtstack.dtcenter.common.loader.es;
 
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.junit.Test;
 
 /**
@@ -12,7 +10,7 @@ import org.junit.Test;
  * @Description：ES 客户端测试
  */
 public class EsClientTest {
-    private static AbsRdbmsClient rdbsClient = new EsClient();
+    private static EsClient rdbsClient = new EsClient();
     ESSourceDTO source = ESSourceDTO.builder()
             .url("kudu5:9200")
             .username("elastic")
@@ -20,16 +18,7 @@ public class EsClientTest {
             .build();
 
     @Test
-    public void getConnFactory() throws Exception {
-
-        Boolean isConnected = rdbsClient.testCon(source);
-        if (!isConnected) {
-            throw new DtLoaderException("数据源连接异常");
-        }
-    }
-
-    @Test
-    public void getAllDatabase(){
-
+    public void test_issue() throws Exception {
+        // 简单测试代码使用，具体全覆盖使用 core 包下面的
     }
 }

@@ -1,7 +1,5 @@
 package com.dtstack.dtcenter.common.loader.ftp;
 
-import com.dtstack.dtcenter.loader.dto.source.FtpSourceDTO;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.junit.Test;
 
 /**
@@ -14,18 +12,8 @@ public class FtpClientTest {
     private static FtpClient ftpClient = new FtpClient();
 
     @Test
-    public void testCon() throws Exception {
-        FtpSourceDTO source = FtpSourceDTO.builder()
-                .url("kudu1")
-                .hostPort("22")
-                .username("root")
-                .password("abc123")
-                .protocol("sftp")
-                .build();
-        Boolean isConnected = ftpClient.testCon(source);
-        if (!isConnected) {
-            throw new DtLoaderException("数据源连接异常");
-        }
+    public void test_issue() throws Exception {
+        // 简单测试代码使用，具体全覆盖使用 core 包下面的
     }
 }
 

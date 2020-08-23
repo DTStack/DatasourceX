@@ -17,6 +17,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.bson.Document;
@@ -68,7 +69,7 @@ public class MongoDBUtils {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
-            if (!IS_OPEN_POOL.get() && mongoClient != null) {
+            if (!BooleanUtils.isTrue(IS_OPEN_POOL.get()) && mongoClient != null) {
                 mongoClient.close();
                 IS_OPEN_POOL.remove();
             }
@@ -95,7 +96,7 @@ public class MongoDBUtils {
         }catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
-            if (!IS_OPEN_POOL.get() && mongoClient != null) {
+            if (!BooleanUtils.isTrue(IS_OPEN_POOL.get()) && mongoClient != null) {
                 mongoClient.close();
                 IS_OPEN_POOL.remove();
             }
@@ -129,7 +130,7 @@ public class MongoDBUtils {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
-            if (!IS_OPEN_POOL.get() && mongoClient != null) {
+            if (!BooleanUtils.isTrue(IS_OPEN_POOL.get()) && mongoClient != null) {
                 mongoClient.close();
                 IS_OPEN_POOL.remove();
             }
@@ -158,7 +159,7 @@ public class MongoDBUtils {
         } catch (Exception e) {
             log.error("获取tablelist异常  {}", mongoSourceDTO, e);
         } finally {
-            if (!IS_OPEN_POOL.get() && mongoClient != null) {
+            if (!BooleanUtils.isTrue(IS_OPEN_POOL.get()) && mongoClient != null) {
                 mongoClient.close();
             }
         }

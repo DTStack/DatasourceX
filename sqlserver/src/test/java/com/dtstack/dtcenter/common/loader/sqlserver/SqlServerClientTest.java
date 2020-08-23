@@ -1,12 +1,8 @@
 package com.dtstack.dtcenter.common.loader.sqlserver;
 
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.loader.dto.source.SqlserverSourceDTO;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.junit.Test;
-
-import java.util.List;
 
 
 public class SqlServerClientTest {
@@ -19,19 +15,7 @@ public class SqlServerClientTest {
             .build();
 
     @Test
-    public void testConnection() throws Exception {
-        Boolean isConnected = rdbsClient.testCon(source);
-        if (!isConnected) {
-            throw new DtLoaderException("数据源连接异常");
-        }
-    }
-
-    @Test
-    public void getTableList() throws Exception {
-        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().view(true).build();
-        List tableList = rdbsClient.getTableList(source, sqlQueryDTO);
-        System.out.println(tableList);
-
-
+    public void test_issue() throws Exception {
+        // 简单测试代码使用，具体全覆盖使用 core 包下面的
     }
 }

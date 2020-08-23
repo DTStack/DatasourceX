@@ -15,6 +15,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.util.JSON;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonArray;
 import org.bson.BsonString;
@@ -116,7 +117,7 @@ public class MongoExecutor {
         }catch (Exception e){
             throw new DtLoaderException(e.getMessage(),e);
         } finally {
-            if (!MongoDBUtils.IS_OPEN_POOL.get() && mongoClient != null) {
+            if (!BooleanUtils.isTrue(MongoDBUtils.IS_OPEN_POOL.get()) && mongoClient != null) {
                 mongoClient.close();
             }
         }

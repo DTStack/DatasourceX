@@ -1,9 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hdfs;
 
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.hdfs.client.HdfsClient;
-import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.junit.Test;
 
 /**
@@ -13,24 +10,10 @@ import org.junit.Test;
  * @Description：HDFS 自测
  */
 public class HdfsClientTest {
-    private static AbsRdbmsClient rdbsClient = new HdfsClient();
+    private static HdfsClient rdbsClient = new HdfsClient();
 
     @Test
-    public void getConnFactory() throws Exception {
-        HdfsSourceDTO source = HdfsSourceDTO.builder()
-                .defaultFS("hdfs://ns1")
-                .config("{\n" +
-                        "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                        "    \"dfs.namenode.rpc-address.ns1.nn2\": \"kudu2:9000\",\n" +
-                        "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha" +
-                        ".ConfiguredFailoverProxyProvider\",\n" +
-                        "    \"dfs.namenode.rpc-address.ns1.nn1\": \"kudu1:9000\",\n" +
-                        "    \"dfs.nameservices\": \"ns1\"\n" +
-                        "}")
-                .build();
-        Boolean isConnected = rdbsClient.testCon(source);
-        if (!isConnected) {
-            throw new DtLoaderException("数据源连接异常");
-        }
+    public void test_issue() throws Exception {
+        // 简单测试代码使用，具体全覆盖使用 core 包下面的
     }
 }

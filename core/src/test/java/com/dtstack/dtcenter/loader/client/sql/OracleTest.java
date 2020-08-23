@@ -10,6 +10,7 @@ import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -25,41 +26,32 @@ import java.util.Map;
 public class OracleTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    OracleSourceDTO source = OracleSourceDTO.builder()
+    private static OracleSourceDTO source = OracleSourceDTO.builder()
             .url("jdbc:oracle:thin:@172.16.8.193:1521:xe")
             .username("kminer")
             .password("kminerpass")
+            .schema("KMINER")
             .poolConfig(new PoolConfig())
             .build();
+
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table nanqi").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table \"nanqi\" (id int, name VARCHAR2(50))").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("comment on table \"nanqi\" is 'table comment'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into \"nanqi\" values (1, 'nanqi')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+    }
 
     @Test
     public void getCon() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
         Connection con1 = client.getCon(source);
-        String con1JdbcConn = con1.toString().split("wrapping")[1];
-        Connection con2 = client.getCon(source);
-        Connection con3 = client.getCon(source);
-        Connection con4 = client.getCon(source);
-        Connection con5 = client.getCon(source);
-        Connection con6 = client.getCon(source);
-        Connection con7 = client.getCon(source);
-        Connection con8 = client.getCon(source);
-        Connection con9 = client.getCon(source);
-        Connection con10 = client.getCon(source);
         con1.close();
-        Connection con11 = client.getCon(source);
-        String con11JdbcConn = con11.toString().split("wrapping")[1];
-        con2.close();
-        con3.close();
-        con4.close();
-        con5.close();
-        con6.close();
-        con7.close();
-        con8.close();
-        con9.close();
-        con10.close();
-        con11.close();
-        assert con1JdbcConn.equals(con11JdbcConn);
     }
 
     @Test
@@ -74,7 +66,7 @@ public class OracleTest {
     @Test
     public void executeQuery() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from JMT_FLINKSQL_1598010714232").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from \"nanqi\"").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
     }
@@ -82,7 +74,7 @@ public class OracleTest {
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from JMT_FLINKSQL_1598010714232").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from \"nanqi\"").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -97,7 +89,7 @@ public class OracleTest {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("JMT_FLINKSQL_1598010714232").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -105,7 +97,7 @@ public class OracleTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("JMT_FLINKSQL_1598010714232").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData);
     }
@@ -113,7 +105,7 @@ public class OracleTest {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("JMT_FLINKSQL_1598010714232").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
@@ -125,7 +117,7 @@ public class OracleTest {
     @Test
     public void testGetPreview() throws Exception{
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("JMT_FLINKSQL_1598010714232").previewNum(1).build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").previewNum(1).build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }
@@ -133,7 +125,7 @@ public class OracleTest {
     @Test
     public void testGetDownloader() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from JMT_FLINKSQL_1598010714232").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from \"nanqi\"").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         downloader.configure();
         List<String> metaInfo = downloader.getMetaInfo();
@@ -149,14 +141,14 @@ public class OracleTest {
     @Test
     public void getFlinkColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        List data = client.getFlinkColumnMetaData(source, SqlQueryDTO.builder().tableName("JMT_FLINKSQL_1598010714232").build());
+        List data = client.getFlinkColumnMetaData(source, SqlQueryDTO.builder().tableName("nanqi").build());
         System.out.println(data);
     }
 
     @Test
     public void getColumnMetaDataWithSql() throws Exception{
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from JMT_FLINKSQL_1598010714232 ").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from \"nanqi\" ").build();
 
         List list = client.getColumnMetaDataWithSql(source, queryDTO);
 
@@ -173,7 +165,7 @@ public class OracleTest {
     @Test
     public void getCreateTableSql() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("JMT_FLINKSQL_1598010714232").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         System.out.println(client.getCreateTableSql(source,queryDTO));
     }
 

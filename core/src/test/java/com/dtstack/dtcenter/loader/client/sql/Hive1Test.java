@@ -8,6 +8,7 @@ import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -23,10 +24,23 @@ import java.util.Map;
 public class Hive1Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    Hive1SourceDTO source = Hive1SourceDTO.builder()
-            .url("jdbc:hive2://172.16.10.99:10000/default?principal=hive/node1@DTSTACK.COM")
-            .defaultFS("hdfs://nameservice1")
+    private static Hive1SourceDTO source = Hive1SourceDTO.builder()
+            .url("jdbc:hive2://172.16.10.67:10000/default")
+            .username("root")
+            .password("abc123")
+            .defaultFS("hdfs://172.16.10.67:8020")
             .build();
+
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.HIVE1X.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int comment 'id', name string comment '姓名') comment 'table comment' ").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+    }
 
     @Test
     public void getCon() throws Exception {
@@ -71,7 +85,7 @@ public class Hive1Test {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.HIVE1X.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("chener_o2").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -79,7 +93,7 @@ public class Hive1Test {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.HIVE1X.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("chener_o2").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
@@ -87,7 +101,7 @@ public class Hive1Test {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.HIVE1X.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("chener_o2").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
@@ -95,7 +109,7 @@ public class Hive1Test {
     @Test
     public void getPreview() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.HIVE1X.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("chener").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("nanqi").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }
@@ -103,7 +117,7 @@ public class Hive1Test {
     @Test
     public void getCreateTableSql() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.HIVE1X.getPluginName());
-        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("chener").build();
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         System.out.println(client.getCreateTableSql(source, sqlQueryDTO));
     }
 

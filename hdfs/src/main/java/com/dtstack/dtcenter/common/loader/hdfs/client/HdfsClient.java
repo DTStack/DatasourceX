@@ -1,13 +1,12 @@
 package com.dtstack.dtcenter.common.loader.hdfs.client;
 
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.common.loader.hdfs.HdfsConnFactory;
+import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.dtcenter.loader.source.DataSourceType;
 
 import java.sql.Connection;
 import java.util.List;
@@ -19,15 +18,12 @@ import java.util.Map;
  * @Date ：Created in 16:53 2020/2/27
  * @Description：hdfs 客户端
  */
-public class HdfsClient extends AbsRdbmsClient {
-    @Override
-    protected ConnFactory getConnFactory() {
-        return new HdfsConnFactory();
-    }
+public class HdfsClient<T> implements IClient<T> {
+    private HdfsConnFactory hdfsConnFactory = new HdfsConnFactory();
 
     @Override
-    protected DataSourceType getSourceType() {
-        return DataSourceType.HDFS;
+    public Boolean testCon(ISourceDTO source) {
+        return hdfsConnFactory.testConn(source);
     }
 
     /************************************** 不支持的方法 ****************************************/
@@ -67,7 +63,22 @@ public class HdfsClient extends AbsRdbmsClient {
     }
 
     @Override
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
     public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 

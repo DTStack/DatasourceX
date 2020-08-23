@@ -1,11 +1,9 @@
 package com.dtstack.dtcenter.common.loader.dm;
 
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
+import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.DmSourceDTO;
 import org.junit.Test;
-
-import java.util.List;
 
 /**
  * Date: 2020/4/19
@@ -24,37 +22,8 @@ public class DmClientTest {
 
     SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("TABLE_NAME").build();
 
-
     @Test
-    public void testCon() {
-        Boolean aBoolean = rdbsClient.testCon(source);
-        System.out.println(aBoolean);
-    }
-
-    @Test
-    public void getTableList() throws Exception {
-        source.setSchema("");
-        List tableList = rdbsClient.getTableList(source, queryDTO);
-        System.out.println(tableList);
-
-    }
-
-    @Test
-    public void getColumnMetaData() {
-    }
-
-    @Test
-    public void getCreateTableSql() throws Exception{
-        System.out.println(rdbsClient.getCreateTableSql(source,queryDTO));
-    }
-
-    @Test
-    public void getAllDatabase() throws Exception{
-        System.out.println(rdbsClient.getAllDatabases(source,queryDTO));
-    }
-
-    @Test
-    public void getPartitionColumn(){
-
+    public void test_issue() throws Exception {
+        // 简单测试代码使用，具体全覆盖使用 core 包下面的
     }
 }

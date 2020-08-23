@@ -67,13 +67,6 @@ public class EsTest {
     public void getDB() throws Exception{
         IClient client = clientCache.getClient(DataSourceType.ES6.getPluginName());
         List list = client.getAllDatabases(source, SqlQueryDTO.builder().build());
-        List list1 = client.getAllDatabases(source, SqlQueryDTO.builder().build());
-        List list2 = client.getAllDatabases(source, SqlQueryDTO.builder().build());
-        List list3 = client.getAllDatabases(source, SqlQueryDTO.builder().build());
-        List list4 = client.getAllDatabases(source, SqlQueryDTO.builder().build());
-        List list5 = client.getAllDatabases(source, SqlQueryDTO.builder().build());
-        List list6 = client.getAllDatabases(source, SqlQueryDTO.builder().build());
-        List list7 = client.getAllDatabases(source, SqlQueryDTO.builder().build());
         System.out.println(list);
     }
 
@@ -81,14 +74,6 @@ public class EsTest {
     public void executeQuery() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.ES6.getPluginName());
         List<Map<String, Object>> list = client.executeQuery(source, SqlQueryDTO.builder().sql("{\"query\": {\"match_all\": {}    }}").tableName("tools").build());
-        List<Map<String, Object>> list2 = client.executeQuery(source, SqlQueryDTO.builder().sql("{\"query\": {\"match_all\": {}    }}").tableName("tools").build());
-        List<Map<String, Object>> list3 = client.executeQuery(source, SqlQueryDTO.builder().sql("{\"query\": {\"match_all\": {}    }}").tableName("tools").build());
-        List<Map<String, Object>> list4 = client.executeQuery(source, SqlQueryDTO.builder().sql("{\"query\": {\"match_all\": {}    }}").tableName("tools").build());
-        List<Map<String, Object>> list5 = client.executeQuery(source, SqlQueryDTO.builder().sql("{\"query\": {\"match_all\": {}    }}").tableName("tools").build());
-        List<Map<String, Object>> list6 = client.executeQuery(source, SqlQueryDTO.builder().sql("{\"query\": {\"match_all\": {}    }}").tableName("tools").build());
-        List<Map<String, Object>> list7 = client.executeQuery(source, SqlQueryDTO.builder().sql("{\"query\": {\"match_all\": {}    }}").tableName("tools").build());
-        List<Map<String, Object>> list8 = client.executeQuery(source, SqlQueryDTO.builder().sql("{\"query\": {\"match_all\": {}    }}").tableName("tools").build());
-        List<Map<String, Object>> list9 = client.executeQuery(source, SqlQueryDTO.builder().sql("{\"query\": {\"match_all\": {}    }}").tableName("tools").build());
         JSONObject result = (JSONObject) list.get(0).get("result");
         System.out.println(result.toJSONString());
     }

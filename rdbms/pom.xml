@@ -42,10 +42,14 @@
         </dependency>
 
         <dependency>
+            <groupId>com.dtstack.dtcenter</groupId>
+            <artifactId>common.loader.common</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>${HikariCP.version}</version>
-            <scope>compile</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>slf4j-api</artifactId>

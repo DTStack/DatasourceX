@@ -10,6 +10,7 @@ import com.dtstack.dtcenter.loader.dto.source.Mysql8SourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -25,7 +26,7 @@ import java.util.Map;
 public class Mysql8Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    Mysql8SourceDTO source = Mysql8SourceDTO.builder()
+    private static Mysql8SourceDTO source = Mysql8SourceDTO.builder()
             .url("jdbc:mysql://172.16.101.249:3306/streamapp")
             .username("drpeco")
             .password("DT@Stack#123")
@@ -33,34 +34,22 @@ public class Mysql8Test {
             .poolConfig(new PoolConfig())
             .build();
 
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int COMMENT 'id', name varchar(50) COMMENT '姓名') comment 'table comment'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+    }
+
     @Test
     public void getCon() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
         Connection con1 = client.getCon(source);
-        String con1JdbcConn = con1.toString().split("wrapping")[1];
-        Connection con2 = client.getCon(source);
-        Connection con3 = client.getCon(source);
-        Connection con4 = client.getCon(source);
-        Connection con5 = client.getCon(source);
-        Connection con6 = client.getCon(source);
-        Connection con7 = client.getCon(source);
-        Connection con8 = client.getCon(source);
-        Connection con9 = client.getCon(source);
-        Connection con10 = client.getCon(source);
         con1.close();
-        Connection con11 = client.getCon(source);
-        String con11JdbcConn = con11.toString().split("wrapping")[1];
-        assert con1JdbcConn.equals(con11JdbcConn);
-        con2.close();
-        con3.close();
-        con4.close();
-        con5.close();
-        con6.close();
-        con7.close();
-        con8.close();
-        con9.close();
-        con10.close();
-        con11.close();
     }
 
     @Test
@@ -98,7 +87,7 @@ public class Mysql8Test {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -106,7 +95,7 @@ public class Mysql8Test {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
@@ -114,7 +103,7 @@ public class Mysql8Test {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
@@ -122,7 +111,7 @@ public class Mysql8Test {
     @Test
     public void testGetDownloader() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from rdos_dict").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         downloader.configure();
         List<String> metaInfo = downloader.getMetaInfo();
@@ -142,7 +131,7 @@ public class Mysql8Test {
     @Test
     public void testGetPreview() throws Exception{
         IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(1).tableName("rdos_stream_data_source").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(1).tableName("nanqi").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }
@@ -157,14 +146,14 @@ public class Mysql8Test {
     @Test
     public void getCreateTableSql() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         System.out.println(client.getCreateTableSql(source,queryDTO));
     }
 
     @Test
     public void getPartitionColumn() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.MySQL8.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         System.out.println(client.getPartitionColumn(source,queryDTO));
     }
 }

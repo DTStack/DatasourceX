@@ -96,7 +96,7 @@ public class KylinTest {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Kylin.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("YC_VIEW_01").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("STUDENT").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -104,7 +104,7 @@ public class KylinTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Kylin.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("YC_VIEW_01").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("STUDENT").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }

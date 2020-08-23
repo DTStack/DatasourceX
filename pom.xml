@@ -41,6 +41,7 @@
         <module>phoenix5</module>
         <module>hbase2</module>
         <module>spark</module>
+        <module>common</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -198,6 +199,12 @@
 
             <dependency>
                 <groupId>com.dtstack.dtcenter</groupId>
+                <artifactId>common.loader.common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.dtstack.dtcenter</groupId>
                 <artifactId>common.hadoop</artifactId>
                 <version>${dtstack.common}</version>
                 <scope>compile</scope>
@@ -268,8 +275,18 @@
                 <version>0.7.8</version>
                 <executions>
                     <execution>
+                        <id>pre-unit-test</id>
                         <goals>
                             <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>jacocoArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>post-unit-test</id>
+                        <phase>package</phase>
+                        <goals>
                             <goal>report</goal>
                         </goals>
                     </execution>

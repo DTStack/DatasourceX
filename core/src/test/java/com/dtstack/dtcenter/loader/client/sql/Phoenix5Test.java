@@ -29,6 +29,8 @@ public class Phoenix5Test {
             .password("flink123")
             .build();
 
+
+
     @Test
     public void getCon() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.PHOENIX5.getPluginName());

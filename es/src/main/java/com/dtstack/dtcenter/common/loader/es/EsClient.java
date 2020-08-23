@@ -2,19 +2,19 @@ package com.dtstack.dtcenter.common.loader.es;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.common.loader.es.pool.ElasticSearchManager;
 import com.dtstack.dtcenter.common.loader.es.pool.ElasticSearchPool;
+import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.apache.http.HttpHost;
@@ -58,7 +58,7 @@ import java.util.Set;
  * @Description：ES 客户端
  */
 @Slf4j
-public class EsClient extends AbsRdbmsClient {
+public class EsClient<T> implements IClient<T> {
 
     private static final int MAX_NUM = 10000;
 
@@ -73,29 +73,17 @@ public class EsClient extends AbsRdbmsClient {
     public static final ThreadLocal<Boolean> IS_OPEN_POOL = new ThreadLocal<>();
 
     @Override
-    protected ConnFactory getConnFactory() {
-        return null;
-    }
-
-    @Override
-    protected DataSourceType getSourceType() {
-        return DataSourceType.ES;
-    }
-
-    @Override
     public Boolean testCon(ISourceDTO iSource) {
         ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return false;
         }
         RestHighLevelClient client = getClient(esSourceDTO);
-        boolean check = false;
         try {
-            check = checkConnect(client);
+            return checkConnect(client);
         } finally {
             closeResource(null, client, esSourceDTO);
         }
-        return check;
     }
 
     /**
@@ -369,7 +357,7 @@ public class EsClient extends AbsRdbmsClient {
     }
 
     private void closeResource(RestClient lowLevelClient, RestHighLevelClient restHighLevelClient, ESSourceDTO esSourceDTO) {
-        if (!IS_OPEN_POOL.get() && restHighLevelClient != null) {
+        if (!BooleanUtils.isTrue(IS_OPEN_POOL.get()) && restHighLevelClient != null) {
             try {
                 if (Objects.nonNull(lowLevelClient)) {
                     lowLevelClient.close();
@@ -423,6 +411,31 @@ public class EsClient extends AbsRdbmsClient {
 
     @Override
     public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 }

@@ -34,29 +34,12 @@
 
         <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
-            <artifactId>common.loader.rdbms</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-api</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
+            <artifactId>common.loader.core</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
-            <artifactId>common.loader.core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-api</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>common.loader.rdbms</artifactId>
         </dependency>
 
         <!-- 类隔离 jar 包 -->

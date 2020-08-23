@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -24,41 +25,29 @@ import java.util.Map;
 public class ImpalaTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    ImpalaSourceDTO source = ImpalaSourceDTO.builder()
+    private static ImpalaSourceDTO source = ImpalaSourceDTO.builder()
             .url("jdbc:impala://172.16.100.242:21050/default;AuthMech=3")
             .username("hxb")
             .password("admin123")
             .poolConfig(new PoolConfig())
             .build();
 
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.IMPALA.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int, name string) comment 'table comment'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+    }
+
     @Test
     public void getCon() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.IMPALA.getPluginName());
         Connection con1 = client.getCon(source);
-        String con1JdbcConn = con1.toString().split("wrapping")[1];
-        Connection con2 = client.getCon(source);
-        Connection con3 = client.getCon(source);
-        Connection con4 = client.getCon(source);
-        Connection con5 = client.getCon(source);
-        Connection con6 = client.getCon(source);
-        Connection con7 = client.getCon(source);
-        Connection con8 = client.getCon(source);
-        Connection con9 = client.getCon(source);
-        Connection con10 = client.getCon(source);
         con1.close();
-        Connection con11 = client.getCon(source);
-        String con11JdbcConn = con11.toString().split("wrapping")[1];
-        assert con1JdbcConn.equals(con11JdbcConn);
-        con2.close();
-        con3.close();
-        con4.close();
-        con5.close();
-        con6.close();
-        con7.close();
-        con8.close();
-        con9.close();
-        con10.close();
-        con11.close();
     }
 
     @Test
@@ -96,7 +85,7 @@ public class ImpalaTest {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.IMPALA.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("ch02").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -104,7 +93,7 @@ public class ImpalaTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.IMPALA.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("ch02").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
@@ -112,7 +101,7 @@ public class ImpalaTest {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.IMPALA.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("ch02").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String tableMetaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(tableMetaComment);
     }
@@ -120,7 +109,7 @@ public class ImpalaTest {
     @Test
     public void getPreview() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.IMPALA.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("ch02").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("nanqi").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }
@@ -134,13 +123,13 @@ public class ImpalaTest {
     @Test
     public void getPartitionColumn() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.IMPALA.getPluginName());
-        System.out.println(client.getPartitionColumn(source, SqlQueryDTO.builder().tableName("import").build()));
+        System.out.println(client.getPartitionColumn(source, SqlQueryDTO.builder().tableName("nanqi").build()));
     }
 
 
     @Test
     public void getCreateSql() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.IMPALA.getPluginName());
-        System.out.println(client.getCreateTableSql(source, SqlQueryDTO.builder().tableName("day").build()));
+        System.out.println(client.getCreateTableSql(source, SqlQueryDTO.builder().tableName("nanqi").build()));
     }
 }

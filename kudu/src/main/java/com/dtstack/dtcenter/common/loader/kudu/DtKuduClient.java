@@ -1,14 +1,13 @@
 package com.dtstack.dtcenter.common.loader.kudu;
 
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.KuduSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -39,7 +38,7 @@ import java.util.stream.Collectors;
  * @Description：Kudu 客户端
  */
 @Slf4j
-public class DtKuduClient extends AbsRdbmsClient {
+public class DtKuduClient<T> implements IClient<T> {
 
     private static final int TIME_OUT = 5 * 1000;
     private static int PRE_SIZE = 3;
@@ -104,16 +103,6 @@ public class DtKuduClient extends AbsRdbmsClient {
             throw new DtLoaderException(e.getMessage(), e);
         }
         return metaDTOS;
-    }
-
-    @Override
-    protected ConnFactory getConnFactory() {
-        return null;
-    }
-
-    @Override
-    protected DataSourceType getSourceType() {
-        return DataSourceType.Kudu;
     }
 
     private static KuduClient getConnection(ISourceDTO iSource) {
@@ -255,6 +244,36 @@ public class DtKuduClient extends AbsRdbmsClient {
 
     @Override
     public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 }
