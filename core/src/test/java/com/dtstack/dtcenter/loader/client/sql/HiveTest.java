@@ -45,6 +45,7 @@ public class HiveTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
+        System.setProperty("HADOOP_USER_NAME", source.getUsername());
         IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
         client.executeSqlWithoutResultSet(source, queryDTO);

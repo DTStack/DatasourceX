@@ -27,20 +27,20 @@ public class PostgreSQLTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     private static PostgresqlSourceDTO source = PostgresqlSourceDTO.builder()
-            .url("jdbc:postgresql://172.16.8.193:5432/database?currentSchema=public")
-            .username("root")
-            .password("postgresql")
+            .url("jdbc:postgresql://kudu5:54321/database?currentSchema=public")
+            .username("postgres")
+            .password("password")
             .poolConfig(new PoolConfig())
             .build();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.PostgreSQL.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists \"public\".nanqi").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int, name text)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table \"public\".nanqi (id int, name text)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        queryDTO = SqlQueryDTO.builder().sql("insert into \"public\".nanqi values (1, 'nanqi')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 

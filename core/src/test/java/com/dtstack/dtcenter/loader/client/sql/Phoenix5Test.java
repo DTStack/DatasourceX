@@ -8,6 +8,7 @@ import com.dtstack.dtcenter.loader.dto.source.PhoenixSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -20,6 +21,7 @@ import java.util.Map;
  * @Date ：Created in 17:13 2020/7/9
  * @Description：Phoenix 测试
  */
+@Ignore
 public class Phoenix5Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 

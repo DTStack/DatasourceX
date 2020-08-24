@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.source.DmSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -21,6 +22,7 @@ import java.util.Map;
  * @Date ：Created in 13:49 2020/4/17
  * @Description：达梦数据源测试
  */
+@Ignore
 public class DmDbTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 

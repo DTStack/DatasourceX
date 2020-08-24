@@ -59,7 +59,7 @@ public class OracleDownloader implements IDownloader {
         statement = connection.createStatement();
         if (StringUtils.isNotEmpty(schema)) {
             //选择schema
-            String useSchema = String.format("USE %s", schema);
+            String useSchema = String.format("alter session set current_schema=%s", schema);
             statement.execute(useSchema);
         }
         String countSQL = String.format("SELECT COUNT(*) FROM (%s) temp", sql);

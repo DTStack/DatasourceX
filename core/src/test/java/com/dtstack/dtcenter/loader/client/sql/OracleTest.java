@@ -37,7 +37,7 @@ public class OracleTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table nanqi").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table \"nanqi\"").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table \"nanqi\" (id int, name VARCHAR2(50))").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
