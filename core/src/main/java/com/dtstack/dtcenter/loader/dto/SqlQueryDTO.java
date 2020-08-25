@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.dto;
 
+import com.dtstack.dtcenter.loader.dto.filter.Filter;
 import lombok.Builder;
 import lombok.Data;
 import org.apache.commons.lang3.ArrayUtils;
@@ -44,7 +45,7 @@ public class SqlQueryDTO {
     private List<String> columns;
 
     /**
-     * 分区字段:值,用于hive分区预览数据
+     * 分区字段:值,用于hive分区预览数据、hbase自定义查询
      */
     private Map<String, String> partitionColumns;
 
@@ -85,6 +86,11 @@ public class SqlQueryDTO {
      */
     private Integer limit;
 
+    /**
+     * hbase过滤器，用户hbase自定义查询
+     */
+    private List<Filter> hbaseFilter;
+
     public Boolean getView() {
         if (ArrayUtils.isEmpty(getTableTypes())) {
             return Boolean.TRUE.equals(view);
@@ -103,4 +109,6 @@ public class SqlQueryDTO {
     public Boolean getFilterPartitionColumns() {
         return Boolean.TRUE.equals(filterPartitionColumns);
     }
+
+
 }
