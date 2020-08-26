@@ -10,21 +10,45 @@ import java.util.Map;
  * @Description：Kerberos 操作类
  */
 public interface IKerberos {
-    Map<String, Object> kerberosConfig
+    /**
+     * 从 ZIP 包中解压出 Kerberos 配置信息
+     * 其中地址相关信息因为 SFTP 的原因，只存储相对路径，在校验之前再做转化
+     * 调用 #{@link #prepareKerberosForConnect(Map, String)}
+     *
+     * @param zipLocation
+     * @param localKerberosPath
+     * @param datasourceType
+     * @return
+     * @throws Exception
+     */
+    Map<String, String> parseKerberosFromUpload(String zipLocation, String localKerberosPath, Integer datasourceType) throws Exception;
+
+    /**
+     * 连接 Kerberos 前的准备工作
+     *
+     * @param conf
+     * @param localKerberosPath
+     * @return
+     * @throws Exception
+     */
+    Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath) throws Exception;
 
     /**
      * 从 JDBC URL 中获取 Principal
      *
      * @param url
+     * @param datasourceType
      * @return
+     * @throws Exception
      */
-    String getPrincipal(String url);
+    String getPrincipal(String url, Integer datasourceType) throws Exception;
 
     /**
      * 从 Kerberos 配置文件中获取 Principal
      *
      * @param kerberosConfig
      * @return
+     * @throws Exception
      */
-    List<String> getPrincipal(Map<String, Object> kerberosConfig);
+    List<String> getPrincipal(Map<String, Object> kerberosConfig) throws Exception;
 }

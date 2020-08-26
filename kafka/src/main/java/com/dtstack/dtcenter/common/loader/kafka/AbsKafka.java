@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.kafka;
 
+import com.dtstack.dtcenter.common.loader.kafka.util.KakfaUtil;
 import com.dtstack.dtcenter.loader.client.IKafka;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;

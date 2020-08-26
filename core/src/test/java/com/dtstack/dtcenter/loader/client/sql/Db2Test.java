@@ -2,12 +2,11 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
-import com.dtstack.dtcenter.loader.client.AbsClientCache;
+import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Db2SourceDTO;
-import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +25,6 @@ import java.util.Map;
  */
 @Slf4j
 public class Db2Test {
-    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
-
     private static Db2SourceDTO source = Db2SourceDTO.builder()
             .url("jdbc:db2://172.16.8.147:50000/SAMPLE")
             .username("db2inst1")
@@ -38,7 +35,7 @@ public class Db2Test {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.DB2.getPluginName());
         SqlQueryDTO queryDTO = null;
         try {
             // DB2 没找到 if exists 语法
@@ -58,14 +55,14 @@ public class Db2Test {
 
     @Test
     public void getCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.DB2.getPluginName());
         Connection con1 = client.getCon(source);
         con1.close();
     }
 
     @Test
     public void testCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.DB2.getPluginName());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
@@ -74,54 +71,54 @@ public class Db2Test {
 
     @Test
     public void executeQuery() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.DB2.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi limit 1,1").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
     }
 
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.DB2.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.DB2.getPluginName());
         List<String> tableList = client.getTableList(source, null);
     }
 
     @Test
     public void getColumnClassInfo() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.DB2.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
     }
 
     @Test
     public void getColumnMetaData() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.DB2.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
     }
 
     @Test
     public void getDownloader() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.DB2.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
     }
 
     @Test
     public void preview() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.DB2.getPluginName());
         List preview = client.getPreview(source, SqlQueryDTO.builder().tableName("STAFF").build());
     }
 
     @Test
     public void getAllDatabases() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.DB2.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         System.out.println(client.getAllDatabases(source, queryDTO));
     }

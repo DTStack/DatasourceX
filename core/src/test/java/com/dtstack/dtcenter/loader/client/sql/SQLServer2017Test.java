@@ -1,12 +1,11 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
-import com.dtstack.dtcenter.loader.client.AbsClientCache;
+import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Sqlserver2017SourceDTO;
-import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.BeforeClass;
@@ -23,8 +22,6 @@ import java.util.Map;
  * @Description：SQLServer2017 测试
  */
 public class SQLServer2017Test {
-    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
-
     private static Sqlserver2017SourceDTO source = Sqlserver2017SourceDTO.builder()
             .url("jdbc:sqlserver://kudu5:1433;databaseName=tudou")
             .username("sa")
@@ -34,7 +31,7 @@ public class SQLServer2017Test {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table nanqi").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int, name varchar(50))").build();
@@ -45,14 +42,14 @@ public class SQLServer2017Test {
 
     @Test
     public void getCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
         Connection con1 = client.getCon(source);
         con1.close();
     }
 
     @Test
     public void testCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
@@ -61,7 +58,7 @@ public class SQLServer2017Test {
 
     @Test
     public void executeQuery() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select 1111").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
@@ -69,14 +66,14 @@ public class SQLServer2017Test {
 
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select 1111").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         for (String table : tableList) {
@@ -86,7 +83,7 @@ public class SQLServer2017Test {
 
     @Test
     public void getColumnClassInfo() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
@@ -94,7 +91,7 @@ public class SQLServer2017Test {
 
     @Test
     public void getColumnMetaData() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData);
@@ -102,7 +99,7 @@ public class SQLServer2017Test {
 
     @Test
     public void getTableMetaComment() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
@@ -110,7 +107,7 @@ public class SQLServer2017Test {
 
     @Test
     public void getAllDatabases() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
         List<String> databases = client.getAllDatabases(source, SqlQueryDTO.builder().build());
         System.out.println(databases);
     }

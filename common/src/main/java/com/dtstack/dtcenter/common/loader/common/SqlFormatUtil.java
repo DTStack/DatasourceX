@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.loader.utils;
+package com.dtstack.dtcenter.common.loader.common;
 
 import lombok.NoArgsConstructor;
 

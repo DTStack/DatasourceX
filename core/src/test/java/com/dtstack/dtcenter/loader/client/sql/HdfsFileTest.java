@@ -1,11 +1,10 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
 import com.alibaba.fastjson.JSONObject;
-import com.dtstack.dtcenter.loader.client.AbsClientCache;
+import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
-import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
@@ -17,8 +16,6 @@ import org.junit.Test;
  * @Description：HDFS 文件系统测试
  */
 public class HdfsFileTest {
-    private static final AbsClientCache clientCache = ClientType.HDFS_CLIENT.getClientCache();
-
     HdfsSourceDTO source = HdfsSourceDTO.builder()
             .defaultFS("hdfs://ns1")
             .config("{\n" +
@@ -34,7 +31,7 @@ public class HdfsFileTest {
     @Test(expected = DtLoaderException.class)
     public void testHdfsWriter() throws Exception {
         HdfsWriterDTO writerDTO = JSONObject.parseObject("{\"columnsList\":[{\"key\":\"id\",\"part\":false,\"type\":\"int\"},{\"key\":\"name\",\"part\":false,\"type\":\"string\"}],\"fromFileName\":\"/Users/wangbin/Desktop/9c4e5c49-6af2-49f0-863e-293318a3e9a9\",\"fromLineDelimiter\":\",\",\"hdfsDirPath\":\"hdfs://ns1/user/hive/warehouse/dev.db/test_chener_0811\",\"fileFormat\":\"orc\",\"keyList\":[{\"key\":\"id\"},{\"key\":\"name\"}],\"oriCharSet\":\"UTF-8\",\"startLine\":1,\"topLineIsTitle\":true}", HdfsWriterDTO.class);
-        IHdfsFile client = clientCache.getHdfs(DataSourceType.HDFS.getPluginName());
+        IHdfsFile client = ClientCache.getHdfs(DataSourceType.HDFS.getPluginName());
         int i = client.writeByName(source, writerDTO);
         System.out.println(i);
     }

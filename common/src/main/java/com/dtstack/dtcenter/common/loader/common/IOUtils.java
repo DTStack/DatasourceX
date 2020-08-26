@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.loader.utils;
+package com.dtstack.dtcenter.common.loader.common;
 
 import java.io.Closeable;
 import java.io.IOException;

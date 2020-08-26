@@ -3,7 +3,7 @@ package com.dtstack.dtcenter.common.loader.mysql;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.Column;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.dtcenter.loader.utils.SqlFormatUtil;
+import com.dtstack.dtcenter.common.loader.common.SqlFormatUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 

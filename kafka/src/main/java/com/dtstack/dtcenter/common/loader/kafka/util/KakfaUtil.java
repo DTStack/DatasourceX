@@ -1,9 +1,9 @@
-package com.dtstack.dtcenter.common.loader.kafka;
+package com.dtstack.dtcenter.common.loader.kafka.util;
 
+import com.dtstack.dtcenter.common.loader.kafka.KafkaConsistent;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.dtcenter.loader.utils.FileUtils;
-import com.dtstack.dtcenter.loader.utils.TelUtil;
+import com.dtstack.dtcenter.common.loader.common.TelUtil;
 import com.google.common.collect.Lists;
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;

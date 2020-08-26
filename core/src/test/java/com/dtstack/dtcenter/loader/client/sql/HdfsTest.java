@@ -1,9 +1,8 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
-import com.dtstack.dtcenter.loader.client.AbsClientCache;
+import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
-import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
@@ -15,8 +14,6 @@ import org.junit.Test;
  * @Description：HDFS 测试
  */
 public class HdfsTest {
-    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
-
     HdfsSourceDTO source = HdfsSourceDTO.builder()
             .defaultFS("hdfs://ns1")
             .config("{\n" +
@@ -31,7 +28,7 @@ public class HdfsTest {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.HDFS.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HDFS.getPluginName());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");

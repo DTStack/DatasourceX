@@ -10,7 +10,7 @@ import com.dtstack.dtcenter.loader.dto.source.Greenplum6SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.dtstack.dtcenter.loader.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.DBUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;

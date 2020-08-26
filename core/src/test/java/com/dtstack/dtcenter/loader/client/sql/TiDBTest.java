@@ -2,12 +2,11 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
-import com.dtstack.dtcenter.loader.client.AbsClientCache;
+import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Mysql5SourceDTO;
-import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Assert;
@@ -25,8 +24,6 @@ import java.util.Map;
  * @Description：
  */
 public class TiDBTest {
-
-    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
     private static Mysql5SourceDTO source = Mysql5SourceDTO.builder()
             .url("jdbc:mysql://172.16.101.249:3306/streamapp")
             .username("drpeco")
@@ -37,7 +34,7 @@ public class TiDBTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int COMMENT 'id', name varchar(50) COMMENT '姓名') comment 'table comment'").build();
@@ -52,28 +49,28 @@ public class TiDBTest {
      */
     @Test
     public void getCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getPluginName());
         Connection con1 = client.getCon(source);
         con1.close();
     }
 
     @Test
     public void testCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getPluginName());
         Boolean isConnected = client.testCon(source);
         Assert.assertTrue(isConnected);
     }
 
     @Test(expected = DtLoaderException.class)
     public void testErrorCon() {
-        IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getPluginName());
         source.setUsername("nanqi");
         client.testCon(source);
     }
 
     @Test
     public void executeQuery() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
@@ -81,14 +78,14 @@ public class TiDBTest {
 
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList);
@@ -96,7 +93,7 @@ public class TiDBTest {
 
     @Test
     public void getColumnClassInfo() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
@@ -104,7 +101,7 @@ public class TiDBTest {
 
     @Test
     public void getColumnMetaData() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
@@ -112,7 +109,7 @@ public class TiDBTest {
 
     @Test
     public void getTableMetaComment() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
@@ -120,7 +117,7 @@ public class TiDBTest {
 
     @Test
     public void testGetDownloader() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         downloader.configure();
@@ -141,7 +138,7 @@ public class TiDBTest {
      */
     @Test
     public void testGetPreview() throws Exception{
-        IClient client = clientCache.getClient(DataSourceType.TiDB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);

@@ -92,7 +92,7 @@ public class ClientFactory {
      */
     @NotNull
     private static File getFileByPluginName(String pluginName) throws Exception {
-        String plugin = String.format("%s/%s", AbsClientCache.getUserDir(), pluginName).replaceAll("//*", "/");
+        String plugin = String.format("%s/%s", ClientCache.getUserDir(), pluginName).replaceAll("//*", "/");
         File finput = new File(plugin);
         if (!finput.exists()) {
             throw new Exception(String.format("%s directory not found", plugin));
