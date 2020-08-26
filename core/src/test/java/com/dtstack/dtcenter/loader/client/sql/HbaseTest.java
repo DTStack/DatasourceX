@@ -5,9 +5,11 @@ import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.comparator.BinaryComparator;
 import com.dtstack.dtcenter.loader.dto.comparator.RegexStringComparator;
 import com.dtstack.dtcenter.loader.dto.filter.Filter;
 import com.dtstack.dtcenter.loader.dto.filter.PageFilter;
+import com.dtstack.dtcenter.loader.dto.filter.RowFilter;
 import com.dtstack.dtcenter.loader.dto.filter.SingleColumnValueFilter;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
@@ -70,9 +72,13 @@ public class HbaseTest {
         //String column2 = "liftInfo:girlFriend";
         //ArrayList<Object> columns = Lists.newArrayList(column, column2);
         SingleColumnValueFilter filter = new SingleColumnValueFilter("baseInfo".getBytes(), "age".getBytes(), CompareOp.EQUAL, new RegexStringComparator("."));
-        filter.setFilterIfMissing(true);
-        filters.add(filter);
-        filters.add(pageFilter);
+        //filter.setFilterIfMissing(true);
+        //filters.add(filter);
+        //filters.add(pageFilter);
+        RowFilter rowFilter = new RowFilter(CompareOp.LESS_OR_EQUAL, new BinaryComparator("rowkey2".getBytes()));
+        RowFilter rowFilter2 = new RowFilter(CompareOp.GREATER_OR_EQUAL, new BinaryComparator("rowkey1".getBytes()));
+        filters.add(rowFilter);
+        filters.add(rowFilter2);
         List list = client.executeQuery(source, SqlQueryDTO.builder().tableName("dtstack").hbaseFilter(filters).build());
         System.out.println(list);
     }

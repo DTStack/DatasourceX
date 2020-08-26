@@ -1,10 +1,12 @@
 package com.dtstack.dtcenter.common.loader.hbase;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.enums.CompareOp;
 import com.dtstack.dtcenter.loader.enums.HbaseFilterType;
 import org.apache.hadoop.hbase.filter.CompareFilter;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.PageFilter;
+import org.apache.hadoop.hbase.filter.RowFilter;
 import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
 
 /**
@@ -40,6 +42,18 @@ public enum FilterType {
             columnValueFilter.setLatestVersionOnly(singleColumnValueFilter.isLatestVersionOnly());
             columnValueFilter.setReversed(singleColumnValueFilter.isReversed());
             return columnValueFilter;
+        }
+    },
+
+    ROW_FILTER(HbaseFilterType.ROW_FILTER.getVal()){
+        @Override
+        public Filter getFilter(com.dtstack.dtcenter.loader.dto.filter.Filter filter) {
+            com.dtstack.dtcenter.loader.dto.filter.RowFilter rowFilter = (com.dtstack.dtcenter.loader.dto.filter.RowFilter) filter;
+            RowFilter hbaseRowFilter = new RowFilter(
+                    CompareFilter.CompareOp.valueOf(rowFilter.getCompareOp().toString()),
+                    ComparatorType.get(rowFilter.getComparator()));
+            hbaseRowFilter.setReversed(rowFilter.isReversed());
+            return hbaseRowFilter;
         }
     };
 

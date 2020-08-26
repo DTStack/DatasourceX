@@ -11,7 +11,9 @@ public enum HbaseFilterType {
 
     PAGE_FILTER(1),
 
-    SINGLE_COLUMN_VALUE_FILTER(2);
+    SINGLE_COLUMN_VALUE_FILTER(2),
+
+    ROW_FILTER(3);
 
     private Integer val;
 
