@@ -73,13 +73,6 @@ public class KakfaUtil {
         }
         String keytabConf = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_KEYTAB, "").toString();
         String principal = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_PRINCIPAL, "").toString();
-        String kafkaKbrServiceName =
-                kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_SERVICE_NAME, "").toString();
-        if (StringUtils.isBlank(keytabConf) ||
-                StringUtils.isBlank(kafkaKbrServiceName) || StringUtils.isBlank(principal)) {
-            //不满足kerberos条件 直接返回
-            return null;
-        }
         String kafkaLoginConf = null;
         try {
             File file = new File(keytabConf);
@@ -391,8 +384,15 @@ public class KakfaUtil {
         }
 
         javax.security.auth.login.Configuration.setConfiguration(null);
+        String keytabConf = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_KEYTAB, "").toString();
+        String principal = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_PRINCIPAL, "").toString();
         String kafkaKbrServiceName =
                 kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_SERVICE_NAME, "").toString();
+        if (StringUtils.isBlank(keytabConf) ||
+                StringUtils.isBlank(kafkaKbrServiceName) || StringUtils.isBlank(principal)) {
+            //不满足kerberos条件 直接返回
+            return props;
+        }
         String kafkaLoginConf = writeKafkaJaas(kerberosConfig);
         // kerberos 相关设置
         props.put("security.protocol", "SASL_PLAINTEXT");
