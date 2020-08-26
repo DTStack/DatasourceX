@@ -48,6 +48,7 @@ public class KakfaUtil {
         ZkUtils zkUtils = null;
         try {
             if (StringUtils.isEmpty(brokerUrls)) {
+                writeKafkaJaas(kerberosConfig);
                 brokerUrls = getAllBrokersAddressFromZk(zkUrls);
             }
             return StringUtils.isNotBlank(brokerUrls) ? checkKafkaConnection(brokerUrls, kerberosConfig) : false;
@@ -58,6 +59,35 @@ public class KakfaUtil {
             if (zkUtils != null) {
                 zkUtils.close();
             }
+        }
+    }
+
+    /**
+     * 写kafka jaas文件
+     * @param kerberosConfig
+     */
+    private static void writeKafkaJaas(Map<String, Object> kerberosConfig) {
+        if (MapUtils.isEmpty(kerberosConfig)){
+            return;
+        }
+        String keytabConf = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_KEYTAB, "").toString();
+        String principal = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_PRINCIPAL, "").toString();
+        String kafkaKbrServiceName =
+                kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_SERVICE_NAME, "").toString();
+        if (StringUtils.isBlank(keytabConf) ||
+                StringUtils.isBlank(kafkaKbrServiceName) || StringUtils.isBlank(principal)) {
+            //不满足kerberos条件 直接返回
+            return;
+        }
+        try {
+            File file = new File(keytabConf);
+            File jaas = new File(file.getParent() + File.separator + "kafka_jaas.conf");
+            if (jaas.exists()) {
+                jaas.delete();
+            }
+            FileUtils.write(jaas, String.format(KafkaConsistent.KAFKA_JAAS_CONTENT, keytabConf, principal));
+        } catch (IOException e) {
+            throw new DtCenterDefException("写入kafka配置文件异常", e);
         }
     }
 
@@ -371,6 +401,9 @@ public class KakfaUtil {
         try {
             File file = new File(keytabConf);
             File jaas = new File(file.getParent() + File.separator + "kafka_jaas.conf");
+            if (jaas.exists()) {
+                jaas.delete();
+            }
             FileUtils.write(jaas, String.format(KafkaConsistent.KAFKA_JAAS_CONTENT, keytabConf, principal));
             kafkaLoginConf = jaas.getAbsolutePath();
         } catch (IOException e) {
