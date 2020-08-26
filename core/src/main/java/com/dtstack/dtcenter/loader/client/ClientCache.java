@@ -37,7 +37,15 @@ public class ClientCache {
     /**
      * Kerberos 认证服务
      */
-    private static IKerberos kerberos = null;
+    private static IKerberos kerberos;
+
+    static {
+        try {
+            kerberos = KerberosClientFactory.createPluginClass();
+        } catch (Exception e) {
+            log.error("初始化 Kerberos 配置异常 : {}",  e.getMessage(), e);
+        }
+    }
 
     protected static String userDir = String.format("%s/pluginLibs/", System.getProperty("user.dir"));
 
@@ -144,18 +152,6 @@ public class ClientCache {
      * @throws ClientAccessException
      */
     public static IKerberos getKerberos() throws ClientAccessException {
-        try {
-            if (kerberos == null) {
-                synchronized (kerberos) {
-                    if (kerberos == null) {
-                        kerberos = KerberosClientFactory.createPluginClass();
-                    }
-                }
-            }
-
-            return kerberos;
-        } catch (Throwable e) {
-            throw new ClientAccessException(e);
-        }
+        return kerberos;
     }
 }
