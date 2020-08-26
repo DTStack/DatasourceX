@@ -73,6 +73,8 @@ public class KakfaUtil {
         }
         String keytabConf = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_KEYTAB, "").toString();
         String principal = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_PRINCIPAL, "").toString();
+        String kafkaKbrServiceName =
+                kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_SERVICE_NAME, "").toString();
         String kafkaLoginConf = null;
         try {
             File file = new File(keytabConf);
@@ -82,6 +84,8 @@ public class KakfaUtil {
             }
             FileUtils.write(jaas, String.format(KafkaConsistent.KAFKA_JAAS_CONTENT, keytabConf, principal));
             kafkaLoginConf = jaas.getAbsolutePath();
+            log.info("Init Kafka Kerberos:login-conf:{}\n --sasl.kerberos.service.name:{}",
+                    keytabConf, kafkaKbrServiceName);
         } catch (IOException e) {
             throw new DtCenterDefException("写入kafka配置文件异常", e);
         }
@@ -385,11 +389,9 @@ public class KakfaUtil {
 
         javax.security.auth.login.Configuration.setConfiguration(null);
         String keytabConf = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_KEYTAB, "").toString();
-        String principal = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_PRINCIPAL, "").toString();
         String kafkaKbrServiceName =
                 kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_SERVICE_NAME, "").toString();
-        if (StringUtils.isBlank(keytabConf) ||
-                StringUtils.isBlank(kafkaKbrServiceName) || StringUtils.isBlank(principal)) {
+        if (StringUtils.isBlank(keytabConf)) {
             //不满足kerberos条件 直接返回
             return props;
         }
