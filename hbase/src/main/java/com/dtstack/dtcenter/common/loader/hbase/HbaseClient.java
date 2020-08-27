@@ -158,15 +158,15 @@ public class HbaseClient extends AbsRdbmsClient {
                 }
             }
 
-            if (hbaseFilter != null) {
+            if (hbaseFilter != null && hbaseFilter.size() > 0) {
                 for (com.dtstack.dtcenter.loader.dto.filter.Filter filter : hbaseFilter){
                     //将core包下的filter转换成hbase包下的filter
                     Filter transFilter = FilterType.get(filter);
                     filterList.add(transFilter);
                 }
+                FilterList filters = new FilterList(filterList);
+                scan.setFilter(filters);
             }
-            FilterList filters = new FilterList(filterList);
-            scan.setFilter(filters);
             rs = table.getScanner(scan);
             for (Result r : rs) {
                 results.add(r);

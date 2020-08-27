@@ -15,6 +15,7 @@ import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.enums.CompareOp;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class HbaseTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     HbaseSourceDTO source = HbaseSourceDTO.builder()
-            .url("stream00,stream01,stream02:2181")
+            .url("172.16.10.104,172.16.10.224,172.16.10.252:2181")
             .path("/hbase")
             .build();
 
@@ -65,28 +66,29 @@ public class HbaseTest {
     @Test
     public void executorQuery() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.HBASE.getPluginName());
-        PageFilter pageFilter = new PageFilter(2);
+        PageFilter pageFilter = new PageFilter(1);
         ArrayList<Filter> filters = new ArrayList<>();
-        //filters.add(pageFilter);
-        //String column = "baseInfo:age";
+        filters.add(pageFilter);
+        String column = "info:sex";
+        String column2 = "info:name";
         //String column2 = "liftInfo:girlFriend";
-        //ArrayList<Object> columns = Lists.newArrayList(column, column2);
+        ArrayList<String> columns = Lists.newArrayList(column,column2);
         SingleColumnValueFilter filter = new SingleColumnValueFilter("baseInfo".getBytes(), "age".getBytes(), CompareOp.EQUAL, new RegexStringComparator("."));
         //filter.setFilterIfMissing(true);
         //filters.add(filter);
         //filters.add(pageFilter);
         RowFilter rowFilter = new RowFilter(CompareOp.LESS_OR_EQUAL, new BinaryComparator("rowkey2".getBytes()));
         RowFilter rowFilter2 = new RowFilter(CompareOp.GREATER_OR_EQUAL, new BinaryComparator("rowkey1".getBytes()));
-        filters.add(rowFilter);
-        filters.add(rowFilter2);
-        List list = client.executeQuery(source, SqlQueryDTO.builder().tableName("dtstack").hbaseFilter(filters).build());
+        //filters.add(rowFilter);
+        //filters.add(rowFilter2);
+        List list = client.executeQuery(source, SqlQueryDTO.builder().tableName("yy_test").columns(columns).build());
         System.out.println(list);
     }
 
     @Test
     public void preview() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.HBASE.getPluginName());
-        List<List<Object>> result = client.getPreview(source, SqlQueryDTO.builder().tableName("dtstack").previewNum(1).build());
+        List<List<Object>> result = client.getPreview(source, SqlQueryDTO.builder().tableName("yy_test").previewNum(10).build());
         System.out.println(result);
     }
 }
