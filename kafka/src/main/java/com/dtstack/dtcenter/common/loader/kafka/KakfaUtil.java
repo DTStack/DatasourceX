@@ -340,6 +340,8 @@ public class KakfaUtil {
         props.put("bootstrap.servers", brokerUrls);
         /* 是否自动确认offset */
         props.put("enable.auto.commit", "true");
+        /* 设置group id */
+        props.put("group.id", "dtstack_stream_connection");
         /* 自动确认offset的时间间隔 */
         props.put("auto.commit.interval.ms", "1000");
         //heart beat 默认3s
