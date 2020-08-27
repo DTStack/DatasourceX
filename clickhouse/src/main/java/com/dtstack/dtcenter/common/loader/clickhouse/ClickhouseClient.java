@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.clickhouse;
 
+import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
@@ -8,10 +9,14 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ClickHouseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
+import org.apache.commons.lang.StringUtils;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +39,8 @@ public class ClickhouseClient extends AbsRdbmsClient {
     }
 
     private static String PARTITION_COLUMN_SQL = "select name,type,comment from system.columns where database = '%s' and table = '%s' and is_in_partition_key = 1";
+
+    private static final String DONT_EXIST = "doesn't exist";
 
     @Override
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
@@ -85,6 +92,56 @@ public class ClickhouseClient extends AbsRdbmsClient {
             DBUtil.closeDBResources(rs, statement, clickHouseSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return columnList;
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+        ClickHouseSourceDTO postgresqlSourceDTO = (ClickHouseSourceDTO) source;
+        Statement statement = null;
+        ResultSet rs = null;
+        List<ColumnMetaDTO> columns = new ArrayList<>();
+        try {
+            statement = postgresqlSourceDTO.getConnection().createStatement();
+            String queryColumnSql = "select * from " + queryDTO.getTableName()
+                    + " where 1=2";
+            rs = statement.executeQuery(queryColumnSql);
+            ResultSetMetaData rsMetaData = rs.getMetaData();
+            for (int i = 0, len = rsMetaData.getColumnCount(); i < len; i++) {
+                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+                columnMetaDTO.setKey(rsMetaData.getColumnName(i + 1));
+                String type = rsMetaData.getColumnTypeName(i + 1);
+                int columnType = rsMetaData.getColumnType(i + 1);
+                int precision = rsMetaData.getPrecision(i + 1);
+                int scale = rsMetaData.getScale(i + 1);
+                //clickhouse类型转换
+                String flinkSqlType = ClickhouseAdapter.mapColumnTypeJdbc2Java(columnType, precision, scale);
+                if (StringUtils.isNotEmpty(flinkSqlType)) {
+                    type = flinkSqlType;
+                }
+                columnMetaDTO.setType(type);
+                // 获取字段精度
+                if (columnMetaDTO.getType().equalsIgnoreCase("decimal")
+                        || columnMetaDTO.getType().equalsIgnoreCase("float")
+                        || columnMetaDTO.getType().equalsIgnoreCase("double")
+                        || columnMetaDTO.getType().equalsIgnoreCase("numeric")) {
+                    columnMetaDTO.setScale(rsMetaData.getScale(i + 1));
+                    columnMetaDTO.setPrecision(rsMetaData.getPrecision(i + 1));
+                }
+                columns.add(columnMetaDTO);
+            }
+            return columns;
+
+        } catch (SQLException e) {
+            if (e.getMessage().contains(DONT_EXIST)) {
+                throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
+            } else {
+                throw new DtCenterDefException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", queryDTO.getTableName()),
+                        DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            }
+        } finally {
+            DBUtil.closeDBResources(rs, statement, postgresqlSourceDTO.clearAfterGetConnection(clearStatus));
+        }
     }
 
     @Override

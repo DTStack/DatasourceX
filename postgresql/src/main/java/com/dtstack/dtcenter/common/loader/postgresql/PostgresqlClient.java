@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.postgresql;
 
+import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.exception.DBErrorCode;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
@@ -9,9 +10,12 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.source.DataBaseType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
+import javafx.geometry.Pos;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 
@@ -36,6 +40,8 @@ public class PostgresqlClient extends AbsRdbmsClient {
     private static final String BIGSERIAL = "bigserial";
 
     private static final String DATABASE_QUERY = "select nspname from pg_namespace";
+
+    private static final String DONT_EXIST = "doesn't exist";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -163,6 +169,57 @@ public class PostgresqlClient extends AbsRdbmsClient {
         PostgresqlDownloader postgresqlDownloader = new PostgresqlDownloader(getCon(postgresqlSourceDTO), queryDTO.getSql(), postgresqlSourceDTO.getSchema());
         postgresqlDownloader.configure();
         return postgresqlDownloader;
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+        PostgresqlSourceDTO postgresqlSourceDTO = (PostgresqlSourceDTO) source;
+        Statement statement = null;
+        ResultSet rs = null;
+        List<ColumnMetaDTO> columns = new ArrayList<>();
+        try {
+            statement = postgresqlSourceDTO.getConnection().createStatement();
+            String queryColumnSql = "select * from " + queryDTO.getTableName()
+                    + " where 1=2";
+            rs = statement.executeQuery(queryColumnSql);
+            ResultSetMetaData rsMetaData = rs.getMetaData();
+            for (int i = 0, len = rsMetaData.getColumnCount(); i < len; i++) {
+                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+                columnMetaDTO.setKey(rsMetaData.getColumnName(i + 1));
+                String type = rsMetaData.getColumnTypeName(i + 1);
+                int columnType = rsMetaData.getColumnType(i + 1);
+                int precision = rsMetaData.getPrecision(i + 1);
+                int scale = rsMetaData.getScale(i + 1);
+                //postgresql类型转换
+                String flinkSqlType = PostgreSqlAdapter.mapColumnTypeJdbc2Java(columnType, precision, scale);
+                if (StringUtils.isNotEmpty(flinkSqlType)) {
+                    type = flinkSqlType;
+                }
+                columnMetaDTO.setType(type);
+                // 获取字段精度
+                if (columnMetaDTO.getType().equalsIgnoreCase("decimal")
+                        || columnMetaDTO.getType().equalsIgnoreCase("float")
+                        || columnMetaDTO.getType().equalsIgnoreCase("double")
+                        || columnMetaDTO.getType().equalsIgnoreCase("numeric")) {
+                    columnMetaDTO.setScale(rsMetaData.getScale(i + 1));
+                    columnMetaDTO.setPrecision(rsMetaData.getPrecision(i + 1));
+                }
+                columns.add(columnMetaDTO);
+            }
+            return columns;
+
+        } catch (SQLException e) {
+            if (e.getMessage().contains(DONT_EXIST)) {
+                throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
+            } else {
+                throw new DtCenterDefException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", queryDTO.getTableName()),
+                        DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            }
+        } finally {
+            DBUtil.closeDBResources(rs, statement, postgresqlSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+
     }
 
     @Override
