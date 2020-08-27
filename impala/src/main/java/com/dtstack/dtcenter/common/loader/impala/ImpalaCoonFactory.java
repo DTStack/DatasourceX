@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.impala;
 
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
-import com.dtstack.dtcenter.loader.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.source.DataBaseType;

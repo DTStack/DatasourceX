@@ -4,7 +4,9 @@ import com.dtstack.dtcenter.loader.client.hdfs.HdfsFileClientFactory;
 import com.dtstack.dtcenter.loader.client.kerberos.KerberosClientFactory;
 import com.dtstack.dtcenter.loader.client.mq.KafkaClientFactory;
 import com.dtstack.dtcenter.loader.client.sql.DataSourceClientFactory;
+import com.dtstack.dtcenter.loader.enums.HadoopType;
 import com.dtstack.dtcenter.loader.exception.ClientAccessException;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,17 +37,9 @@ public class ClientCache {
     private static final Map<String, IKafka> KAFKA_CLIENT = Maps.newConcurrentMap();
 
     /**
-     * Kerberos 认证服务
+     * Kerberos 认证服务客户端缓存
      */
-    private static IKerberos kerberos;
-
-    static {
-        try {
-            kerberos = KerberosClientFactory.createPluginClass();
-        } catch (Exception e) {
-            log.error("初始化 Kerberos 配置异常 : {}",  e.getMessage(), e);
-        }
-    }
+    private static final Map<String, IKerberos> KERBEROS_CLIENT = Maps.newConcurrentMap();
 
     protected static String userDir = String.format("%s/pluginLibs/", System.getProperty("user.dir"));
 
@@ -70,12 +64,13 @@ public class ClientCache {
     /**
      * 获取 Sql Client 客户端
      *
-     * @param pluginName
+     * @param sourceType
      * @return
      * @throws ClientAccessException
      */
-    public static IClient getClient(String pluginName) throws ClientAccessException {
+    public static IClient getClient(Integer sourceType) throws ClientAccessException {
         try {
+            String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
             IClient client = SQL_CLIENT.get(pluginName);
             if (client == null) {
                 synchronized (SQL_CLIENT) {
@@ -96,12 +91,13 @@ public class ClientCache {
     /**
      * 获取 HDFS 文件客户端
      *
-     * @param pluginName
+     * @param sourceType
      * @return
      * @throws ClientAccessException
      */
-    public static IHdfsFile getHdfs(String pluginName) throws ClientAccessException {
+    public static IHdfsFile getHdfs(Integer sourceType) throws ClientAccessException {
         try {
+            String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
             IHdfsFile hdfsFile = HDFS_FILE_CLIENT.get(pluginName);
             if (hdfsFile == null) {
                 synchronized (HDFS_FILE_CLIENT) {
@@ -122,12 +118,13 @@ public class ClientCache {
     /**
      * 获取 KAFKA 客户端
      *
-     * @param pluginName
+     * @param sourceType
      * @return
      * @throws ClientAccessException
      */
-    public static IKafka getKafka(String pluginName) throws ClientAccessException {
+    public static IKafka getKafka(Integer sourceType) throws ClientAccessException {
         try {
+            String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
             IKafka kafka = KAFKA_CLIENT.get(pluginName);
             if (kafka == null) {
                 synchronized (KAFKA_CLIENT) {
@@ -148,10 +145,26 @@ public class ClientCache {
     /**
      * 获取 Kerberos 服务客户端
      *
+     * @param sourceType
      * @return
      * @throws ClientAccessException
      */
-    public static IKerberos getKerberos() throws ClientAccessException {
-        return kerberos;
+    public static IKerberos getKerberos(Integer sourceType) throws ClientAccessException {
+        try {
+            String pluginName = HadoopType.getHadoopPlugin(sourceType);
+            IKerberos kerberos = KERBEROS_CLIENT.get(pluginName);
+            if (kerberos == null) {
+                synchronized (KERBEROS_CLIENT) {
+                    if (kerberos == null) {
+                        kerberos = KerberosClientFactory.createPluginClass(pluginName);
+                        KERBEROS_CLIENT.put(pluginName, kerberos);
+                    }
+                }
+            }
+
+            return kerberos;
+        } catch (Throwable e) {
+            throw new ClientAccessException(e);
+        }
     }
 }

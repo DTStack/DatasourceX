@@ -30,14 +30,14 @@ public class KylinTest {
 
     @Test
     public void getCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.Kylin.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Kylin.getVal());
         Connection con1 = client.getCon(source);
         con1.close();
     }
 
     @Test
     public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.Kylin.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Kylin.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
@@ -46,7 +46,7 @@ public class KylinTest {
 
     @Test
     public void executeQuery() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.Kylin.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Kylin.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select 1111").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList);
@@ -54,14 +54,14 @@ public class KylinTest {
 
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.Kylin.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Kylin.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select 1111").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.Kylin.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Kylin.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList.size());
@@ -69,7 +69,7 @@ public class KylinTest {
 
     @Test
     public void getColumnClassInfo() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.Kylin.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Kylin.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("STUDENT").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
@@ -77,7 +77,7 @@ public class KylinTest {
 
     @Test
     public void getColumnMetaData() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.Kylin.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Kylin.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("STUDENT").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());

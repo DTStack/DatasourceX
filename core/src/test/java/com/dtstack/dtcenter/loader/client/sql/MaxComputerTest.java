@@ -30,7 +30,7 @@ public class MaxComputerTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table nanqi( id STRING COMMENT '工作类型', name STRING COMMENT '婚否') COMMENT 'table comment'").build();
@@ -41,7 +41,7 @@ public class MaxComputerTest {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
@@ -50,7 +50,7 @@ public class MaxComputerTest {
 
     @Test
     public void executeQuery() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi;").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList);
@@ -58,14 +58,14 @@ public class MaxComputerTest {
 
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList.size());
@@ -73,7 +73,7 @@ public class MaxComputerTest {
 
     @Test
     public void getColumnClassInfo() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
@@ -81,7 +81,7 @@ public class MaxComputerTest {
 
     @Test
     public void getColumnMetaData() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData);
@@ -89,7 +89,7 @@ public class MaxComputerTest {
 
     @Test
     public void getTableMetaComment() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
@@ -97,7 +97,7 @@ public class MaxComputerTest {
 
     @Test
     public void getPreview() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getVal());
         HashMap<String, String> map = new HashMap<>();
         map.put("id", "1");
         List data = client.getPreview(source, SqlQueryDTO.builder().partitionColumns(map).previewNum(1000).tableName("nanqi").build());
@@ -106,7 +106,7 @@ public class MaxComputerTest {
 
     @Test
     public void getColumnMetaDataWithSql() throws Exception{
-        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.MAXCOMPUTE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi").build();
         List data = client.getColumnMetaDataWithSql(source, queryDTO);
         System.out.println(data);

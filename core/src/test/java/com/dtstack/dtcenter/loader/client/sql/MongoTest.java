@@ -27,7 +27,7 @@ public class MongoTest {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.MONGODB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.MONGODB.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
@@ -36,7 +36,7 @@ public class MongoTest {
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.MONGODB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.MONGODB.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList);
@@ -44,7 +44,7 @@ public class MongoTest {
 
     @Test
     public void getDatabaseList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.MONGODB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.MONGODB.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List list = client.getAllDatabases(source, queryDTO);
         System.out.println(list);
@@ -52,7 +52,7 @@ public class MongoTest {
 
     @Test
     public void getPreview() throws Exception{
-        IClient client = ClientCache.getClient(DataSourceType.MONGODB.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.MONGODB.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("user").build();
         List<List<Object>> preview = client.getPreview(source, queryDTO);
         preview.forEach(list->{
@@ -66,7 +66,7 @@ public class MongoTest {
 
     @Test
     public void executorQuery() throws Exception {
-        IClient<List> client = ClientCache.getClient(DataSourceType.MONGODB.getPluginName());
+        IClient<List> client = ClientCache.getClient(DataSourceType.MONGODB.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("db.user.find({});").startRow(1).limit(5).build();
         List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
         result.forEach(map->{

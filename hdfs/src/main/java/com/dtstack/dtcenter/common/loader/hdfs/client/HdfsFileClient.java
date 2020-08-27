@@ -10,7 +10,7 @@ import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsOrcWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsParquetWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsTextWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
-import com.dtstack.dtcenter.loader.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;

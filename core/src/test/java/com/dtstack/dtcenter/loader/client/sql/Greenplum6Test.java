@@ -33,7 +33,7 @@ public class Greenplum6Test {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id integer, name text)").build();
@@ -46,7 +46,7 @@ public class Greenplum6Test {
 
     @Test
     public void getCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
         Connection con = client.getCon(source);
         con.createStatement().close();
         con.close();
@@ -54,7 +54,7 @@ public class Greenplum6Test {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
@@ -63,7 +63,7 @@ public class Greenplum6Test {
 
     @Test
     public void executeQuery() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi limit 2 ").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(mapList));
@@ -71,14 +71,14 @@ public class Greenplum6Test {
 
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
@@ -86,7 +86,7 @@ public class Greenplum6Test {
 
     @Test
     public void getColumnClassInfo() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
@@ -94,7 +94,7 @@ public class Greenplum6Test {
 
     @Test
     public void getColumnMetaData() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
@@ -102,7 +102,7 @@ public class Greenplum6Test {
 
     @Test
     public void getTableMetaComment() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         Assert.assertEquals("table comment", metaComment);
@@ -110,7 +110,7 @@ public class Greenplum6Test {
 
     @Test
     public void getDownloader() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
@@ -118,7 +118,7 @@ public class Greenplum6Test {
 
     @Test
     public void testGetPreview() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").previewNum(50).build();
         List preview = client.getPreview(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(preview));
@@ -126,7 +126,7 @@ public class Greenplum6Test {
 
     @Test
     public void getAllDatabases() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List allDatabases = client.getAllDatabases(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(allDatabases));

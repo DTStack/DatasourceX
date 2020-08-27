@@ -20,7 +20,7 @@ public class EMQTest {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.EMQ.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.EMQ.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");

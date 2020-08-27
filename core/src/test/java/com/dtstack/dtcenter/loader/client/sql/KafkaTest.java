@@ -34,7 +34,7 @@ public class KafkaTest {
 
     @Test
     public void testConForKafka() throws Exception {
-        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getPluginName());
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
@@ -43,7 +43,7 @@ public class KafkaTest {
 
     @Test
     public void testConForClient() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.KAFKA_09.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.KAFKA_09.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
@@ -52,14 +52,14 @@ public class KafkaTest {
 
     @Test
     public void getAllBrokersAddress() throws Exception {
-        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getPluginName());
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
         String brokersAddress = client.getAllBrokersAddress(source);
         assert (null != brokersAddress);
     }
 
     @Test
     public void getTopicList() throws Exception {
-        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getPluginName());
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
         List<String> topicList = client.getTopicList(source);
         assert (topicList != null);
         System.out.println(topicList);
@@ -68,7 +68,7 @@ public class KafkaTest {
     @Test
     public void createTopic() throws Exception {
         try {
-            IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getPluginName());
+            IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
             KafkaTopicDTO topicDTO = KafkaTopicDTO.builder().partitions(1).replicationFactor(1).topicName(
                     "nanqi").build();
             Boolean clientTopic = client.createTopic(source, topicDTO);
@@ -82,14 +82,14 @@ public class KafkaTest {
     @Test
     public void getAllPartitions() throws Exception {
         // 测试的时候需要引进 kafka 包
-        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getPluginName());
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
         List<MetadataResponse.PartitionMetadata> allPartitions = client.getAllPartitions(source, "nanqi");
         System.out.println(allPartitions.size());
     }
 
     @Test
     public void getOffset() throws Exception {
-        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getPluginName());
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
         List<KafkaOffsetDTO> offset = client.getOffset(source, "nanqi");
         assert (offset != null);
     }

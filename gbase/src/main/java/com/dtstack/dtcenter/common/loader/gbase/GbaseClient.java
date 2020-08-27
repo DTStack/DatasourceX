@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.gbase;
 
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
-import com.dtstack.dtcenter.loader.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.GBaseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;

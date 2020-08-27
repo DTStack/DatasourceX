@@ -32,7 +32,7 @@ public class Phoenix5Test {
 
     @Test
     public void getCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
         Connection con = client.getCon(source);
         con.createStatement().close();
         con.close();
@@ -40,7 +40,7 @@ public class Phoenix5Test {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
@@ -49,7 +49,7 @@ public class Phoenix5Test {
 
     @Test
     public void executeQuery() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from PERSON").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
@@ -57,14 +57,14 @@ public class Phoenix5Test {
 
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from PERSON").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList);
@@ -72,7 +72,7 @@ public class Phoenix5Test {
 
     @Test
     public void getColumnClassInfo() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("PERSON").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
@@ -80,7 +80,7 @@ public class Phoenix5Test {
 
     @Test
     public void getColumnMetaData() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("PERSON").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
@@ -88,7 +88,7 @@ public class Phoenix5Test {
 
     @Test
     public void getTableMetaComment() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("PERSON").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);

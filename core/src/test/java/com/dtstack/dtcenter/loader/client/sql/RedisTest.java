@@ -22,7 +22,7 @@ public class RedisTest {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.REDIS.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.REDIS.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");

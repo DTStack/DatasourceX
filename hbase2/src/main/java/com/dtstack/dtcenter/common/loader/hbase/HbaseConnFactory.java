@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.hbase;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.dtstack.dtcenter.loader.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;

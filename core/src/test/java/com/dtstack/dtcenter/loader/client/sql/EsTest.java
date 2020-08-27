@@ -32,7 +32,7 @@ public class EsTest {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.ES6.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
@@ -41,35 +41,35 @@ public class EsTest {
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.ES6.getVal());
         List tableList = client.getTableList(source, SqlQueryDTO.builder().tableName("tools").build());
         System.out.println(tableList);
     }
 
     @Test
     public void getPreview() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.ES6.getVal());
         List viewList = client.getPreview(source, SqlQueryDTO.builder().tableName("tools").previewNum(5).build());
         System.out.println(viewList);
     }
 
     @Test
     public void getColumnMetaData() throws Exception{
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.ES6.getVal());
         List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("tools").build());
         System.out.println(metaData);
     }
 
     @Test
     public void getDB() throws Exception{
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.ES6.getVal());
         List list = client.getAllDatabases(source, SqlQueryDTO.builder().build());
         System.out.println(list);
     }
 
     @Test
     public void executeQuery() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.ES6.getVal());
         List<Map<String, Object>> list = client.executeQuery(source, SqlQueryDTO.builder().sql("{\"query\": {\"match_all\": {}    }}").tableName("tools").build());
         JSONObject result = (JSONObject) list.get(0).get("result");
         System.out.println(result.toJSONString());

@@ -9,15 +9,15 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>common.loader.kerberos</artifactId>
+    <artifactId>common.loader.hadoop2</artifactId>
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <jar.package.name>kerberos</jar.package.name>
-        <jar.name>dtKerberos</jar.name>
+        <jar.package.name>hadoop2</jar.package.name>
+        <jar.name>dtHadoop2</jar.name>
     </properties>
 
     <dependencies>
@@ -29,6 +29,11 @@
         <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
             <artifactId>common.loader.core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.dtstack.dtcenter</groupId>
+            <artifactId>common.loader.common</artifactId>
         </dependency>
 
         <dependency>

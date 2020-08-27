@@ -23,7 +23,7 @@ public class HbaseTest {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HBASE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
@@ -32,7 +32,7 @@ public class HbaseTest {
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HBASE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
         List<String> tableList = client.getTableList(source, null);
         System.out.println(tableList.size());
     }

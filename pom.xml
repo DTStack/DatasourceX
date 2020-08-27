@@ -42,7 +42,7 @@
         <module>hbase2</module>
         <module>spark</module>
         <module>common</module>
-        <module>kerberos</module>
+        <module>hadoop2</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -215,6 +215,18 @@
                         <groupId>xml-apis</groupId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>ant</groupId>
+                <artifactId>ant</artifactId>
+                <version>1.6.5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dom4j</groupId>
+                <artifactId>dom4j</artifactId>
+                <version>1.6.1</version>
             </dependency>
 
             <dependency>

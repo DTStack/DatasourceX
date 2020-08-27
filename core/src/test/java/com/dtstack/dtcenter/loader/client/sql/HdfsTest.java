@@ -28,7 +28,7 @@ public class HdfsTest {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HDFS.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HDFS.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");

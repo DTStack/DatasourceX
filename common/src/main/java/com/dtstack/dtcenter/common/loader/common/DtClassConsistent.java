@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.loader;
+package com.dtstack.dtcenter.common.loader.common;
 
 import java.util.regex.Pattern;
 
@@ -40,7 +40,30 @@ public interface DtClassConsistent {
          */
         public static final String PARAM_KEY = "param";
 
+        /**
+         * 换行符
+         */
         public static final String LINE_SEPARATOR = "\n";
+
+        /**
+         * 默认隐藏文件前缀
+         */
+        public static final String DOT = ".";
+
+        /**
+         * keytab 文件后缀
+         */
+        public static final String KEYTAB_SUFFIX = ".keytab";
+
+        /**
+         * krb5 文件名称
+         */
+        public static final String KRB5CONF_FILE = ".keytab";
+
+        /**
+         * XML 文件后缀
+         */
+        public static final String XML_SUFFIX = ".xml";
 
         /**
          * 数据库中对应关系字段
@@ -68,8 +91,14 @@ public interface DtClassConsistent {
          */
         public static final Pattern HIVE_JDBC_PATTERN = Pattern.compile("(?i)jdbc:hive2://(?<url>[0-9a-zA-Z,\\:\\-\\.]+)(/(?<db>[0-9a-z_%]+)*(?<param>[\\?;#].*)*)*");
 
+        /**
+         * IMPALA JDBC_URL 正则
+         */
         public static final Pattern IMPALA_JDBC_PATTERN = Pattern.compile("(?i)jdbc:impala://[0-9a-zA-Z\\-\\.]+:[\\d]+/(?<db>[0-9a-zA-Z_%\\-]+);.*");
 
+        /**
+         * GREENPLUM JDBC_URL 正则
+         */
         public static final Pattern GREENPLUM_JDBC_PATTERN = Pattern.compile("(?i)jdbc:pivotal:greenplum://[0-9a-zA-Z\\-\\.]+:[\\d]+;DatabaseName=(?<db>[0-9a-zA-Z\\-]+);.*");
     }
 

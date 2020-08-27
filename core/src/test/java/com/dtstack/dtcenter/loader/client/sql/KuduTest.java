@@ -24,7 +24,7 @@ public class KuduTest {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.Kudu.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Kudu.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
@@ -33,7 +33,7 @@ public class KuduTest {
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.Kudu.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Kudu.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList);
@@ -41,7 +41,7 @@ public class KuduTest {
 
     @Test
     public void getColumnMetaData() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.Kudu.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Kudu.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("impala::default.nanqi01").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
