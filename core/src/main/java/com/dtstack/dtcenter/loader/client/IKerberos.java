@@ -13,7 +13,7 @@ public interface IKerberos {
     /**
      * 从 ZIP 包中解压出 Kerberos 配置信息
      * 其中地址相关信息因为 SFTP 的原因，只存储相对路径，在校验之前再做转化
-     * 调用 #{@link #prepareKerberosForConnect(Map, String)}
+     * 调用 #{@link #prepareKerberosForConnect}
      *
      * @param zipLocation
      * @param localKerberosPath
@@ -28,10 +28,11 @@ public interface IKerberos {
      *
      * @param conf
      * @param localKerberosPath
+     * @param datasourceType
      * @return
      * @throws Exception
      */
-    Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath) throws Exception;
+    Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath, Integer datasourceType) throws Exception;
 
     /**
      * 从 JDBC URL 中获取 Principal
@@ -47,8 +48,9 @@ public interface IKerberos {
      * 从 Kerberos 配置文件中获取 Principal
      *
      * @param kerberosConfig
+     * @param datasourceType
      * @return
      * @throws Exception
      */
-    List<String> getPrincipal(Map<String, Object> kerberosConfig) throws Exception;
+    List<String> getPrincipal(Map<String, Object> kerberosConfig, Integer datasourceType) throws Exception;
 }

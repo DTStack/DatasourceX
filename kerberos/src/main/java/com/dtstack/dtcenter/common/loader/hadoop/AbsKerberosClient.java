@@ -5,11 +5,14 @@ import com.dtstack.dtcenter.common.loader.common.Xml2JsonUtil;
 import com.dtstack.dtcenter.common.loader.common.ZipUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosConfigUtil;
 import com.dtstack.dtcenter.loader.client.IKerberos;
+import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 /**
@@ -18,7 +21,7 @@ import java.util.stream.Collectors;
  * @Date ：Created in 21:32 2020/8/26
  * @Description：Kerberos 服务客户端
  */
-public class KerberosClient implements IKerberos {
+public class AbsKerberosClient implements IKerberos {
 
     @Override
     public Map<String, String> parseKerberosFromUpload(String zipLocation, String localKerberosPath, Integer datasourceType) throws Exception {
@@ -36,24 +39,38 @@ public class KerberosClient implements IKerberos {
         // 获取 XML 文件并解析为 MAP
         List<File> xmlFileList = unzipFileList.stream().filter(file -> file.getName().endsWith(DtClassConsistent.PublicConsistent.XML_SUFFIX))
                 .collect(Collectors.toList());
-
         xmlFileList.forEach(file -> confMap.putAll(Xml2JsonUtil.xml2map(file)));
 
         return confMap;
     }
 
     @Override
-    public Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath) throws Exception {
-        return null;
+    public Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath, Integer datasourceType) throws Exception {
+        // 替换相对路径
+        KerberosConfigUtil.changeRelativePathToAbsolutePath(conf, localKerberosPath, HadoopConfTool.KAFKA_KERBEROS_KEYTAB);
+        KerberosConfigUtil.changeRelativePathToAbsolutePath(conf, localKerberosPath, HadoopConfTool.PRINCIPAL_FILE);
+        KerberosConfigUtil.changeRelativePathToAbsolutePath(conf, localKerberosPath, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
+        return true;
     }
 
     @Override
     public String getPrincipal(String url, Integer datasourceType) throws Exception {
-        return null;
+        Matcher matcher = DtClassConsistent.PatternConsistent.JDBC_PATTERN.matcher(url);
+        if (matcher.find()) {
+            String params = matcher.group("param");
+            String[] split = params.split(";");
+            for (String param : split) {
+                String[] keyValue = param.split("=");
+                if (HadoopConfTool.PRINCIPAL.equals(keyValue[0])) {
+                    return keyValue.length > 1 ? keyValue[1] : StringUtils.EMPTY;
+                }
+            }
+        }
+        return StringUtils.EMPTY;
     }
 
     @Override
-    public List<String> getPrincipal(Map<String, Object> kerberosConfig) throws Exception {
+    public List<String> getPrincipal(Map<String, Object> kerberosConfig, Integer datasourceType) throws Exception {
         return null;
     }
 }

@@ -21,4 +21,9 @@ public class HadoopConfTool {
      * principal 文件 键
      */
     public static final String PRINCIPAL_FILE = "principalFile";
+
+    /**
+     * Kafka kerberos keytab 键
+     */
+    public static final String KAFKA_KERBEROS_KEYTAB = "kafka.kerberos.keytab";
 }

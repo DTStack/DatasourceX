@@ -1,9 +1,11 @@
 package com.dtstack.dtcenter.common.loader.hadoop.util;
 
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.PathUtils;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -56,5 +58,21 @@ public class KerberosConfigUtil {
 
         String canonicalPath = krb5confOptional.get().getCanonicalPath();
         confMap.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, StringUtils.replace(canonicalPath, oppositeLocation, ""));
+    }
+
+    /**
+     * 改动相对路径为绝对路径
+     *
+     * @param conf
+     * @param localKerberosPath
+     * @param checkKey
+     */
+    public static void changeRelativePathToAbsolutePath(Map<String, Object> conf, String localKerberosPath, String checkKey) {
+        String relativePath = MapUtils.getString(conf, checkKey);
+        if (StringUtils.isNotBlank(relativePath)) {
+            String absolutePath = PathUtils.removeMultiSeparatorChar(localKerberosPath + File.separator + relativePath);
+            log.info("changeRelativePathToAbsolutePath checkKey:{} relativePath:{}, localKerberosConfPath:{}, absolutePath:{}", checkKey, relativePath, localKerberosPath, absolutePath);
+            conf.put(checkKey, absolutePath);
+        }
     }
 }

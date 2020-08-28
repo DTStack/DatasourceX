@@ -4,7 +4,6 @@ import com.dtstack.dtcenter.loader.client.hdfs.HdfsFileClientFactory;
 import com.dtstack.dtcenter.loader.client.kerberos.KerberosClientFactory;
 import com.dtstack.dtcenter.loader.client.mq.KafkaClientFactory;
 import com.dtstack.dtcenter.loader.client.sql.DataSourceClientFactory;
-import com.dtstack.dtcenter.loader.enums.HadoopType;
 import com.dtstack.dtcenter.loader.exception.ClientAccessException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Maps;
@@ -151,7 +150,7 @@ public class ClientCache {
      */
     public static IKerberos getKerberos(Integer sourceType) throws ClientAccessException {
         try {
-            String pluginName = HadoopType.getHadoopPlugin(sourceType);
+            String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
             IKerberos kerberos = KERBEROS_CLIENT.get(pluginName);
             if (kerberos == null) {
                 synchronized (KERBEROS_CLIENT) {

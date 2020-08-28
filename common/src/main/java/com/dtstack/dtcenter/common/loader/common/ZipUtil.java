@@ -33,16 +33,18 @@ public class ZipUtil {
     /**
      * 压缩文件或路径
      *
-     * @param zipLocation       压缩的目的地址
-     * @param sourceLocation    压缩的源文件
+     * @param zipLocation    压缩的目的地址
+     * @param sourceLocation 压缩的源文件
      */
     public static void zipFile(String zipLocation, String sourceLocation) {
-        try (ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(new File(zipLocation)))) {
-            if (zipLocation.endsWith(".zip") || zipLocation.endsWith(".ZIP")) {
-                zipOut.setEncoding("GBK");
-                handlerFile(zipLocation, zipOut, sourceLocation, "");
-            } else {
-                throw new DtLoaderException(String.format("目标文件 %s 不是一个以 ZIP 结尾的文件", zipLocation));
+        try (FileOutputStream fileOutputStream = new FileOutputStream(new File(zipLocation))) {
+            try (ZipOutputStream zipOut = new ZipOutputStream(fileOutputStream)) {
+                if (zipLocation.endsWith(".zip") || zipLocation.endsWith(".ZIP")) {
+                    zipOut.setEncoding("GBK");
+                    handlerFile(zipLocation, zipOut, sourceLocation, "");
+                } else {
+                    throw new DtLoaderException(String.format("目标文件 %s 不是一个以 ZIP 结尾的文件", zipLocation));
+                }
             }
         } catch (FileNotFoundException e) {
             throw new DtLoaderException("文件未找到", e);
@@ -54,8 +56,8 @@ public class ZipUtil {
     /**
      * 对.zip文件进行解压缩
      *
-     * @param zipLocation       解压缩文件地址
-     * @param targetLocation    压缩的目标地址，如：D:\\测试 或 /mnt/d/测试
+     * @param zipLocation    解压缩文件地址
+     * @param targetLocation 压缩的目标地址，如：D:\\测试 或 /mnt/d/测试
      * @return
      */
     public static List<File> unzipFile(String zipLocation, String targetLocation) {
@@ -75,15 +77,14 @@ public class ZipUtil {
                     if (!parentFile.exists()) {
                         parentFile.mkdirs();
                     }
-                    InputStream inputStream = zipFile.getInputStream(entry);
-                    OutputStream outputStream = new FileOutputStream(singleFile);
-                    int len = 0;
-                    while ((len = inputStream.read(byte_simple)) > 0) {
-                        outputStream.write(byte_simple, 0, len);
+                    try (InputStream inputStream = zipFile.getInputStream(entry);) {
+                        try (OutputStream outputStream = new FileOutputStream(singleFile);) {
+                            int len = 0;
+                            while ((len = inputStream.read(byte_simple)) > 0) {
+                                outputStream.write(byte_simple, 0, len);
+                            }
+                        }
                     }
-                    inputStream.close();
-                    outputStream.flush();
-                    outputStream.close();
                     files.add(singleFile);
                 }
             }
@@ -94,10 +95,10 @@ public class ZipUtil {
     }
 
     /**
-     * @param zipLocation       压缩的目的地址
-     * @param zipOut            ZIP 输出流
-     * @param sourceLocation    被压缩的文件信息
-     * @param path              在zip中的相对路径
+     * @param zipLocation    压缩的目的地址
+     * @param zipOut         ZIP 输出流
+     * @param sourceLocation 被压缩的文件信息
+     * @param path           在zip中的相对路径
      * @throws IOException
      */
     private static void handlerFile(String zipLocation, ZipOutputStream zipOut, String sourceLocation, String path) throws IOException {
@@ -126,13 +127,14 @@ public class ZipUtil {
             }
         } else {
             // 压缩单个文件
-            InputStream inputStream = new FileInputStream(sourceFile);
-            zipOut.putNextEntry(new ZipEntry(path + sourceFile.getName()));
-            int len = 0;
-            while ((len = inputStream.read(byte_simple)) > 0) {
-                zipOut.write(byte_simple, 0, len);
+            try (InputStream inputStream = new FileInputStream(sourceFile);) {
+                zipOut.putNextEntry(new ZipEntry(path + sourceFile.getName()));
+                int len = 0;
+                while ((len = inputStream.read(byte_simple)) > 0) {
+                    zipOut.write(byte_simple, 0, len);
+                }
             }
-            inputStream.close();
+
             zipOut.closeEntry();
         }
     }

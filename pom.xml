@@ -42,7 +42,7 @@
         <module>hbase2</module>
         <module>spark</module>
         <module>common</module>
-        <module>hadoop2</module>
+        <module>kerberos</module>
     </modules>
     <packaging>pom</packaging>
 

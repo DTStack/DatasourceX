@@ -85,7 +85,8 @@ public interface DtClassConsistent {
         /**
          * JDBC 正则
          */
-        public static Pattern JDBC_PATTERN = Pattern.compile("(?i)jdbc:[a-zA-Z0-9\\.]+://(?<host>[0-9a-zA-Z\\.-]+):(?<port>\\d+)/(?<db>[0-9a-zA-Z_%\\.]+)(?<param>[\\?;#].*)*");
+        public static Pattern JDBC_PATTERN = Pattern.compile("(?i)jdbc:[a-zA-Z0-9\\.]+://(?<url>[0-9a-zA-Z,\\:\\-\\.]+)/(?<db>[0-9a-zA-Z_%\\.]+)(?<param>[\\?;#].*)*");
+
         /**
          * HIVE_JDBC_URL 正则解析
          */
