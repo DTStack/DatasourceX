@@ -37,10 +37,8 @@ public class ZipUtil {
      * @param sourceLocation    压缩的源文件
      */
     public static void zipFile(String zipLocation, String sourceLocation) {
-        ZipOutputStream zipOut = null;
-        try {
+        try (ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(new File(zipLocation)))) {
             if (zipLocation.endsWith(".zip") || zipLocation.endsWith(".ZIP")) {
-                zipOut = new ZipOutputStream(new FileOutputStream(new File(zipLocation)));
                 zipOut.setEncoding("GBK");
                 handlerFile(zipLocation, zipOut, sourceLocation, "");
             } else {
@@ -50,14 +48,6 @@ public class ZipUtil {
             throw new DtLoaderException("文件未找到", e);
         } catch (IOException e) {
             throw new DtLoaderException("目标文件压缩异常", e);
-        } finally {
-            if (zipOut != null) {
-                try {
-                    zipOut.close();
-                } catch (IOException e) {
-                    log.error("关闭压缩流异常 : {}", e.getMessage(), e);
-                }
-            }
         }
     }
 
