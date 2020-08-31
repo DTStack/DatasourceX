@@ -6,9 +6,13 @@ import com.dtstack.dtcenter.common.loader.common.ZipUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosConfigUtil;
 import com.dtstack.dtcenter.loader.client.IKerberos;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +25,7 @@ import java.util.stream.Collectors;
  * @Date ：Created in 21:32 2020/8/26
  * @Description：Kerberos 服务客户端
  */
+@Slf4j
 public class AbsKerberosClient implements IKerberos {
 
     @Override
@@ -55,6 +60,7 @@ public class AbsKerberosClient implements IKerberos {
 
     @Override
     public String getPrincipal(String url, Integer datasourceType) throws Exception {
+        log.info("get url principal : {}", url);
         Matcher matcher = DtClassConsistent.PatternConsistent.JDBC_PATTERN.matcher(url);
         if (matcher.find()) {
             String params = matcher.group("param");
@@ -71,6 +77,17 @@ public class AbsKerberosClient implements IKerberos {
 
     @Override
     public List<String> getPrincipal(Map<String, Object> kerberosConfig, Integer datasourceType) throws Exception {
-        return null;
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return Collections.emptyList();
+        }
+
+        List<String> principals = new ArrayList<>();
+        for (String principalKey : HadoopConfTool.PRINCIPAL_KEYS) {
+            String principal = MapUtils.getString(kerberosConfig, principalKey);
+            if (StringUtils.isNotBlank(principal)) {
+                principals.add(principal);
+            }
+        }
+        return principals;
     }
 }

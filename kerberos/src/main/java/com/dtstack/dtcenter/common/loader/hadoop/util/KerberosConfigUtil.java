@@ -38,7 +38,9 @@ public class KerberosConfigUtil {
         }
 
         String canonicalPath = keytabOptional.get().getCanonicalPath();
-        confMap.put(HadoopConfTool.PRINCIPAL_FILE, StringUtils.replace(canonicalPath, oppositeLocation, ""));
+        String finalPath = StringUtils.replace(canonicalPath, oppositeLocation, "");
+        log.info("DealKeytab path -- key : {}, value : {}", HadoopConfTool.PRINCIPAL_FILE, finalPath);
+        confMap.put(HadoopConfTool.PRINCIPAL_FILE, finalPath);
     }
 
     /**
@@ -57,7 +59,9 @@ public class KerberosConfigUtil {
         }
 
         String canonicalPath = krb5confOptional.get().getCanonicalPath();
-        confMap.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, StringUtils.replace(canonicalPath, oppositeLocation, ""));
+        String finalPath = StringUtils.replace(canonicalPath, oppositeLocation, "");
+        log.info("DealKeytab path -- key : {}, value : {}", HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);
+        confMap.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);
     }
 
     /**

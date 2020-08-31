@@ -1,5 +1,8 @@
 package com.dtstack.dtcenter.loader.kerberos;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @company: www.dtstack.com
  * @Author ：Nanqi
@@ -26,4 +29,18 @@ public class HadoopConfTool {
      * Kafka kerberos keytab 键
      */
     public static final String KAFKA_KERBEROS_KEYTAB = "kafka.kerberos.keytab";
+
+    /**
+     * Principal 所有的 键
+     */
+    public static List<String> PRINCIPAL_KEYS = Arrays.asList(
+            "hive.server2.authentication.kerberos.principal",
+            "hive.metastore.kerberos.principal",
+            "beeline.hs2.connection.principal",
+            "yarn.resourcemanager.principal",
+            "yarn.nodemanager.principal",
+            "dfs.namenode.kerberos.principal",
+            "dfs.datanode.kerberos.principal",
+            "dfs.journalnode.kerberos.principal"
+    );
 }
