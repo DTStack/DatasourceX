@@ -51,6 +51,8 @@ public enum DataSourceType {
     KAFKA_2X(37, "Kafka2.x", "kafka"),
     PHOENIX5(38, "Phoenix5.x", "phoenix5"),
     HBASE2(39, "HBase2.x", "hbase2"),
+    //FIXME 临时增加，适配gateway上线，排除hadoop和hbase依赖，下版本删除
+    HBASE_GATEWAY(99, "HBase1.x", "hbase_gateway")
     ;
 
     DataSourceType(int val, String name, String pluginName) {
