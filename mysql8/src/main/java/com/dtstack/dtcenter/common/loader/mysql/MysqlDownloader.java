@@ -148,4 +148,9 @@ public class MysqlDownloader implements IDownloader {
     public String getFileName() {
         return null;
     }
+
+    @Override
+    public List<String> getContainers() throws Exception {
+        return null;
+    }
 }

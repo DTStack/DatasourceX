@@ -143,4 +143,9 @@ public class GreenplumDownloader implements IDownloader {
     public String getFileName() {
         return null;
     }
+
+    @Override
+    public List<String> getContainers() {
+        return null;
+    }
 }

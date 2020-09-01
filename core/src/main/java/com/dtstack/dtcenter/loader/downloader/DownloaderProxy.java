@@ -83,4 +83,14 @@ public class DownloaderProxy implements IDownloader {
             throw new DtLoaderException(e.getMessage(), e);
         }
     }
+
+    @Override
+    public List<String> getContainers() {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.getContainers(),
+                    targetDownloader.getClass().getClassLoader(), true);
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
+    }
 }

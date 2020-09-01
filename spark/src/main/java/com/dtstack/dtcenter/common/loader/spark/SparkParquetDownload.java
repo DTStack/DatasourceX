@@ -378,4 +378,9 @@ public class SparkParquetDownload implements IDownloader {
         }
         return true;
     }
+
+    @Override
+    public List<String> getContainers() {
+        return null;
+    }
 }

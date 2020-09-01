@@ -380,4 +380,8 @@ public class HiveParquetDownload implements IDownloader {
         return true;
     }
 
+    @Override
+    public List<String> getContainers() {
+        return null;
+    }
 }

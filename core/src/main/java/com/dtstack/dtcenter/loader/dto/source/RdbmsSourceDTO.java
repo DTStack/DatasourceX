@@ -34,6 +34,11 @@ public class RdbmsSourceDTO implements ISourceDTO {
     protected String password;
 
     /**
+     * 数据源类型
+     */
+    protected Integer sourceType;
+
+    /**
      * 地址
      */
     protected String url;

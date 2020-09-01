@@ -48,6 +48,7 @@ public class KakfaUtil {
         ZkUtils zkUtils = null;
         try {
             if (StringUtils.isEmpty(brokerUrls)) {
+                writeKafkaJaas(kerberosConfig);
                 brokerUrls = getAllBrokersAddressFromZk(zkUrls);
             }
             return StringUtils.isNotBlank(brokerUrls) ? checkKafkaConnection(brokerUrls, kerberosConfig) : false;
@@ -59,6 +60,39 @@ public class KakfaUtil {
                 zkUtils.close();
             }
         }
+    }
+
+    /**
+     * 写kafka jaas文件
+     * @param kerberosConfig
+     * @return jaas文件绝对路径
+     */
+    private static String writeKafkaJaas(Map<String, Object> kerberosConfig) {
+        if (MapUtils.isEmpty(kerberosConfig)){
+            return null;
+        }
+        String keytabConf = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_KEYTAB, "").toString();
+        String kafkaKbrServiceName =
+                kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_SERVICE_NAME, "").toString();
+        String kafkaLoginConf = null;
+        try {
+            File file = new File(keytabConf);
+            File jaas = new File(file.getParent() + File.separator + "kafka_jaas.conf");
+            if (jaas.exists()) {
+                jaas.delete();
+            }
+
+            // 处理 Principal
+            String principal = KerberosUtil.getPrincipal(keytabConf);
+
+            FileUtils.write(jaas, String.format(KafkaConsistent.KAFKA_JAAS_CONTENT, keytabConf, principal));
+            kafkaLoginConf = jaas.getAbsolutePath();
+            log.info("Init Kafka Kerberos:login-conf:{}\n --sasl.kerberos.service.name:{}",
+                    keytabConf, kafkaKbrServiceName);
+        } catch (IOException e) {
+            throw new DtLoaderException("写入kafka配置文件异常", e);
+        }
+        return kafkaLoginConf;
     }
 
     /**
@@ -339,6 +373,8 @@ public class KakfaUtil {
         props.put("bootstrap.servers", brokerUrls);
         /* 是否自动确认offset */
         props.put("enable.auto.commit", "true");
+        /* 设置group id */
+        props.put("group.id", "dtstack_stream_connection");
         /* 自动确认offset的时间间隔 */
         props.put("auto.commit.interval.ms", "1000");
         //heart beat 默认3s
@@ -357,26 +393,13 @@ public class KakfaUtil {
 
         javax.security.auth.login.Configuration.setConfiguration(null);
         String keytabConf = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_KEYTAB, "").toString();
-        String principal = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_PRINCIPAL, "").toString();
         String kafkaKbrServiceName =
                 kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_SERVICE_NAME, "").toString();
-
-        if (StringUtils.isBlank(keytabConf) ||
-                StringUtils.isBlank(kafkaKbrServiceName) || StringUtils.isBlank(principal)) {
+        if (StringUtils.isBlank(keytabConf)) {
             //不满足kerberos条件 直接返回
             return props;
         }
-        String kafkaLoginConf = null;
-        try {
-            File file = new File(keytabConf);
-            File jaas = new File(file.getParent() + File.separator + "kafka_jaas.conf");
-            FileUtils.write(jaas, String.format(KafkaConsistent.KAFKA_JAAS_CONTENT, keytabConf, principal));
-            kafkaLoginConf = jaas.getAbsolutePath();
-        } catch (IOException e) {
-            throw new DtLoaderException("写入kafka配置文件异常", e);
-        }
-        log.info("Init Kafka Kerberos:login-conf:{}\n --sasl.kerberos.service.name:{}",
-                keytabConf, kafkaKbrServiceName);
+        String kafkaLoginConf = writeKafkaJaas(kerberosConfig);
         // kerberos 相关设置
         props.put("security.protocol", "SASL_PLAINTEXT");
         props.put("sasl.mechanism", "GSSAPI");
