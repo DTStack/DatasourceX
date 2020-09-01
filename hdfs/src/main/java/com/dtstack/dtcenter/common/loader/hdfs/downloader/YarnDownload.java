@@ -27,6 +27,8 @@ import java.io.EOFException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -401,5 +403,40 @@ public class YarnDownload implements IDownloader {
 
         currLineValue = readLine;
         return true;
+    }
+
+    @Override
+    public List<String> getContainers() throws Exception {
+        HashSet<String> containers = new HashSet();
+        if (this.currValueStream != null) {
+            if (this.currFileType.toUpperCase().startsWith("TASKMANAGER")) {
+                containers.add(this.currLogKey.toString());
+            }
+
+            this.currValueStream.close();
+        }
+
+        while(this.nextStream()) {
+            if (this.currValueStream != null) {
+                this.currFileType = this.currValueStream.readUTF();
+                if (this.currFileType.toUpperCase().startsWith("TASKMANAGER")) {
+                    containers.add(this.currLogKey.toString());
+                }
+
+                this.currValueStream.close();
+            }
+        }
+
+        while(this.nextLogFile()) {
+            if (this.currValueStream != null) {
+                if (this.currFileType.toUpperCase().startsWith("TASKMANAGER")) {
+                    containers.add(this.currLogKey.toString());
+                }
+
+                this.currValueStream.close();
+            }
+        }
+
+        return new ArrayList(containers);
     }
 }

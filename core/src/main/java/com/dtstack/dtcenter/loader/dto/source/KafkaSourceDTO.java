@@ -42,6 +42,11 @@ public class KafkaSourceDTO implements ISourceDTO {
     private String password;
 
     /**
+     * 数据源类型
+     */
+    protected Integer sourceType;
+
+    /**
      * 是否缓存
      */
     @Builder.Default

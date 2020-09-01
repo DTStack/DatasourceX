@@ -22,4 +22,5 @@ public interface IDownloader {
 
     String getFileName();
 
+    List<String> getContainers() throws Exception;
 }

@@ -57,10 +57,13 @@ public class HiveTest {
 
     @Test
     public void executeQuery() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
-        List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
-        System.out.println(mapList.size());
+        try {
+            IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
+            SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi0000000").build();
+            List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Test
@@ -73,8 +76,7 @@ public class HiveTest {
     @Test
     public void getTableList() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
-        List<String> tableList = client.getTableList(source, queryDTO);
+        List<String> tableList = client.getTableList(source, null);
         System.out.println(tableList);
     }
 

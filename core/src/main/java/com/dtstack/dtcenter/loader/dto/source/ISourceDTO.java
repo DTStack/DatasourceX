@@ -21,4 +21,11 @@ public interface ISourceDTO {
      */
     String getPassword();
 
+    /**
+     * 获取数据源类型
+     *
+     * @return
+     */
+    Integer getSourceType();
+
 }

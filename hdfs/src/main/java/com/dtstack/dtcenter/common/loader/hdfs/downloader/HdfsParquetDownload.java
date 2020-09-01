@@ -331,4 +331,9 @@ public class HdfsParquetDownload implements IDownloader {
             return pathList;
         }
     }
+
+    @Override
+    public List<String> getContainers() {
+        return null;
+    }
 }

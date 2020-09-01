@@ -72,7 +72,6 @@ public class KakfaUtil {
             return null;
         }
         String keytabConf = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_KEYTAB, "").toString();
-        String principal = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_PRINCIPAL, "").toString();
         String kafkaKbrServiceName =
                 kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_SERVICE_NAME, "").toString();
         String kafkaLoginConf = null;
@@ -82,6 +81,10 @@ public class KakfaUtil {
             if (jaas.exists()) {
                 jaas.delete();
             }
+
+            // 处理 Principal
+            String principal = KerberosUtil.getPrincipal(keytabConf);
+
             FileUtils.write(jaas, String.format(KafkaConsistent.KAFKA_JAAS_CONTENT, keytabConf, principal));
             kafkaLoginConf = jaas.getAbsolutePath();
             log.info("Init Kafka Kerberos:login-conf:{}\n --sasl.kerberos.service.name:{}",
