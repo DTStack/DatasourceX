@@ -30,13 +30,8 @@ public class OracleDbAdapter {
 
 
             case Types.DATE:
-                return JavaType.TYPE_DATE.getFlinkSqlType();
             case Types.TIME:
-                return JavaType.TYPE_DATE.getFlinkSqlType();
             case Types.TIMESTAMP:
-                if (scale == 0){
-                    return JavaType.TYPE_DATE.getFlinkSqlType();
-                }
                 return JavaType.TYPE_TIMESTAMP.getFlinkSqlType();
 
 
