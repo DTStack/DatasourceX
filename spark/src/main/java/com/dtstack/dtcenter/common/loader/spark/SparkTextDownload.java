@@ -334,4 +334,9 @@ public class SparkTextDownload implements IDownloader {
         }
         return true;
     }
+
+    @Override
+    public List<String> getContainers() {
+        return null;
+    }
 }

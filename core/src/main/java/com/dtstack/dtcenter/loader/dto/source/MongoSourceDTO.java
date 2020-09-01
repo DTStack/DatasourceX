@@ -31,6 +31,11 @@ public class MongoSourceDTO  implements ISourceDTO {
     private String password;
 
     /**
+     * 数据源类型
+     */
+    protected Integer sourceType;
+
+    /**
      * 端口号
      */
     private String hostPort;

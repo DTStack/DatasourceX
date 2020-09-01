@@ -3,6 +3,10 @@ package com.dtstack.dtcenter.loader.source;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * @company: www.dtstack.com
  * @Author ：Nanqi
@@ -10,59 +14,106 @@ import org.jetbrains.annotations.NotNull;
  * @Description：数据源类型 值 1000 以上表示未启用，后续标号
  */
 public enum DataSourceType {
-    MySQL(1, "MySQL", "mysql5"),
-    MySQL8(1001, "MySQL8", "mysql8"),
-    Oracle(2, "Oracle", "oracle"),
-    SQLServer(3, "SQLServer", "sqlServer"),
-    SQLSERVER_2017_LATER(32, "SQLServer2017_and_later", "sqlServer2017"),
-    PostgreSQL(4, "PostgreSQL", "postgresql"),
-    RDBMS(5, "RDBMS", "mysql"),
-    HDFS(6, "HDFS", "hdfs"),
-    HIVE(7, "Hive2.x", "hive"),
-    Spark(1002, "Spark", "spark"),
-    HBASE(8, "HBase1.x", "hbase"),
-    FTP(9, "FTP", "ftp"),
-    MAXCOMPUTE(10, "MaxCompute", "maxcompute"),
-    ES(11, "ElasticSearch5.x", "es"),
-    REDIS(12, "Redis", "redis"),
-    MONGODB(13, "MongoDB", "mongo"),
-    KAFKA_11(14, "Kafka_0.11", "kafka"),
-    ADS(15, "AnalyticDB", "mysql5"),
-    BEATS(16, "Beats", "null"),
-    KAFKA_10(17, "Kafka_0.10", "kafka"),
-    KAFKA_09(18, "Kafka_0.9", "kafka"),
-    DB2(19, "DB2", "db2"),
-    CarbonData(20, "CarbonData", "hive"),
-    LIBRA(21, "LibrA", "libra"),
-    GBase_8a(22, "GBase_8a", "gbase"),
-    Kylin(23, "Kylin", "kylin"),
-    Kudu(24, "Kudu", "kudu"),
-    Clickhouse(25, "ClickHouse", "clickhouse"),
-    KAFKA(26, "Kafka", "kafka"),
-    HIVE1X(27, "Hive1.x", "hive1"),
-    Polardb_For_MySQL(28, "PolarDB for MySQL8", "mysql5"),
-    IMPALA(29, "Impala", "impala"),
-    Phoenix(30, "Phoenix4.x", "phoenix"),
-    TiDB(31, "TiDB", "mysql5"),
-    ES6(33, "ElasticSearch6.x", "es"),
-    EMQ(34, "EMQ", "emq"),
-    DMDB(35, "DMDB", "dmdb"),
-    GREENPLUM6(36, "Greenplum", "greenplum6"),
-    KAFKA_2X(37, "Kafka2.x", "kafka"),
-    PHOENIX5(38, "Phoenix5.x", "phoenix5"),
-    HBASE2(39, "HBase2.x", "hbase2"),
+    // RDBMS
+    MySQL(1, 0, "MySQL", "mysql5"),
+    MySQL8(1001, 1, "MySQL8", "mysql8"),
+    Polardb_For_MySQL(28, 2, "PolarDB for MySQL8", "mysql5"),
+    Oracle(2, 3, "Oracle", "oracle"),
+    SQLServer(3, 4, "SQLServer", "sqlServer"),
+    SQLSERVER_2017_LATER(32, 5, "SQLServer2017_and_later", "sqlServer2017"),
+    PostgreSQL(4, 6, "PostgreSQL", "postgresql"),
+    DB2(19, 7, "DB2", "db2"),
+    DMDB(35, 8, "DMDB", "dmdb"),
+    RDBMS(5, 9, "RDBMS", "mysql"),
+
+    // Hadoop
+    HIVE(7, 20, "Hive2.x", "hive"),
+    HIVE1X(27, 21, "Hive1.x", "hive1"),
+    MAXCOMPUTE(10, 22, "MaxCompute", "maxcompute"),
+
+    // MPP
+    GREENPLUM6(36, 40, "Greenplum", "greenplum6"),
+    LIBRA(21, 41, "LibrA", "libra"),
+    GBase_8a(22, 42, "GBase_8a", "gbase"),
+
+    // UnStructed
+    HDFS(6, 60, "HDFS", "hdfs"),
+    FTP(9, 61, "FTP", "ftp"),
+
+    // Analytic
+    IMPALA(29, 80, "Impala", "impala"),
+    Clickhouse(25, 81, "ClickHouse", "clickhouse"),
+    TiDB(31, 82, "TiDB", "mysql5"),
+    CarbonData(20, 83, "CarbonData", "hive"),
+    Kudu(24, 84, "Kudu", "kudu"),
+    ADS(15, 85, "AnalyticDB", "mysql5"),
+    Kylin(23, 86, "Kylin", "kylin"),
+
+    // NoSQL
+    HBASE(8, 100, "HBase1.x", "hbase"),
+    HBASE2(39, 101, "HBase2.x", "hbase2"),
+    Phoenix(30, 102, "Phoenix4.x", "phoenix"),
+    PHOENIX5(38, 103, "Phoenix5.x", "phoenix5"),
+    ES(11, 104, "ElasticSearch5.x", "es"),
+    ES6(33, 105, "ElasticSearch6.x", "es"),
+    MONGODB(13, 106, "MongoDB", "mongo"),
+    REDIS(12, 107, "Redis", "redis"),
+
+    // others
+    KAFKA_2X(37, 120, "Kafka2.x", "kafka"),
+    KAFKA(26, 121, "Kafka", "kafka"),
+    KAFKA_11(14, 122, "Kafka_0.11", "kafka"),
+    KAFKA_10(17, 123, "Kafka_0.10", "kafka"),
+    KAFKA_09(18, 124, "Kafka_0.9", "kafka"),
+    EMQ(34, 125, "EMQ", "emq"),
+    BEATS(16, 126, "Beats", "null"),
+    Spark(1002, 127, "Spark", "spark"),
     ;
 
-    DataSourceType(int val, String name, String pluginName) {
+    DataSourceType(int val, int order, String name, String pluginName) {
         this.val = val;
+        this.order = order;
         this.name = name;
         this.pluginName = pluginName;
+    }
+
+    private static List<Integer> rdbms = new ArrayList<>();
+
+    static {
+        rdbms.add(MySQL.val);
+        rdbms.add(MySQL8.val);
+        rdbms.add(Polardb_For_MySQL.val);
+        rdbms.add(Oracle.val);
+        rdbms.add(SQLServer.val);
+        rdbms.add(SQLSERVER_2017_LATER.val);
+        rdbms.add(PostgreSQL.val);
+        rdbms.add(DB2.val);
+        rdbms.add(DMDB.val);
+        rdbms.add(RDBMS.val);
+        rdbms.add(HIVE.val);
+        rdbms.add(HIVE1X.val);
+        rdbms.add(GREENPLUM6.val);
+        rdbms.add(LIBRA.val);
+        rdbms.add(GBase_8a.val);
+        rdbms.add(Clickhouse.val);
+        rdbms.add(TiDB.val);
+        rdbms.add(CarbonData.val);
+        rdbms.add(ADS.val);
+        rdbms.add(Phoenix.val);
+        rdbms.add(PHOENIX5.val);
+
+        rdbms = rdbms.stream().distinct().collect(Collectors.toList());
     }
 
     /**
      * 数据源值
      */
     private int val;
+
+    /**
+     * 排序顺序
+     */
+    private int order;
 
     /**
      * 数据源名称
@@ -97,5 +148,18 @@ public enum DataSourceType {
 
     public String getPluginName() {
         return pluginName;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    /**
+     * 获取所有的关系数据库
+     *
+     * @return
+     */
+    public static List<Integer> getRDBMS() {
+        return rdbms;
     }
 }

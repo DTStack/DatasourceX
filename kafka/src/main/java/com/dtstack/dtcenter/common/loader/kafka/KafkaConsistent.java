@@ -42,6 +42,5 @@ public class KafkaConsistent {
      * KAFKA Kerberos 相关配置
      */
     public static final String KAFKA_KERBEROS_KEYTAB = "kafka.kerberos.keytab";
-    public static final String KAFKA_KERBEROS_PRINCIPAL = "kafka.kerberos.principal";
     public static final String KAFKA_KERBEROS_SERVICE_NAME = "sasl.kerberos.service.name";
 }
