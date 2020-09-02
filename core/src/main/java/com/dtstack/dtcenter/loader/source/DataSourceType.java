@@ -25,6 +25,7 @@ public enum DataSourceType {
     DB2(19, 7, "DB2", "db2"),
     DMDB(35, 8, "DMDB", "dmdb"),
     RDBMS(5, 9, "RDBMS", "mysql"),
+    KINGBASE(40, 10, "KingbaseES", "kingbase"),
 
     // Hadoop
     HIVE(7, 20, "Hive2.x", "hive"),

@@ -8,17 +8,16 @@
         <version>1.2.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>common.loader.kafka</artifactId>
 
+    <artifactId>common.loader.kingbase</artifactId>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <jar.package.name>kafka</jar.package.name>
-        <jar.name>dtKafka</jar.name>
+        <jar.package.name>kingbase</jar.package.name>
+        <jar.name>dtKingbase</jar.name>
     </properties>
 
     <dependencies>
@@ -28,24 +27,40 @@
         </dependency>
 
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
             <artifactId>common.loader.core</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.11</artifactId>
+            <groupId>com.dtstack.dtcenter</groupId>
+            <artifactId>common.loader.rdbms</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.apache.kerby</groupId>
-            <artifactId>kerb-util</artifactId>
+            <groupId>org.kingdb.kingdb8</groupId>
+            <artifactId>kingdb8jdbc</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 具体实现类不做配置，具体的容器自己处理-->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -100,7 +115,7 @@
                         <configuration>
                             <tasks>
                                 <move file="${basedir}/target/${project.name}-${project.version}.jar"
-                                      tofile="${basedir}/target/${jar.name}.jar"/>
+                                      tofile="${basedir}/target/${jar.name}.jar" />
                                 <copy todir="${basedir}/../core/pluginLibs/${jar.package.name}/"
                                       file="${basedir}/target/${jar.name}.jar"/>
                                 <delete>
