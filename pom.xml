@@ -93,9 +93,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.kingdb.kingdb8</groupId>
-                <artifactId>kingdb8jdbc</artifactId>
-                <version>0.0.1</version>
+                <groupId>com.kingbase8</groupId>
+                <artifactId>kingbase8</artifactId>
+                <version>8.2.0</version>
             </dependency>
 
             <dependency>

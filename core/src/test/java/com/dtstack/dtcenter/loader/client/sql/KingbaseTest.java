@@ -173,6 +173,15 @@ public class KingbaseTest {
         System.out.println(dict);
     }
 
+    /**
+     * 异常测试 - 数据预览 - 不指定schema， 且表名不再搜索范围内
+     */
+    @Test(expected = Exception.class)
+    public void getPreviewException() throws Exception {
+        List dict = client.getPreview(source, SqlQueryDTO.builder().tableName("test_table1.aaaa").previewNum(5).build());
+        System.out.println(dict);
+    }
+
     @Test
     public void executeQuery() throws Exception {
         List list = client.executeQuery(source, SqlQueryDTO.builder().sql("select * from rdos_dict").build());

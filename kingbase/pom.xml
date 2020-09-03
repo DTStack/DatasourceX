@@ -37,8 +37,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.kingdb.kingdb8</groupId>
-            <artifactId>kingdb8jdbc</artifactId>
+            <groupId>com.kingbase8</groupId>
+            <artifactId>kingbase8</artifactId>
         </dependency>
 
         <dependency>
