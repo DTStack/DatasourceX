@@ -79,7 +79,17 @@ public class KingbaseTest {
      */
     @Test
     public void getColumnMetaData() throws Exception {
-        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("rdos_dict").build());
+        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("\"PUBLIC\".\"rdos_dict\"").build());
+        System.out.println(metaData);
+    }
+
+    /**
+     * 获取表字段信息 - 不指定schema ：有注释的表
+     * @throws Exception
+     */
+    @Test
+    public void getColumnMetaDataHiveComment() throws Exception {
+        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("table_test").build());
         System.out.println(metaData);
     }
 
@@ -104,7 +114,7 @@ public class KingbaseTest {
      */
     @Test
     public void getColumnClassInfo() throws Exception {
-        List rdos_dict = client.getColumnClassInfo(source, SqlQueryDTO.builder().tableName("rdos_dict").build());
+        List rdos_dict = client.getColumnClassInfo(source, SqlQueryDTO.builder().tableName("\"PUBLIC\".\"rdos_dict\"").build());
         System.out.println(rdos_dict);
     }
 
@@ -154,7 +164,7 @@ public class KingbaseTest {
      */
     @Test
     public void getPreview() throws Exception {
-        List dict = client.getPreview(source, SqlQueryDTO.builder().tableName("rdos_dict").previewNum(5).build());
+        List dict = client.getPreview(source, SqlQueryDTO.builder().tableName("\"PUBLIC\".\"rdos_dict\"").previewNum(5).build());
         System.out.println(dict);
     }
 
@@ -182,10 +192,22 @@ public class KingbaseTest {
         System.out.println(dict);
     }
 
+    /**
+     * 自定义查询
+     * @throws Exception
+     */
     @Test
     public void executeQuery() throws Exception {
         List list = client.executeQuery(source, SqlQueryDTO.builder().sql("select * from rdos_dict").build());
         System.out.println(list);
     }
 
+    /**
+     * 获取表注释
+     */
+    @Test
+    public void getTableMetaComment() throws Exception {
+        String metaComment = client.getTableMetaComment(source, SqlQueryDTO.builder().tableName("table_test").build());
+        System.out.println(metaComment);
+    }
 }

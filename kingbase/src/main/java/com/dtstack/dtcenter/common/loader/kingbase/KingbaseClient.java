@@ -36,8 +36,8 @@ public class KingbaseClient extends AbsRdbmsClient {
     //获取某个schema下的所有表
     private static final String SCHEMA_TABLE_SQL = "SELECT tablename FROM SYS_CATALOG.sys_tables WHERE schemaname = '%s' ";
 
-    //获取用户下的表
-    private static final String USER_TABLE_SQL = "SELECT TABLE_NAME FROM user_tables ";
+    //获取所有表名，表名前拼接schema，并对schema和tableName进行增加双引号处理
+    private static final String ALL_TABLE_SQL = "SELECT '\"'||schemaname||'\".\"'||tablename||'\"' AS schema_table FROM SYS_CATALOG.sys_tables order by schema_table ";
 
     //获取某个表的表注释信息
     private static final String TABLE_COMMENT_SQL = "SELECT COMMENTS FROM ALL_TAB_COMMENTS WHERE TABLE_NAME = '%s' ";
@@ -65,7 +65,7 @@ public class KingbaseClient extends AbsRdbmsClient {
             statement = kingbaseSourceDTO.getConnection().createStatement();
             //不区分大小写
             rs = statement.executeQuery(StringUtils.isNotBlank(kingbaseSourceDTO.getSchema()) ?
-                    String.format(SCHEMA_TABLE_SQL, kingbaseSourceDTO.getSchema()) : USER_TABLE_SQL);
+                    String.format(SCHEMA_TABLE_SQL, kingbaseSourceDTO.getSchema()) : ALL_TABLE_SQL);
             List<String> tableList = new ArrayList<>();
             while (rs.next()) {
                 tableList.add(rs.getString(1));
@@ -94,7 +94,7 @@ public class KingbaseClient extends AbsRdbmsClient {
 
         try {
             statement = kingbaseSourceDTO.getConnection().createStatement();
-            resultSet = statement.executeQuery(TABLE_COMMENT_SQL);
+            resultSet = statement.executeQuery(String.format(TABLE_COMMENT_SQL, queryDTO.getTableName()));
             while (resultSet.next()) {
                 return resultSet.getString(1);
             }
@@ -152,9 +152,9 @@ public class KingbaseClient extends AbsRdbmsClient {
         Map<String, String> columnComments = new HashMap<>();
         try {
             statement = sourceDTO.getConnection().createStatement();
-            rs = statement.executeQuery(COL_COMMENT_SQL);
+            rs = statement.executeQuery(String.format(COL_COMMENT_SQL, queryDTO.getTableName()));
             while (rs.next()) {
-                String columnName = rs.getString("TABLE_NAME");
+                String columnName = rs.getString("COLUMN_NAME");
                 String columnComment = rs.getString("COMMENTS");
                 columnComments.put(columnName, columnComment);
             }
