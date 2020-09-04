@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.hbase;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
@@ -71,6 +72,15 @@ public class HbaseConnFactory extends ConnFactory {
             }
         }
 
+        // 手动替换 Principal 参数，临时方案
+        String hbaseMasterPrincipal = MapUtils.getString(source.getKerberosConfig(), HadoopConfTool.KEY_HBASE_MASTER_KERBEROS_PRINCIPAL);
+        String principal = MapUtils.getString(source.getKerberosConfig(), HadoopConfTool.PRINCIPAL);
+        if (StringUtils.isNotBlank(hbaseMasterPrincipal) && StringUtils.isNotBlank(principal)) {
+            int hbaseMasterPrincipalLos = hbaseMasterPrincipal.indexOf("/");
+            int principalLos = principal.indexOf("/");
+            principal = principal.replaceFirst(principal.substring(0, principalLos), hbaseMasterPrincipal.substring(0, hbaseMasterPrincipalLos));
+        }
+        source.getKerberosConfig().put(HadoopConfTool.PRINCIPAL, principal);
         return KerberosUtil.loginKerberosWithUGI(new HashMap<>(source.getKerberosConfig())).doAs(
                 (PrivilegedAction<org.apache.hadoop.hbase.client.Connection>) () -> {
                     Configuration hConfig = HBaseConfiguration.create();
