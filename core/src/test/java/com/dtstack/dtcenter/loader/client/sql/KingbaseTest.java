@@ -23,7 +23,7 @@ public class KingbaseTest {
 
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    IClient client = clientCache.getClient(DataSourceType.KINGBASE.getPluginName());
+    IClient client = clientCache.getClient(DataSourceType.KINGBASE8.getPluginName());
 
     KingbaseSourceDTO source = KingbaseSourceDTO.builder()
             .url("jdbc:kingbase8://172.16.8.182:54321/ide")

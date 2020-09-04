@@ -124,23 +124,9 @@ public class OracleClient extends AbsRdbmsClient {
         List<ColumnMetaDTO> columns = new ArrayList<>();
         try {
             statement = oracleSourceDTO.getConnection().createStatement();
-            String tableName = transferTableName(queryDTO.getTableName());
-            String queryColumnSql;
-            boolean tableHasTransfer = false;
-            String[] split = tableName.split("\\.");
-            if(split.length > 1){
-                tableHasTransfer = split[1].startsWith("\"");
-            }
-            if (tableName.contains(".") && !tableHasTransfer) {
-                String ku = transferTableName(split[0]);
-                tableName = transferTableName(split[1]);
-                queryColumnSql = "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + ku + '"' + "." + '"' + tableName
+            String schema_table = transferSchemaAndTableName(oracleSourceDTO.getSchema(), queryDTO.getTableName());
+            String queryColumnSql = "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + schema_table
                         + " where 1=2";
-            } else {
-                queryColumnSql = "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + tableName
-                        + " where 1=2";
-            }
-
             rs = statement.executeQuery(queryColumnSql);
             ResultSetMetaData rsMetaData = rs.getMetaData();
             for (int i = 0, len = rsMetaData.getColumnCount(); i < len; i++) {
@@ -208,30 +194,6 @@ public class OracleClient extends AbsRdbmsClient {
         return columnComments;
     }
 
-    @Override
-    protected String transferTableName(String tableName) {
-        //tableName 可能存在的情况 需要兼容
-        //"db"."tableName"
-        //db.table
-        //table
-        if (tableName.contains("\"")) {
-            return tableName;
-        }
-
-        if (tableName.contains(".")) {
-            String[] split = tableName.split("\\.");
-            tableName = addQuotes(split[0]) + "." + addQuotes(split[1]);
-            return tableName;
-        }
-        tableName = addQuotes(tableName);
-        return tableName;
-    }
-
-    private static String addQuotes(String str) {
-        str =  str.contains("\"") ? str : String.format("\"%s\"", str);
-        return str;
-    }
-
     private static String addSingleQuotes(String str) {
         str = str.contains("'") ? str : String.format("'%s'", str);
         return str;
@@ -266,8 +228,8 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected String dealSql(SqlQueryDTO sqlQueryDTO) {
-        return "select * from " + transferTableName(sqlQueryDTO.getTableName()) + " where rownum <=" + sqlQueryDTO.getPreviewNum();
+    protected String dealSql(RdbmsSourceDTO rdbmsSourceDTO, SqlQueryDTO sqlQueryDTO){
+        return "select * from " + transferSchemaAndTableName(rdbmsSourceDTO.getSchema(), sqlQueryDTO.getTableName()) + " where rownum <=" + sqlQueryDTO.getPreviewNum();
     }
 
     @Override
@@ -287,4 +249,25 @@ public class OracleClient extends AbsRdbmsClient {
     public String getShowDbSql() {
         return DATABASE_QUERY;
     }
+
+    /**
+     * 处理Oracle schema和tableName，适配schema和tableName中有.的情况
+     * @param schema
+     * @param tableName
+     * @return
+     */
+    @Override
+    protected String transferSchemaAndTableName(String schema, String tableName) {
+        if (!tableName.startsWith("\"") || !tableName.endsWith("\"")) {
+            tableName = String.format("\"%s\"", tableName);
+        }
+        if (StringUtils.isBlank(schema)) {
+            return tableName;
+        }
+        if (!schema.startsWith("\"") || !schema.endsWith("\"")){
+            schema = String.format("\"%s\"", schema);
+        }
+        return String.format("%s.%s", schema, tableName);
+    }
+
 }

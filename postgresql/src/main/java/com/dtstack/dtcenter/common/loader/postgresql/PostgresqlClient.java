@@ -176,7 +176,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
         List<ColumnMetaDTO> columns = new ArrayList<>();
         try {
             statement = postgresqlSourceDTO.getConnection().createStatement();
-            String queryColumnSql = "select * from " + queryDTO.getTableName()
+            String queryColumnSql = "select * from " + transferSchemaAndTableName(postgresqlSourceDTO.getSchema(), queryDTO.getTableName())
                     + " where 1=2";
             rs = statement.executeQuery(queryColumnSql);
             ResultSetMetaData rsMetaData = rs.getMetaData();
@@ -231,5 +231,25 @@ public class PostgresqlClient extends AbsRdbmsClient {
     @Override
     public String getShowDbSql() {
         return DATABASE_QUERY;
+    }
+
+    /**
+     * 处理Postgresql schema和tableName，适配schema和tableName中有.的情况
+     * @param schema
+     * @param tableName
+     * @return
+     */
+    @Override
+    protected String transferSchemaAndTableName(String schema, String tableName) {
+        if (!tableName.startsWith("\"") || !tableName.endsWith("\"")) {
+            tableName = String.format("\"%s\"", tableName);
+        }
+        if (StringUtils.isBlank(schema)) {
+            return tableName;
+        }
+        if (!schema.startsWith("\"") || !schema.endsWith("\"")){
+            schema = String.format("\"%s\"", schema);
+        }
+        return String.format("%s.%s", schema, tableName);
     }
 }
