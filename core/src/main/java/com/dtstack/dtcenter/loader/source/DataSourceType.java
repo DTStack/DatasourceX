@@ -58,6 +58,8 @@ public enum DataSourceType {
     ES6(33, 105, "ElasticSearch6.x", "es"),
     MONGODB(13, 106, "MongoDB", "mongo"),
     REDIS(12, 107, "Redis", "redis"),
+    //FIXME 临时增加，适配gateway上线，排除hadoop和hbase依赖，下版本删除
+    HBASE_GATEWAY(99, 108, "HBase1.x", "hbase_gateway"),
 
     // others
     KAFKA_2X(37, 120, "Kafka2.x", "kafka"),

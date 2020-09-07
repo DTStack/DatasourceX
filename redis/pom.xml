@@ -38,11 +38,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.dtstack.dtcenter</groupId>
-            <artifactId>common.loader.transition</artifactId>
-        </dependency>
-
-        <dependency>
             <artifactId>jedis</artifactId>
             <groupId>redis.clients</groupId>
         </dependency>
