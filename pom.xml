@@ -42,6 +42,7 @@
         <module>hbase2</module>
         <module>transition</module>
         <module>spark</module>
+        <module>hbase_gateway</module>
     </modules>
     <packaging>pom</packaging>
 

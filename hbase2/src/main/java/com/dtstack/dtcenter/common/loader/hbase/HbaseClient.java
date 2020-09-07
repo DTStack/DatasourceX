@@ -8,18 +8,31 @@ import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.filter.Filter;
+import org.apache.hadoop.hbase.filter.FilterList;
+import org.apache.hadoop.hbase.filter.PageFilter;
+import org.apache.hadoop.hbase.util.Bytes;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -29,6 +42,13 @@ import java.util.Map;
  */
 @Slf4j
 public class HbaseClient extends AbsRdbmsClient {
+
+    private static final String ROWKEY = "rowkey";
+
+    private static final String FAMILY_QUALIFIER = "%s:%s";
+
+    private static final String TIMESTAMP = "timestamp";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new HbaseConnFactory();
@@ -109,6 +129,128 @@ public class HbaseClient extends AbsRdbmsClient {
         return cfList;
     }
 
+    @Override
+    public List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
+        Connection connection = null;
+        Table table = null;
+        ResultScanner rs = null;
+        List<Result> results = Lists.newArrayList();
+        List<Map<String, Object>> executeResult = Lists.newArrayList();
+        try {
+            //获取hbase连接
+            connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
+            //获取hbase扫描列，格式 - 列族:列名
+            List<String> columns = queryDTO.getColumns();
+            //获取hbase自定义查询的过滤器
+            List<com.dtstack.dtcenter.loader.dto.filter.Filter> hbaseFilter = queryDTO.getHbaseFilter();
+            TableName tableName = TableName.valueOf(queryDTO.getTableName());
+            table = connection.getTable(tableName);
+            List<Filter> filterList = Lists.newArrayList();
+            Scan scan = new Scan();
+            if (columns != null) {
+                for (String column : columns) {
+                    String[] familyAndQualifier = column.split(":");
+                    if (familyAndQualifier.length < 2) {
+                        continue;
+                    }
+                    scan.addColumn(Bytes.toBytes(familyAndQualifier[0]), Bytes.toBytes(familyAndQualifier[1]));
+                }
+            }
+
+            if (hbaseFilter != null && hbaseFilter.size() > 0) {
+                for (com.dtstack.dtcenter.loader.dto.filter.Filter filter : hbaseFilter){
+                    //将core包下的filter转换成hbase包下的filter
+                    Filter transFilter = FilterType.get(filter);
+                    filterList.add(transFilter);
+                }
+                FilterList filters = new FilterList(filterList);
+                scan.setFilter(filters);
+            }
+            rs = table.getScanner(scan);
+            for (Result r : rs) {
+                results.add(r);
+            }
+
+        } catch (Exception e){
+            log.error("执行hbase自定义失败", e);
+            throw new RuntimeException("执行hbase自定义失败", e);
+        } finally {
+            close(rs, table, connection);
+        }
+
+        //理解为一行记录
+        for (Result result : results) {
+            List<Cell> cells = result.listCells();
+            long timestamp = 0L;
+            HashMap<String, Object> row = Maps.newHashMap();
+            for (Cell cell : cells){
+                row.put(ROWKEY, Bytes.toString(cell.getRowArray()));
+                String family = Bytes.toString(cell.getFamilyArray());
+                String qualifier = Bytes.toString(cell.getQualifierArray());
+                String value = Bytes.toString(cell.getValueArray());
+                row.put(String.format(FAMILY_QUALIFIER, family, qualifier), value);
+                //取到最新变动的时间
+                if (cell.getTimestamp() > timestamp) {
+                    timestamp = cell.getTimestamp();
+                }
+            }
+            row.put(TIMESTAMP, timestamp);
+            executeResult.add(row);
+        }
+
+        return executeResult;
+    }
+
+    @Override
+    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
+        Connection connection = null;
+        Table table = null;
+        ResultScanner rs = null;
+        List<Result> results = Lists.newArrayList();
+        List<List<Object>> executeResult = Lists.newArrayList();
+        try {
+            //获取hbase连接
+            connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
+            TableName tableName = TableName.valueOf(queryDTO.getTableName());
+            table = connection.getTable(tableName);
+            Scan scan = new Scan();
+            //数据预览限制返回条数
+            scan.setFilter(new PageFilter(queryDTO.getPreviewNum()));
+            rs = table.getScanner(scan);
+            for (Result r : rs) {
+                results.add(r);
+            }
+        } catch (Exception e){
+            log.error("数据预览失败{}", e);
+            throw new RuntimeException("数据预览失败", e);
+        } finally {
+            close(rs, table, connection);
+        }
+
+        //理解为一行记录
+        for (Result result : results) {
+            List<Cell> cells = result.listCells();
+            long timestamp = 0L;
+            HashMap<String, Object> row = Maps.newHashMap();
+            for (Cell cell : cells){
+                row.put(ROWKEY, Bytes.toString(cell.getRowArray()));
+                String family = Bytes.toString(cell.getFamilyArray());
+                String qualifier = Bytes.toString(cell.getQualifierArray());
+                String value = Bytes.toString(cell.getValueArray());
+                row.put(String.format(FAMILY_QUALIFIER, family, qualifier), value);
+                //取到最新变动的时间
+                if (cell.getTimestamp() > timestamp) {
+                    timestamp = cell.getTimestamp();
+                }
+            }
+            row.put(TIMESTAMP, timestamp);
+            executeResult.add(Lists.newArrayList(row));
+        }
+        return executeResult;
+    }
+
     public static void closeTable(Table table) {
         if(table != null) {
             try {
@@ -119,14 +261,25 @@ public class HbaseClient extends AbsRdbmsClient {
         }
     }
 
+    private void close(Closeable... closeables) {
+        try {
+            if (Objects.nonNull(closeables)) {
+                for (Closeable closeable : closeables) {
+                    if (Objects.nonNull(closeable)) {
+                        closeable.close();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("hbase closeable close error", e);
+            throw new RuntimeException("hbase can not close table error", e);
+        }
+    }
+
+
     /******************** 未支持的方法 **********************/
     @Override
     public java.sql.Connection getCon(ISourceDTO source) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 
@@ -140,8 +293,4 @@ public class HbaseClient extends AbsRdbmsClient {
         throw new DtLoaderException("Not Support");
     }
 
-    @Override
-    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
 }
