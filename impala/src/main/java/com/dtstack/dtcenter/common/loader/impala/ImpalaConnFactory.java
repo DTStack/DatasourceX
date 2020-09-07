@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.impala;
 
+import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
@@ -11,8 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.regex.Matcher;
 
 /**
@@ -22,8 +25,8 @@ import java.util.regex.Matcher;
  * @Description：Impala 工厂连接
  */
 @Slf4j
-public class ImpalaCoonFactory extends ConnFactory {
-    public ImpalaCoonFactory() {
+public class ImpalaConnFactory extends ConnFactory {
+    public ImpalaConnFactory() {
         this.driverName = DataBaseType.Impala.getDriverClassName();
     }
 
@@ -31,19 +34,29 @@ public class ImpalaCoonFactory extends ConnFactory {
     public Connection getConn(ISourceDTO iSource) throws Exception {
         init();
         ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
-
-        DriverManager.setLoginTimeout(30);
+        Connection connection = null;
         if (MapUtils.isNotEmpty(impalaSourceDTO.getKerberosConfig())) {
-            DtKerberosUtils.loginKerberos(impalaSourceDTO.getKerberosConfig());
+            String principalFile = (String) impalaSourceDTO.getKerberosConfig().get("principalFile");
+            String principal = (String) impalaSourceDTO.getKerberosConfig().get("principal");
+            log.info("getKuduClient principal {},principalFile:{}", principal, principalFile);
+            connection = KerberosUtil.loginKerberosWithUGI(impalaSourceDTO.getKerberosConfig()).doAs(
+                    (PrivilegedAction<Connection>) () -> {
+                        try {
+                            return super.getConn(impalaSourceDTO);
+                        } catch (Exception e) {
+                            throw new DtCenterDefException("getImpalaConnection error : " + e.getMessage(), e);
+                        }
+                    }
+            );
+        } else {
+            connection = super.getConn(impalaSourceDTO);
         }
-
-        Connection conn = super.getConn(impalaSourceDTO);
         String db = StringUtils.isBlank(impalaSourceDTO.getSchema()) ? getImpalaSchema(impalaSourceDTO.getUrl()) : impalaSourceDTO.getSchema();
         if (StringUtils.isNotBlank(db)) {
-            DBUtil.executeSqlWithoutResultSet(conn, String.format(DtClassConsistent.PublicConsistent.USE_DB, db),
+            DBUtil.executeSqlWithoutResultSet(connection, String.format(DtClassConsistent.PublicConsistent.USE_DB, db),
                     false);
         }
-        return conn;
+        return connection;
     }
 
     /**
