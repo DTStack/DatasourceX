@@ -69,7 +69,7 @@ public class KafkaTest {
     public void createTopic() throws Exception {
         try {
             IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
-            KafkaTopicDTO topicDTO = KafkaTopicDTO.builder().partitions(1).replicationFactor(1).topicName(
+            KafkaTopicDTO topicDTO = KafkaTopicDTO.builder().partitions(1).replicationFactor((short) 1).topicName(
                     "nanqi").build();
             Boolean clientTopic = client.createTopic(source, topicDTO);
             assert (Boolean.TRUE.equals(clientTopic));

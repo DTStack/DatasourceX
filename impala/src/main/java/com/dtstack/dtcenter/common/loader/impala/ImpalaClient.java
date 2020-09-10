@@ -1,16 +1,16 @@
 package com.dtstack.dtcenter.common.loader.impala;
 
 import com.alibaba.fastjson.JSONObject;
+import com.dtstack.dtcenter.common.loader.common.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
-import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.dtstack.dtcenter.common.loader.common.DBUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;

@@ -25,5 +25,5 @@ public class KafkaTopicDTO {
     /**
      * 复制因子
      */
-    private Integer replicationFactor;
+    private Short replicationFactor;
 }

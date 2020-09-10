@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.db2;
 
+import com.dtstack.dtcenter.common.loader.common.DBUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -9,7 +10,6 @@ import com.dtstack.dtcenter.loader.dto.source.Db2SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.dtstack.dtcenter.common.loader.common.DBUtil;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

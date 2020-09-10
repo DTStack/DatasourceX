@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hbase;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.enums.HbaseFilterType;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.hadoop.hbase.filter.CompareFilter;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.PageFilter;
@@ -75,7 +75,7 @@ public enum FilterType {
                 return filterType;
             }
         }
-        throw new DtCenterDefException("hbase自定义查询暂时不支持该过滤器类型");
+        throw new DtLoaderException("hbase自定义查询暂时不支持该过滤器类型");
     }
 
 }

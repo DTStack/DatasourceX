@@ -29,13 +29,13 @@ import java.util.stream.Collectors;
 public class AbsKerberosClient implements IKerberos {
 
     @Override
-    public Map<String, String> parseKerberosFromUpload(String zipLocation, String localKerberosPath, Integer datasourceType) throws Exception {
+    public Map<String, Object> parseKerberosFromUpload(String zipLocation, String localKerberosPath) throws Exception {
         // 返回的配置信息
-        Map<String, String> confMap = new HashMap<>();
+        Map<String, Object> confMap = new HashMap<>();
 
         // 解压缩文件并过滤隐藏文件(点开始的)
         List<File> unzipFileList = ZipUtil.unzipFile(zipLocation, localKerberosPath);
-        unzipFileList = unzipFileList.stream().filter(file -> file.getName().startsWith(".")).collect(Collectors.toList());
+        unzipFileList = unzipFileList.stream().filter(file -> !file.getName().startsWith(".")).collect(Collectors.toList());
 
         // 处理 Krb 和 Keytab 信息
         dealFile(unzipFileList, localKerberosPath, confMap);
@@ -56,7 +56,7 @@ public class AbsKerberosClient implements IKerberos {
      * @param confMap
      * @throws IOException
      */
-    protected void dealFile(List<File> unzipFileList, String localKerberosPath, Map<String, String> confMap) throws IOException {
+    protected void dealFile(List<File> unzipFileList, String localKerberosPath, Map<String, Object> confMap) throws IOException {
         KerberosConfigUtil.dealKeytab(unzipFileList, localKerberosPath, confMap);
         KerberosConfigUtil.dealKrb5Conf(unzipFileList, localKerberosPath, confMap);
     }

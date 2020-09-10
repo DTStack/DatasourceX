@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.kafka.util;
 
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.common.loader.common.IOUtils;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 
 import java.io.File;
 import java.io.FileOutputStream;

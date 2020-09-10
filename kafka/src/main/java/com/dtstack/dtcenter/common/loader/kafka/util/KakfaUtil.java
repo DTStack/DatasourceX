@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.google.common.collect.Lists;
+import org.apache.kafka.clients.admin.AdminClient;
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
 import kafka.cluster.Broker;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -27,6 +29,7 @@ import scala.collection.JavaConversions;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +52,6 @@ public class KakfaUtil {
         ZkUtils zkUtils = null;
         try {
             if (StringUtils.isEmpty(brokerUrls)) {
-                writeKafkaJaas(kerberosConfig);
                 brokerUrls = getAllBrokersAddressFromZk(zkUrls);
             }
             return StringUtils.isNotBlank(brokerUrls) ? checkKafkaConnection(brokerUrls, kerberosConfig) : false;
@@ -79,9 +81,6 @@ public class KakfaUtil {
         }
 
         String keytabConf = kerberosConfig.getOrDefault(HadoopConfTool.PRINCIPAL_FILE, "").toString();
-        String kafkaKbrServiceName =
-                kerberosConfig.getOrDefault(HadoopConfTool.PRINCIPAL, "").toString();
-        String kafkaLoginConf = null;
         try {
             File file = new File(keytabConf);
             File jaas = new File(file.getParent() + File.separator + "kafka_jaas.conf");
@@ -91,13 +90,12 @@ public class KakfaUtil {
 
             String principal = MapUtils.getString(kerberosConfig, HadoopConfTool.PRINCIPAL);
             FileUtils.write(jaas, String.format(KafkaConsistent.KAFKA_JAAS_CONTENT, keytabConf, principal));
-            kafkaLoginConf = jaas.getAbsolutePath();
-            log.info("Init Kafka Kerberos:login-conf:{}\n --sasl.kerberos.service.name:{}",
-                    keytabConf, kafkaKbrServiceName);
+            String kafkaLoginConf = jaas.getAbsolutePath();
+            log.info("Init Kafka Kerberos:login-conf:{}\n --sasl.kerberos.service.name:{}", keytabConf, principal);
+            return kafkaLoginConf;
         } catch (IOException e) {
             throw new DtLoaderException("写入kafka配置文件异常", e);
         }
-        return kafkaLoginConf;
     }
 
     /**
@@ -200,10 +198,12 @@ public class KakfaUtil {
      * @param replicationFacto
      * @return
      */
-    public static boolean createTopicFromBroker(String brokerUrls, Map<String, Object> kerberosConfig,
-                                                String topicName, Integer partitions, Integer replicationFacto) {
-        // TODO 待完工
-        return false;
+    public static void createTopicFromBroker(String brokerUrls, Map<String, Object> kerberosConfig,
+                                                String topicName, Integer partitions, Short replicationFacto) {
+        Properties defaultKafkaConfig = initProperties(brokerUrls, kerberosConfig);
+        AdminClient client = AdminClient.create(defaultKafkaConfig);
+        NewTopic topic = new NewTopic(topicName, partitions, replicationFacto);
+        client.createTopics(Collections.singleton(topic));
     }
 
     /**
@@ -374,6 +374,9 @@ public class KakfaUtil {
      */
     private static Properties initProperties(String brokerUrls, Map<String, Object> kerberosConfig) {
         Properties props = new Properties();
+        if (StringUtils.isBlank(brokerUrls)) {
+            throw new DtLoaderException("Kafka Broker 地址不能为空");
+        }
         /* 定义kakfa 服务的地址，不需要将所有broker指定上 */
         props.put("bootstrap.servers", brokerUrls);
         /* 是否自动确认offset */
@@ -397,13 +400,13 @@ public class KakfaUtil {
         }
 
         javax.security.auth.login.Configuration.setConfiguration(null);
-        String keytabConf = kerberosConfig.getOrDefault(HadoopConfTool.PRINCIPAL_FILE, "").toString();
-        String kafkaKbrServiceName =
-                kerberosConfig.getOrDefault(HadoopConfTool.PRINCIPAL, "").toString();
-        if (StringUtils.isBlank(keytabConf)) {
+        String kafkaKbrServiceName = MapUtils.getString(kerberosConfig, HadoopConfTool.PRINCIPAL);
+        if (StringUtils.isBlank(kafkaKbrServiceName)) {
             //不满足kerberos条件 直接返回
             return props;
         }
+        // 只需要认证的用户名
+        kafkaKbrServiceName = kafkaKbrServiceName.split("/")[0];
         String kafkaLoginConf = writeKafkaJaas(kerberosConfig);
         // kerberos 相关设置
         props.put("security.protocol", "SASL_PLAINTEXT");

@@ -311,7 +311,7 @@ public class SparkClient extends AbsRdbmsClient {
      * @return
      */
     @Override
-    protected String dealSql(SqlQueryDTO sqlQueryDTO) {
+    protected String dealSql(ISourceDTO iSourceDTO, SqlQueryDTO sqlQueryDTO) {
         Map<String, String> partitions = sqlQueryDTO.getPartitionColumns();
         StringBuilder partSql = new StringBuilder();
         //拼接分区信息

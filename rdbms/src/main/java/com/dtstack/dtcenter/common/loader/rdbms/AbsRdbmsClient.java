@@ -1,5 +1,7 @@
 package com.dtstack.dtcenter.common.loader.rdbms;
 
+import com.dtstack.dtcenter.common.loader.common.CollectionUtil;
+import com.dtstack.dtcenter.common.loader.common.DBUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.connection.CacheConnectionHelper;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -10,8 +12,6 @@ import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.dtstack.dtcenter.common.loader.common.CollectionUtil;
-import com.dtstack.dtcenter.common.loader.common.DBUtil;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -363,7 +363,9 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                 }
                 previewList.add(columnData);
             }
-        }finally {
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        } finally {
             DBUtil.closeDBResources(rs, stmt, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return previewList;
@@ -374,7 +376,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @param sqlQueryDTO 查询条件
      * @return 处理后的查询sql
      */
-    protected String dealSql(RdbmsSourceDTO rdbmsSourceDTO, SqlQueryDTO sqlQueryDTO){
+    protected String dealSql(ISourceDTO iSource, SqlQueryDTO sqlQueryDTO){
         return "select * from " + transferTableName(sqlQueryDTO.getTableName())
                 + " limit " + sqlQueryDTO.getPreviewNum();
     }

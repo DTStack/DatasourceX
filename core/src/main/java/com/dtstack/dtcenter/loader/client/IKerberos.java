@@ -17,14 +17,15 @@ public interface IKerberos {
      *
      * @param zipLocation
      * @param localKerberosPath
-     * @param datasourceType
      * @return
      * @throws Exception
      */
-    Map<String, String> parseKerberosFromUpload(String zipLocation, String localKerberosPath, Integer datasourceType) throws Exception;
+    Map<String, Object> parseKerberosFromUpload(String zipLocation, String localKerberosPath) throws Exception;
 
     /**
      * 连接 Kerberos 前的准备工作
+     * 1. 会替换相对路径到绝对路径，目前支持的是存在一个或者一个 / 都不存在的情况
+     * 2. 会增加或者修改一些 Principal 参数
      *
      * @param conf
      * @param localKerberosPath

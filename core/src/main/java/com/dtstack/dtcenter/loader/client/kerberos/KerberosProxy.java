@@ -20,8 +20,8 @@ public class KerberosProxy implements IKerberos {
     }
 
     @Override
-    public Map<String, String> parseKerberosFromUpload(String zipLocation, String localKerberosPath, Integer datasourceType) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.parseKerberosFromUpload(zipLocation, localKerberosPath, datasourceType),
+    public Map<String, Object> parseKerberosFromUpload(String zipLocation, String localKerberosPath) throws Exception {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.parseKerberosFromUpload(zipLocation, localKerberosPath),
                 targetClient.getClass().getClassLoader(), true);
     }
 

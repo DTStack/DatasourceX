@@ -25,8 +25,6 @@ import org.apache.kudu.client.RowResultIterator;
 
 import java.security.PrivilegedAction;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

@@ -1,9 +1,9 @@
 package com.dtstack.dtcenter.common.loader.rdbms;
 
+import com.dtstack.dtcenter.common.loader.common.DBUtil;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.dtcenter.common.loader.common.DBUtil;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;

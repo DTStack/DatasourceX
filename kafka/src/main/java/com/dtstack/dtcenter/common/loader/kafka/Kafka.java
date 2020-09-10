@@ -59,9 +59,11 @@ public class Kafka<T> implements IKafka<T> {
     @Override
     public Boolean createTopic(ISourceDTO iSource, KafkaTopicDTO kafkaTopic) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
-        return KakfaUtil.createTopicFromZk(kafkaSourceDTO.getUrl(), kafkaTopic.getTopicName(),
+        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(iSource) : kafkaSourceDTO.getBrokerUrls();
+        KakfaUtil.createTopicFromBroker(brokerUrl, kafkaSourceDTO.getKerberosConfig(), kafkaTopic.getTopicName(),
                 kafkaTopic.getPartitions(),
                 kafkaTopic.getReplicationFactor());
+        return true;
     }
 
     @Override

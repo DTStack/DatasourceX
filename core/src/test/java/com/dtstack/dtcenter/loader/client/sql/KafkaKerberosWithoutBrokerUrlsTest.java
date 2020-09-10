@@ -26,10 +26,9 @@ import java.util.Map;
  * @Description：Kafka Kerberos 认证
  */
 @Slf4j
-public class KafkaKerberosTest {
+public class KafkaKerberosWithoutBrokerUrlsTest {
     KafkaSourceDTO source = KafkaSourceDTO.builder()
             .url("172.16.100.170:2181,172.16.100.191:2181,172.16.101.123:2181")
-            .brokerUrls("172.16.100.170:9092,172.16.100.191:9092,172.16.101.123:9092")
             .build();
 
     @Before
@@ -40,7 +39,7 @@ public class KafkaKerberosTest {
         kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
         source.setKerberosConfig(kerberosConfig);
 
-        String localKerberosPath = KafkaKerberosTest.class.getResource("/eng-cdh").getPath();
+        String localKerberosPath = KafkaKerberosWithoutBrokerUrlsTest.class.getResource("/eng-cdh").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.KAFKA.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
 

@@ -37,7 +37,7 @@ public class KerberosConfigUtil {
      * @param oppositeLocation
      * @param confMap
      */
-    public static void dealKeytab(List<File> fileList, String oppositeLocation, Map<String, String> confMap) throws IOException {
+    public static void dealKeytab(List<File> fileList, String oppositeLocation, Map<String, Object> confMap) throws IOException {
         String finalPath = dealFilePath(fileList, oppositeLocation, DtClassConsistent.PublicConsistent.KEYTAB_SUFFIX);
         log.info("DealKeytab path -- key : {}, value : {}", HadoopConfTool.PRINCIPAL_FILE, finalPath);
         confMap.put(HadoopConfTool.PRINCIPAL_FILE, finalPath);
@@ -50,7 +50,7 @@ public class KerberosConfigUtil {
      * @param oppositeLocation
      * @param confMap
      */
-    public static void dealKrb5Conf(List<File> fileList, String oppositeLocation, Map<String, String> confMap) throws IOException {
+    public static void dealKrb5Conf(List<File> fileList, String oppositeLocation, Map<String, Object> confMap) throws IOException {
         String finalPath = dealFilePath(fileList, oppositeLocation, DtClassConsistent.PublicConsistent.KRB5CONF_FILE);
         log.info("DealKeytab path -- key : {}, value : {}", HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);
         confMap.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);

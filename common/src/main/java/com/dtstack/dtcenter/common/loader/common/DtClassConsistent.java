@@ -58,7 +58,7 @@ public interface DtClassConsistent {
         /**
          * krb5 文件名称
          */
-        public static final String KRB5CONF_FILE = ".keytab";
+        public static final String KRB5CONF_FILE = "krb5.conf";
 
         /**
          * XML 文件后缀

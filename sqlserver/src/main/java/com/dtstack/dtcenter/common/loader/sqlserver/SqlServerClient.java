@@ -1,8 +1,9 @@
 package com.dtstack.dtcenter.common.loader.sqlserver;
 
+import com.dtstack.dtcenter.common.loader.common.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
-import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
@@ -11,7 +12,6 @@ import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SqlserverSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.dtstack.dtcenter.common.loader.common.DBUtil;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -114,7 +114,7 @@ public class SqlServerClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected String dealSql(SqlQueryDTO sqlQueryDTO) {
+    protected String dealSql(ISourceDTO iSourceDTO, SqlQueryDTO sqlQueryDTO) {
         return "select top "+sqlQueryDTO.getPreviewNum()+" * from "+transferTableName(sqlQueryDTO.getTableName());
     }
 

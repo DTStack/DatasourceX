@@ -1,9 +1,9 @@
 package com.dtstack.dtcenter.common.loader.redis;
 
+import com.dtstack.dtcenter.common.loader.common.AddressUtil;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RedisSourceDTO;
 import com.dtstack.dtcenter.loader.enums.RedisMode;
-import com.dtstack.dtcenter.common.loader.common.AddressUtil;
 import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;

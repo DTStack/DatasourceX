@@ -256,7 +256,7 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 <dependency>
     <groupId>com.dtstack.dtcenter</groupId>
     <artifactId>common.loader.core</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.3.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -275,11 +275,9 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
     Connection clientCon = DriverManager.getConnection(url, prop);
 
     // 改为
-    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
-
     @Test
     public void getMysqlConnection() throws Exception {
-    IClient client = clientCache.getClient(DataSourceType.MySql5.getPluginName());
+    IClient client = ClientCache.getClient(DataSourceType.MySql5.getVal());
         Mysql5SourceDTO source = Mysql5SourceDTO.builder()
             .url("jdbc:mysql://172.16.8.109:3306/ide")
             .username("dtstack")
@@ -295,7 +293,7 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 
     @Test
     public void getMysqlConnection() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.MySql5.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.MySql5.getVal());
         Mysql5SourceDTO source = Mysql5SourceDTO.builder()
             .url("jdbc:mysql://172.16.8.109:3306/ide")
             .username("dtstack")
@@ -306,15 +304,30 @@ ps: 如果直接传过来的表名中有"."，请使用[]进行包裹处理
 ```
 ```$java
     //kafka客户端插件需要如下使用
-    private static final AbsClientCache kafkaClientCache = ClientType.KAFKA_CLIENT.getClientCache();
-
     @Test
     public void getTopicList() throws Exception {
-        IKafka client = kafkaClientCache.getKafka(DataSourceType.KAFKA_09.getPluginName());
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
         KafkaSourceDTO source = KafkaSourceDTO.builder()
                         .url("172.16.8.107:2181/kafka")
                         .build();
         List<String> topicList = client.getTopicList(source);
         
+    }
+```
+
+### 6.2.3 Kerberos 具体使用
+
+```$Java
+    @Test
+    public void getMysqlConnection() throws Exception {
+        IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HIVE.getVal());
+        // 处理 Kerberos，解压缩，和定位 keytab 和 krb5.conf 文件路径，此处为相对路径，该 map 当 KerberosConfig 存储入数据库
+        Map<String, Object> kerberosConfig = kerberos.parseKerberosFromUpload(zipLos, localKerberosPath);
+
+        // 调用Client 方法前调用
+        // 1. 会替换相对路径到绝对路径，目前支持的是存在一个或者一个 / 都不存在的情况
+        // 2. 会增加或者修改一些 Principal 参数
+        kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
+        // kerberosConfig 就是 KerberosConfig 参数拿来个 Client 使用
     }
 ```

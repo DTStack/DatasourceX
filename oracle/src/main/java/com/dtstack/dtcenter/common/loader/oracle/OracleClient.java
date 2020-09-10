@@ -1,8 +1,10 @@
 package com.dtstack.dtcenter.common.loader.oracle;
 
+import com.dtstack.dtcenter.common.loader.common.CollectionUtil;
+import com.dtstack.dtcenter.common.loader.common.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
-import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
@@ -11,8 +13,6 @@ import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.dtstack.dtcenter.common.loader.common.CollectionUtil;
-import com.dtstack.dtcenter.common.loader.common.DBUtil;
 import oracle.jdbc.OracleResultSetMetaData;
 import org.apache.commons.lang3.StringUtils;
 
@@ -223,8 +223,9 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected String dealSql(RdbmsSourceDTO rdbmsSourceDTO, SqlQueryDTO sqlQueryDTO){
-        return "select * from " + transferSchemaAndTableName(rdbmsSourceDTO.getSchema(), sqlQueryDTO.getTableName()) + " where rownum <=" + sqlQueryDTO.getPreviewNum();
+    protected String dealSql(ISourceDTO iSourceDTO, SqlQueryDTO sqlQueryDTO){
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) iSourceDTO;
+        return "select * from " + transferSchemaAndTableName(oracleSourceDTO.getSchema(), sqlQueryDTO.getTableName()) + " where rownum <=" + sqlQueryDTO.getPreviewNum();
     }
 
     @Override
