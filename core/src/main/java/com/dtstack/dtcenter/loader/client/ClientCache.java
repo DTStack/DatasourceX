@@ -68,8 +68,20 @@ public class ClientCache {
      * @throws ClientAccessException
      */
     public static IClient getClient(Integer sourceType) throws ClientAccessException {
+        String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
+        return getClient(pluginName);
+    }
+
+    /**
+     * 获取 Sql Client 客户端
+     *
+     * @param pluginName
+     * @return
+     * @throws ClientAccessException
+     */
+    @Deprecated
+    public static IClient getClient(String pluginName) throws ClientAccessException {
         try {
-            String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
             IClient client = SQL_CLIENT.get(pluginName);
             if (client == null) {
                 synchronized (SQL_CLIENT) {
@@ -95,8 +107,20 @@ public class ClientCache {
      * @throws ClientAccessException
      */
     public static IHdfsFile getHdfs(Integer sourceType) throws ClientAccessException {
+        String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
+        return getHdfs(pluginName);
+    }
+
+    /**
+     * 获取 HDFS 文件客户端
+     *
+     * @param pluginName
+     * @return
+     * @throws ClientAccessException
+     */
+    @Deprecated
+    public static IHdfsFile getHdfs(String pluginName) throws ClientAccessException {
         try {
-            String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
             IHdfsFile hdfsFile = HDFS_FILE_CLIENT.get(pluginName);
             if (hdfsFile == null) {
                 synchronized (HDFS_FILE_CLIENT) {
@@ -122,8 +146,21 @@ public class ClientCache {
      * @throws ClientAccessException
      */
     public static IKafka getKafka(Integer sourceType) throws ClientAccessException {
+        String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
+        return getKafka(pluginName);
+    }
+
+
+    /**
+     * 获取 KAFKA 客户端
+     *
+     * @param pluginName
+     * @return
+     * @throws ClientAccessException
+     */
+    @Deprecated
+    public static IKafka getKafka(String pluginName) throws ClientAccessException {
         try {
-            String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
             IKafka kafka = KAFKA_CLIENT.get(pluginName);
             if (kafka == null) {
                 synchronized (KAFKA_CLIENT) {
@@ -149,8 +186,19 @@ public class ClientCache {
      * @throws ClientAccessException
      */
     public static IKerberos getKerberos(Integer sourceType) throws ClientAccessException {
+        String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
+        return getKerberos(pluginName);
+    }
+
+    /**
+     * 获取 Kerberos 服务客户端
+     *
+     * @param pluginName
+     * @return
+     * @throws ClientAccessException
+     */
+    private static IKerberos getKerberos(String pluginName) throws ClientAccessException {
         try {
-            String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
             IKerberos kerberos = KERBEROS_CLIENT.get(pluginName);
             if (kerberos == null) {
                 synchronized (KERBEROS_CLIENT) {
