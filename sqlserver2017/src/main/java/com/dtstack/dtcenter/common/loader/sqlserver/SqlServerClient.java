@@ -129,12 +129,6 @@ public class SqlServerClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        queryDTO.setSql(SCHEMAS_QUERY);
-        return super.getAllDatabases(source, queryDTO);
-    }
-
-    @Override
     public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
@@ -171,5 +165,10 @@ public class SqlServerClient extends AbsRdbmsClient {
     private static String addSingleQuotes(String str) {
         str = str.contains("'") ? str : String.format("'%s'", str);
         return str;
+    }
+
+    @Override
+    public String getShowDbSql() {
+        return SCHEMAS_QUERY;
     }
 }

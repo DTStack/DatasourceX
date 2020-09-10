@@ -36,6 +36,7 @@ public enum DataBaseType {
     DMDB("DMDB","dm.jdbc.driver.DmDriver"),
     Greenplum6("Greenplum6", "com.pivotal.jdbc.GreenplumDriver"),
     Phoenix5("Phoenix5", "org.apache.phoenix.jdbc.PhoenixDriver"),
+    KINGBASE("kingbase", "com.kingbase8.Driver"),
     ;
     private String typeName;
     private String driverClassName;

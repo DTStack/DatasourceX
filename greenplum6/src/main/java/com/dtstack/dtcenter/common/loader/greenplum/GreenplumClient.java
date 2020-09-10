@@ -159,12 +159,6 @@ public class GreenplumClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        queryDTO.setSql(DATABASE_QUERY);
-        return super.getAllDatabases(source, queryDTO);
-    }
-
-    @Override
     public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
@@ -172,5 +166,10 @@ public class GreenplumClient extends AbsRdbmsClient {
     @Override
     public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public String getShowDbSql() {
+        return DATABASE_QUERY;
     }
 }

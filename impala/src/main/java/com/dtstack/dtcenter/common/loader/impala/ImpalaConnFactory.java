@@ -24,8 +24,8 @@ import java.util.regex.Matcher;
  * @Description：Impala 工厂连接
  */
 @Slf4j
-public class ImpalaCoonFactory extends ConnFactory {
-    public ImpalaCoonFactory() {
+public class ImpalaConnFactory extends ConnFactory {
+    public ImpalaConnFactory() {
         this.driverName = DataBaseType.Impala.getDriverClassName();
     }
 

@@ -43,6 +43,8 @@
         <module>spark</module>
         <module>common</module>
         <module>kerberos</module>
+        <module>kingbase</module>
+        <module>hbase_gateway</module>
     </modules>
     <packaging>pom</packaging>
 

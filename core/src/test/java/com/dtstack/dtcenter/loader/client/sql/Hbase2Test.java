@@ -36,4 +36,24 @@ public class Hbase2Test {
         List<String> tableList = client.getTableList(source, null);
         System.out.println(tableList.size());
     }
+
+    @Test
+    public void executorQuery() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.HBASE.getPluginName());
+        PageFilter pageFilter = new PageFilter(2);
+        ArrayList<Filter> filters = new ArrayList<>();
+        SingleColumnValueFilter filter = new SingleColumnValueFilter("baseInfo".getBytes(), "age".getBytes(), CompareOp.EQUAL, new RegexStringComparator("."));
+        filter.setFilterIfMissing(true);
+        filters.add(filter);
+        filters.add(pageFilter);
+        List list = client.executeQuery(source, SqlQueryDTO.builder().tableName("dtstack").hbaseFilter(filters).build());
+        System.out.println(list);
+    }
+
+    @Test
+    public void preview() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.HBASE.getPluginName());
+        List<List<Object>> result = client.getPreview(source, SqlQueryDTO.builder().tableName("dtstack").previewNum(1).build());
+        System.out.println(result);
+    }
 }

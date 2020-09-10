@@ -84,13 +84,6 @@ public class Db2Client extends AbsRdbmsClient {
         return "";
     }
 
-
-    @Override
-    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        queryDTO.setSql(DATABASE_QUERY);
-        return super.getAllDatabases(source,queryDTO);
-    }
-
     @Override
     public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
@@ -110,5 +103,10 @@ public class Db2Client extends AbsRdbmsClient {
         Db2Downloader db2Downloader = new Db2Downloader(connection, sql, schema);
         db2Downloader.configure();
         return db2Downloader;
+    }
+
+    @Override
+    public String getShowDbSql() {
+        return DATABASE_QUERY;
     }
 }

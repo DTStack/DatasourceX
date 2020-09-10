@@ -55,6 +55,12 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     private static final String DONT_EXIST = "doesn't exist";
 
+    private static final String preFieldsName = "preFields";
+
+    private static final String queryTimeoutFieldName = "queryTimeout";
+
+    private static final String SHOW_DB_SQL = "show databases";
+
     @Override
     public Connection getCon(ISourceDTO iSource) throws Exception {
         log.info("-------get connection success-----");
@@ -193,7 +199,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         try {
             stmt = rdbmsSourceDTO.getConnection().createStatement();
             String queryColumnSql =
-                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferTableName(queryDTO.getTableName())
+                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(rdbmsSourceDTO.getSchema(), queryDTO.getTableName())
                             + " where 1=2";
             rs = stmt.executeQuery(queryColumnSql);
             ResultSetMetaData rsmd = rs.getMetaData();
@@ -263,7 +269,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         try {
             statement = rdbmsSourceDTO.getConnection().createStatement();
             String queryColumnSql =
-                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferTableName(queryDTO.getTableName()) + " where 1=2";
+                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(rdbmsSourceDTO.getSchema(), queryDTO.getTableName()) + " where 1=2";
 
             rs = statement.executeQuery(queryColumnSql);
             ResultSetMetaData rsMetaData = rs.getMetaData();
@@ -338,7 +344,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         try {
             stmt = rdbmsSourceDTO.getConnection().createStatement();
             //查询sql，默认预览100条
-            String querySql = dealSql(queryDTO);
+            String querySql = dealSql(rdbmsSourceDTO, queryDTO);
             rs = stmt.executeQuery(querySql);
             ResultSetMetaData rsmd = rs.getMetaData();
             //存储字段信息
@@ -368,9 +374,20 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @param sqlQueryDTO 查询条件
      * @return 处理后的查询sql
      */
-    protected String dealSql(SqlQueryDTO sqlQueryDTO){
+    protected String dealSql(RdbmsSourceDTO rdbmsSourceDTO, SqlQueryDTO sqlQueryDTO){
         return "select * from " + transferTableName(sqlQueryDTO.getTableName())
                 + " limit " + sqlQueryDTO.getPreviewNum();
+    }
+
+    /**
+     * 处理schema和表名
+     *
+     * @param schema
+     * @param tableName
+     * @return
+     */
+    protected String transferSchemaAndTableName(String schema,String tableName) {
+        return transferTableName(tableName);
     }
 
     /**
@@ -405,7 +422,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
 
         // 获取表信息需要通过show databases 语句
-        String sql = queryDTO.getSql()==null?"show databases":queryDTO.getSql();
+        String sql = getShowDbSql();
         Statement statement = null;
         ResultSet rs = null;
         List<String> databaseList = new ArrayList<>();
@@ -458,6 +475,14 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     @Override
     public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         return null;
+    }
+
+    /**
+     * 获取所有 数据库/schema sql语句
+     * @return
+     */
+    protected String getShowDbSql(){
+        return SHOW_DB_SQL;
     }
 
 }

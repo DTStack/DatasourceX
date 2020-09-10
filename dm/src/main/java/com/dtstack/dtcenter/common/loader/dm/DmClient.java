@@ -77,12 +77,6 @@ public class DmClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        queryDTO.setSql(DM_ALL_DATABASES);
-        return super.getAllDatabases(source, queryDTO);
-    }
-
-    @Override
     public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         DmSourceDTO dmSourceDTO = (DmSourceDTO) source;
         queryDTO.setSql(String.format(CREATE_TABLE_SQL,queryDTO.getTableName(),dmSourceDTO.getSchema()));
@@ -92,5 +86,10 @@ public class DmClient extends AbsRdbmsClient {
     @Override
     public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public String getShowDbSql() {
+        return DM_ALL_DATABASES;
     }
 }

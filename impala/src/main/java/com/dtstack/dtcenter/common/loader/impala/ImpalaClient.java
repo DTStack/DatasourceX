@@ -30,7 +30,7 @@ import java.util.regex.Matcher;
 public class ImpalaClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
-        return new ImpalaCoonFactory();
+        return new ImpalaConnFactory();
     }
 
     @Override
