@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hive1;
 
+import com.dtstack.dtcenter.common.loader.hive1.client.HiveClient;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import org.junit.Test;
 

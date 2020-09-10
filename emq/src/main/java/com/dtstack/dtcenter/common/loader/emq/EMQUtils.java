@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.emq;
 
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -29,12 +30,12 @@ public class EMQUtils {
             if (StringUtils.isNotBlank(password)) {
                 connOpts.setPassword(password.toCharArray());
             }
+            sampleClient.setTimeToWait(5L * 1000);
             sampleClient.connect(connOpts);
             sampleClient.disconnect();
             return true;
         } catch (MqttException e) {
-            log.error("connect to emq error", e);
+            throw new DtLoaderException(e.getMessage(), e);
         }
-        return false;
     }
 }

@@ -1,9 +1,10 @@
 package com.dtstack.dtcenter.common.loader.kafka.util;
 
+import com.dtstack.dtcenter.common.loader.common.TelUtil;
 import com.dtstack.dtcenter.common.loader.kafka.KafkaConsistent;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.dtcenter.common.loader.common.TelUtil;
+import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.google.common.collect.Lists;
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
@@ -82,9 +83,7 @@ public class KakfaUtil {
                 jaas.delete();
             }
 
-            // 处理 Principal
-            String principal = KerberosUtil.getPrincipal(keytabConf);
-
+            String principal = MapUtils.getString(kerberosConfig, HadoopConfTool.PRINCIPAL);
             FileUtils.write(jaas, String.format(KafkaConsistent.KAFKA_JAAS_CONTENT, keytabConf, principal));
             kafkaLoginConf = jaas.getAbsolutePath();
             log.info("Init Kafka Kerberos:login-conf:{}\n --sasl.kerberos.service.name:{}",
@@ -374,7 +373,7 @@ public class KakfaUtil {
         /* 是否自动确认offset */
         props.put("enable.auto.commit", "true");
         /* 设置group id */
-        props.put("group.id", "dtstack_stream_connection");
+        props.put("group.id", KafkaConsistent.KAFKA_GROUP);
         /* 自动确认offset的时间间隔 */
         props.put("auto.commit.interval.ms", "1000");
         //heart beat 默认3s

@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.kafka;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -8,8 +9,8 @@ import org.junit.Test;
  * @Date ：Created in 01:15 2020/2/27
  * @Description：Kafka 客户端测试
  */
+@Ignore
 public class KafkaClientTest {
-    private static AbsKafka kafkaClient = new Kafka();
 
     @Test
     public void test_issue() throws Exception {

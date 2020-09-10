@@ -1,8 +1,8 @@
 package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
-import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
-import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
-import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
+import com.dtstack.dtcenter.common.loader.hdfs.YarnConfUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -95,7 +95,7 @@ public class HdfsTextDownload implements IDownloader {
     private List<String> getAllPartitionPath(String tableLocation) throws IOException {
 
         Path inputPath = new Path(tableLocation);
-        Configuration configuration = HadoopConfUtil.getFullConfiguration(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf());
+        Configuration configuration = YarnConfUtil.getFullConfiguration(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getKerberosConfig());
 
         conf = new JobConf(configuration);
         FileSystem fs =  FileSystem.get(conf);
@@ -127,7 +127,7 @@ public class HdfsTextDownload implements IDownloader {
         }
 
         Path inputPath = new Path(currFile);
-        Configuration configuration = HadoopConfUtil.getFullConfiguration(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf());
+        Configuration configuration = YarnConfUtil.getFullConfiguration(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getKerberosConfig());
 
         conf = new JobConf(configuration);
         inputFormat = new TextInputFormat();
@@ -218,7 +218,7 @@ public class HdfsTextDownload implements IDownloader {
         }
 
         // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return KerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
@@ -259,7 +259,7 @@ public class HdfsTextDownload implements IDownloader {
         }
 
         // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return KerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
             try {
                 return recordReader == null || !nextRecord();
@@ -272,27 +272,10 @@ public class HdfsTextDownload implements IDownloader {
 
     @Override
     public boolean close() throws IOException {
-
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            if(recordReader != null){
-                recordReader.close();
-            }
-            return true;
+        if (recordReader != null) {
+            recordReader.close();
         }
-
-        // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) ()->{
-                    try {
-                        if(recordReader != null){
-                            recordReader.close();
-                        }
-                        return true;
-                    } catch (Exception e){
-                        throw new DtLoaderException("RecordReader 关闭异常", e);
-                    }
-                });
+        return true;
     }
 
     @Override

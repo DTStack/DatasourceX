@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.common.loader.kudu;
 
-import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -23,6 +23,7 @@ import org.apache.kudu.client.KuduTable;
 import org.apache.kudu.client.RowResult;
 import org.apache.kudu.client.RowResultIterator;
 
+import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,7 +45,7 @@ public class DtKuduClient<T> implements IClient<T> {
     private static int PRE_SIZE = 3;
 
     @Override
-    public Boolean testCon(ISourceDTO iSource) {
+    public Boolean testCon(ISourceDTO iSource) throws Exception {
         KuduSourceDTO kuduSourceDTO = (KuduSourceDTO) iSource;
         if (null == kuduSourceDTO || StringUtils.isBlank(kuduSourceDTO.getUrl())) {
             return false;
@@ -110,13 +111,14 @@ public class DtKuduClient<T> implements IClient<T> {
         if (kuduSourceDTO == null || StringUtils.isBlank(kuduSourceDTO.getUrl())) {
             throw new DtLoaderException("集群地址不能为空");
         }
-
-        if (MapUtils.isNotEmpty(kuduSourceDTO.getKerberosConfig())) {
-            DtKerberosUtils.loginKerberos(kuduSourceDTO.getKerberosConfig());
+        List<String> hosts = Arrays.stream(kuduSourceDTO.getUrl().split(",")).collect(Collectors.toList());
+        if (MapUtils.isEmpty(kuduSourceDTO.getKerberosConfig())) {
+            return new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build();
         }
 
-        List<String> hosts = Arrays.stream(kuduSourceDTO.getUrl().split(",")).collect(Collectors.toList());
-        return new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build();
+        return KerberosLoginUtil.loginKerberosWithUGI(kuduSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<KuduClient>) () -> new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build()
+        );
     }
 
 

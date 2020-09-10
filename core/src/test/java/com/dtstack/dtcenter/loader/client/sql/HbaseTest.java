@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class HbaseTest {
     HbaseSourceDTO source = HbaseSourceDTO.builder()
-            .url("172.16.10.104:2181,172.16.10.224:2181,172.16.10.252:2181")
+            .url("172.16.8.107,172.16.8.108,172.16.8.109:2181")
             .path("/hbase")
             .build();
 

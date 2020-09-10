@@ -22,7 +22,7 @@ public class HdfsClient<T> implements IClient<T> {
     private HdfsConnFactory hdfsConnFactory = new HdfsConnFactory();
 
     @Override
-    public Boolean testCon(ISourceDTO source) {
+    public Boolean testCon(ISourceDTO source) throws Exception {
         return hdfsConnFactory.testConn(source);
     }
 

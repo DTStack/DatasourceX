@@ -32,7 +32,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    Boolean testCon(ISourceDTO source);
+    Boolean testCon(ISourceDTO source) throws Exception;
 
     /**
      * 执行查询

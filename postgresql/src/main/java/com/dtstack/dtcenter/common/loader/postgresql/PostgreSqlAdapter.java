@@ -60,8 +60,9 @@ public class PostgreSqlAdapter {
             case Types.NUMERIC:
                 return JavaType.TYPE_DECIMAL.getFlinkSqlType();
 
+            default:
+                return null;
         }
-        return null;
     }
 
     public enum JavaType{

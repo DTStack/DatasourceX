@@ -1,8 +1,5 @@
 package com.dtstack.dtcenter.loader.kerberos;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * @company: www.dtstack.com
  * @Author ：Nanqi
@@ -10,6 +7,16 @@ import java.util.List;
  * @Description：Hadoop 配置中心
  */
 public class HadoopConfTool {
+    /**
+     * Hadoop 本地 IP 配置
+     */
+    public static final String HOST = "_HOST";
+
+    /**
+     * Hadoop 开启 Kerberos 是否需要二次认证
+     */
+    public static final String HADOOP_SECURITY_AUTHORIZATION = "hadoop.security.authorization";
+
     /**
      * krb5 系统属性键
      */
@@ -19,6 +26,16 @@ public class HadoopConfTool {
      * principal 键
      */
     public static final String PRINCIPAL = "principal";
+
+    /**
+     * Hbase master Principal 键
+     */
+    public static final String HBASE_MASTER_PRINCIPAL = "hbase.master.kerberos.principal";
+
+    /**
+     * Hbase region Principal 键
+     */
+    public static final String HBASE_REGION_PRINCIPAL = "hbase.regionserver.kerberos.principal";
 
     /**
      * principal 文件 键
@@ -31,16 +48,12 @@ public class HadoopConfTool {
     public static final String KAFKA_KERBEROS_KEYTAB = "kafka.kerberos.keytab";
 
     /**
-     * Principal 所有的 键
+     * Resource Manager Configs
      */
-    public static List<String> PRINCIPAL_KEYS = Arrays.asList(
-            "hive.server2.authentication.kerberos.principal",
-            "hive.metastore.kerberos.principal",
-            "beeline.hs2.connection.principal",
-            "yarn.resourcemanager.principal",
-            "yarn.nodemanager.principal",
-            "dfs.namenode.kerberos.principal",
-            "dfs.datanode.kerberos.principal",
-            "dfs.journalnode.kerberos.principal"
-    );
+    public static final String RM_PREFIX = "yarn.resourcemanager.";
+
+    /**
+     * MR 任务的 Principal 信息，也可以认为是 Yarn 的 Principal
+     */
+    public static final String RM_PRINCIPAL = RM_PREFIX + "principal";
 }

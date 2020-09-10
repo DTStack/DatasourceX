@@ -58,7 +58,7 @@ public class OdpsClient<T> implements IClient<T> {
     private static OdpsManager odpsManager = OdpsManager.getInstance();
 
     @Override
-    public Boolean testCon(ISourceDTO iSource) {
+    public Boolean testCon(ISourceDTO iSource) throws Exception {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         Odps odps = null;
         try {

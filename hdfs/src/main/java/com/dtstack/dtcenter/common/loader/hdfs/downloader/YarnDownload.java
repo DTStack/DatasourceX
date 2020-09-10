@@ -1,8 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
-import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
-import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
-import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
+import com.dtstack.dtcenter.common.loader.hdfs.YarnConfUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
@@ -88,9 +87,6 @@ public class YarnDownload implements IDownloader {
 
     private AggregatedLogFormat.LogReader currReader;
 
-    private static final String FS_HDFS_IMPL_DISABLE_CACHE = "fs.hdfs.impl.disable.cache";
-    private static final String IPC_CLIENT_FALLBACK_TO_SIMPLE_AUTH_ALLOWED = "ipc.client.fallback-to-simple-auth-allowed";
-
     private YarnDownload(String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit) {
         this.appIdStr = appIdStr;
         this.yarnConf = yarnConf;
@@ -111,7 +107,7 @@ public class YarnDownload implements IDownloader {
 
     @Override
     public boolean configure() throws Exception {
-        configuration = HadoopConfUtil.getFullConfiguration(hdfsConfig, yarnConf);
+        configuration = YarnConfUtil.getFullConfiguration(null, hdfsConfig, yarnConf, kerberosConfig);
 
         //TODO 暂时在这个地方加上
         configuration.set("fs.AbstractFileSystem.hdfs.impl", "org.apache.hadoop.fs.Hdfs");
@@ -188,7 +184,7 @@ public class YarnDownload implements IDownloader {
         }
 
         // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return KerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) () -> {
                     try {
                         return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
@@ -200,43 +196,15 @@ public class YarnDownload implements IDownloader {
 
     @Override
     public boolean close() throws Exception {
-
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            if (currValueStream != null) {
-                currValueStream.close();
-            }
-            return true;
+        if (currValueStream != null) {
+            currValueStream.close();
         }
-
-        // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) () -> {
-                    try {
-                        if (currValueStream != null) {
-                            currValueStream.close();
-                        }
-                        return true;
-                    } catch (Exception e) {
-                        throw new DtLoaderException("读取文件异常", e);
-                    }
-                });
+        return true;
     }
 
     @Override
     public String getFileName() {
         return null;
-    }
-
-    /**
-     * 设置默认 YARN 配置
-     *
-     * @param conf
-     */
-    public static void setDefaultConf(Configuration conf) {
-        conf.setBoolean(FS_HDFS_IMPL_DISABLE_CACHE, true);
-        conf.setBoolean(IPC_CLIENT_FALLBACK_TO_SIMPLE_AUTH_ALLOWED, true);
-        conf.set(HadoopConfTool.FS_HDFS_IMPL, HadoopConfTool.DEFAULT_FS_HDFS_IMPL);
     }
 
     /**

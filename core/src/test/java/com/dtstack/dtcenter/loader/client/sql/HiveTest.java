@@ -26,14 +26,15 @@ import java.util.Map;
 @Slf4j
 public class HiveTest {
     private static HiveSourceDTO source = HiveSourceDTO.builder()
-            .url("jdbc:hive2://kudu1:2181,kudu2:2181,kudu3:2181/default;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2")
-            .schema("default")
-            .username("admin")
+            .url("jdbc:hive2://kudu1:10000/dev")
+            .schema("dev")
             .defaultFS("hdfs://ns1")
+            .username("admin")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
                     "    \"dfs.namenode.rpc-address.ns1.nn2\": \"kudu2:9000\",\n" +
-                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
+                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha" +
+                    ".ConfiguredFailoverProxyProvider\",\n" +
                     "    \"dfs.namenode.rpc-address.ns1.nn1\": \"kudu1:9000\",\n" +
                     "    \"dfs.nameservices\": \"ns1\"\n" +
                     "}")
@@ -41,7 +42,7 @@ public class HiveTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        System.setProperty("HADOOP_USER_NAME", source.getUsername());
+        System.setProperty("HADOOP_USER_NAME", "root");
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
         client.executeSqlWithoutResultSet(source, queryDTO);

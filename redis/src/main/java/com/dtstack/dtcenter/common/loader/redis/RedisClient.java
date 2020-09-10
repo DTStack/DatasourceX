@@ -19,7 +19,7 @@ import java.util.Map;
  */
 public class RedisClient<T> implements IClient<T> {
     @Override
-    public Boolean testCon(ISourceDTO iSource) {
+    public Boolean testCon(ISourceDTO iSource) throws Exception {
         return RedisUtils.checkConnection(iSource);
     }
 

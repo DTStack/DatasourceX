@@ -24,7 +24,7 @@ public class MongoDBClient<T> implements IClient<T> {
     private static MongoExecutor mongoExecutor = MongoExecutor.getInstance();
 
     @Override
-    public Boolean testCon(ISourceDTO iSource) {
+    public Boolean testCon(ISourceDTO iSource) throws Exception {
         return MongoDBUtils.checkConnection(iSource);
     }
 

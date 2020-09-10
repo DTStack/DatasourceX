@@ -1,9 +1,9 @@
 package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 
 import com.csvreader.CsvReader;
-import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
-import com.dtstack.dtcenter.common.util.DateUtil;
-import com.dtstack.dtcenter.common.util.MathUtil;
+import com.dtstack.dtcenter.common.loader.common.DateUtil;
+import com.dtstack.dtcenter.common.loader.common.MathUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
@@ -58,7 +58,7 @@ public class HdfsOrcWriter {
             startLine++;
         }
 
-        Configuration conf = HadoopConfUtil.getHdfsConfiguration(hdfsSourceDTO.getConfig());
+        Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
         String typeInfoStr = buildTypeInfo(hdfsWriterDTO.getColumnsList());
 
         TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeInfoStr);
@@ -130,7 +130,7 @@ public class HdfsOrcWriter {
     public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
 
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
-        Configuration conf = HadoopConfUtil.getHdfsConfiguration(hdfsSourceDTO.getConfig());
+        Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
         String typeInfoStr = buildTypeInfo(hdfsWriterDTO.getColumnsList());
 
         int startLine = hdfsWriterDTO.getStartLine();

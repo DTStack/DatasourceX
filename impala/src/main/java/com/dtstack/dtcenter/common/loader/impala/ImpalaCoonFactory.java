@@ -1,16 +1,18 @@
 package com.dtstack.dtcenter.common.loader.impala;
 
-import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
-import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
+import com.dtstack.dtcenter.common.loader.common.DBUtil;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
+import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
-import com.dtstack.dtcenter.common.loader.common.DBUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.regex.Matcher;
@@ -33,11 +35,21 @@ public class ImpalaCoonFactory extends ConnFactory {
         ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
 
         DriverManager.setLoginTimeout(30);
-        if (MapUtils.isNotEmpty(impalaSourceDTO.getKerberosConfig())) {
-            DtKerberosUtils.loginKerberos(impalaSourceDTO.getKerberosConfig());
+        Connection conn = null;
+        if (MapUtils.isEmpty(impalaSourceDTO.getKerberosConfig())) {
+            conn = super.getConn(impalaSourceDTO);
+        } else {
+            conn = KerberosLoginUtil.loginKerberosWithUGI(impalaSourceDTO.getKerberosConfig()).doAs(
+                    (PrivilegedAction<Connection>) () -> {
+                        try {
+                            return super.getConn(impalaSourceDTO);
+                        } catch (Exception e) {
+                            throw new DtLoaderException("获取 Impala Connection 异常", e);
+                        }
+                    }
+            );
         }
 
-        Connection conn = super.getConn(impalaSourceDTO);
         String db = StringUtils.isBlank(impalaSourceDTO.getSchema()) ? getImpalaSchema(impalaSourceDTO.getUrl()) : impalaSourceDTO.getSchema();
         if (StringUtils.isNotBlank(db)) {
             DBUtil.executeSqlWithoutResultSet(conn, String.format(DtClassConsistent.PublicConsistent.USE_DB, db),

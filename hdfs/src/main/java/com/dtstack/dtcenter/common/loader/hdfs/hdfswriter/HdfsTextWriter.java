@@ -1,14 +1,14 @@
 package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 
 import com.csvreader.CsvReader;
-import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.google.common.collect.Lists;
+import com.google.common.collect.Lists;
 import org.apache.commons.compress.utils.Charsets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -61,7 +61,7 @@ public class HdfsTextWriter {
         final String hdfsPath = hdfsWriterDTO.getHdfsDirPath() + "/" + UUID.randomUUID();
         final boolean overwrite = false;
 
-        final Configuration conf = HadoopConfUtil.getHdfsConfiguration(hdfsSourceDTO.getConfig());
+        final Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
         final FileSystem fs = FileSystem.get(conf);
         final Path p = new Path(hdfsPath);
         final OutputStream stream = fs.create(p, overwrite);
@@ -119,7 +119,7 @@ public class HdfsTextWriter {
     public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         final boolean overwrite = false;
-        final Configuration conf = HadoopConfUtil.getHdfsConfiguration(hdfsSourceDTO.getConfig());
+        final Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
         final FileSystem fs = FileSystem.get(conf);
         final String hdfsPath = hdfsWriterDTO.getHdfsDirPath() + "/" + UUID.randomUUID();
         final Path p = new Path(hdfsPath);

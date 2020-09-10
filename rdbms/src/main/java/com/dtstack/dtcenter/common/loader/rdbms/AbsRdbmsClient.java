@@ -76,7 +76,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
-    public Boolean testCon(ISourceDTO iSource) {
+    public Boolean testCon(ISourceDTO iSource) throws Exception {
         return connFactory.testConn(iSource);
     }
 

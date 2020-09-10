@@ -30,7 +30,7 @@ public abstract class AbsFtpClient<T> implements IClient<T> {
     private static final int TIMEOUT = 60000;
 
     @Override
-    public Boolean testCon(ISourceDTO iSource) {
+    public Boolean testCon(ISourceDTO iSource) throws Exception {
         FtpSourceDTO ftpSourceDTO = (FtpSourceDTO) iSource;
         if (ftpSourceDTO == null || !AddressUtil.telnet(ftpSourceDTO.getUrl(), Integer.valueOf(ftpSourceDTO.getHostPort()))) {
             return Boolean.FALSE;

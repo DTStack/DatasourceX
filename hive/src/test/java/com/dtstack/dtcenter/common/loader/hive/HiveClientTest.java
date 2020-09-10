@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hive;
 
+import com.dtstack.dtcenter.common.loader.hive.client.HiveClient;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;

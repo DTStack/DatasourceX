@@ -48,6 +48,11 @@
             <artifactId>gbase</artifactId>
             <version>8.3.81.53</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-1.2-api</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -55,7 +60,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.2.4</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -90,7 +95,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.2</version>
+                <version>1.8</version>
                 <executions>
                     <execution>
                         <id>copy-resources</id>

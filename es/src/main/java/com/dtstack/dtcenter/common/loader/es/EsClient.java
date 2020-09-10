@@ -73,7 +73,7 @@ public class EsClient<T> implements IClient<T> {
     public static final ThreadLocal<Boolean> IS_OPEN_POOL = new ThreadLocal<>();
 
     @Override
-    public Boolean testCon(ISourceDTO iSource) {
+    public Boolean testCon(ISourceDTO iSource) throws Exception {
         ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return false;

@@ -5,14 +5,22 @@ import com.dtstack.dtcenter.common.loader.common.PathUtils;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.kerby.kerberos.kerb.keytab.Keytab;
+import org.apache.kerby.kerberos.kerb.type.base.PrincipalName;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -30,15 +38,7 @@ public class KerberosConfigUtil {
      * @param confMap
      */
     public static void dealKeytab(List<File> fileList, String oppositeLocation, Map<String, String> confMap) throws IOException {
-        // 校验 keytab 文件是否存在
-        Optional<File> keytabOptional = fileList.stream().filter(file
-                -> file.getName().endsWith(DtClassConsistent.PublicConsistent.KEYTAB_SUFFIX)).findFirst();
-        if (!keytabOptional.isPresent()) {
-            throw new DtLoaderException("keytab 文件不存在");
-        }
-
-        String canonicalPath = keytabOptional.get().getCanonicalPath();
-        String finalPath = StringUtils.replace(canonicalPath, oppositeLocation, "");
+        String finalPath = dealFilePath(fileList, oppositeLocation, DtClassConsistent.PublicConsistent.KEYTAB_SUFFIX);
         log.info("DealKeytab path -- key : {}, value : {}", HadoopConfTool.PRINCIPAL_FILE, finalPath);
         confMap.put(HadoopConfTool.PRINCIPAL_FILE, finalPath);
     }
@@ -51,17 +51,30 @@ public class KerberosConfigUtil {
      * @param confMap
      */
     public static void dealKrb5Conf(List<File> fileList, String oppositeLocation, Map<String, String> confMap) throws IOException {
+        String finalPath = dealFilePath(fileList, oppositeLocation, DtClassConsistent.PublicConsistent.KRB5CONF_FILE);
+        log.info("DealKeytab path -- key : {}, value : {}", HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);
+        confMap.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);
+    }
+
+    /**
+     * 查找以特定字符结尾的文件
+     *
+     * @param fileList
+     * @param oppositeLocation
+     * @param fileNameEnd
+     * @return
+     * @throws IOException
+     */
+    public static String dealFilePath(List<File> fileList, String oppositeLocation, String fileNameEnd) throws IOException {
         Optional<File> krb5confOptional = fileList.stream().filter(file ->
-                DtClassConsistent.PublicConsistent.KRB5CONF_FILE.equals(file.getName())).findFirst();
+                file.getName().endsWith(fileNameEnd)).findFirst();
 
         if (!krb5confOptional.isPresent()) {
-            return;
+            throw new DtLoaderException(String.format("以%s结尾的问题不存在", fileNameEnd));
         }
 
         String canonicalPath = krb5confOptional.get().getCanonicalPath();
-        String finalPath = StringUtils.replace(canonicalPath, oppositeLocation, "");
-        log.info("DealKeytab path -- key : {}, value : {}", HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);
-        confMap.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);
+        return StringUtils.replace(canonicalPath, oppositeLocation, "");
     }
 
     /**
@@ -78,5 +91,86 @@ public class KerberosConfigUtil {
             log.info("changeRelativePathToAbsolutePath checkKey:{} relativePath:{}, localKerberosConfPath:{}, absolutePath:{}", checkKey, relativePath, localKerberosPath, absolutePath);
             conf.put(checkKey, absolutePath);
         }
+    }
+
+    /**
+     * 从 Keytab 中获取 Principal 信息
+     *
+     * @param keytabPath
+     * @return
+     */
+    public static List<String> getPrincipals(String keytabPath) {
+        File file = new File(keytabPath);
+        Keytab keytab = null;
+
+        try {
+            keytab = Keytab.loadKeytab(file);
+        } catch (IOException e) {
+            throw new DtLoaderException("解析 keytab 文件失败", e);
+        }
+
+        if (CollectionUtils.isEmpty(keytab.getPrincipals())) {
+            throw new DtLoaderException("keytab 中的 Principal 为空");
+        }
+
+        return keytab.getPrincipals().stream().map(PrincipalName::getName).collect(Collectors.toList());
+    }
+
+    /**
+     * 替换本地地址
+     *
+     * @param confMap
+     * @return
+     */
+    public static Map<String, Object> replaceHost(Map<String, Object> confMap) {
+        if (MapUtils.isEmpty(confMap)) {
+            return MapUtils.EMPTY_MAP;
+        }
+
+        String canonicalHostName;
+        try {
+            canonicalHostName = InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException e) {
+            throw new DtLoaderException("本地地址获取失败", e);
+        }
+
+        // 替换配置文件中的 _host 信息
+        for (String key : confMap.keySet()) {
+            String value = MapUtils.getString(confMap, key, "");
+            if (value.contains(HadoopConfTool.HOST)) {
+                confMap.replace(key, value.replace(HadoopConfTool.HOST, canonicalHostName));
+            }
+        }
+        return confMap;
+    }
+
+    /**
+     * 将 Map 转换为 Configuration
+     *
+     * @param configMap
+     * @return
+     */
+    public static Configuration getConfig(Map<String, Object> configMap) {
+        Configuration conf = new Configuration(false);
+        Iterator var2 = configMap.entrySet().iterator();
+
+        while (var2.hasNext()) {
+            Map.Entry<String, Object> entry = (Map.Entry) var2.next();
+            if (entry.getValue() != null && !(entry.getValue() instanceof Map)) {
+                conf.set(entry.getKey(), entry.getValue().toString());
+            }
+        }
+
+        return conf;
+    }
+
+    /**
+     * 查看是否需要二次登录
+     *
+     * @param config
+     * @return
+     */
+    public static boolean needLoginKerberos(Configuration config) {
+        return Boolean.parseBoolean(config.get(HadoopConfTool.HADOOP_SECURITY_AUTHORIZATION));
     }
 }

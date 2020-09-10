@@ -22,7 +22,7 @@ import java.util.Map;
  */
 public class KylinTest {
     KylinSourceDTO source = KylinSourceDTO.builder()
-            .url("jdbc:kylin://172.16.100.105:7070/1005_9")
+            .url("jdbc:kylin://172.16.100.132:7070/1005_9")
             .username("ADMIN")
             .password("KYLIN")
             .poolConfig(new PoolConfig())

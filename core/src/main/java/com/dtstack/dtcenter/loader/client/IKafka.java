@@ -22,7 +22,7 @@ public interface IKafka<T> {
      * @return
      * @throws Exception
      */
-    Boolean testCon(ISourceDTO source);
+    Boolean testCon(ISourceDTO source) throws Exception;
 
     /**
      * 获取所有 Brokers 的地址
@@ -77,7 +77,8 @@ public interface IKafka<T> {
      * @param source
      * @param queryDTO
      * @return
+     * @throws Exception
      */
-    List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO);
+    List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
 }

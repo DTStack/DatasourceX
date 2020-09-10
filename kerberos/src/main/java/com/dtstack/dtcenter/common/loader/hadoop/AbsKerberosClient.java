@@ -5,14 +5,14 @@ import com.dtstack.dtcenter.common.loader.common.Xml2JsonUtil;
 import com.dtstack.dtcenter.common.loader.common.ZipUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosConfigUtil;
 import com.dtstack.dtcenter.loader.client.IKerberos;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +37,8 @@ public class AbsKerberosClient implements IKerberos {
         List<File> unzipFileList = ZipUtil.unzipFile(zipLocation, localKerberosPath);
         unzipFileList = unzipFileList.stream().filter(file -> file.getName().startsWith(".")).collect(Collectors.toList());
 
-        // 处理 KEYTAB
-        KerberosConfigUtil.dealKeytab(unzipFileList, localKerberosPath, confMap);
-        KerberosConfigUtil.dealKrb5Conf(unzipFileList, localKerberosPath, confMap);
+        // 处理 Krb 和 Keytab 信息
+        dealFile(unzipFileList, localKerberosPath, confMap);
 
         // 获取 XML 文件并解析为 MAP
         List<File> xmlFileList = unzipFileList.stream().filter(file -> file.getName().endsWith(DtClassConsistent.PublicConsistent.XML_SUFFIX))
@@ -49,17 +48,29 @@ public class AbsKerberosClient implements IKerberos {
         return confMap;
     }
 
+    /**
+     * 处理文件信息
+     *
+     * @param unzipFileList
+     * @param localKerberosPath
+     * @param confMap
+     * @throws IOException
+     */
+    protected void dealFile(List<File> unzipFileList, String localKerberosPath, Map<String, String> confMap) throws IOException {
+        KerberosConfigUtil.dealKeytab(unzipFileList, localKerberosPath, confMap);
+        KerberosConfigUtil.dealKrb5Conf(unzipFileList, localKerberosPath, confMap);
+    }
+
     @Override
-    public Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath, Integer datasourceType) throws Exception {
+    public Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath) throws Exception {
         // 替换相对路径
-        KerberosConfigUtil.changeRelativePathToAbsolutePath(conf, localKerberosPath, HadoopConfTool.KAFKA_KERBEROS_KEYTAB);
         KerberosConfigUtil.changeRelativePathToAbsolutePath(conf, localKerberosPath, HadoopConfTool.PRINCIPAL_FILE);
         KerberosConfigUtil.changeRelativePathToAbsolutePath(conf, localKerberosPath, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
         return true;
     }
 
     @Override
-    public String getPrincipal(String url, Integer datasourceType) throws Exception {
+    public String getPrincipals(String url) throws Exception {
         log.info("get url principal : {}", url);
         Matcher matcher = DtClassConsistent.PatternConsistent.JDBC_PATTERN.matcher(url);
         if (matcher.find()) {
@@ -76,18 +87,11 @@ public class AbsKerberosClient implements IKerberos {
     }
 
     @Override
-    public List<String> getPrincipal(Map<String, Object> kerberosConfig, Integer datasourceType) throws Exception {
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return Collections.emptyList();
+    public List<String> getPrincipals(Map<String, Object> kerberosConfig) throws Exception {
+        String keytabPath = MapUtils.getString(kerberosConfig, HadoopConfTool.PRINCIPAL_FILE);
+        if (StringUtils.isBlank(keytabPath)) {
+            throw new DtLoaderException("获取 Principal 信息异常，Keytab 配置不存在");
         }
-
-        List<String> principals = new ArrayList<>();
-        for (String principalKey : HadoopConfTool.PRINCIPAL_KEYS) {
-            String principal = MapUtils.getString(kerberosConfig, principalKey);
-            if (StringUtils.isNotBlank(principal)) {
-                principals.add(principal);
-            }
-        }
-        return principals;
+        return KerberosConfigUtil.getPrincipals(keytabPath);
     }
 }

@@ -1,9 +1,9 @@
 package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
-import com.dtstack.dtcenter.common.hadoop.GroupTypeIgnoreCase;
-import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
-import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
-import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
+import com.dtstack.dtcenter.common.loader.hdfs.GroupTypeIgnoreCase;
+import com.dtstack.dtcenter.common.loader.hdfs.YarnConfUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -90,7 +90,7 @@ public class HdfsParquetDownload implements IDownloader {
 
     @Override
     public boolean configure() throws Exception {
-        conf = HadoopConfUtil.getFullConfiguration(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf());
+        conf = YarnConfUtil.getFullConfiguration(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getKerberosConfig());
         jobConf = new JobConf(conf);
 
         paths = getAllPartitionPath(tableLocation);
@@ -147,7 +147,7 @@ public class HdfsParquetDownload implements IDownloader {
             return readNextWithKerberos();
         }
         // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return KerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
@@ -266,7 +266,7 @@ public class HdfsParquetDownload implements IDownloader {
         }
 
         // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return KerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return !nextRecord();
@@ -278,29 +278,10 @@ public class HdfsParquetDownload implements IDownloader {
 
     @Override
     public boolean close() throws Exception {
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            if (build != null){
-                build.close();
-                HdfsOperator.release();
-            }
-            return true;
+        if (build != null) {
+            build.close();
         }
-
-        // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) ()->{
-                    try {
-                        if (build != null){
-                            build.close();
-                            HdfsOperator.release();
-                        }
-                        return true;
-                    } catch (Exception e){
-                        throw new DtLoaderException("下载文件异常", e);
-                    }
-                });
-
+        return true;
     }
 
     @Override

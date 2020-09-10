@@ -20,9 +20,9 @@ import java.util.List;
  */
 public class GbaseTest {
     private static GBaseSourceDTO source = GBaseSourceDTO.builder()
-            .url("jdbc:gbase://172.16.8.193:5258/dtstack")
+            .url("jdbc:gbase://172.16.8.193:5258/dev")
             .username("root")
-            .password("123456")
+            .password("root")
             .build();
 
     @BeforeClass

@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public class SQLServer2017Test {
     private static Sqlserver2017SourceDTO source = Sqlserver2017SourceDTO.builder()
-            .url("jdbc:sqlserver://kudu5:1433;databaseName=tudou")
+            .url("jdbc:sqlserver://kudu5:1433;databaseName=dev")
             .username("sa")
             .password("<root@Passw0rd>")
             .poolConfig(new PoolConfig())

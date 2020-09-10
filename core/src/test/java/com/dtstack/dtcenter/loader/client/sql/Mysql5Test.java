@@ -63,7 +63,7 @@ public class Mysql5Test {
     }
 
     @Test(expected = DtLoaderException.class)
-    public void testErrorCon() {
+    public void testErrorCon() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.MySQL.getVal());
         source.setUsername("nanqi233");
         client.testCon(source);

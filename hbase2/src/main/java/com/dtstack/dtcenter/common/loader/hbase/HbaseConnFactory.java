@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.hbase;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -68,7 +69,7 @@ public class HbaseConnFactory {
             }
         }
 
-        return KerberosUtil.loginKerberosWithUGI(new HashMap<>(source.getKerberosConfig())).doAs(
+        return KerberosLoginUtil.loginKerberosWithUGI(new HashMap<>(source.getKerberosConfig())).doAs(
                 (PrivilegedAction<Connection>) () -> {
                     Configuration hConfig = HBaseConfiguration.create();
                     for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {

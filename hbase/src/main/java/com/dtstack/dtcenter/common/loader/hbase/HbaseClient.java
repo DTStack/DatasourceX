@@ -31,7 +31,7 @@ public class HbaseClient<T> implements IClient<T> {
     private HbaseConnFactory connFactory = new HbaseConnFactory();
 
     @Override
-    public Boolean testCon(ISourceDTO iSource) {
+    public Boolean testCon(ISourceDTO iSource) throws Exception {
         return connFactory.testConn(iSource);
     }
 

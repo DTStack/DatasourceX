@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 
 
 import com.csvreader.CsvReader;
-import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
@@ -75,7 +75,7 @@ public class HdfsParquetWriter {
         }
 
         MessageType schema = buildSchema(hdfsWriterDTO.getColumnsList());
-        ParquetWriter<Group> writer = getWriter(hdfsSourceDTO.getConfig(), hdfsWriterDTO.getHdfsDirPath(), hdfsWriterDTO.getColumnsList());
+        ParquetWriter<Group> writer = getWriter(hdfsSourceDTO, hdfsWriterDTO.getHdfsDirPath(), hdfsWriterDTO.getColumnsList());
         Map<String, Map<String, Integer>> decimalColInfo = getDecimalColInfo(hdfsWriterDTO.getColumnsList());
 
         int currLineNum = 0;
@@ -176,7 +176,7 @@ public class HdfsParquetWriter {
     public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         MessageType schema = buildSchema(hdfsWriterDTO.getColumnsList());
-        ParquetWriter<Group> writer = getWriter(hdfsSourceDTO.getConfig(), hdfsWriterDTO.getHdfsDirPath(), hdfsWriterDTO.getColumnsList());
+        ParquetWriter<Group> writer = getWriter(hdfsSourceDTO, hdfsWriterDTO.getHdfsDirPath(), hdfsWriterDTO.getColumnsList());
         Map<String, Map<String, Integer>> decimalColInfo = getDecimalColInfo(hdfsWriterDTO.getColumnsList());
 
         int currLineNum = 0;
@@ -298,8 +298,8 @@ public class HdfsParquetWriter {
         return writeLineNum;
     }
 
-    private static ParquetWriter<Group> getWriter(String hdfsConfig, String hdfsDirPath, List<ColumnMetaDTO> columnsList) throws IOException {
-        Configuration conf = HadoopConfUtil.getHdfsConfiguration(hdfsConfig);
+    private static ParquetWriter<Group> getWriter(HdfsSourceDTO sourceDTO, String hdfsDirPath, List<ColumnMetaDTO> columnsList) throws IOException {
+        Configuration conf = HadoopConfUtil.getHdfsConf(sourceDTO.getDefaultFS(), sourceDTO.getConfig(), sourceDTO.getKerberosConfig());
         MessageType schema = buildSchema(columnsList);
         GroupWriteSupport.setSchema(schema, conf);
         Path writePath = new Path(hdfsDirPath, "part-" + UUID.randomUUID().toString() + ".parquet");

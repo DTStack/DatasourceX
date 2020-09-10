@@ -54,8 +54,15 @@ public interface IDownloader {
      * 获取文件名
      *
      * @return
+     * @throws Exception
      */
-    String getFileName();
+    String getFileName() throws Exception;
 
+    /**
+     * 获取容器
+     *
+     * @return
+     * @throws Exception
+     */
     List<String> getContainers() throws Exception;
 }

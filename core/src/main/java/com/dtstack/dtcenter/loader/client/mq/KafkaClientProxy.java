@@ -6,7 +6,6 @@ import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -27,14 +26,9 @@ public class KafkaClientProxy<T> implements IKafka<T> {
     }
 
     @Override
-    public Boolean testCon(ISourceDTO source) {
-        try {
-            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.testCon(source),
-                    targetClient.getClass().getClassLoader(), true);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return false;
-        }
+    public Boolean testCon(ISourceDTO source) throws Exception {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.testCon(source),
+                targetClient.getClass().getClassLoader(), true);
     }
 
     @Override
@@ -68,12 +62,8 @@ public class KafkaClientProxy<T> implements IKafka<T> {
     }
 
     @Override
-    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO)  {
-        try {
-            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPreview(source, queryDTO),
-                    targetClient.getClass().getClassLoader(), true);
-        } catch (Exception e) {
-            throw new DtLoaderException(e.getMessage(), e);
-        }
+    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPreview(source, queryDTO),
+                targetClient.getClass().getClassLoader(), true);
     }
 }

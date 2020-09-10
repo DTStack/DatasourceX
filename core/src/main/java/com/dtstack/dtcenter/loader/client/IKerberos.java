@@ -28,29 +28,26 @@ public interface IKerberos {
      *
      * @param conf
      * @param localKerberosPath
-     * @param datasourceType
      * @return
      * @throws Exception
      */
-    Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath, Integer datasourceType) throws Exception;
+    Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath) throws Exception;
 
     /**
      * 从 JDBC URL 中获取 Principal
      *
      * @param url
-     * @param datasourceType
      * @return
      * @throws Exception
      */
-    String getPrincipal(String url, Integer datasourceType) throws Exception;
+    String getPrincipals(String url) throws Exception;
 
     /**
      * 从 Kerberos 配置文件中获取 Principal
      *
      * @param kerberosConfig
-     * @param datasourceType
      * @return
      * @throws Exception
      */
-    List<String> getPrincipal(Map<String, Object> kerberosConfig, Integer datasourceType) throws Exception;
+    List<String> getPrincipals(Map<String, Object> kerberosConfig) throws Exception;
 }

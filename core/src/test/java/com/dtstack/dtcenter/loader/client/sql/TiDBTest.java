@@ -62,7 +62,7 @@ public class TiDBTest {
     }
 
     @Test(expected = DtLoaderException.class)
-    public void testErrorCon() {
+    public void testErrorCon() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
         source.setUsername("nanqi");
         client.testCon(source);
@@ -129,7 +129,6 @@ public class TiDBTest {
                 System.out.println(list);
             }
         }
-        downloader.close();
     }
 
     /**

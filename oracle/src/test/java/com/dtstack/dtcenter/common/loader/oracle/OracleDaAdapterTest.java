@@ -18,8 +18,8 @@ public class OracleDaAdapterTest {
         Assert.assertEquals(OracleDbAdapter.JavaType.TYPE_VARCHAR.getFlinkSqlType(), OracleDbAdapter.mapColumnTypeJdbc2Java(Types.CHAR, 0, 0));
         Assert.assertEquals(OracleDbAdapter.JavaType.TYPE_VARCHAR.getFlinkSqlType(), OracleDbAdapter.mapColumnTypeJdbc2Java(Types.NCLOB, 0, 0));
 
-        Assert.assertEquals(OracleDbAdapter.JavaType.TYPE_DATE.getFlinkSqlType(), OracleDbAdapter.mapColumnTypeJdbc2Java(Types.TIME, 0, 0));
-        Assert.assertEquals(OracleDbAdapter.JavaType.TYPE_DATE.getFlinkSqlType(), OracleDbAdapter.mapColumnTypeJdbc2Java(Types.TIMESTAMP, 0, 0));
+        Assert.assertEquals(OracleDbAdapter.JavaType.TYPE_TIMESTAMP.getFlinkSqlType(), OracleDbAdapter.mapColumnTypeJdbc2Java(Types.TIME, 0, 0));
+        Assert.assertEquals(OracleDbAdapter.JavaType.TYPE_TIMESTAMP.getFlinkSqlType(), OracleDbAdapter.mapColumnTypeJdbc2Java(Types.TIMESTAMP, 0, 0));
         Assert.assertEquals(OracleDbAdapter.JavaType.TYPE_TIMESTAMP.getFlinkSqlType(), OracleDbAdapter.mapColumnTypeJdbc2Java(Types.TIMESTAMP, 0, 1));
 
         Assert.assertEquals(OracleDbAdapter.JavaType.TYPE_INT.getFlinkSqlType(), OracleDbAdapter.mapColumnTypeJdbc2Java(Types.TINYINT, 0, 0));
