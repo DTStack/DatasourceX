@@ -41,6 +41,7 @@
         <module>phoenix5</module>
         <module>hbase2</module>
         <module>spark</module>
+        <module>kingbase</module>
         <module>hbase_gateway</module>
     </modules>
     <packaging>pom</packaging>
@@ -90,6 +91,12 @@
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongodb-driver</artifactId>
                 <version>3.12.4</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.kingbase8</groupId>
+                <artifactId>kingbase8</artifactId>
+                <version>8.2.0</version>
             </dependency>
 
             <dependency>
