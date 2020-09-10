@@ -55,10 +55,6 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     private static final String DONT_EXIST = "doesn't exist";
 
-    private static final String preFieldsName = "preFields";
-
-    private static final String queryTimeoutFieldName = "queryTimeout";
-
     private static final String SHOW_DB_SQL = "show databases";
 
     @Override

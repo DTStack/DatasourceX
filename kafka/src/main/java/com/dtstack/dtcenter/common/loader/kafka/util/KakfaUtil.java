@@ -201,9 +201,12 @@ public class KakfaUtil {
     public static void createTopicFromBroker(String brokerUrls, Map<String, Object> kerberosConfig,
                                                 String topicName, Integer partitions, Short replicationFacto) {
         Properties defaultKafkaConfig = initProperties(brokerUrls, kerberosConfig);
-        AdminClient client = AdminClient.create(defaultKafkaConfig);
-        NewTopic topic = new NewTopic(topicName, partitions, replicationFacto);
-        client.createTopics(Collections.singleton(topic));
+        try (AdminClient client = AdminClient.create(defaultKafkaConfig);) {
+            NewTopic topic = new NewTopic(topicName, partitions, replicationFacto);
+            client.createTopics(Collections.singleton(topic));
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
     }
 
     /**
