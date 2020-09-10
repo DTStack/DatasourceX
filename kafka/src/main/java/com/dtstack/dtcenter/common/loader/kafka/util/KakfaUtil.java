@@ -64,7 +64,7 @@ public class KakfaUtil {
     }
 
     /**
-     * 写kafka jaas文件
+     * 写kafka jaas文件，同时处理 krb5.conf
      * @param kerberosConfig
      * @return jaas文件绝对路径
      */
@@ -72,9 +72,15 @@ public class KakfaUtil {
         if (MapUtils.isEmpty(kerberosConfig)){
             return null;
         }
-        String keytabConf = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_KEYTAB, "").toString();
+
+        // 处理 krb5.conf
+        if (kerberosConfig.containsKey(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF)) {
+            System.setProperty(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, MapUtils.getString(kerberosConfig, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF));
+        }
+
+        String keytabConf = kerberosConfig.getOrDefault(HadoopConfTool.PRINCIPAL_FILE, "").toString();
         String kafkaKbrServiceName =
-                kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_SERVICE_NAME, "").toString();
+                kerberosConfig.getOrDefault(HadoopConfTool.PRINCIPAL, "").toString();
         String kafkaLoginConf = null;
         try {
             File file = new File(keytabConf);
@@ -391,9 +397,9 @@ public class KakfaUtil {
         }
 
         javax.security.auth.login.Configuration.setConfiguration(null);
-        String keytabConf = kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_KEYTAB, "").toString();
+        String keytabConf = kerberosConfig.getOrDefault(HadoopConfTool.PRINCIPAL_FILE, "").toString();
         String kafkaKbrServiceName =
-                kerberosConfig.getOrDefault(KafkaConsistent.KAFKA_KERBEROS_SERVICE_NAME, "").toString();
+                kerberosConfig.getOrDefault(HadoopConfTool.PRINCIPAL, "").toString();
         if (StringUtils.isBlank(keytabConf)) {
             //不满足kerberos条件 直接返回
             return props;

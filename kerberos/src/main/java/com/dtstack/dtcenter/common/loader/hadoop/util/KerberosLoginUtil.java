@@ -45,7 +45,7 @@ public class KerberosLoginUtil {
         try {
             // 设置 Krb5 配置文件
             if (StringUtils.isNotEmpty(krb5Conf)) {
-                System.setProperty("java.security.krb5.conf", krb5Conf);
+                System.setProperty(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, krb5Conf);
             }
 
             // 开始 Kerberos 认证

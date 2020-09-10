@@ -48,6 +48,11 @@ public class HadoopConfTool {
     public static final String KAFKA_KERBEROS_KEYTAB = "kafka.kerberos.keytab";
 
     /**
+     * Kafka Principal 参数，也可选 Principal
+     */
+    public static final String KAFKA_KERBEROS_SERVICE_NAME = "sasl.kerberos.service.name";
+
+    /**
      * Resource Manager Configs
      */
     public static final String RM_PREFIX = "yarn.resourcemanager.";
