@@ -20,10 +20,12 @@ public class KafkaTopicDTO {
     /**
      * 分区数
      */
-    private Integer partitions;
+    @Builder.Default
+    private Integer partitions = 1;
 
     /**
      * 复制因子
      */
-    private Short replicationFactor;
+    @Builder.Default
+    private Short replicationFactor = 1;
 }
