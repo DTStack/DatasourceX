@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class ImpalaKerberosTest {
     private static ImpalaSourceDTO source = ImpalaSourceDTO.builder()
-            .url("jdbc:impala://eng-cdh3:21050;AuthMech=1;KrbRealm=DTSTACK.COM;KrbHostFQDN=eng-cdh3;KrbServiceName=impala")
+            .url("jdbc:impala://eng-cdh3:21050;AuthMech=1;KrbServiceName=impala;KrbHostFQDN=eng-cdh3")
             .schema("dev")
             .build();
 

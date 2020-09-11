@@ -4,11 +4,11 @@ import com.dtstack.dtcenter.common.loader.common.DBUtil;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
-import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.hive.HiveConnFactory;
 import com.dtstack.dtcenter.common.loader.hive.downloader.HiveORCDownload;
 import com.dtstack.dtcenter.common.loader.hive.downloader.HiveParquetDownload;
 import com.dtstack.dtcenter.common.loader.hive.downloader.HiveTextDownload;
+import com.dtstack.dtcenter.common.loader.hive.util.HiveKerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -280,7 +280,7 @@ public class HiveClient extends AbsRdbmsClient {
             Configuration finalConf = conf;
             String finalTableLocation = tableLocation;
             String finalFieldDelimiter = fieldDelimiter;
-            return KerberosLoginUtil.loginKerberosWithUGI(hiveSourceDTO.getKerberosConfig()).doAs(
+            return HiveKerberosLoginUtil.loginKerberosWithUGI(hiveSourceDTO.getUrl(), hiveSourceDTO.getKerberosConfig()).doAs(
                     (PrivilegedAction<IDownloader>) () -> {
                         try {
                             return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), hiveSourceDTO.getKerberosConfig());

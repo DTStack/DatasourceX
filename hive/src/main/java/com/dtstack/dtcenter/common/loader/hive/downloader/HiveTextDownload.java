@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hive.downloader;
 
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
-import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
+import com.dtstack.dtcenter.common.loader.hive.util.HiveKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
@@ -227,7 +227,7 @@ public class HiveTextDownload implements IDownloader {
         }
 
         // kerberos认证
-        return KerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
@@ -267,7 +267,7 @@ public class HiveTextDownload implements IDownloader {
             return recordReader == null || !nextRecord();
         }
         // kerberos认证
-        return KerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return recordReader == null || !nextRecord();
@@ -289,7 +289,7 @@ public class HiveTextDownload implements IDownloader {
         }
 
         // kerberos认证
-        return KerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         if(recordReader != null){

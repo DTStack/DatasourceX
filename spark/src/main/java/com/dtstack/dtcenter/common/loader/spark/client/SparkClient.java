@@ -4,13 +4,13 @@ import com.dtstack.dtcenter.common.loader.common.DBUtil;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
-import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.common.loader.spark.SparkConnFactory;
 import com.dtstack.dtcenter.common.loader.spark.downloader.SparkORCDownload;
 import com.dtstack.dtcenter.common.loader.spark.downloader.SparkParquetDownload;
 import com.dtstack.dtcenter.common.loader.spark.downloader.SparkTextDownload;
+import com.dtstack.dtcenter.common.loader.spark.util.SparkKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
@@ -251,7 +251,7 @@ public class SparkClient extends AbsRdbmsClient {
             Configuration finalConf = conf;
             String finalTableLocation = tableLocation;
             String finalFieldDelimiter = fieldDelimiter;
-            return KerberosLoginUtil.loginKerberosWithUGI(sparkSourceDTO.getKerberosConfig()).doAs(
+            return SparkKerberosLoginUtil.loginKerberosWithUGI(sparkSourceDTO.getUrl(), sparkSourceDTO.getKerberosConfig()).doAs(
                     (PrivilegedAction<IDownloader>) () -> {
                         try {
                             return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), sparkSourceDTO.getKerberosConfig());

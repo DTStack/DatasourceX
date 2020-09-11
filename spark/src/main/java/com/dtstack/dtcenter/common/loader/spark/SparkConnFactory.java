@@ -2,8 +2,8 @@ package com.dtstack.dtcenter.common.loader.spark;
 
 import com.dtstack.dtcenter.common.loader.common.DBUtil;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
-import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
+import com.dtstack.dtcenter.common.loader.spark.util.SparkKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -40,7 +40,7 @@ public class SparkConnFactory extends ConnFactory {
             String principalFile = (String) sparkSourceDTO.getKerberosConfig().get("principalFile");
             log.info("getHiveConnection principalFile:{}", principalFile);
 
-            connection = KerberosLoginUtil.loginKerberosWithUGI(sparkSourceDTO.getKerberosConfig()).doAs(
+            connection = SparkKerberosLoginUtil.loginKerberosWithUGI(sparkSourceDTO.getUrl(), sparkSourceDTO.getKerberosConfig()).doAs(
                     (PrivilegedAction<Connection>) () -> {
                         try {
                             DriverManager.setLoginTimeout(30);

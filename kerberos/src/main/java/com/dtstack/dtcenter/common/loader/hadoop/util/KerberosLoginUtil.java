@@ -23,6 +23,19 @@ public class KerberosLoginUtil {
         return loginKerberosWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
     }
 
+    /**
+     * 需要从 jdbcURL 中获取 Principal 信息，通过这个信息去登录系统
+     *
+     * @param jdbcUrl
+     * @param confMap
+     * @return
+     */
+    public static synchronized UserGroupInformation loginKerberosWithUGI(String jdbcUrl, Map<String, Object> confMap) {
+        String principal = KerberosConfigUtil.getPrincipalFromUrl(jdbcUrl);
+        confMap.put(HadoopConfTool.PRINCIPAL, principal);
+        return loginKerberosWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
+    }
+
     public static synchronized UserGroupInformation loginKerberosWithUGI(Map<String, Object> confMap, String principal, String keytab, String krb5Conf) {
         // 替换 _host 信息
         KerberosConfigUtil.replaceHost(confMap);

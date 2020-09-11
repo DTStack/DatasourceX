@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 /**
@@ -165,12 +166,28 @@ public class KerberosConfigUtil {
     }
 
     /**
-     * 查看是否需要二次登录
+     * 从 JDBC_URL 中获取 Principal 信息
      *
-     * @param config
+     * @param url
      * @return
      */
-    public static boolean needLoginKerberos(Configuration config) {
-        return Boolean.parseBoolean(config.get(HadoopConfTool.HADOOP_SECURITY_AUTHORIZATION));
+    public static String getPrincipalFromUrl(String url) {
+        if (StringUtils.isBlank(url)) {
+            throw new DtLoaderException("jdbcUrl 信息为空");
+        }
+
+        log.info("get url principal : {}", url);
+        Matcher matcher = DtClassConsistent.PatternConsistent.JDBC_PATTERN.matcher(url);
+        if (matcher.find()) {
+            String params = matcher.group("param");
+            String[] split = params.split(";");
+            for (String param : split) {
+                String[] keyValue = param.split("=");
+                if (HadoopConfTool.PRINCIPAL.equals(keyValue[0])) {
+                    return keyValue.length > 1 ? keyValue[1] : StringUtils.EMPTY;
+                }
+            }
+        }
+        throw new DtLoaderException("jdbcUrl 中不包含 Principal 信息 : " + url);
     }
 }

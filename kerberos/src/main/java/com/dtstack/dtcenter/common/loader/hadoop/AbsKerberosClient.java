@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 /**
@@ -71,19 +70,7 @@ public class AbsKerberosClient implements IKerberos {
 
     @Override
     public String getPrincipals(String url) throws Exception {
-        log.info("get url principal : {}", url);
-        Matcher matcher = DtClassConsistent.PatternConsistent.JDBC_PATTERN.matcher(url);
-        if (matcher.find()) {
-            String params = matcher.group("param");
-            String[] split = params.split(";");
-            for (String param : split) {
-                String[] keyValue = param.split("=");
-                if (HadoopConfTool.PRINCIPAL.equals(keyValue[0])) {
-                    return keyValue.length > 1 ? keyValue[1] : StringUtils.EMPTY;
-                }
-            }
-        }
-        return StringUtils.EMPTY;
+        return KerberosConfigUtil.getPrincipalFromUrl(url);
     }
 
     @Override
