@@ -211,9 +211,9 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, String fieldDelimiter, String fileFormat) throws Exception {
+    public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat) throws Exception {
         try {
-            return ClassLoaderCallBackMethod.callbackAndReset(() -> new DownloaderProxy(targetClient.getDownloaderByFormat(source, tableLocation, fieldDelimiter, fileFormat)),
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> new DownloaderProxy(targetClient.getDownloaderByFormat(source, tableLocation, columnNames, fieldDelimiter, fileFormat)),
                     targetClient.getClass().getClassLoader(), true);
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);

@@ -218,7 +218,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, String fieldDelimiter, String fileFormat) throws Exception;
+    IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat) throws Exception;
 
     /**
      * 获取hdfs上存储文件的字段信息

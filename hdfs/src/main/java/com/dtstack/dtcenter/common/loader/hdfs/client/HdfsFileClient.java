@@ -218,12 +218,12 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     @Override
-    public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, String fieldDelimiter, String fileFormat) throws Exception {
+    public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat) throws Exception {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
             try {
-                return createDownloader(hdfsSourceDTO, tableLocation, fieldDelimiter, fileFormat, null);
+                return createDownloader(hdfsSourceDTO, tableLocation, columnNames, fieldDelimiter, fileFormat, null);
             } catch (Exception e) {
                 throw new DtLoaderException("创建下载器异常", e);
             }
@@ -233,7 +233,7 @@ public class HdfsFileClient implements IHdfsFile {
         return KerberosLoginUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
-                        return createDownloader(hdfsSourceDTO, tableLocation, fieldDelimiter, fileFormat, hdfsSourceDTO.getKerberosConfig());
+                        return createDownloader(hdfsSourceDTO, tableLocation, columnNames, fieldDelimiter, fileFormat, hdfsSourceDTO.getKerberosConfig());
                     } catch (Exception e) {
                         throw new DtLoaderException("创建下载器异常", e);
                     }
@@ -251,21 +251,21 @@ public class HdfsFileClient implements IHdfsFile {
      * @param fileFormat
      * @return
      */
-    private IDownloader createDownloader(HdfsSourceDTO hdfsSourceDTO, String tableLocation, String fieldDelimiter, String fileFormat, Map<String, Object> kerberosConfig) throws Exception {
+    private IDownloader createDownloader(HdfsSourceDTO hdfsSourceDTO, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat, Map<String, Object> kerberosConfig) throws Exception {
         if (FileFormat.TEXT.getVal().equals(fileFormat)) {
-            HdfsTextDownload hdfsTextDownload = new HdfsTextDownload(hdfsSourceDTO, tableLocation, null, fieldDelimiter, null, kerberosConfig);
+            HdfsTextDownload hdfsTextDownload = new HdfsTextDownload(hdfsSourceDTO, tableLocation, columnNames, fieldDelimiter, null, kerberosConfig);
             hdfsTextDownload.configure();
             return hdfsTextDownload;
         }
 
         if (FileFormat.ORC.getVal().equals(fileFormat)) {
-            HdfsORCDownload hdfsORCDownload = new HdfsORCDownload(hdfsSourceDTO, tableLocation, null, null, kerberosConfig);
+            HdfsORCDownload hdfsORCDownload = new HdfsORCDownload(hdfsSourceDTO, tableLocation, columnNames, null, kerberosConfig);
             hdfsORCDownload.configure();
             return hdfsORCDownload;
         }
 
         if (FileFormat.PARQUET.getVal().equals(fileFormat)) {
-            HdfsParquetDownload hdfsParquetDownload = new HdfsParquetDownload(hdfsSourceDTO, tableLocation, null, null, kerberosConfig);
+            HdfsParquetDownload hdfsParquetDownload = new HdfsParquetDownload(hdfsSourceDTO, tableLocation, columnNames, null, kerberosConfig);
             hdfsParquetDownload.configure();
             return hdfsParquetDownload;
         }
