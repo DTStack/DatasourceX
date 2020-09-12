@@ -10,59 +10,61 @@ public enum StoredType {
     /**
      * LazySimpleSerDe
      */
-    SEQUENCEFILE("LazySimpleSerDe", "SequenceFileInputFormat", "HiveSequenceFileOutputFormat"),
+    SEQUENCEFILE("sequence", "LazySimpleSerDe", "SequenceFileInputFormat", "HiveSequenceFileOutputFormat"),
 
     /**
      * Default, depending on hive.default.fileformat configuration
      */
-    TEXTFILE("LazySimpleSerDe", "TextInputFormat", "HiveIgnoreKeyTextOutputFormat"),
+    TEXTFILE("text", "LazySimpleSerDe", "TextInputFormat", "HiveIgnoreKeyTextOutputFormat"),
 
     /**
      * Note: Available in Hive 0.6.0 and later)
      */
-    RCFILE("LazyBinaryColumnarSerDe", "RCFileInputFormat", "RCFileOutputFormat"),
+    RCFILE("rc", "LazyBinaryColumnarSerDe", "RCFileInputFormat", "RCFileOutputFormat"),
 
     /**
      * Note: Available in Hive 0.11.0 and later
      */
-    ORC("OrcSerde", "OrcInputFormat", "OrcOutputFormat"),
+    ORC("orc", "OrcSerde", "OrcInputFormat", "OrcOutputFormat"),
 
     /**
      * Note: Available in Hive 0.13.0 and later
      */
-    PARQUET("ParquetHiveSerDe", "MapredParquetInputFormat", "MapredParquetOutputFormat"),
+    PARQUET("parquet", "ParquetHiveSerDe", "MapredParquetInputFormat", "MapredParquetOutputFormat"),
 
     /**
      * Note: Available in Hive 0.14.0 and later)
      */
-    AVRO("AvroSerDe", "AvroContainerInputFormat", "AvroContainerOutputFormat"),
+    AVRO("avro", "AvroSerDe", "AvroContainerInputFormat", "AvroContainerOutputFormat"),
 
     /**
      * KUDU
      */
-    KUDU("KUDU","KuduInputFormat","KuduOutputFormat"),
+    KUDU("kudu", "KUDU","KuduInputFormat","KuduOutputFormat"),
 
     /**
      * 未知存储类型
      */
-    UN_KNOW_TYPE("unknown stored type","unknown stored type","unknown stored type"),
+    UN_KNOW_TYPE("unknown stored type","unknown stored type","unknown stored type","unknown stored type"),
     ;
 
+    private String value;
     private String serde;
     private String inputFormatClass;
     private String outputFormatClass;
 
-    StoredType(String serde, String inputFormatClass, String outputFormatClass) {
+    StoredType(String value, String serde, String inputFormatClass, String outputFormatClass) {
+        this.value = value;
         this.serde = serde;
         this.inputFormatClass = inputFormatClass;
         this.outputFormatClass = outputFormatClass;
     }
 
-    public String getSerde() {
-        return serde;
-    }
-
     public String getInputFormatClass() {
         return inputFormatClass;
+    }
+
+    public String getValue() {
+        return value;
     }
 }

@@ -393,7 +393,7 @@ public class SparkClient extends AbsRdbmsClient {
             if (tableInfo.getStoreType() == null && colName.contains("InputFormat:")) {
                 for (StoredType hiveStoredType : StoredType.values()) {
                     if (dataType.contains(hiveStoredType.getInputFormatClass())) {
-                        tableInfo.setStoreType(hiveStoredType.name());
+                        tableInfo.setStoreType(hiveStoredType.getValue());
                         break;
                     }
                 }
