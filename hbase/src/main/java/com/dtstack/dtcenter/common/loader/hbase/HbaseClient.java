@@ -70,7 +70,7 @@ public class HbaseClient<T> implements IClient<T> {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException("获取 hbase table list 异常", e);
+            throw new DtLoaderException("获取 hbase table list 异常", e);
         } finally {
             closeAdmin(admin);
             closeConnection(hConn);
@@ -116,7 +116,7 @@ public class HbaseClient<T> implements IClient<T> {
                 cfList.add(columnMetaDTO);
             }
         } catch (IOException e) {
-            throw new RuntimeException("hbase list column families error", e);
+            throw new DtLoaderException("hbase list column families error", e);
         } finally {
             closeTable(tb);
             closeConnection(hConn);
@@ -169,7 +169,7 @@ public class HbaseClient<T> implements IClient<T> {
 
         } catch (Exception e){
             log.error("执行hbase自定义失败", e);
-            throw new RuntimeException("执行hbase自定义失败", e);
+            throw new DtLoaderException("执行hbase自定义失败", e);
         } finally {
             close(rs, table, connection);
         }
@@ -219,7 +219,7 @@ public class HbaseClient<T> implements IClient<T> {
             }
         } catch (Exception e){
             log.error("数据预览失败{}", e);
-            throw new RuntimeException("数据预览失败", e);
+            throw new DtLoaderException("数据预览失败", e);
         } finally {
             close(rs, table, connection);
         }
@@ -251,7 +251,7 @@ public class HbaseClient<T> implements IClient<T> {
             try {
                 table.close();
             } catch (IOException e) {
-                throw new RuntimeException("hbase can not close table error", e);
+                throw new DtLoaderException("hbase can not close table error", e);
             }
         }
     }
@@ -267,7 +267,7 @@ public class HbaseClient<T> implements IClient<T> {
             }
         } catch (Exception e) {
             log.error("hbase closeable close error", e);
-            throw new RuntimeException("hbase can not close table error", e);
+            throw new DtLoaderException("hbase can not close table error", e);
         }
     }
 
@@ -319,6 +319,11 @@ public class HbaseClient<T> implements IClient<T> {
 
     @Override
     public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public com.dtstack.dtcenter.loader.dto.Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 }

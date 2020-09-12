@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.common.loader.mongo;
 
-import com.dtstack.dtcenter.common.loader.common.AddressUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.AddressUtil;
 import com.dtstack.dtcenter.common.loader.mongo.pool.MongoManager;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;

@@ -87,7 +87,7 @@ public class SparkTextDownload implements IDownloader {
 
         paths = getAllPartitionPath(tableLocation);
         if(paths.size() == 0){
-            throw new RuntimeException("非法路径:" + tableLocation);
+            throw new DtLoaderException("非法路径:" + tableLocation);
         }
 
         nextRecordReader();

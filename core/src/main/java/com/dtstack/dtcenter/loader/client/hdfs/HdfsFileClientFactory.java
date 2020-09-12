@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.loader.ClassLoaderCallBack;
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
 import com.dtstack.dtcenter.loader.client.ClientFactory;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
@@ -22,7 +23,7 @@ public class HdfsFileClientFactory {
             ServiceLoader<IHdfsFile> kafkas = ServiceLoader.load(IHdfsFile.class);
             Iterator<IHdfsFile> iClientIterator = kafkas.iterator();
             if (!iClientIterator.hasNext()) {
-                throw new RuntimeException("暂不支持该插件类型: " + pluginName);
+                throw new DtLoaderException("暂不支持该插件类型: " + pluginName);
             }
 
             IHdfsFile hdfsFile = iClientIterator.next();

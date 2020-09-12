@@ -1,8 +1,8 @@
 package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 
 import com.csvreader.CsvReader;
-import com.dtstack.dtcenter.common.loader.common.DateUtil;
-import com.dtstack.dtcenter.common.loader.common.MathUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.DateUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.MathUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
@@ -11,6 +11,7 @@ import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -54,7 +55,7 @@ public class HdfsOrcWriter {
         Boolean topLineIsTitle = hdfsWriterDTO.getTopLineIsTitle();
         int startLine = hdfsWriterDTO.getStartLine();
         // 首行是标题则内容从下一行开始
-        if (topLineIsTitle) {
+        if (BooleanUtils.isTrue(topLineIsTitle)) {
             startLine++;
         }
 

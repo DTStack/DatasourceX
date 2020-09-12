@@ -1,12 +1,11 @@
 package com.dtstack.dtcenter.common.loader.kafka.util;
 
-import com.dtstack.dtcenter.common.loader.common.TelUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.TelUtil;
 import com.dtstack.dtcenter.common.loader.kafka.KafkaConsistent;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.google.common.collect.Lists;
-import org.apache.kafka.clients.admin.AdminClient;
 import kafka.admin.AdminUtils;
 import kafka.admin.RackAwareMode;
 import kafka.cluster.Broker;
@@ -16,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -272,7 +272,7 @@ public class KakfaUtil {
             return partitionMetadata;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw new RuntimeException(e.getMessage());
+            throw new DtLoaderException(e.getMessage());
         } finally {
             if (zkUtils != null) {
                 zkUtils.close();

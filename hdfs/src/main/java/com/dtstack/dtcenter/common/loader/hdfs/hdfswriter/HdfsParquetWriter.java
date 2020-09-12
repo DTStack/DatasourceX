@@ -10,6 +10,7 @@ import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -70,7 +71,7 @@ public class HdfsParquetWriter {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         int startLine = hdfsWriterDTO.getStartLine();
         //首行是标题则内容从下一行开始
-        if (hdfsWriterDTO.getTopLineIsTitle()) {
+        if (BooleanUtils.isTrue(hdfsWriterDTO.getTopLineIsTitle())) {
             startLine++;
         }
 

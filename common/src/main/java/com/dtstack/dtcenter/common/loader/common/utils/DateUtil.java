@@ -1,5 +1,6 @@
-package com.dtstack.dtcenter.common.loader.common;
+package com.dtstack.dtcenter.common.loader.common.utils;
 
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
@@ -310,7 +311,7 @@ public class DateUtil {
         } catch (ParseException ignored) {
         }
 
-        throw new RuntimeException("can't parse date");
+        throw new DtLoaderException("can't parse date");
     }
 
     public static java.sql.Date getSqlDate(Object val) {

@@ -58,7 +58,7 @@ public class OdpsClient<T> implements IClient<T> {
     private static OdpsManager odpsManager = OdpsManager.getInstance();
 
     @Override
-    public Boolean testCon(ISourceDTO iSource) throws Exception {
+    public Boolean testCon(ISourceDTO iSource) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         Odps odps = null;
         try {
@@ -73,7 +73,6 @@ public class OdpsClient<T> implements IClient<T> {
         }
         return false;
     }
-
 
     public static Odps initOdps(OdpsSourceDTO odpsSourceDTO) {
         JSONObject odpsConfig = JSON.parseObject(odpsSourceDTO.getConfig());
@@ -141,7 +140,7 @@ public class OdpsClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeQuery(odpsSourceDTO, queryDTO, false);
         List<String> tableList = new ArrayList<>();
@@ -150,7 +149,7 @@ public class OdpsClient<T> implements IClient<T> {
             odps = initOdps(odpsSourceDTO);
             odps.tables().forEach((Table table) -> tableList.add(table.getName()));
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -158,7 +157,7 @@ public class OdpsClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeColumnQuery(odpsSourceDTO, queryDTO);
         List<ColumnMetaDTO> columnList = new ArrayList<>();
@@ -187,7 +186,7 @@ public class OdpsClient<T> implements IClient<T> {
                 columnList.add(columnMetaDTO);
             });
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -294,7 +293,7 @@ public class OdpsClient<T> implements IClient<T> {
             }
             return dataList;
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -356,7 +355,7 @@ public class OdpsClient<T> implements IClient<T> {
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) {
         beforeQuery(source, queryDTO, true);
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) source;
         Odps odps = null;
@@ -400,7 +399,7 @@ public class OdpsClient<T> implements IClient<T> {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeColumnQuery(odpsSourceDTO, queryDTO);
         Odps odps = null;
@@ -409,13 +408,13 @@ public class OdpsClient<T> implements IClient<T> {
             Table t = odps.tables().get(queryDTO.getTableName());
             return t.getComment();
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
     }
 
-    protected Integer beforeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO, boolean query) throws Exception {
+    protected Integer beforeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO, boolean query) {
         // 查询 SQL 不能为空
         if (query && StringUtils.isBlank(queryDTO.getSql())) {
             throw new DtLoaderException("查询 SQL 不能为空");
@@ -424,7 +423,7 @@ public class OdpsClient<T> implements IClient<T> {
         return ConnectionClearStatus.CLOSE.getValue();
     }
 
-    protected Integer beforeColumnQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    protected Integer beforeColumnQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         Integer clearStatus = beforeQuery(odpsSourceDTO, queryDTO, false);
         if (queryDTO == null || StringUtils.isBlank(queryDTO.getTableName())) {
@@ -437,32 +436,37 @@ public class OdpsClient<T> implements IClient<T> {
     }
 
     @Override
-    public Connection getCon(ISourceDTO source) throws Exception {
+    public Connection getCon(ISourceDTO source) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public com.dtstack.dtcenter.loader.dto.Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 }

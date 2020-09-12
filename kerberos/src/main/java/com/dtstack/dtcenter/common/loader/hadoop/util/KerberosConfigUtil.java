@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hadoop.util;
 
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
-import com.dtstack.dtcenter.common.loader.common.PathUtils;
+import com.dtstack.dtcenter.common.loader.common.utils.PathUtils;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +14,6 @@ import org.apache.kerby.kerberos.kerb.type.base.PrincipalName;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -115,34 +113,6 @@ public class KerberosConfigUtil {
         }
 
         return keytab.getPrincipals().stream().map(PrincipalName::getName).collect(Collectors.toList());
-    }
-
-    /**
-     * 替换本地地址
-     *
-     * @param confMap
-     * @return
-     */
-    public static Map<String, Object> replaceHost(Map<String, Object> confMap) {
-        if (MapUtils.isEmpty(confMap)) {
-            return MapUtils.EMPTY_MAP;
-        }
-
-        String canonicalHostName;
-        try {
-            canonicalHostName = InetAddress.getLocalHost().getCanonicalHostName();
-        } catch (UnknownHostException e) {
-            throw new DtLoaderException("本地地址获取失败", e);
-        }
-
-        // 替换配置文件中的 _host 信息
-        for (String key : confMap.keySet()) {
-            String value = MapUtils.getString(confMap, key, "");
-            if (value.contains(HadoopConfTool.HOST)) {
-                confMap.replace(key, value.replace(HadoopConfTool.HOST, canonicalHostName));
-            }
-        }
-        return confMap;
     }
 
     /**

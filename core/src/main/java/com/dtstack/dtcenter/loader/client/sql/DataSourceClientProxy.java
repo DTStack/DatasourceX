@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.downloader.DownloaderProxy;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import lombok.extern.slf4j.Slf4j;
 
@@ -114,6 +115,12 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     @Override
     public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPartitionColumn(source, queryDTO),
+                targetClient.getClass().getClassLoader(), true);
+    }
+
+    @Override
+    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTable(source, queryDTO),
                 targetClient.getClass().getClassLoader(), true);
     }
 }

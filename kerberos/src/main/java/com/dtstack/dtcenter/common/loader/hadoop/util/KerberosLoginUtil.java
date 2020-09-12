@@ -37,8 +37,6 @@ public class KerberosLoginUtil {
     }
 
     public static synchronized UserGroupInformation loginKerberosWithUGI(Map<String, Object> confMap, String principal, String keytab, String krb5Conf) {
-        // 替换 _host 信息
-        KerberosConfigUtil.replaceHost(confMap);
         principal = MapUtils.getString(confMap, principal);
         keytab = MapUtils.getString(confMap, keytab);
         krb5Conf = MapUtils.getString(confMap, krb5Conf);

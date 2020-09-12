@@ -1,9 +1,10 @@
 package com.dtstack.dtcenter.common.loader.redis;
 
-import com.dtstack.dtcenter.common.loader.common.AddressUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.AddressUtil;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RedisSourceDTO;
 import com.dtstack.dtcenter.loader.enums.RedisMode;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -46,7 +47,7 @@ public class RedisUtils {
             case Cluster:
                 return checkRedisConnectionCluster(redisSourceDTO);
             default:
-                throw new RuntimeException("暂不支持的模式");
+                throw new DtLoaderException("暂不支持的模式");
         }
     }
 

@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.common.loader.postgresql;
 
-import com.dtstack.dtcenter.common.loader.common.SqlFormatUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.SqlFormatUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.Column;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;

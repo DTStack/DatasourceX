@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.loader.ClassLoaderCallBack;
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
 import com.dtstack.dtcenter.loader.client.ClientFactory;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
@@ -21,7 +22,7 @@ public class DataSourceClientFactory {
             ServiceLoader<IClient> iClients = ServiceLoader.load(IClient.class);
             Iterator<IClient> iClientIterator = iClients.iterator();
             if (!iClientIterator.hasNext()) {
-                throw new RuntimeException("暂不支持该插件类型: " + pluginName);
+                throw new DtLoaderException("暂不支持该插件类型: " + pluginName);
             }
 
             IClient client = iClientIterator.next();

@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.common.loader.spark;
 
-import com.dtstack.dtcenter.common.loader.common.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.common.loader.spark.util.SparkKerberosLoginUtil;

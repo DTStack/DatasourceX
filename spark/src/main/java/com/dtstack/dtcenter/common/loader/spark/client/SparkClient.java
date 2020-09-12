@@ -1,7 +1,8 @@
 package com.dtstack.dtcenter.common.loader.spark.client;
 
-import com.dtstack.dtcenter.common.loader.common.DBUtil;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
+import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
@@ -14,6 +15,7 @@ import com.dtstack.dtcenter.common.loader.spark.util.SparkKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -99,8 +101,7 @@ public class SparkClient extends AbsRdbmsClient {
                     if (StringUtils.isNotEmpty(string) && string.contains(DtClassConsistent.HadoopConfConsistent.COMMENT)) {
                         String[] split = string.split(DtClassConsistent.HadoopConfConsistent.COMMENT);
                         if (split.length > 1) {
-                            return split[1].split(DtClassConsistent.PublicConsistent.LINE_SEPARATOR)[0].replace(" ",
-                                    "");
+                            return split[1].split(DtClassConsistent.PublicConsistent.LINE_SEPARATOR)[0].trim();
                         }
                     }
                 }
@@ -342,5 +343,62 @@ public class SparkClient extends AbsRdbmsClient {
             }
         });
         return partitionColumnMeta;
+    }
+
+    @Override
+    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Table tableInfo = new Table();
+        tableInfo.setName(queryDTO.getTableName());
+        tableInfo.setComment(getTableMetaComment(source, queryDTO));
+        // 处理字段信息
+        tableInfo.setColumns(getColumnMetaData(source, queryDTO));
+
+        List<Map<String, Object>> result = executeQuery(source, SqlQueryDTO.builder().sql("desc formatted " + queryDTO.getTableName()).build());
+        boolean isTableInfo = false;
+        for (Map<String, Object> row : result) {
+            String colName = MapUtils.getString(row, "col_name");
+            String dataType = MapUtils.getString(row, "data_type");
+            if (StringUtils.isBlank(colName) || StringUtils.isBlank(dataType)) {
+                if (StringUtils.isNotBlank(colName) && colName.contains("# Detailed Table Information")) {
+                    isTableInfo = true;
+                }
+                continue;
+            }
+            // 去空格处理
+            dataType = dataType.trim();
+            if (!isTableInfo) {
+                continue;
+            }
+
+            if (colName.contains("Location:")) {
+                tableInfo.setPath(dataType);
+                continue;
+            }
+
+            if (colName.contains("Table Type:")) {
+                tableInfo.setExternalOrManaged(dataType);
+                continue;
+            }
+
+            if (colName.contains("field.delim")) {
+                tableInfo.setDelim(dataType);
+                continue;
+            }
+
+            if (colName.contains("Database")) {
+                tableInfo.setDb(dataType);
+                continue;
+            }
+
+            if (tableInfo.getStoreType() == null && colName.contains("InputFormat:")) {
+                for (StoredType hiveStoredType : StoredType.values()) {
+                    if (dataType.contains(hiveStoredType.getInputFormatClass())) {
+                        tableInfo.setStoreType(hiveStoredType.name());
+                        break;
+                    }
+                }
+            }
+        }
+        return tableInfo;
     }
 }

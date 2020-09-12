@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.common.loader.common;
+package com.dtstack.dtcenter.common.loader.common.utils;
 
 /**
  * @company: www.dtstack.com

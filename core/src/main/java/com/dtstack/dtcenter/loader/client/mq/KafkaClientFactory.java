@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.loader.ClassLoaderCallBack;
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
 import com.dtstack.dtcenter.loader.client.ClientFactory;
 import com.dtstack.dtcenter.loader.client.IKafka;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 
 import java.util.Iterator;
 import java.util.ServiceLoader;
@@ -21,7 +22,7 @@ public class KafkaClientFactory {
             ServiceLoader<IKafka> kafkas = ServiceLoader.load(IKafka.class);
             Iterator<IKafka> iClientIterator = kafkas.iterator();
             if (!iClientIterator.hasNext()) {
-                throw new RuntimeException("暂不支持该插件类型: " + pluginName);
+                throw new DtLoaderException("暂不支持该插件类型: " + pluginName);
             }
 
             IKafka kafka = iClientIterator.next();

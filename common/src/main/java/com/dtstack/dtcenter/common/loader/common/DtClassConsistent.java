@@ -110,7 +110,11 @@ public interface DtClassConsistent {
 
         public static final String TABLE_INFORMATION = "# Detailed Table Information";
 
+        public static final String HIVE_1_TABLE_INFORMATION = "Detailed Table Information";
+
         public static final String COMMENT = "Comment:";
+
+        public static final String HIVE_1_COMMENT = "comment=";
 
         public static final String DESCRIBE_EXTENDED = "describe extended %s";
     }

@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.common.loader.common;
+package com.dtstack.dtcenter.common.loader.common.utils;
 
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;

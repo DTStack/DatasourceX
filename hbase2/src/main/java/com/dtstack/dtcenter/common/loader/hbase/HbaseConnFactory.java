@@ -3,7 +3,7 @@ package com.dtstack.dtcenter.common.loader.hbase;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
-import com.dtstack.dtcenter.common.loader.common.JSONUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.JSONUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -65,7 +65,7 @@ public class HbaseConnFactory {
                 hConn = ConnectionFactory.createConnection(hConfig);
                 return hConn;
             } catch (Exception e) {
-                throw new RuntimeException("获取 hbase 连接异常", e);
+                throw new DtLoaderException("获取 hbase 连接异常", e);
             }
         }
 
@@ -81,7 +81,7 @@ public class HbaseConnFactory {
                         hConn = ConnectionFactory.createConnection(hConfig);
                         return hConn;
                     } catch (Exception e) {
-                        throw new RuntimeException("获取 hbase 连接异常", e);
+                        throw new DtLoaderException("获取 hbase 连接异常", e);
                     }
                 }
         );

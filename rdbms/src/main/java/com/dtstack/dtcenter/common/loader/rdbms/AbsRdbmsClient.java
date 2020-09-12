@@ -1,12 +1,13 @@
 package com.dtstack.dtcenter.common.loader.rdbms;
 
-import com.dtstack.dtcenter.common.loader.common.CollectionUtil;
-import com.dtstack.dtcenter.common.loader.common.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.CollectionUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.connection.CacheConnectionHelper;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
@@ -472,7 +473,12 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     @Override
     public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return null;
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        return new Table();
     }
 
     /**

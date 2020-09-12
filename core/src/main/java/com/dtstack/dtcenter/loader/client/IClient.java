@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.loader.client;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 
 import java.sql.Connection;
@@ -166,4 +167,14 @@ public interface IClient<T> {
      * @throws Exception
      */
     List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+
+    /**
+     * 获取表信息
+     *
+     * @param source
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
+    Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 }

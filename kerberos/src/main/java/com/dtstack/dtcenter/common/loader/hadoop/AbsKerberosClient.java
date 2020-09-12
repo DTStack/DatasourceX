@@ -1,8 +1,8 @@
 package com.dtstack.dtcenter.common.loader.hadoop;
 
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
-import com.dtstack.dtcenter.common.loader.common.Xml2JsonUtil;
-import com.dtstack.dtcenter.common.loader.common.ZipUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.Xml2JsonUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.ZipUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosConfigUtil;
 import com.dtstack.dtcenter.loader.client.IKerberos;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;

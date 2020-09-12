@@ -2,7 +2,6 @@ package com.dtstack.dtcenter.common.loader.hadoop.hdfs;
 
 import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
-import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosConfigUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -82,16 +81,16 @@ public class HadoopConfUtil {
             return defaultConfiguration;
         }
 
-        // 替换 Host 信息，如果为空，会返回空的 Kerberos 信息
-        kerberosConfig = KerberosConfigUtil.replaceHost(kerberosConfig);
-        hdfsConf = KerberosConfigUtil.replaceHost(hdfsConf);
-
         for (Map.Entry<String, Object> entry : hdfsConf.entrySet()) {
             if (entry.getValue() == null) {
                 continue;
             }
             conf.set(entry.getKey(), entry.getValue().toString());
         }
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return conf;
+        }
+
         for (Map.Entry<String, Object> entry : kerberosConfig.entrySet()) {
             if (entry.getValue() == null) {
                 continue;

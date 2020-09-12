@@ -5,6 +5,7 @@ import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
@@ -47,6 +48,10 @@ public class HiveTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int, name string)").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi1").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table nanqi1 (id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -118,6 +123,14 @@ public class HiveTest {
     }
 
     @Test
+    public void getTableMetaComment1() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi1").build();
+        String metaComment = client.getTableMetaComment(source, queryDTO);
+        System.out.println(metaComment);
+    }
+
+    @Test
     public void getDownloader() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
@@ -155,7 +168,7 @@ public class HiveTest {
     @Test
     public void query() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
-        List list = client.executeQuery(source, SqlQueryDTO.builder().sql("select * from nanqi").build());
+        List list = client.executeQuery(source, SqlQueryDTO.builder().sql("desc formatted nanqi").build());
         System.out.println(list);
     }
 
@@ -179,5 +192,12 @@ public class HiveTest {
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
         SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().build();
         System.out.println(client.getAllDatabases(source, sqlQueryDTO));
+    }
+
+    @Test
+    public void getTable() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+        Table table = client.getTable(source, SqlQueryDTO.builder().tableName("nanqi1").build());
+        System.out.println(table);
     }
 }
