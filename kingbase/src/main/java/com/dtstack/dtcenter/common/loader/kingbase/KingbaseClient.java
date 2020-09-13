@@ -52,7 +52,7 @@ public class KingbaseClient extends AbsRdbmsClient {
 
     @Override
     protected DataSourceType getSourceType() {
-        return DataSourceType.KINGBASE;
+        return DataSourceType.KINGBASE8;
     }
 
     @Override
