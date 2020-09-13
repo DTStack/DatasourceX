@@ -25,7 +25,10 @@ import org.apache.kudu.client.KuduTable;
 import org.apache.kudu.client.RowResult;
 import org.apache.kudu.client.RowResultIterator;
 
+import java.security.PrivilegedAction;
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -122,13 +125,24 @@ public class DtKuduClient extends AbsRdbmsClient {
         if (kuduSourceDTO == null || StringUtils.isBlank(kuduSourceDTO.getUrl())) {
             throw new DtCenterDefException("集群地址不能为空");
         }
-
+        List<String> hosts = Arrays.stream(kuduSourceDTO.getUrl().split(",")).collect(Collectors.toList());
         if (MapUtils.isNotEmpty(kuduSourceDTO.getKerberosConfig())) {
-            DtKerberosUtils.loginKerberos(kuduSourceDTO.getKerberosConfig());
+            String principalFile = (String) kuduSourceDTO.getKerberosConfig().get("principalFile");
+            String principal = (String) kuduSourceDTO.getKerberosConfig().get("principal");
+            log.info("getKuduClient principal {},principalFile:{}", principal, principalFile);
+            return  KerberosUtil.loginKerberosWithUGI(kuduSourceDTO.getKerberosConfig()).doAs(
+                    (PrivilegedAction<KuduClient>) () -> {
+                        try {
+                            return new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build();
+                        } catch (Exception e) {
+                            throw new DtCenterDefException("getKuduClient error : " + e.getMessage(), e);
+                        }
+                    }
+            );
+        } else {
+            return new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build();
         }
 
-        List<String> hosts = Arrays.stream(kuduSourceDTO.getUrl().split(",")).collect(Collectors.toList());
-        return new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build();
     }
 
 

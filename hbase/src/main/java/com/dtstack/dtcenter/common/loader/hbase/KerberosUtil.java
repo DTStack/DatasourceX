@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.hbase;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
+import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
 import com.dtstack.dtcenter.common.kerberos.KerberosConfigVerify;
 import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,14 @@ public class KerberosUtil {
         Configuration config = DtKerberosUtils.getConfig(confMap);
         if (StringUtils.isEmpty(principal) && StringUtils.isNotEmpty(keytab)) {
             principal = DtKerberosUtils.getPrincipal(keytab);
+        }
+
+        // 手动替换 Principal 参数，临时方案
+        String hbaseMasterPrincipal = MapUtils.getString(confMap, HadoopConfTool.KEY_HBASE_MASTER_KERBEROS_PRINCIPAL);
+        if (StringUtils.isNotBlank(hbaseMasterPrincipal) && StringUtils.isNotBlank(principal)) {
+            int hbaseMasterPrincipalLos = hbaseMasterPrincipal.indexOf("/");
+            int principalLos = principal.indexOf("/");
+            principal = principal.replaceFirst(principal.substring(0, principalLos), hbaseMasterPrincipal.substring(0, hbaseMasterPrincipalLos));
         }
 
         if (MapUtils.isEmpty(confMap) || StringUtils.isEmpty(principal) || StringUtils.isEmpty(keytab)) {
