@@ -16,6 +16,8 @@ import com.dtstack.dtcenter.loader.utils.DBUtil;
 import org.apache.commons.lang.StringUtils;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,6 +47,8 @@ public class KingbaseClient extends AbsRdbmsClient {
     //获取某个表的字段注释信息
     private static final String COL_COMMENT_SQL = "SELECT COLUMN_NAME,COMMENTS FROM ALL_COL_COMMENTS WHERE TABLE_NAME = '%s' ";
 
+    private static final String DONT_EXIST = "doesn't exist";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new KingbaseConnFactory();
@@ -52,7 +56,7 @@ public class KingbaseClient extends AbsRdbmsClient {
 
     @Override
     protected DataSourceType getSourceType() {
-        return DataSourceType.KINGBASE;
+        return DataSourceType.KINGBASE8;
     }
 
     @Override
@@ -167,6 +171,57 @@ public class KingbaseClient extends AbsRdbmsClient {
             DBUtil.closeDBResources(rs, statement, sourceDTO.clearAfterGetConnection(clearStatus));
         }
         return columnComments;
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeColumnQuery(source, queryDTO);
+        KingbaseSourceDTO kingbaseSourceDTO = (KingbaseSourceDTO) source;
+        Statement statement = null;
+        ResultSet rs = null;
+        List<ColumnMetaDTO> columns = new ArrayList<>();
+        try {
+            statement = kingbaseSourceDTO.getConnection().createStatement();
+            String queryColumnSql = "select * from " + transferSchemaAndTableName(kingbaseSourceDTO.getSchema(), queryDTO.getTableName())
+                    + " where 1=2";
+            rs = statement.executeQuery(queryColumnSql);
+            ResultSetMetaData rsMetaData = rs.getMetaData();
+            for (int i = 0, len = rsMetaData.getColumnCount(); i < len; i++) {
+                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+                columnMetaDTO.setKey(rsMetaData.getColumnName(i + 1));
+                String type = rsMetaData.getColumnTypeName(i + 1);
+                int columnType = rsMetaData.getColumnType(i + 1);
+                int precision = rsMetaData.getPrecision(i + 1);
+                int scale = rsMetaData.getScale(i + 1);
+                //kingbase类型转换
+                String flinkSqlType = KingbaseAdapter.mapColumnTypeJdbc2Java(columnType, precision, scale);
+                if (StringUtils.isNotEmpty(flinkSqlType)) {
+                    type = flinkSqlType;
+                }
+                columnMetaDTO.setType(type);
+                // 获取字段精度
+                if (columnMetaDTO.getType().equalsIgnoreCase("decimal")
+                        || columnMetaDTO.getType().equalsIgnoreCase("float")
+                        || columnMetaDTO.getType().equalsIgnoreCase("double")
+                        || columnMetaDTO.getType().equalsIgnoreCase("numeric")) {
+                    columnMetaDTO.setScale(rsMetaData.getScale(i + 1));
+                    columnMetaDTO.setPrecision(rsMetaData.getPrecision(i + 1));
+                }
+                columns.add(columnMetaDTO);
+            }
+            return columns;
+
+        } catch (SQLException e) {
+            if (e.getMessage().contains(DONT_EXIST)) {
+                throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
+            } else {
+                throw new DtCenterDefException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", queryDTO.getTableName()),
+                        DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            }
+        } finally {
+            DBUtil.closeDBResources(rs, statement, kingbaseSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+
     }
 
     /**
