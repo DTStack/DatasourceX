@@ -232,10 +232,10 @@ public class HdfsParquetWriter {
                 String columnName;
                 for (int i = 0; i < indexList.size(); i++) {
                     int index = indexList.get(i);
-                    columnName = hdfsWriterDTO.getColumnsList().get(index).getKey();
                     String val;
                     //根据schema进行类型转换
                     if (index != -1 && index <= (columnArr.length - 1)) {
+                        columnName = hdfsWriterDTO.getColumnsList().get(index).getKey();
                         val = columnArr[index].trim();
                         String type = hdfsWriterDTO.getColumnsList().get(i).getType().toLowerCase();
                         switch (hdfsWriterDTO.getColumnsList().get(index).getType().toLowerCase()) {
