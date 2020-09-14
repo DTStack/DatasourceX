@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
-import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -13,7 +12,6 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
@@ -23,7 +21,6 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @company: www.dtstack.com
@@ -289,7 +286,7 @@ public class HdfsFileTest {
     /**
      * 写入parquet格式文件到hdfs
      */
-    @Test(expected = NoSuchMethodError.class)
+    @Test
     public void writeParquetByName () throws Exception {
         writerDTO.setFileFormat(FileFormat.PARQUET.getVal());
         writerDTO.setFromFileName(localKerberosPath + "/textfile");
@@ -326,7 +323,7 @@ public class HdfsFileTest {
      * 下载parquet格式的文件
      * @throws Exception
      */
-    @Test(expected = Exception.class)
+    @Test
     public void getParquetDownloader() throws Exception {
         client.uploadLocalFileToHdfs(source, localKerberosPath + "/parquetfile", "/tmp/");
         source.setYarnConf(new HashMap<>());
@@ -379,7 +376,7 @@ public class HdfsFileTest {
     /**
      * 写入parquet格式文件到hdfs
      */
-    @Test(expected = NoSuchFieldError.class)
+    @Test
     public void writeParquetByPos () throws Exception {
         writerDTO.setTopLineIsTitle(true);
         writerDTO.setFileFormat(FileFormat.PARQUET.getVal());

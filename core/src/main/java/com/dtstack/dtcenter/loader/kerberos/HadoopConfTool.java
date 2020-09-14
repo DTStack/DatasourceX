@@ -8,11 +8,6 @@ package com.dtstack.dtcenter.loader.kerberos;
  */
 public class HadoopConfTool {
     /**
-     * Hadoop 本地 IP 配置
-     */
-    public static final String HOST = "_HOST";
-
-    /**
      * Hadoop 开启 Kerberos 是否需要二次认证
      */
     public static final String HADOOP_SECURITY_AUTHORIZATION = "hadoop.security.authorization";

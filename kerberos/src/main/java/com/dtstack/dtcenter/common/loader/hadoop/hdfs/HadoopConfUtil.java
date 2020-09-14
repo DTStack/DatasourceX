@@ -81,21 +81,22 @@ public class HadoopConfUtil {
             return defaultConfiguration;
         }
 
-        for (Map.Entry<String, Object> entry : hdfsConf.entrySet()) {
-            if (entry.getValue() == null) {
-                continue;
+        if (MapUtils.isNotEmpty(hdfsConf)) {
+            for (Map.Entry<String, Object> entry : hdfsConf.entrySet()) {
+                if (entry.getValue() == null) {
+                    continue;
+                }
+                conf.set(entry.getKey(), entry.getValue().toString());
             }
-            conf.set(entry.getKey(), entry.getValue().toString());
-        }
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return conf;
         }
 
-        for (Map.Entry<String, Object> entry : kerberosConfig.entrySet()) {
-            if (entry.getValue() == null) {
-                continue;
+        if (MapUtils.isNotEmpty(kerberosConfig)) {
+            for (Map.Entry<String, Object> entry : kerberosConfig.entrySet()) {
+                if (entry.getValue() == null) {
+                    continue;
+                }
+                conf.set(entry.getKey(), entry.getValue().toString());
             }
-            conf.set(entry.getKey(), entry.getValue().toString());
         }
 
         return conf;
