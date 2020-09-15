@@ -45,17 +45,17 @@ public class Hive1KerberosTest {
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HIVE1X.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
 
-//        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
-//        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
-//        client.executeSqlWithoutResultSet(source, queryDTO);
-//        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int comment 'id', name string comment '姓名') comment 'table comment' ").build();
-//        client.executeSqlWithoutResultSet(source, queryDTO);
-//        queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi1").build();
-//        client.executeSqlWithoutResultSet(source, queryDTO);
-//        queryDTO = SqlQueryDTO.builder().sql("create table nanqi1 (id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
-//        client.executeSqlWithoutResultSet(source, queryDTO);
-//        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
-//        client.executeSqlWithoutResultSet(source, queryDTO);
+        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int comment 'id', name string comment '姓名') comment 'table comment' ").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi1").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table nanqi1 (id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test

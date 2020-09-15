@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -21,6 +22,7 @@ import java.util.Map;
  * @Date ：Created in 00:00 2020/2/29
  * @Description：Hive 1.x 测试
  */
+@Ignore
 public class Hive1Test {
     private static Hive1SourceDTO source = Hive1SourceDTO.builder()
             .url("jdbc:hive2://172.16.10.67:10000/default")

@@ -132,6 +132,7 @@ public class HiveTest {
 
     @Test
     public void getDownloader() throws Exception {
+        System.setProperty("HADOOP_USER_NAME", "root");
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
