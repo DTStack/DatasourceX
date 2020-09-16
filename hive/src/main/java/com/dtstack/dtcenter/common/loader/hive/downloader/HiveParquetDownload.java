@@ -161,23 +161,6 @@ public class HiveParquetDownload implements IDownloader {
 
     @Override
     public List<String> readNext() throws Exception {
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return readNextWithKerberos();
-        }
-
-        // kerberos认证
-        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<List<String>>) ()->{
-                    try {
-                        return readNextWithKerberos();
-                    } catch (Exception e){
-                        throw new DtLoaderException("读取文件异常", e);
-                    }
-                });
-    }
-
-    private List<String> readNextWithKerberos(){
         readNum++;
 
         List<String> line = null;
@@ -280,20 +263,7 @@ public class HiveParquetDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws Exception {
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return !nextRecord();
-        }
-
-        // kerberos认证
-        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) ()->{
-                    try {
-                        return !nextRecord();
-                    } catch (Exception e){
-                        throw new DtLoaderException("下载文件异常", e);
-                    }
-                });
+        return !nextRecord();
     }
 
     @Override

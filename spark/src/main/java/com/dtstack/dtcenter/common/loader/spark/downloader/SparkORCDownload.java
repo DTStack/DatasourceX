@@ -106,23 +106,6 @@ public class SparkORCDownload implements IDownloader {
 
     @Override
     public List<String> readNext() throws Exception {
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return readNextWithKerberos();
-        }
-
-        // kerberos认证
-        return SparkKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<List<String>>) ()->{
-                    try {
-                        return readNextWithKerberos();
-                    } catch (Exception e){
-                        throw new DtLoaderException("读取文件异常", e);
-                    }
-                });
-    }
-
-    private List<String> readNextWithKerberos(){
         List<String> row = new ArrayList<>();
 
         int fieldsSize = fields.size();
@@ -180,45 +163,15 @@ public class SparkORCDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return recordReader == null || !nextRecord();
-        }
-
-        // kerberos认证
-        return SparkKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) ()->{
-                    try {
-                        return recordReader == null || !nextRecord();
-                    } catch (Exception e){
-                        throw new DtLoaderException("下载文件异常", e);
-                    }
-                });
+        return recordReader == null || !nextRecord();
     }
 
     @Override
     public boolean close() throws IOException {
-
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            if(recordReader != null){
-                recordReader.close();
-            }
-            return true;
+        if(recordReader != null){
+            recordReader.close();
         }
-
-        // kerberos认证
-        return SparkKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) ()->{
-                    try {
-                        if(recordReader != null){
-                            recordReader.close();
-                        }
-                        return true;
-                    } catch (Exception e){
-                        throw new DtLoaderException("RecordReader 关闭异常", e);
-                    }
-                });
+        return true;
     }
 
     @Override
