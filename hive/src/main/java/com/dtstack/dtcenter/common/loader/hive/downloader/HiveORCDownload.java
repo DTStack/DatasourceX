@@ -1,12 +1,9 @@
 package com.dtstack.dtcenter.common.loader.hive.downloader;
 
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
-import com.dtstack.dtcenter.common.loader.hive.util.HiveKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import jodd.util.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -22,7 +19,6 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
