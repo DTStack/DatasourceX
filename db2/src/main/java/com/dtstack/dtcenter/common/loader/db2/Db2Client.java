@@ -109,4 +109,24 @@ public class Db2Client extends AbsRdbmsClient {
     public String getShowDbSql() {
         return DATABASE_QUERY;
     }
+
+    /**
+     * 处理Oracle schema和tableName，适配schema和tableName中有.的情况
+     * @param schema
+     * @param tableName
+     * @return
+     */
+    @Override
+    protected String transferSchemaAndTableName(String schema, String tableName) {
+        if (!tableName.startsWith("\"") || !tableName.endsWith("\"")) {
+            tableName = String.format("\"%s\"", tableName);
+        }
+        if (StringUtils.isBlank(schema)) {
+            return tableName;
+        }
+        if (!schema.startsWith("\"") || !schema.endsWith("\"")){
+            schema = String.format("\"%s\"", schema);
+        }
+        return String.format("%s.%s", schema, tableName);
+    }
 }
