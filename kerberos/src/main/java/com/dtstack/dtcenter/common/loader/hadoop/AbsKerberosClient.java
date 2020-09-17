@@ -69,12 +69,12 @@ public class AbsKerberosClient implements IKerberos {
     }
 
     @Override
-    public String getPrincipals(String url) throws Exception {
+    public String getPrincipals(String url) {
         return KerberosConfigUtil.getPrincipalFromUrl(url);
     }
 
     @Override
-    public List<String> getPrincipals(Map<String, Object> kerberosConfig) throws Exception {
+    public List<String> getPrincipals(Map<String, Object> kerberosConfig) {
         String keytabPath = MapUtils.getString(kerberosConfig, HadoopConfTool.PRINCIPAL_FILE);
         if (StringUtils.isBlank(keytabPath)) {
             throw new DtLoaderException("获取 Principal 信息异常，Keytab 配置不存在");
