@@ -8,6 +8,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Sqlserver2017SourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -21,6 +22,7 @@ import java.util.Map;
  * @Date ：Created in 04:18 2020/2/29
  * @Description：SQLServer2017 测试
  */
+@Slf4j
 public class SQLServer2017Test {
     private static Sqlserver2017SourceDTO source = Sqlserver2017SourceDTO.builder()
             .url("jdbc:sqlserver://kudu5:1433;databaseName=dev")
@@ -33,7 +35,12 @@ public class SQLServer2017Test {
     public static void beforeClass() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table nanqi").build();
-        client.executeSqlWithoutResultSet(source, queryDTO);
+        try {
+            client.executeSqlWithoutResultSet(source, queryDTO);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
         queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int, name varchar(50))").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();

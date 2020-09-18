@@ -85,6 +85,11 @@ public class KerberosConfigUtil {
      */
     public static void changeRelativePathToAbsolutePath(Map<String, Object> conf, String localKerberosPath, String checkKey) {
         String relativePath = MapUtils.getString(conf, checkKey);
+        // 如果包含多级目录，说明不是相对路径，已经被改为绝对路径了
+        if (relativePath.indexOf("/", 1) > 0) {
+            return;
+        }
+
         if (StringUtils.isNotBlank(relativePath)) {
             String absolutePath = PathUtils.removeMultiSeparatorChar(localKerberosPath + File.separator + relativePath);
             log.info("changeRelativePathToAbsolutePath checkKey:{} relativePath:{}, localKerberosConfPath:{}, absolutePath:{}", checkKey, relativePath, localKerberosPath, absolutePath);
