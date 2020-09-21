@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.dto;
 
 import com.dtstack.dtcenter.loader.dto.filter.Filter;
+import com.dtstack.dtcenter.loader.enums.EsCommandType;
 import lombok.Builder;
 import lombok.Data;
 import org.apache.commons.lang3.ArrayUtils;
@@ -90,6 +91,16 @@ public class SqlQueryDTO {
      * hbase过滤器，用户hbase自定义查询
      */
     private List<Filter> hbaseFilter;
+
+    /**
+     * Elasticsearch 命令, 定义es操作类型
+     * <b><b/>
+     * 1. INSERT  (Default)
+     * 2. UPDATE
+     * 3. DELETE
+     * 4. BULK
+     */
+    private EsCommandType esCommandType;
 
     public Boolean getView() {
         if (ArrayUtils.isEmpty(getTableTypes())) {

@@ -12,6 +12,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
+import com.dtstack.dtcenter.loader.enums.EsCommandType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
@@ -68,7 +69,17 @@ public class EsClient extends AbsRdbmsClient {
 
     private static final String POST = "post";
 
+    private static final String PUT = "put";
+
+    private static final String DELETE = "delete";
+
     private static final String ENDPOINT_SEARCH_FORMAT = "/%s/_search";
+
+    private static final String ENDPOINT_UPDATE_FORMAT = "/%s/_update";
+
+    private static final String ENDPOINT_DELETE_FORMAT = "/%s";
+
+    private static final String ENDPOINT_BULK_FORMAT = "/_bulk";
 
     private static final String RESULT_KEY = "result";
 
@@ -421,9 +432,74 @@ public class EsClient extends AbsRdbmsClient {
         throw new DtLoaderException("Not Support");
     }
 
+    /**
+     *
+     * @param iSource
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
     @Override
     public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
+        ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
+
+        if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
+            return null;
+        }
+        //索引
+        String index = queryDTO.getTableName();
+
+        RestHighLevelClient client = null;
+        RestClient lowLevelClient = null;
+        JSONObject resultJsonObject = null;
+        String dsl = doDealPageSql(queryDTO.getSql());
+        try {
+            client = getClient(esSourceDTO);
+            if (Objects.isNull(client)) {
+                throw new DtCenterDefException("没有可用的数据库连接");
+            }
+            lowLevelClient = client.getLowLevelClient();
+            HttpEntity entity = new NStringEntity(dsl, ContentType.APPLICATION_JSON);
+            EsCommandType esCommandType = queryDTO.getEsCommandType();
+            String httpMethod = null;
+            String endpoint = null;
+            switch (esCommandType) {
+                case UPDATE:
+                    httpMethod = POST;
+                    endpoint = String.format(ENDPOINT_UPDATE_FORMAT, index);
+                    break;
+                case DELETE:
+                    httpMethod = DELETE;
+                    endpoint = String.format(ENDPOINT_DELETE_FORMAT, index);
+                    break;
+                case BULK:
+                    httpMethod = POST;
+                    endpoint = String.format(ENDPOINT_BULK_FORMAT, index);
+                    break;
+                case INSERT:
+                default:
+                    httpMethod = PUT;
+                    endpoint = index;
+                    break;
+            }
+            resultJsonObject = execute(lowLevelClient, entity, httpMethod, endpoint);
+        } catch (IOException e) {
+            log.error("sql 执行失败 ", e);
+            throw new DtCenterDefException(e.getMessage(), e);
+        } finally {
+            closeResource(lowLevelClient, client, esSourceDTO);
+        }
+        return true;
+    }
+
+    private JSONObject execute(RestClient lowLevelClient, HttpEntity entity, String httpMethod, String endpoint) throws IOException {
+        JSONObject resultJsonObject;
+        Request request = new Request(httpMethod, endpoint);
+        request.setEntity(entity);
+        Response response = lowLevelClient.performRequest(request);
+        String result = EntityUtils.toString(response.getEntity());
+        resultJsonObject = JSONObject.parseObject(result);
+        return resultJsonObject;
     }
 
     @Override
