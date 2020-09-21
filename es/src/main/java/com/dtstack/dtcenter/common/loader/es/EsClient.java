@@ -334,6 +334,7 @@ public class EsClient<T> implements IClient<T> {
      * @return
      */
     private static RestHighLevelClient getClient(String address, String username, String password) {
+        log.info("获取 ES 数据源连接, address : {}, userName : {}", address, username);
         List<HttpHost> httpHosts = dealHost(address);
         //有用户名密码情况
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {

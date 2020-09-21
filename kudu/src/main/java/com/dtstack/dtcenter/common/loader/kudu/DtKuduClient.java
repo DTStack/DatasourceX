@@ -113,6 +113,7 @@ public class DtKuduClient<T> implements IClient<T> {
             throw new DtLoaderException("集群地址不能为空");
         }
         List<String> hosts = Arrays.stream(kuduSourceDTO.getUrl().split(",")).collect(Collectors.toList());
+        log.info("获取 Kudu 数据源连接, url : {}, kerberosConfig : {}", hosts, kuduSourceDTO.getKerberosConfig());
         if (MapUtils.isEmpty(kuduSourceDTO.getKerberosConfig())) {
             return new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build();
         }

@@ -52,18 +52,17 @@ public class HbaseConnFactory {
         return check;
     }
 
-    public static Connection getHbaseConn(HbaseSourceDTO source) throws Exception {
+    public static Connection getHbaseConn(HbaseSourceDTO source) {
         Map<String, Object> sourceToMap = sourceToMap(source);
-        if (MapUtils.isEmpty(source.getKerberosConfig())) {
-            Configuration hConfig = HBaseConfiguration.create();
-            for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {
-                hConfig.set(entry.getKey(), (String) entry.getValue());
-            }
+        Configuration hConfig = HBaseConfiguration.create();
+        for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {
+            hConfig.set(entry.getKey(), (String) entry.getValue());
+        }
 
-            Connection hConn = null;
+        log.info("获取 Hbase 数据源连接, url : {}, path : {}, kerberosConfig : {}", source.getUrl(), source.getUsername(), source.getKerberosConfig());
+        if (MapUtils.isEmpty(source.getKerberosConfig())) {
             try {
-                hConn = ConnectionFactory.createConnection(hConfig);
-                return hConn;
+                return ConnectionFactory.createConnection(hConfig);
             } catch (Exception e) {
                 throw new DtLoaderException("获取 hbase 连接异常", e);
             }
@@ -71,15 +70,8 @@ public class HbaseConnFactory {
 
         return KerberosLoginUtil.loginKerberosWithUGI(new HashMap<>(source.getKerberosConfig())).doAs(
                 (PrivilegedAction<Connection>) () -> {
-                    Configuration hConfig = HBaseConfiguration.create();
-                    for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {
-                        hConfig.set(entry.getKey(), (String) entry.getValue());
-                    }
-
-                    Connection hConn = null;
                     try {
-                        hConn = ConnectionFactory.createConnection(hConfig);
-                        return hConn;
+                        return ConnectionFactory.createConnection(hConfig);
                     } catch (Exception e) {
                         throw new DtLoaderException("获取 hbase 连接异常", e);
                     }

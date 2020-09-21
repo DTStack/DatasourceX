@@ -14,8 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.security.PrivilegedAction;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.regex.Matcher;
 
 /**
@@ -35,26 +33,19 @@ public class SparkConnFactory extends ConnFactory {
         init();
         SparkSourceDTO sparkSourceDTO = (SparkSourceDTO) iSource;
 
-        Connection connection = null;
+        Connection connection;
         if (MapUtils.isNotEmpty(sparkSourceDTO.getKerberosConfig())) {
-            String principalFile = (String) sparkSourceDTO.getKerberosConfig().get("principalFile");
-            log.info("getHiveConnection principalFile:{}", principalFile);
-
             connection = SparkKerberosLoginUtil.loginKerberosWithUGI(sparkSourceDTO.getUrl(), sparkSourceDTO.getKerberosConfig()).doAs(
                     (PrivilegedAction<Connection>) () -> {
                         try {
-                            DriverManager.setLoginTimeout(30);
-                            return DriverManager.getConnection(sparkSourceDTO.getUrl(), sparkSourceDTO.getUsername(),
-                                    sparkSourceDTO.getPassword());
-                        } catch (SQLException e) {
+                            return super.getConn(sparkSourceDTO);
+                        } catch (Exception e) {
                             throw new DtLoaderException("getHiveConnection error : " + e.getMessage(), e);
                         }
                     }
             );
         } else {
-            DriverManager.setLoginTimeout(30);
-            connection = DriverManager.getConnection(sparkSourceDTO.getUrl(), sparkSourceDTO.getUsername(),
-                    sparkSourceDTO.getPassword());
+            connection = super.getConn(sparkSourceDTO);
         }
 
         Matcher matcher = DtClassConsistent.PatternConsistent.HIVE_JDBC_PATTERN.matcher(sparkSourceDTO.getUrl());

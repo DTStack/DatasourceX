@@ -38,7 +38,7 @@ public class KerberosConfigUtil {
      */
     public static void dealKeytab(List<File> fileList, String oppositeLocation, Map<String, Object> confMap) throws IOException {
         String finalPath = dealFilePath(fileList, oppositeLocation, DtClassConsistent.PublicConsistent.KEYTAB_SUFFIX);
-        log.info("DealKeytab path -- key : {}, value : {}", HadoopConfTool.PRINCIPAL_FILE, finalPath);
+        log.info("处理 Keytab 路径地址为绝对路径 -- key : {}, value : {}", HadoopConfTool.PRINCIPAL_FILE, finalPath);
         confMap.put(HadoopConfTool.PRINCIPAL_FILE, finalPath);
     }
 
@@ -51,12 +51,12 @@ public class KerberosConfigUtil {
      */
     public static void dealKrb5Conf(List<File> fileList, String oppositeLocation, Map<String, Object> confMap) throws IOException {
         String finalPath = dealFilePath(fileList, oppositeLocation, DtClassConsistent.PublicConsistent.KRB5CONF_FILE);
-        log.info("DealKeytab path -- key : {}, value : {}", HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);
+        log.info("处理 Krb5 路径地址为绝对路径 -- key : {}, value : {}", HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);
         confMap.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);
     }
 
     /**
-     * 查找以特定字符结尾的文件
+     * 处理路径地址为绝对路径
      *
      * @param fileList
      * @param oppositeLocation
@@ -69,7 +69,7 @@ public class KerberosConfigUtil {
                 file.getName().endsWith(fileNameEnd)).findFirst();
 
         if (!krb5confOptional.isPresent()) {
-            throw new DtLoaderException(String.format("以%s结尾的问题不存在", fileNameEnd));
+            throw new DtLoaderException(String.format("以%s结尾的文件不存在", fileNameEnd));
         }
 
         String canonicalPath = krb5confOptional.get().getCanonicalPath();

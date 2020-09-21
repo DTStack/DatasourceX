@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.security.PrivilegedAction;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.regex.Matcher;
 
 /**
@@ -34,8 +33,7 @@ public class ImpalaConnFactory extends ConnFactory {
         init();
         ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
 
-        DriverManager.setLoginTimeout(30);
-        Connection conn = null;
+        Connection conn;
         if (MapUtils.isEmpty(impalaSourceDTO.getKerberosConfig())) {
             conn = super.getConn(impalaSourceDTO);
         } else {

@@ -7,7 +7,6 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.google.common.collect.Lists;
 import kafka.admin.AdminUtils;
-import kafka.admin.RackAwareMode;
 import kafka.cluster.Broker;
 import kafka.cluster.EndPoint;
 import kafka.utils.ZkUtils;
@@ -106,6 +105,7 @@ public class KakfaUtil {
      * @throws Exception
      */
     public static String getAllBrokersAddressFromZk(String zkUrls) {
+        log.info("通过 ZK 获取 Kafka Broker 地址 : {}", zkUrls);
         if (StringUtils.isBlank(zkUrls) || !TelUtil.checkTelnetAddr(zkUrls)) {
             throw new DtLoaderException("请配置正确的 zookeeper 地址");
         }
@@ -169,6 +169,7 @@ public class KakfaUtil {
      * @return
      */
     public static List<String> getTopicListFromZk(String zkUrls) {
+        log.info("通过 ZK 获取 Kafka Topic 信息 : {}", zkUrls);
         ZkUtils zkUtils = null;
         List<String> topics = Lists.newArrayList();
         try {
@@ -210,50 +211,6 @@ public class KakfaUtil {
     }
 
     /**
-     * 通过 ZK 创建 TOPIC
-     *
-     * @param zkUrls
-     * @param topicName
-     * @param partitions
-     * @param replicationFactor
-     * @return
-     */
-    public static boolean createTopicFromZk(String zkUrls, String topicName, Integer partitions,
-                                            Integer replicationFactor) {
-        ZkUtils zkUtils = null;
-        zkUtils = ZkUtils.apply(zkUrls, KafkaConsistent.SESSION_TIME_OUT,
-                KafkaConsistent.SESSION_TIME_OUT, JaasUtils.isZkSecurityEnabled());
-        try {
-            partitions = null == partitions || partitions < 1 ? 1 : partitions;
-            replicationFactor = null == replicationFactor || replicationFactor < 1 ? 1 : replicationFactor;
-            AdminUtils.createTopic(zkUtils, topicName, partitions, replicationFactor,
-                    new Properties(), RackAwareMode.Enforced$.MODULE$);
-            return true;
-        } catch (Exception e) {
-            throw new DtLoaderException(e.getMessage(), e);
-        } finally {
-            if (zkUtils != null) {
-                zkUtils.close();
-            }
-        }
-    }
-
-    /**
-     * 通过 KAFKA 获取 分区信息
-     *
-     * @param brokerUrls
-     * @param kerberosConfig
-     * @param topic
-     * @return
-     */
-    public static List<MetadataResponse.PartitionMetadata> getAllPartitionsFromBroker(String brokerUrls,
-                                                                                      Map<String, Object> kerberosConfig, String topic) {
-        // TODO 待完工
-        return null;
-    }
-
-
-    /**
      * 通过 ZK 获取 分区信息 (目前没有地方使用到)
      *
      * @param zkUrls
@@ -262,6 +219,7 @@ public class KakfaUtil {
      */
     @Deprecated
     public static List<MetadataResponse.PartitionMetadata> getAllPartitionsFromZk(String zkUrls, String topic) {
+        log.info("通过 ZK 获取 Kafka 分区信息, zkUrls : {}, topic : {}", zkUrls, topic);
         ZkUtils zkUtils = null;
 
         try {
@@ -376,6 +334,7 @@ public class KakfaUtil {
      * @return
      */
     private static Properties initProperties(String brokerUrls, Map<String, Object> kerberosConfig) {
+        log.info("初始化 Kafka 配置信息, brokerUrls : {}, kerberosConfig : {}", brokerUrls, kerberosConfig);
         Properties props = new Properties();
         if (StringUtils.isBlank(brokerUrls)) {
             throw new DtLoaderException("Kafka Broker 地址不能为空");

@@ -37,7 +37,7 @@ public class RedisUtils {
 
     public static boolean checkConnection(ISourceDTO iSource) {
         RedisSourceDTO redisSourceDTO = (RedisSourceDTO) iSource;
-        log.info("checkRedisConnection  source :{}", redisSourceDTO);
+        log.info("获取 Redis 数据源连接, host : {}, port : {}", redisSourceDTO.getMaster(), redisSourceDTO.getHostPort());
         RedisMode redisMode = redisSourceDTO.getRedisMode() != null ? redisSourceDTO.getRedisMode() : RedisMode.Standalone;
         switch (redisMode) {
             case Standalone:
@@ -56,16 +56,14 @@ public class RedisUtils {
         String password = redisSourceDTO.getPassword();
         String hostPort = redisSourceDTO.getHostPort();
 
-        String host = null;
-        int port = -1;
         int db = StringUtils.isNotEmpty(redisSourceDTO.getSchema()) ? Integer.parseInt(redisSourceDTO.getSchema()) : 0;
         Matcher matcher = HOST_PORT_PATTERN.matcher(hostPort);
 
         Preconditions.checkArgument(matcher.find(), "hostPort格式异常");
 
-        host = matcher.group("host");
+        String host = matcher.group("host");
         String portStr = matcher.group("port");
-        port = portStr == null ? DEFAULT_PORT : Integer.parseInt(portStr);
+        int port = portStr == null ? DEFAULT_PORT : Integer.parseInt(portStr);
 
         JedisPool pool = null;
         Jedis jedis = null;

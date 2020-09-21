@@ -74,11 +74,11 @@ public class HdfsOperator {
      */
     public static FileSystem getFileSystem(Map<String, Object> kerberosConfig, String config, String defaultFS) throws IOException {
         Configuration conf = HadoopConfUtil.getHdfsConf(defaultFS, config, kerberosConfig);
-        FileSystem fs = null;
+        log.info("获取 Hdfs FileSystem 信息, defaultFS : {}, config : {}, kerberosConfig : {}", defaultFS, config, kerberosConfig);
         if (MapUtils.isEmpty(kerberosConfig)) {
-            fs = FileSystem.get(conf);
+            return FileSystem.get(conf);
         } else {
-            fs = KerberosLoginUtil.loginKerberosWithUGI(new HashMap<>(kerberosConfig)).doAs(
+            return KerberosLoginUtil.loginKerberosWithUGI(new HashMap<>(kerberosConfig)).doAs(
                     (PrivilegedAction<FileSystem>) () -> {
                         try {
                             return FileSystem.get(conf);
@@ -88,7 +88,6 @@ public class HdfsOperator {
                     }
             );
         }
-        return fs;
     }
 
     /**

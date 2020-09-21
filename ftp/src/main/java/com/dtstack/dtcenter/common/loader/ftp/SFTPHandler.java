@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.loader.enums.SftpAuthType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
@@ -44,7 +45,7 @@ public class SFTPHandler {
      * @param sftpConfig
      * @return
      */
-    public static SFTPHandler getInstance(Map<String, String> sftpConfig) {
+    public static SFTPHandler getInstance(Map<String, String> sftpConfig) throws JSchException {
         checkConfig(sftpConfig);
 
         String host = MapUtils.getString(sftpConfig, KEY_HOST);
@@ -54,44 +55,32 @@ public class SFTPHandler {
         String rsaPath = MapUtils.getString(sftpConfig, KEY_RSA);
         String authType = MapUtils.getString(sftpConfig, KEY_AUTHENTICATION);
 
-        try {
-            com.jcraft.jsch.Logger logger = new SettleLogger();
-            JSch.setLogger(logger);
-            JSch jsch = new JSch();
-            if (SftpAuthType.RSA.getType().toString().equals(authType) && StringUtils.isNotBlank(rsaPath)) {
-                //需要添加私钥
-                jsch.addIdentity(rsaPath.trim(), "");
-            }
-            Session session = jsch.getSession(username, host, port);
-            if (session == null) {
-                throw new DtLoaderException("Login failed. Please check if username and password are correct");
-            }
-
-            if (StringUtils.isBlank(authType) || SftpAuthType.PASSWORD.getType().toString().equals(authType)) {
-                //默认走密码验证模式
-                session.setPassword(password);
-            }
-            Properties config = new Properties();
-            config.put("StrictHostKeyChecking", "no");
-            session.setConfig(config);
-            session.setTimeout(MapUtils.getIntValue(sftpConfig, KEY_TIMEOUT, 0));
-            session.connect();
-
-            ChannelSftp channelSftp = (ChannelSftp) session.openChannel("sftp");
-            channelSftp.connect();
-
-            return new SFTPHandler(session, channelSftp);
-        } catch (Exception e) {
-            String message = String.format("与ftp服务器建立连接失败 : [%s]",
-                    new StringBuilder()
-                            .append("message:host =").append(host)
-                            .append(",username =").append(username)
-                            .append(",port =").append(port)
-                            .append(", rsaPath =").append(rsaPath)
-                            .append(", authType =").append(authType).toString()
-            );
-            throw new DtLoaderException(message, e);
+        com.jcraft.jsch.Logger logger = new SettleLogger();
+        JSch.setLogger(logger);
+        JSch jsch = new JSch();
+        if (SftpAuthType.RSA.getType().toString().equals(authType) && StringUtils.isNotBlank(rsaPath)) {
+            //需要添加私钥
+            jsch.addIdentity(rsaPath.trim(), "");
         }
+        Session session = jsch.getSession(username, host, port);
+        if (session == null) {
+            throw new DtLoaderException("与ftp服务器建立连接失败,请检查用户名和密码是否正确");
+        }
+
+        if (StringUtils.isBlank(authType) || SftpAuthType.PASSWORD.getType().toString().equals(authType)) {
+            //默认走密码验证模式
+            session.setPassword(password);
+        }
+        Properties config = new Properties();
+        config.put("StrictHostKeyChecking", "no");
+        session.setConfig(config);
+        session.setTimeout(MapUtils.getIntValue(sftpConfig, KEY_TIMEOUT, 0));
+        session.connect();
+
+        ChannelSftp channelSftp = (ChannelSftp) session.openChannel("sftp");
+        channelSftp.connect();
+
+        return new SFTPHandler(session, channelSftp);
     }
 
     /**

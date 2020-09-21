@@ -60,7 +60,7 @@ public class KerberosLoginUtil {
             }
 
             // 开始 Kerberos 认证
-            log.info("login kerberos, currentUser={}, principal={}, path={}, krb5Conf={}", UserGroupInformation.getCurrentUser(), principal, keytab, krb5Conf);
+            log.info("login kerberos, currentUser={}, principal={}, principalFilePath={}, krb5ConfPath={}", UserGroupInformation.getCurrentUser(), principal, keytab, krb5Conf);
             Config.refresh();
             Configuration config = KerberosConfigUtil.getConfig(confMap);
             config.set("hadoop.security.authentication", "Kerberos");
@@ -69,7 +69,7 @@ public class KerberosLoginUtil {
             log.info("login kerberos success, currentUser={}", UserGroupInformation.getCurrentUser());
             return ugi;
         } catch (Exception var6) {
-            log.error("login kerberos failed, config:{}", confMap);
+            log.error("login kerberos failed, config:{}", confMap, var6);
             throw new DtLoaderException("login kerberos failed", var6);
         }
     }

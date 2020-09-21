@@ -214,6 +214,7 @@ public class MongoDBUtils {
             }
         }
         IS_OPEN_POOL.set(check);
+        log.info("获取 MongoDB 数据源连接, url : {}, username : {}", hostPorts, username);
         //不开启连接池
         if (!check) {
             return getClient(hostPorts, username, password, schema);

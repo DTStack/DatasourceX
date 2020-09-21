@@ -8,7 +8,6 @@ import com.dtstack.dtcenter.loader.source.DataBaseType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 
 /**
  * @company: www.dtstack.com
@@ -28,7 +27,6 @@ public class GreenplumFactory extends ConnFactory {
     public Connection getConn(ISourceDTO iSource) throws Exception {
         init();
         Greenplum6SourceDTO greenplum6SourceDTO = (Greenplum6SourceDTO) iSource;
-        DriverManager.setLoginTimeout(30);
         Connection connection = super.getConn(greenplum6SourceDTO);
         if (!StringUtils.isBlank(greenplum6SourceDTO.getSchema())) {
             DBUtil.executeSqlWithoutResultSet(connection, String.format(SCHEMA_SET, greenplum6SourceDTO.getSchema()), false);

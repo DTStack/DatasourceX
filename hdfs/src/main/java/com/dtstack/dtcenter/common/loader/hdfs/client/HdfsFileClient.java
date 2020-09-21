@@ -19,7 +19,6 @@ import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -44,8 +43,6 @@ import java.util.Map;
 public class HdfsFileClient implements IHdfsFile {
 
     private static final String PATH_DELIMITER = "/";
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Override
     public FileStatus getStatus(ISourceDTO iSource, String location) throws Exception {
