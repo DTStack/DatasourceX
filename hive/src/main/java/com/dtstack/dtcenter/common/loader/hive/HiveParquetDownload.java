@@ -3,10 +3,12 @@ package com.dtstack.dtcenter.common.loader.hive;
 import com.dtstack.dtcenter.common.hadoop.GroupTypeIgnoreCase;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -23,6 +25,7 @@ import org.apache.parquet.schema.Type;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.security.PrivilegedAction;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -118,7 +121,19 @@ public class HiveParquetDownload implements IDownloader {
         }
 
         ParquetReader.Builder<Group> reader = ParquetReader.builder(readSupport, new Path(currFile)).withConf(conf);
-        build = reader.build();
+        if (MapUtils.isNotEmpty(kerberosConfig)) {
+            build = KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                    (PrivilegedAction<ParquetReader<Group>>) () -> {
+                        try {
+                            return reader.build();
+                        } catch (IOException e) {
+                            throw new DtLoaderException(e.getMessage(), e);
+                        }
+                    }
+            );
+        } else {
+            build = reader.build();
+        }
 
         if(CollectionUtils.isNotEmpty(partitionColumns)){
             currentPartData = HdfsOperator.parsePartitionDataFromUrl(currFile, partitionColumns);
