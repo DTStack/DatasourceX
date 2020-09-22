@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -442,7 +443,7 @@ public class EsClient extends AbsRdbmsClient {
     @Override
     public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
-
+        Boolean result = false;
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return null;
         }
@@ -451,7 +452,6 @@ public class EsClient extends AbsRdbmsClient {
 
         RestHighLevelClient client = null;
         RestClient lowLevelClient = null;
-        JSONObject resultJsonObject = null;
         String dsl = doDealPageSql(queryDTO.getSql());
         try {
             client = getClient(esSourceDTO);
@@ -482,24 +482,28 @@ public class EsClient extends AbsRdbmsClient {
                     endpoint = index;
                     break;
             }
-            resultJsonObject = execute(lowLevelClient, entity, httpMethod, endpoint);
+            Response response = execute(lowLevelClient, entity, httpMethod, endpoint);
+            if (response != null && response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                result = true;
+            }
         } catch (IOException e) {
             log.error("sql 执行失败 ", e);
             throw new DtCenterDefException(e.getMessage(), e);
         } finally {
             closeResource(lowLevelClient, client, esSourceDTO);
         }
-        return true;
+        return result;
     }
 
-    private JSONObject execute(RestClient lowLevelClient, HttpEntity entity, String httpMethod, String endpoint) throws IOException {
-        JSONObject resultJsonObject;
+    private Response execute(RestClient lowLevelClient, HttpEntity entity, String httpMethod, String endpoint) throws IOException {
         Request request = new Request(httpMethod, endpoint);
         request.setEntity(entity);
-        Response response = lowLevelClient.performRequest(request);
+        return lowLevelClient.performRequest(request);
+    }
+
+    private JSONObject getJsonResult(Response response) throws IOException {
         String result = EntityUtils.toString(response.getEntity());
-        resultJsonObject = JSONObject.parseObject(result);
-        return resultJsonObject;
+        return JSONObject.parseObject(result);
     }
 
     @Override
