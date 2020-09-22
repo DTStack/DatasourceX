@@ -357,6 +357,8 @@ public class KakfaUtil {
         /* value的序列化类 */
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 
+        /*设置超时时间*/
+        props.put("request.timeout.ms", "10500");
         if (MapUtils.isEmpty(kerberosConfig)) {
             return props;
         }
@@ -385,6 +387,8 @@ public class KakfaUtil {
         List<String> result = new ArrayList<>();
 
         Properties props = initProperties(zkUrls, brokerUrls, kerberos);
+        /*去除超时时间*/
+        props.remove("request.timeout.ms");
         props.put("max.poll.records", MAX_POOL_RECORDS);
         /* 定义consumer */
         try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);) {
