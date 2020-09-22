@@ -33,9 +33,7 @@ import java.util.Map;
  * @Description：Oracle 客户端
  */
 public class OracleClient extends AbsRdbmsClient {
-    private static final String ORACLE_ALL_TABLES_SQL = "SELECT TABLE_NAME FROM USER_TABLES UNION SELECT GRANTOR||'" +
-            ".'||'\"'||TABLE_NAME||'\"' FROM ALL_TAB_PRIVS WHERE grantee = (SELECT USERNAME FROM user_users WHERE " +
-            "ROWNUM = 1) ";
+    private static final String ORACLE_ALL_TABLES_SQL = "SELECT TABLE_NAME FROM USER_TABLES UNION SELECT '\"'||GRANTOR||'\"'||'.'||'\"'||TABLE_NAME||'\"' FROM ALL_TAB_PRIVS WHERE grantee = (SELECT USERNAME FROM user_users WHERE ROWNUM = 1) and table_schema != 'SYS' ";
     private static final String ORACLE_WITH_VIEWS_SQL = "UNION SELECT VIEW_NAME FROM USER_VIEWS ";
 
     private static String ORACLE_NUMBER_TYPE = "NUMBER";
