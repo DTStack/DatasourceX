@@ -52,7 +52,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <dtstack.common>4.0.3-SNAPSHOT</dtstack.common>
-        <spring.version>4.1.9.RELEASE</spring.version>
+        <spring.version>5.2.9.RELEASE</spring.version>
 
         <!--将所有jacoco定位到同样的父目录位置-->
         <sonar.jacoco.reportPaths>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPaths>
