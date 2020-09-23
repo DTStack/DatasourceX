@@ -66,7 +66,7 @@ public class HbaseClient extends AbsRdbmsClient {
         Admin admin = null;
         List<String> tableList = new ArrayList<>();
         try {
-            hConn = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
+            hConn = HbaseConnFactory.getHbaseConn(hbaseSourceDTO, queryDTO);
             admin = hConn.getAdmin();
             TableName[] tableNames = admin.listTableNames();
             if (tableNames != null) {
@@ -110,7 +110,7 @@ public class HbaseClient extends AbsRdbmsClient {
         Table tb = null;
         List<ColumnMetaDTO> cfList = new ArrayList<>();
         try {
-            hConn = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
+            hConn = HbaseConnFactory.getHbaseConn(hbaseSourceDTO, queryDTO);
             TableName tableName = TableName.valueOf(queryDTO.getTableName());
             tb = hConn.getTable(tableName);
             HTableDescriptor hTableDescriptor = tb.getTableDescriptor();
@@ -139,7 +139,7 @@ public class HbaseClient extends AbsRdbmsClient {
         List<Map<String, Object>> executeResult = Lists.newArrayList();
         try {
             //获取hbase连接
-            connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
+            connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO, queryDTO);
             //获取hbase扫描列，格式 - 列族:列名
             List<String> columns = queryDTO.getColumns();
             //获取hbase自定义查询的过滤器
@@ -212,7 +212,7 @@ public class HbaseClient extends AbsRdbmsClient {
         List<List<Object>> executeResult = Lists.newArrayList();
         try {
             //获取hbase连接
-            connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
+            connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO, queryDTO);
             TableName tableName = TableName.valueOf(queryDTO.getTableName());
             table = connection.getTable(tableName);
             Scan scan = new Scan();
