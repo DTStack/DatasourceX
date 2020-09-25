@@ -162,10 +162,12 @@ public class HbaseClient extends AbsRdbmsClient {
                 }
             }
 
+            boolean isAccurateQuery = false;
             if (hbaseFilter != null && hbaseFilter.size() > 0) {
                 for (com.dtstack.dtcenter.loader.dto.filter.Filter filter : hbaseFilter){
                     if (getAccurateQuery(table, results, filter)) {
-                        continue;
+                        isAccurateQuery = true;
+                        break;
                     }
                     //将core包下的filter转换成hbase包下的filter
                     Filter transFilter = FilterType.get(filter);
@@ -174,9 +176,11 @@ public class HbaseClient extends AbsRdbmsClient {
                 FilterList filters = new FilterList(filterList);
                 scan.setFilter(filters);
             }
-            rs = table.getScanner(scan);
-            for (Result r : rs) {
-                results.add(r);
+            if(!isAccurateQuery){
+                rs = table.getScanner(scan);
+                for (Result r : rs) {
+                    results.add(r);
+                }
             }
 
         } catch (Exception e){
