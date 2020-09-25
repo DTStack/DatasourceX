@@ -13,6 +13,7 @@ import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -188,6 +189,9 @@ public class HbaseClient extends AbsRdbmsClient {
         //理解为一行记录
         for (Result result : results) {
             List<Cell> cells = result.listCells();
+            if (CollectionUtils.isEmpty(cells)) {
+                continue;
+            }
             long timestamp = 0L;
             HashMap<String, Object> row = Maps.newHashMap();
             for (Cell cell : cells){
@@ -212,7 +216,7 @@ public class HbaseClient extends AbsRdbmsClient {
         if (filter instanceof RowFilter) {
             RowFilter rowFilterFilter = (RowFilter) filter;
             if (rowFilterFilter.getCompareOp().equals(CompareOp.EQUAL)) {
-                Get get = new Get(rowFilterFilter.getComparator().toString().getBytes());
+                Get get = new Get(rowFilterFilter.getComparator().getValue());
                 Result r = table.get(get);
                 results.add(r);
                 return true;
