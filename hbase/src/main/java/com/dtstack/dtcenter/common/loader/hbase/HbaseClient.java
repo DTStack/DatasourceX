@@ -4,8 +4,10 @@ import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.filter.RowFilter;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.enums.CompareOp;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
@@ -17,6 +19,7 @@ import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
@@ -160,6 +163,9 @@ public class HbaseClient extends AbsRdbmsClient {
 
             if (hbaseFilter != null && hbaseFilter.size() > 0) {
                 for (com.dtstack.dtcenter.loader.dto.filter.Filter filter : hbaseFilter){
+                    if (getAccurateQuery(table, results, filter)) {
+                        continue;
+                    }
                     //将core包下的filter转换成hbase包下的filter
                     Filter transFilter = FilterType.get(filter);
                     filterList.add(transFilter);
@@ -200,6 +206,19 @@ public class HbaseClient extends AbsRdbmsClient {
         }
 
         return executeResult;
+    }
+
+    private static boolean getAccurateQuery(Table table, List<Result> results, com.dtstack.dtcenter.loader.dto.filter.Filter filter) throws IOException {
+        if (filter instanceof RowFilter) {
+            RowFilter rowFilterFilter = (RowFilter) filter;
+            if (rowFilterFilter.getCompareOp().equals(CompareOp.EQUAL)) {
+                Get get = new Get(rowFilterFilter.getComparator().toString().getBytes());
+                Result r = table.get(get);
+                results.add(r);
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
