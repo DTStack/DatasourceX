@@ -452,14 +452,13 @@ public class EsClient extends AbsRdbmsClient {
 
         RestHighLevelClient client = null;
         RestClient lowLevelClient = null;
-        String dsl = doDealPageSql(queryDTO.getSql());
         try {
             client = getClient(esSourceDTO);
             if (Objects.isNull(client)) {
                 throw new DtCenterDefException("没有可用的数据库连接");
             }
             lowLevelClient = client.getLowLevelClient();
-            HttpEntity entity = new NStringEntity(dsl, ContentType.APPLICATION_JSON);
+            HttpEntity entity = new NStringEntity(queryDTO.getSql(), ContentType.APPLICATION_JSON);
             EsCommandType esCommandType = queryDTO.getEsCommandType();
             String httpMethod = null;
             String endpoint = null;
