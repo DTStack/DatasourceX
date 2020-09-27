@@ -477,8 +477,11 @@ public class EsClient extends AbsRdbmsClient {
                     endpoint = String.format(ENDPOINT_BULK_FORMAT, index);
                     break;
                 case INSERT:
-                default:
                     httpMethod = PUT;
+                    endpoint = index;
+                    break;
+                default:
+                    httpMethod = POST;
                     endpoint = index;
                     break;
             }
