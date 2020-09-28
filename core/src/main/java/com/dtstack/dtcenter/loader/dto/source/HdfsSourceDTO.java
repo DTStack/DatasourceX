@@ -33,6 +33,9 @@ public class HdfsSourceDTO extends RdbmsSourceDTO {
     // TODO 临时处理 yarn 日志下载
     private String appIdStr;
 
+    // 日志下载角色
+    private String user;
+
     private int readLimit = 4095;
 
     private String logType = null;

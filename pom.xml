@@ -41,7 +41,7 @@
         <module>phoenix5</module>
         <module>hbase2</module>
         <module>spark</module>
-        <module>kingbase</module>
+        <module>kingbase8</module>
         <module>hbase_gateway</module>
     </modules>
     <packaging>pom</packaging>
