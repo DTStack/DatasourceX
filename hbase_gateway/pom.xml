@@ -63,10 +63,6 @@
                     <groupId>commons-lang</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>commons-logging</artifactId>
-                    <groupId>commons-logging</groupId>
-                </exclusion>
-                <exclusion>
                     <artifactId>avro</artifactId>
                     <groupId>org.apache.avro</groupId>
                 </exclusion>

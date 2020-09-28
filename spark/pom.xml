@@ -60,10 +60,6 @@
             <version>2.1.0</version>
             <exclusions>
                 <exclusion>
-                    <artifactId>commons-logging</artifactId>
-                    <groupId>commons-logging</groupId>
-                </exclusion>
-                <exclusion>
                     <artifactId>log4j</artifactId>
                     <groupId>log4j</groupId>
                 </exclusion>
