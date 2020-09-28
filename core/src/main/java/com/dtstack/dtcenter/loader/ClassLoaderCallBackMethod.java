@@ -7,14 +7,13 @@ package com.dtstack.dtcenter.loader;
  * @Description：反射
  */
 public class ClassLoaderCallBackMethod {
-    public static <M> M callbackAndReset(ClassLoaderCallBack<M> classLoaderCallBack, ClassLoader toSetClassLoader,
-                                         boolean reset) throws Exception {
+    public static <M> M callbackAndReset(ClassLoaderCallBack<M> classLoaderCallBack, ClassLoader toSetClassLoader) throws Exception {
         ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(toSetClassLoader);
-        M result = classLoaderCallBack.execute();
-        if (reset) {
+        try {
+            return classLoaderCallBack.execute();
+        } finally {
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
-        return result;
     }
 }
