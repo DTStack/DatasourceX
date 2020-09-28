@@ -498,8 +498,8 @@ public class EsClient extends AbsRdbmsClient {
                     break;
             }
             Response response = execute(lowLevelClient, entity, httpMethod, endpoint);
-            if (response != null && response.getStatusLine().getStatusCode() == HttpStatus.SC_OK
-                    && response.getStatusLine().getStatusCode() == HttpStatus.SC_CREATED ) {
+            if (response != null && (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK
+                    || response.getStatusLine().getStatusCode() == HttpStatus.SC_CREATED) ) {
                 result = true;
             }
         } catch (IOException e) {
