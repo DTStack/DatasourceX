@@ -105,19 +105,32 @@ public class HdfsFileClient implements IHdfsFile {
 
         org.apache.hadoop.fs.FileStatus hadoopFileStatus = null;
         if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
-            return HdfsOperator.getFileStatus(conf, location);
+
+            return getFileStatus(conf, location);
         }
 
         return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<org.apache.hadoop.fs.FileStatus>) () -> {
                     try {
-                        return HdfsOperator.getFileStatus(conf, location);
+                        return getFileStatus(conf, location);
                     } catch (Exception e) {
                         throw new DtCenterDefException("获取 hdfs 文件状态异常", e);
                     }
                 }
         );
 
+    }
+
+    private org.apache.hadoop.fs.FileStatus getFileStatus (Configuration conf, String location) throws Exception{
+        if (HdfsOperator.isFileExist(conf, location)) {
+            return HdfsOperator.getFileStatus(conf, location);
+        }
+        if (HdfsOperator.isDirExist(conf, location)) {
+            FileSystem fs = HdfsOperator.getFileSystem(conf);
+            Path path = new Path(location);
+            return fs.getFileStatus(path);
+        }
+        throw new DtCenterDefException("路径不存在");
     }
 
     @Override
