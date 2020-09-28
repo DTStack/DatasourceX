@@ -113,10 +113,6 @@
                     <groupId>commons-lang</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>commons-logging</artifactId>
-                    <groupId>commons-logging</groupId>
-                </exclusion>
-                <exclusion>
                     <artifactId>commons-pool</artifactId>
                     <groupId>commons-pool</groupId>
                 </exclusion>
