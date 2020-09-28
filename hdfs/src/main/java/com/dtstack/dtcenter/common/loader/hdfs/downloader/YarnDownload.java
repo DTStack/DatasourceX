@@ -89,6 +89,8 @@ public class YarnDownload implements IDownloader {
 
     private AggregatedLogFormat.LogReader currReader;
 
+    private String user;
+
     private static final String FS_HDFS_IMPL_DISABLE_CACHE = "fs.hdfs.impl.disable.cache";
     private static final String IPC_CLIENT_FALLBACK_TO_SIMPLE_AUTH_ALLOWED = "ipc.client.fallback-to-simple-auth-allowed";
 
@@ -104,10 +106,11 @@ public class YarnDownload implements IDownloader {
         }
     }
 
-    public YarnDownload(String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit, String logType, Map<String, Object> kerberosConfig) {
+    public YarnDownload(String user, String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit, String logType, Map<String, Object> kerberosConfig) {
         this(hdfsConfig, yarnConf, appIdStr, readLimit);
         this.logType = logType;
         this.kerberosConfig = kerberosConfig;
+        this.user = user;
     }
 
     @Override
@@ -130,6 +133,10 @@ public class YarnDownload implements IDownloader {
 
         //kerberos认证User
         String jobOwner = UserGroupInformation.getCurrentUser().getShortUserName();
+        // 支持其他用户的日志下载
+        if (user != null) {
+            jobOwner = user;
+        }
         log.info("applicationId:{},jobOwner:{}", appId, jobOwner);
         Path remoteAppLogDir = LogAggregationUtils.getRemoteAppLogDir(
                 remoteRootLogDir, appId, jobOwner, logDirSuffix);
