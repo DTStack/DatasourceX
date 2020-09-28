@@ -12,7 +12,6 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
-import com.dtstack.dtcenter.loader.enums.EsCommandType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
@@ -434,7 +433,18 @@ public class EsClient extends AbsRdbmsClient {
     }
 
     /**
+     * 执行增删改等操作
+     * <p><p/>
+     * 默认执行POST请求，请求参数中的tableName作为esclient的endpoint.
+     * <p><p/>
+     * 如果需要执行 <code>_delete_by_query<code/>, <code>_update_by_query</code>等操作，则不填esCommandType
      *
+     * <ul>
+     *     <li>INSERT(0) insert 操作，插入时要指定_id</li>
+     *     <li>UPDATE(1) _update 操作，指定_id</li>
+     *     <li>DELETE(2) delete操作，删除单条数据要指定_id</li>
+     *     <li>BULK(3) _bulk批量操作，请求/_bulk,需要在参数中指定_index和_type</li>
+     * <ul/>
      * @param iSource
      * @param queryDTO
      * @return
@@ -458,26 +468,29 @@ public class EsClient extends AbsRdbmsClient {
                 throw new DtCenterDefException("没有可用的数据库连接");
             }
             lowLevelClient = client.getLowLevelClient();
-            HttpEntity entity = new NStringEntity(queryDTO.getSql(), ContentType.APPLICATION_JSON);
-            EsCommandType esCommandType = queryDTO.getEsCommandType();
+            HttpEntity entity = null;
+            if (queryDTO.getSql() != null) {
+                entity = new NStringEntity(queryDTO.getSql(), ContentType.APPLICATION_JSON);
+            }
+            Integer esCommandType = queryDTO.getEsCommandType();
             String httpMethod = null;
             String endpoint = null;
             switch (esCommandType) {
-                case UPDATE:
+                case 0:
+                    httpMethod = PUT;
+                    endpoint = index;
+                    break;
+                case 1:
                     httpMethod = POST;
                     endpoint = String.format(ENDPOINT_UPDATE_FORMAT, index);
                     break;
-                case DELETE:
+                case 2:
                     httpMethod = DELETE;
                     endpoint = String.format(ENDPOINT_DELETE_FORMAT, index);
                     break;
-                case BULK:
+                case 3:
                     httpMethod = POST;
                     endpoint = String.format(ENDPOINT_BULK_FORMAT, index);
-                    break;
-                case INSERT:
-                    httpMethod = PUT;
-                    endpoint = index;
                     break;
                 default:
                     httpMethod = POST;
@@ -485,7 +498,8 @@ public class EsClient extends AbsRdbmsClient {
                     break;
             }
             Response response = execute(lowLevelClient, entity, httpMethod, endpoint);
-            if (response != null && response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+            if (response != null && response.getStatusLine().getStatusCode() == HttpStatus.SC_OK
+                    && response.getStatusLine().getStatusCode() == HttpStatus.SC_CREATED ) {
                 result = true;
             }
         } catch (IOException e) {

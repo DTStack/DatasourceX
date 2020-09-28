@@ -95,12 +95,17 @@ public class SqlQueryDTO {
     /**
      * Elasticsearch 命令, 定义es操作类型
      * <b><b/>
-     * 1. INSERT  (Default)
-     * 2. UPDATE
-     * 3. DELETE
-     * 4. BULK
+     * <ul>
+     *     <li>INSERT(0) insert 操作，插入时要指定_id</li>
+     *     <li>UPDATE(1) _update 操作，指定_id</li>
+     *     <li>DELETE(2) delete操作，删除单条数据要指定_id</li>
+     *     <li>BULK(3) _bulk批量操作，默认请求/_bulk</li>
+     * <ul/>
+     * 默认执行POST请求，请求参数中的tableName作为esclient的endpoint
+     * <br>
+     * refer to {@link EsCommandType}
      */
-    private EsCommandType esCommandType;
+    private Integer esCommandType;
 
     public Boolean getView() {
         if (ArrayUtils.isEmpty(getTableTypes())) {
