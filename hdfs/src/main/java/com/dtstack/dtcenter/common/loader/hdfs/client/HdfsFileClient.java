@@ -66,7 +66,7 @@ public class HdfsFileClient implements IHdfsFile {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
 
         if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
-            YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), null);
+            YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), null);
             yarnDownload.configure();
             return yarnDownload;
         }
@@ -75,7 +75,7 @@ public class HdfsFileClient implements IHdfsFile {
         return KerberosLoginUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
-                        YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig());
+                        YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig());
                         yarnDownload.configure();
                         return yarnDownload;
                     } catch (Exception e) {
@@ -98,6 +98,18 @@ public class HdfsFileClient implements IHdfsFile {
 
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         return HdfsOperator.getFileStatus(fs, location);
+    }
+
+    private org.apache.hadoop.fs.FileStatus getFileStatus (Configuration conf, String location) throws Exception{
+        if (HdfsOperator.isFileExist(conf, location)) {
+            return HdfsOperator.getFileStatus(conf, location);
+        }
+        if (HdfsOperator.isDirExist(conf, location)) {
+            FileSystem fs = HdfsOperator.getFileSystem(conf);
+            Path path = new Path(location);
+            return fs.getFileStatus(path);
+        }
+        throw new DtCenterDefException("路径不存在");
     }
 
     @Override

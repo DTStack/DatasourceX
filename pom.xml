@@ -40,6 +40,7 @@
         <module>phoenix5</module>
         <module>hbase2</module>
         <module>spark</module>
+        <module>kingbase8</module>
         <module>common</module>
         <module>kerberos</module>
         <module>kingbase</module>

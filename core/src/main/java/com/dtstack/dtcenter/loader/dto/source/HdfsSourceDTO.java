@@ -45,6 +45,11 @@ public class HdfsSourceDTO extends RdbmsSourceDTO {
     private Integer readLimit = 4095;
 
     /**
+     * 日志下载角色
+     */
+    private String user;
+
+    /**
      * 日志类型
      */
     private String logType = null;
