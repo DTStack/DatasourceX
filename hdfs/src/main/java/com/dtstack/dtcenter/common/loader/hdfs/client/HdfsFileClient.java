@@ -100,18 +100,6 @@ public class HdfsFileClient implements IHdfsFile {
         return HdfsOperator.getFileStatus(fs, location);
     }
 
-    private org.apache.hadoop.fs.FileStatus getFileStatus (Configuration conf, String location) throws Exception{
-        if (HdfsOperator.isFileExist(conf, location)) {
-            return HdfsOperator.getFileStatus(conf, location);
-        }
-        if (HdfsOperator.isDirExist(conf, location)) {
-            FileSystem fs = HdfsOperator.getFileSystem(conf);
-            Path path = new Path(location);
-            return fs.getFileStatus(path);
-        }
-        throw new DtCenterDefException("路径不存在");
-    }
-
     @Override
     public boolean downloadFileFromHdfs(ISourceDTO source, String remotePath, String localDir) throws Exception {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
