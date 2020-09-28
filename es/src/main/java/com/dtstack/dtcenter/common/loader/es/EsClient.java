@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -68,7 +69,17 @@ public class EsClient extends AbsRdbmsClient {
 
     private static final String POST = "post";
 
+    private static final String PUT = "put";
+
+    private static final String DELETE = "delete";
+
     private static final String ENDPOINT_SEARCH_FORMAT = "/%s/_search";
+
+    private static final String ENDPOINT_UPDATE_FORMAT = "/%s/_update";
+
+    private static final String ENDPOINT_DELETE_FORMAT = "/%s";
+
+    private static final String ENDPOINT_BULK_FORMAT = "/_bulk";
 
     private static final String RESULT_KEY = "result";
 
@@ -421,9 +432,94 @@ public class EsClient extends AbsRdbmsClient {
         throw new DtLoaderException("Not Support");
     }
 
+    /**
+     * 执行增删改等操作
+     * <p><p/>
+     * 默认执行POST请求，请求参数中的tableName作为esclient的endpoint.
+     * <p><p/>
+     * 如果需要执行 <code>_delete_by_query<code/>, <code>_update_by_query</code>等操作，则不填esCommandType
+     *
+     * <ul>
+     *     <li>INSERT(0) insert 操作，插入时要指定_id</li>
+     *     <li>UPDATE(1) _update 操作，指定_id</li>
+     *     <li>DELETE(2) delete操作，删除单条数据要指定_id</li>
+     *     <li>BULK(3) _bulk批量操作，请求/_bulk,需要在参数中指定_index和_type</li>
+     * <ul/>
+     * @param iSource
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
     @Override
     public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
+        ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
+        Boolean result = false;
+        if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
+            return null;
+        }
+        //索引
+        String index = queryDTO.getTableName();
+
+        RestHighLevelClient client = null;
+        RestClient lowLevelClient = null;
+        try {
+            client = getClient(esSourceDTO);
+            if (Objects.isNull(client)) {
+                throw new DtCenterDefException("没有可用的数据库连接");
+            }
+            lowLevelClient = client.getLowLevelClient();
+            HttpEntity entity = null;
+            if (queryDTO.getSql() != null) {
+                entity = new NStringEntity(queryDTO.getSql(), ContentType.APPLICATION_JSON);
+            }
+            Integer esCommandType = queryDTO.getEsCommandType();
+            String httpMethod = null;
+            String endpoint = null;
+            switch (esCommandType) {
+                case 0:
+                    httpMethod = PUT;
+                    endpoint = index;
+                    break;
+                case 1:
+                    httpMethod = POST;
+                    endpoint = String.format(ENDPOINT_UPDATE_FORMAT, index);
+                    break;
+                case 2:
+                    httpMethod = DELETE;
+                    endpoint = String.format(ENDPOINT_DELETE_FORMAT, index);
+                    break;
+                case 3:
+                    httpMethod = POST;
+                    endpoint = String.format(ENDPOINT_BULK_FORMAT, index);
+                    break;
+                default:
+                    httpMethod = POST;
+                    endpoint = index;
+                    break;
+            }
+            Response response = execute(lowLevelClient, entity, httpMethod, endpoint);
+            if (response != null && (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK
+                    || response.getStatusLine().getStatusCode() == HttpStatus.SC_CREATED) ) {
+                result = true;
+            }
+        } catch (IOException e) {
+            log.error("sql 执行失败 ", e);
+            throw new DtCenterDefException(e.getMessage(), e);
+        } finally {
+            closeResource(lowLevelClient, client, esSourceDTO);
+        }
+        return result;
+    }
+
+    private Response execute(RestClient lowLevelClient, HttpEntity entity, String httpMethod, String endpoint) throws IOException {
+        Request request = new Request(httpMethod, endpoint);
+        request.setEntity(entity);
+        return lowLevelClient.performRequest(request);
+    }
+
+    private JSONObject getJsonResult(Response response) throws IOException {
+        String result = EntityUtils.toString(response.getEntity());
+        return JSONObject.parseObject(result);
     }
 
     @Override
