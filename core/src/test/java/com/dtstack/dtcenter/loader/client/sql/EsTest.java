@@ -8,6 +8,7 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
+import com.dtstack.dtcenter.loader.enums.EsCommandType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
 
@@ -91,5 +92,90 @@ public class EsTest {
         List<Map<String, Object>> list9 = client.executeQuery(source, SqlQueryDTO.builder().sql("{\"query\": {\"match_all\": {}    }}").tableName("tools").build());
         JSONObject result = (JSONObject) list.get(0).get("result");
         System.out.println(result.toJSONString());
+    }
+
+    @Test
+    public void executeSqlWithoutResultSet() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.ES6.getPluginName());
+        String sql = null;
+        String tableName = "m6/doc/12";
+        Boolean result = client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.DELETE.getType()).build());
+    }
+
+    @Test
+    public void executeSqlWithoutResultSet4() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.ES6.getPluginName());
+        String sql = "{\n" +
+                "  \"doc\":{\n" +
+                "   \"age\": \"26\"\n" +
+                "  }\n" +
+                "}";
+        String tableName = "m6/doc/2";
+        Boolean result = client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.UPDATE.getType()).build());
+    }
+
+    @Test
+    public void executeSqlWithoutResultSet3() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.ES6.getPluginName());
+        String sql = "{\n" +
+                "  \"name\": \"小黄\",\n" +
+                "  \"age\": 18,\n" +
+                "  \"sex\": \"不详\",\n" +
+                "  \"extraAttr_0_5_3\":{\n" +
+                "    \"attributeValue\":\"2020-09-17 23:37:16\"\n" +
+                "  }\n" +
+                "}";
+        String tableName = "m6/doc/3";
+        Boolean result = client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.INSERT.getType()).build());
+    }
+
+    @Test
+    public void executeSqlWithoutResultSet2() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.ES6.getPluginName());
+        String sql = "{\n" +
+                "  \"script\": {\n" +
+                "    \"source\": \"ctx._source.extraAttr_0_5_3= params.mifieldAsParam\",\n" +
+                "    \"params\":{\n" +
+                "      \"mifieldAsParam\":{\n" +
+                "        \"attributeValue\":\"2020-09-27 23:37:16\",\n" +
+                "        \"updateByQuery\":\"yes\"\n" +
+                "      }\n" +
+                "    },\n" +
+                "    \"lang\": \"painless\"\n" +
+                "  },\n" +
+                "  \"query\": {\n" +
+                "    \"term\": {\n" +
+                "      \"_id\": 1\n" +
+                "    }\n" +
+                "  }\n" +
+                "}";
+        String tableName = "m6/doc";
+        Boolean result = client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.UPDATE_BY_QUERY.getType()).build());
+    }
+
+    @Test
+    public void executeSqlWithoutResultSet1() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.ES6.getPluginName());
+        String sql = "{\n" +
+                "  \"query\": {\n" +
+                "    \"bool\": {\n" +
+                "      \"filter\": [\n" +
+                "        {\n" +
+                "          \"terms\": {\n" +
+                "            \"_id\": [\n" +
+                "              3,\n" +
+                "              23\n" +
+                "            ],\n" +
+                "            \"boost\": 1\n" +
+                "          }\n" +
+                "        }\n" +
+                "      ],\n" +
+                "      \"adjust_pure_negative\": true,\n" +
+                "      \"boost\": 1\n" +
+                "    }\n" +
+                "  }\n" +
+                "}";
+        String tableName = "m6/doc";
+        Boolean result = client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.DELETE_BY_QUERY.getType()).build());
     }
 }

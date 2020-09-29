@@ -81,6 +81,10 @@ public class EsClient extends AbsRdbmsClient {
 
     private static final String ENDPOINT_BULK_FORMAT = "/_bulk";
 
+    private static final String ENDPOINT_UPDATE_QUERY_FORMAT = "/%s/_update_by_query";
+
+    private static final String ENDPOINT_DELETE_QUERY_FORMAT = "/%s/_delete_by_query";
+
     private static final String RESULT_KEY = "result";
 
     private static final String poolConfigFieldName = "poolConfig";
@@ -437,13 +441,16 @@ public class EsClient extends AbsRdbmsClient {
      * <p><p/>
      * 默认执行POST请求，请求参数中的tableName作为esclient的endpoint.
      * <p><p/>
-     * 如果需要执行 <code>_delete_by_query<code/>, <code>_update_by_query</code>等操作，则不填esCommandType
+     * 如果需要执行其他类型的POST请求，则esCommandType 为0
      *
      * <ul>
-     *     <li>INSERT(0) insert 操作，插入时要指定_id</li>
-     *     <li>UPDATE(1) _update 操作，指定_id</li>
-     *     <li>DELETE(2) delete操作，删除单条数据要指定_id</li>
-     *     <li>BULK(3) _bulk批量操作，请求/_bulk,需要在参数中指定_index和_type</li>
+     *     <li>DEFAULT(0) insert 操作，插入时要指定_id</li>
+     *     <li>INSERT(1) insert 操作，插入时要指定_id</li>
+     *     <li>UPDATE(2) _update 操作，指定_id</li>
+     *     <li>DELETE(3) delete操作，删除单条数据要指定_id</li>
+     *     <li>BULK(4) _bulk批量操作，请求/_bulk,需要在endpoint中指定_index和_type</li>
+     *     <li>UPDATE_BY_QUERY(5) _update_by_query 根据条件更新,需要在endpoint中指定_index和_type</li>
+     *     <li>DELETE_BY_QUERY(6) _delete_by_query 根据条件删除,需要在endpoint中指定_index和_type</li>
      * <ul/>
      * @param iSource
      * @param queryDTO
@@ -473,29 +480,38 @@ public class EsClient extends AbsRdbmsClient {
                 entity = new NStringEntity(queryDTO.getSql(), ContentType.APPLICATION_JSON);
             }
             Integer esCommandType = queryDTO.getEsCommandType();
-            String httpMethod = null;
-            String endpoint = null;
+            String httpMethod = POST;
+            String endpoint = index;
             switch (esCommandType) {
                 case 0:
-                    httpMethod = PUT;
-                    endpoint = index;
-                    break;
                 case 1:
-                    httpMethod = POST;
-                    endpoint = String.format(ENDPOINT_UPDATE_FORMAT, index);
+                    // PUT /${index}
+                    httpMethod = PUT;
                     break;
                 case 2:
+                    // POST /${index}/_update
+                    endpoint = String.format(ENDPOINT_UPDATE_FORMAT, index);
+                    break;
+                case 3:
+                    // DELETE /${index}
                     httpMethod = DELETE;
                     endpoint = String.format(ENDPOINT_DELETE_FORMAT, index);
                     break;
-                case 3:
-                    httpMethod = POST;
+                case 4:
+                    // POST /_bulk
                     endpoint = String.format(ENDPOINT_BULK_FORMAT, index);
+                    break;
+                case 5:
+                    // POST /${index}/_update_by_query
+                    endpoint = String.format(ENDPOINT_UPDATE_QUERY_FORMAT, index);
+                    break;
+                case 6:
+                    // POST /${index}/_delete_by_query
+                    endpoint = String.format(ENDPOINT_DELETE_QUERY_FORMAT, index);
                     break;
                 default:
                     httpMethod = POST;
                     endpoint = index;
-                    break;
             }
             Response response = execute(lowLevelClient, entity, httpMethod, endpoint);
             if (response != null && (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK
