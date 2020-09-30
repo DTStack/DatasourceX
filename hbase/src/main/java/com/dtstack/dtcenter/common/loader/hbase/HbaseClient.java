@@ -4,18 +4,22 @@ import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.filter.RowFilter;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.enums.CompareOp;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
@@ -61,7 +65,7 @@ public class HbaseClient<T> implements IClient<T> {
         Admin admin = null;
         List<String> tableList = new ArrayList<>();
         try {
-            hConn = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
+            hConn = HbaseConnFactory.getHbaseConn(hbaseSourceDTO, queryDTO);
             admin = hConn.getAdmin();
             TableName[] tableNames = admin.listTableNames();
             if (tableNames != null) {
@@ -105,7 +109,7 @@ public class HbaseClient<T> implements IClient<T> {
         Table tb = null;
         List<ColumnMetaDTO> cfList = new ArrayList<>();
         try {
-            hConn = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
+            hConn = HbaseConnFactory.getHbaseConn(hbaseSourceDTO, queryDTO);
             TableName tableName = TableName.valueOf(queryDTO.getTableName());
             tb = hConn.getTable(tableName);
             HTableDescriptor hTableDescriptor = tb.getTableDescriptor();
@@ -134,7 +138,7 @@ public class HbaseClient<T> implements IClient<T> {
         List<Map<String, Object>> executeResult = Lists.newArrayList();
         try {
             //获取hbase连接
-            connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
+            connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO, queryDTO);
             //获取hbase扫描列，格式 - 列族:列名
             List<String> columns = queryDTO.getColumns();
             //获取hbase自定义查询的过滤器
@@ -152,9 +156,13 @@ public class HbaseClient<T> implements IClient<T> {
                     scan.addColumn(Bytes.toBytes(familyAndQualifier[0]), Bytes.toBytes(familyAndQualifier[1]));
                 }
             }
-
+            boolean isAccurateQuery = false;
             if (hbaseFilter != null && hbaseFilter.size() > 0) {
                 for (com.dtstack.dtcenter.loader.dto.filter.Filter filter : hbaseFilter){
+                    if (getAccurateQuery(table, results, filter)) {
+                        isAccurateQuery = true;
+                        break;
+                    }
                     //将core包下的filter转换成hbase包下的filter
                     Filter transFilter = FilterType.get(filter);
                     filterList.add(transFilter);
@@ -162,11 +170,12 @@ public class HbaseClient<T> implements IClient<T> {
                 FilterList filters = new FilterList(filterList);
                 scan.setFilter(filters);
             }
-            rs = table.getScanner(scan);
-            for (Result r : rs) {
-                results.add(r);
+            if(!isAccurateQuery){
+                rs = table.getScanner(scan);
+                for (Result r : rs) {
+                    results.add(r);
+                }
             }
-
         } catch (Exception e){
             log.error("执行hbase自定义失败", e);
             throw new DtLoaderException("执行hbase自定义失败", e);
@@ -177,6 +186,9 @@ public class HbaseClient<T> implements IClient<T> {
         //理解为一行记录
         for (Result result : results) {
             List<Cell> cells = result.listCells();
+            if (CollectionUtils.isEmpty(cells)) {
+                continue;
+            }
             long timestamp = 0L;
             HashMap<String, Object> row = Maps.newHashMap();
             for (Cell cell : cells){
@@ -197,6 +209,19 @@ public class HbaseClient<T> implements IClient<T> {
         return executeResult;
     }
 
+    private static boolean getAccurateQuery(Table table, List<Result> results, com.dtstack.dtcenter.loader.dto.filter.Filter filter) throws IOException {
+        if (filter instanceof RowFilter) {
+            RowFilter rowFilterFilter = (RowFilter) filter;
+            if (rowFilterFilter.getCompareOp().equals(CompareOp.EQUAL)) {
+                Get get = new Get(rowFilterFilter.getComparator().getValue());
+                Result r = table.get(get);
+                results.add(r);
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
@@ -207,7 +232,7 @@ public class HbaseClient<T> implements IClient<T> {
         List<List<Object>> executeResult = Lists.newArrayList();
         try {
             //获取hbase连接
-            connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
+            connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO, queryDTO);
             TableName tableName = TableName.valueOf(queryDTO.getTableName());
             table = connection.getTable(tableName);
             Scan scan = new Scan();

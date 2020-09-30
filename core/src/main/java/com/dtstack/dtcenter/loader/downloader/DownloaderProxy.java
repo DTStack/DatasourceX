@@ -25,42 +25,42 @@ public class DownloaderProxy implements IDownloader {
     @Override
     public boolean configure() throws Exception {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.configure(),
-                targetDownloader.getClass().getClassLoader(), true);
+                targetDownloader.getClass().getClassLoader());
     }
 
     @Override
     public List<String> getMetaInfo() throws Exception {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.getMetaInfo(),
-                targetDownloader.getClass().getClassLoader(), true);
+                targetDownloader.getClass().getClassLoader());
     }
 
     @Override
     public Object readNext() throws Exception {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.readNext(),
-                targetDownloader.getClass().getClassLoader(), true);
+                targetDownloader.getClass().getClassLoader());
     }
 
     @Override
     public boolean reachedEnd() throws Exception {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.reachedEnd(),
-                targetDownloader.getClass().getClassLoader(), true);
+                targetDownloader.getClass().getClassLoader());
     }
 
     @Override
     public boolean close() throws Exception {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.close(),
-                targetDownloader.getClass().getClassLoader(), true);
+                targetDownloader.getClass().getClassLoader());
     }
 
     @Override
     public String getFileName() throws Exception {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.getFileName(),
-                targetDownloader.getClass().getClassLoader(), true);
+                targetDownloader.getClass().getClassLoader());
     }
 
     @Override
     public List<String> getContainers() throws Exception {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.getContainers(),
-                targetDownloader.getClass().getClassLoader(), true);
+                targetDownloader.getClass().getClassLoader());
     }
 }

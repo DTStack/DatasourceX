@@ -28,6 +28,6 @@ public class HdfsFileClientFactory {
 
             IHdfsFile hdfsFile = iClientIterator.next();
             return new HdfsFileProxy(hdfsFile);
-        }, classLoader, true);
+        }, classLoader);
     }
 }
