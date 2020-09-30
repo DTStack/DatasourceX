@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.utils.JSONUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -12,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.ClusterStatus;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
@@ -35,8 +35,8 @@ public class HbaseConnFactory {
         boolean check = false;
         Connection hConn = null;
         try {
-            hConn = getHbaseConn(hbaseSourceDTO);
-            ClusterStatus clusterStatus = hConn.getAdmin().getClusterStatus();
+            hConn = getHbaseConn(hbaseSourceDTO, null);
+            hConn.getAdmin().getClusterStatus();
             check = true;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -52,8 +52,8 @@ public class HbaseConnFactory {
         return check;
     }
 
-    public static Connection getHbaseConn(HbaseSourceDTO source) {
-        Map<String, Object> sourceToMap = sourceToMap(source);
+    public static Connection getHbaseConn(HbaseSourceDTO source, SqlQueryDTO queryDTO) {
+        Map<String, Object> sourceToMap = sourceToMap(source, queryDTO);
         Configuration hConfig = HBaseConfiguration.create();
         for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {
             hConfig.set(entry.getKey(), (String) entry.getValue());
@@ -85,7 +85,7 @@ public class HbaseConnFactory {
      * @param iSource
      * @return
      */
-    private static Map<String, Object> sourceToMap(ISourceDTO iSource) {
+    private static Map<String, Object> sourceToMap(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) iSource;
         Map<String, Object> hbaseMap = new HashMap<>();
         //对于直接传config的 走直接生成的逻辑
@@ -108,9 +108,6 @@ public class HbaseConnFactory {
 
         }
 
-        // 设置其他信息
-        hbaseMap.putAll(JSONUtil.parseMap(hbaseSourceDTO.getOthers()));
-
         // 设置 Kerberos 信息
         if (MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
             hbaseMap.putAll(hbaseSourceDTO.getKerberosConfig());
@@ -121,11 +118,14 @@ public class HbaseConnFactory {
         }
 
         // 设置默认信息
-        hbaseMap.put("hbase.rpc.timeout", "60000");
+        hbaseMap.put("hbase.rpc.timeout", queryDTO == null || queryDTO.getQueryTimeout() == null ? "60000" : String.valueOf(queryDTO.getQueryTimeout() * 1000));
         hbaseMap.put("ipc.socket.timeout", "20000");
         hbaseMap.put("hbase.client.retries.number", "3");
         hbaseMap.put("hbase.client.pause", "100");
         hbaseMap.put("zookeeper.recovery.retry", "3");
+
+        // 设置其他信息
+        hbaseMap.putAll(JSONUtil.parseMap(hbaseSourceDTO.getOthers()));
         return hbaseMap;
     }
 }

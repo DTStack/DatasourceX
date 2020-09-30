@@ -27,6 +27,6 @@ public class KerberosClientFactory {
 
             IKerberos iKerberos = iClientIterator.next();
             return new KerberosProxy(iKerberos);
-        }, classLoader, true);
+        }, classLoader);
     }
 }

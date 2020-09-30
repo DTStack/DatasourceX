@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.util.Pair;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
@@ -445,7 +446,7 @@ public class EsClient<T> implements IClient<T> {
         try {
             client = getClient(esSourceDTO);
             if (Objects.isNull(client)) {
-                throw new DtCenterDefException("没有可用的数据库连接");
+                throw new DtLoaderException("没有可用的数据库连接");
             }
             lowLevelClient = client.getLowLevelClient();
             HttpEntity entity = null;
@@ -484,7 +485,7 @@ public class EsClient<T> implements IClient<T> {
             }
         } catch (IOException e) {
             log.error("sql 执行失败 ", e);
-            throw new DtCenterDefException(e.getMessage(), e);
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             closeResource(lowLevelClient, client, esSourceDTO);
         }
