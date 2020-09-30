@@ -15,6 +15,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.IOUtils;
 
@@ -367,7 +368,7 @@ public class HdfsOperator {
             String fileName = (String) var3.next();
             Path path = new Path(fileName);
             if (fs.exists(path) && fs.isFile(path)) {
-                fs.delete(path, false);
+                Trash.moveToAppropriateTrash(fs, path, fs.getConf());
             }
         }
         return true;
@@ -384,14 +385,10 @@ public class HdfsOperator {
         log.info("删除 HDFS 文件 : {}", remotePath);
         remotePath = uri(remotePath);
         Path deletePath = new Path(remotePath);
-        boolean result = false;
         if (fs.exists(deletePath)) {
-            result = fs.delete(deletePath, true);
-        } else {
-            result = true;
+            return Trash.moveToAppropriateTrash(fs, deletePath, fs.getConf());
         }
-
-        return result;
+        return true;
     }
 
     /**
