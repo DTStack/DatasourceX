@@ -1,9 +1,9 @@
 package com.dtstack.dtcenter.common.loader.mongo;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.MongoSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBList;
@@ -15,7 +15,8 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.util.JSON;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.bson.Document;
@@ -111,12 +112,12 @@ public class MongoExecutor {
                     distinct(sqlQuery, list, collection);
                     break;
                 default:
-                    throw new DtCenterDefException(String.format("不支持本次请求:db.%s.%s", dataBaseName, operationName));
+                    throw new DtLoaderException(String.format("不支持本次请求:db.%s.%s", dataBaseName, operationName));
             }
         }catch (Exception e){
-            throw new DtCenterDefException(e.getMessage(),e);
+            throw new DtLoaderException(e.getMessage(),e);
         } finally {
-            if (!MongoDBUtils.isOpenPool.get() && mongoClient != null) {
+            if (!BooleanUtils.isTrue(MongoDBUtils.IS_OPEN_POOL.get()) && mongoClient != null) {
                 mongoClient.close();
             }
         }
@@ -310,7 +311,7 @@ public class MongoExecutor {
             sqlQuery =  sqlQuery.replaceAll("\"", "'");
             String[] sql = sqlQuery.split("\\.");
             if (sql.length < 3) {
-                throw new DtCenterDefException("不支持本次查询，请检查你的查询语句！[2]");
+                throw new DtLoaderException("不支持本次查询，请检查你的查询语句！[2]");
             }
 
             collectionName = RegExpUtil.getCollectionName(sql[1]);
@@ -320,11 +321,11 @@ public class MongoExecutor {
 
             operationName = sql[2];
             if (!operationName.contains("(")) {
-                throw new DtCenterDefException("不支持本次查询，请检查你的查询语句！[3]");
+                throw new DtLoaderException("不支持本次查询，请检查你的查询语句！[3]");
             }
             operationName = operationName.substring(0, operationName.indexOf("("));
             if (!OPERATIONS.contains(operationName)) {
-                throw new DtCenterDefException(String.format("不支持本次请求:db.%s.%s", collectionName, operationName));
+                throw new DtLoaderException(String.format("不支持本次请求:db.%s.%s", collectionName, operationName));
             }
             dataBaseName = StringUtils.isBlank(source.getSchema()) ? MongoDBUtils.dealSchema(source.getHostPort()) : source.getSchema();
             return this;

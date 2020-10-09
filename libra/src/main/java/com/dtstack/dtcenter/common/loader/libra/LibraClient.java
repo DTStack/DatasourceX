@@ -1,14 +1,14 @@
 package com.dtstack.dtcenter.common.loader.libra;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
+import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.LibraSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.dtstack.dtcenter.loader.utils.DBUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -53,7 +53,7 @@ public class LibraClient extends AbsRdbmsClient {
             }
             return tableList;
         } catch (Exception e) {
-            throw new DtCenterDefException("获取表异常", e);
+            throw new DtLoaderException("获取表异常", e);
         } finally {
             DBUtil.closeDBResources(rs, statement, libraSourceDTO.clearAfterGetConnection(clearStatus));
         }

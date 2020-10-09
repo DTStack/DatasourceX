@@ -5,7 +5,7 @@
     <parent>
         <artifactId>common-loader</artifactId>
         <groupId>com.dtstack.dtcenter</groupId>
-        <version>1.2.0-SNAPSHOT</version>
+        <version>1.3.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -28,35 +28,25 @@
         </dependency>
 
         <dependency>
-            <groupId>com.dtstack.dtcenter</groupId>
-            <artifactId>common.loader.rdbms</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-api</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
             <artifactId>common.loader.core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-api</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
+            <groupId>com.dtstack.dtcenter</groupId>
+            <artifactId>common.loader.rdbms</artifactId>
+        </dependency>
+
+        <!-- 类隔离 jar 包 -->
+        <dependency>
             <groupId>org.apache.kylin</groupId>
             <artifactId>kylin-jdbc</artifactId>
+            <version>3.0.0</version>
             <exclusions>
                 <exclusion>
                     <artifactId>logback-classic</artifactId>
@@ -79,7 +69,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.2.4</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -121,7 +111,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.2</version>
+                <version>1.8</version>
                 <executions>
                     <execution>
                         <id>copy-resources</id>

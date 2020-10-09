@@ -1,9 +1,8 @@
 package com.dtstack.dtcenter.common.loader.kingbase;
 
-import com.dtstack.dtcenter.common.exception.DBErrorCode;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
+import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
@@ -12,8 +11,7 @@ import com.dtstack.dtcenter.loader.dto.source.KingbaseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.dtstack.dtcenter.loader.utils.DBUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -32,19 +30,29 @@ import java.util.Map;
  */
 public class KingbaseClient extends AbsRdbmsClient {
 
-    //获取所有schema，去除系统库
+    /**
+     * 获取所有schema，去除系统库
+     */
     private static final String SCHEMA_SQL = "SELECT NSPNAME FROM SYS_CATALOG.SYS_NAMESPACE WHERE NSPNAME !~ 'sys' AND NSPNAME <> 'information_schema' ORDER BY NSPNAME ";
 
-    //获取某个schema下的所有表
+    /**
+     * 获取某个schema下的所有表
+     */
     private static final String SCHEMA_TABLE_SQL = "SELECT tablename FROM SYS_CATALOG.sys_tables WHERE schemaname = '%s' ";
 
-    //获取所有表名，表名前拼接schema，并对schema和tableName进行增加双引号处理
+    /**
+     * 获取所有表名，表名前拼接schema，并对schema和tableName进行增加双引号处理
+     */
     private static final String ALL_TABLE_SQL = "SELECT '\"'||schemaname||'\".\"'||tablename||'\"' AS schema_table FROM SYS_CATALOG.sys_tables order by schema_table ";
 
-    //获取某个表的表注释信息
+    /**
+     * 获取某个表的表注释信息
+     */
     private static final String TABLE_COMMENT_SQL = "SELECT COMMENTS FROM ALL_TAB_COMMENTS WHERE TABLE_NAME = '%s' ";
 
-    //获取某个表的字段注释信息
+    /**
+     * 获取某个表的字段注释信息
+     */
     private static final String COL_COMMENT_SQL = "SELECT COLUMN_NAME,COMMENTS FROM ALL_COL_COMMENTS WHERE TABLE_NAME = '%s' ";
 
     private static final String DONT_EXIST = "doesn't exist";
@@ -76,7 +84,7 @@ public class KingbaseClient extends AbsRdbmsClient {
             }
             return tableList;
         } catch (Exception e) {
-            throw new DtCenterDefException("获取表异常", e);
+            throw new DtLoaderException("获取表异常", e);
         } finally {
             DBUtil.closeDBResources(rs, statement, kingbaseSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -103,9 +111,8 @@ public class KingbaseClient extends AbsRdbmsClient {
                 return resultSet.getString(1);
             }
         } catch (Exception e) {
-            throw new DtCenterDefException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
-                    queryDTO.getTableName()),
-                    DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+                    queryDTO.getTableName()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, kingbaseSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -164,9 +171,8 @@ public class KingbaseClient extends AbsRdbmsClient {
             }
 
         } catch (Exception e) {
-            throw new DtCenterDefException(String.format("获取表:%s 的字段的注释信息时失败. 请联系 DBA 核查该库、表信息.",
-                    queryDTO.getTableName()),
-                    DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            throw new DtLoaderException(String.format("获取表:%s 的字段的注释信息时失败. 请联系 DBA 核查该库、表信息.",
+                    queryDTO.getTableName()), e);
         }finally {
             DBUtil.closeDBResources(rs, statement, sourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -213,10 +219,9 @@ public class KingbaseClient extends AbsRdbmsClient {
 
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
+                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
             } else {
-                throw new DtCenterDefException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", queryDTO.getTableName()),
-                        DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+                throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", queryDTO.getTableName()) , e);
             }
         } finally {
             DBUtil.closeDBResources(rs, statement, kingbaseSourceDTO.clearAfterGetConnection(clearStatus));
@@ -226,13 +231,14 @@ public class KingbaseClient extends AbsRdbmsClient {
 
     /**
      * 处理kingbase数据预览sql
-     * @param rdbmsSourceDTO
+     * @param sourceDTO
      * @param sqlQueryDTO
      * @return
      */
     @Override
-    protected String dealSql(RdbmsSourceDTO rdbmsSourceDTO, SqlQueryDTO sqlQueryDTO){
-        return "select * from " + transferSchemaAndTableName(rdbmsSourceDTO.getSchema(), sqlQueryDTO.getTableName())
+    protected String dealSql(ISourceDTO sourceDTO, SqlQueryDTO sqlQueryDTO){
+        KingbaseSourceDTO kingbaseSourceDTO = (KingbaseSourceDTO) sourceDTO;
+        return "select * from " + transferSchemaAndTableName(kingbaseSourceDTO.getSchema(), sqlQueryDTO.getTableName())
                 + " limit " + sqlQueryDTO.getPreviewNum();
     }
 

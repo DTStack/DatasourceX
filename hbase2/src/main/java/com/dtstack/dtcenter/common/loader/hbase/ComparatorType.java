@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hbase;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.enums.Comparator;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.hadoop.hbase.filter.BigDecimalComparator;
 import org.apache.hadoop.hbase.filter.BinaryComparator;
 import org.apache.hadoop.hbase.filter.BinaryPrefixComparator;
@@ -113,7 +113,7 @@ public enum ComparatorType {
                 return comparatorType;
             }
         }
-        throw new DtCenterDefException("hbase自定义查询暂时不支持该比较器类型");
+        throw new DtLoaderException("hbase自定义查询暂时不支持该比较器类型");
     }
 
 }

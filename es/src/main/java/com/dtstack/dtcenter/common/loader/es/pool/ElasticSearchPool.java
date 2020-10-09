@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.common.loader.es.pool;
 
-import com.dtstack.dtcenter.common.loader.common.pool.Pool;
+import com.dtstack.dtcenter.common.loader.common.Pool;
 import org.elasticsearch.client.RestHighLevelClient;
 
 /**

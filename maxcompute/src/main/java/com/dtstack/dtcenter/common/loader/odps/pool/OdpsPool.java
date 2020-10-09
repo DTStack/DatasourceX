@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.odps.pool;
 
 import com.aliyun.odps.Odps;
-import com.dtstack.dtcenter.common.loader.common.pool.Pool;
+import com.dtstack.dtcenter.common.loader.common.Pool;
 
 /**
  * @company: www.dtstack.com

@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.loader.cache.connection;
 
-import com.dtstack.dtcenter.common.thread.RdosThreadFactory;
+import com.dtstack.dtcenter.loader.factory.DtThreadFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,24 +21,24 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class HashCacheConnectionKey {
-    private static final Map<String, DataSourceConnection> sessionConnMap = new ConcurrentHashMap<>();
+    private static final Map<String, DataSourceConnection> SESSION_CONN_MAP = new ConcurrentHashMap<>();
 
-    private static final ScheduledExecutorService scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1,
-            new RdosThreadFactory("hashCacheConnectionKey"));
+    private static final ScheduledExecutorService SCHEDULED_THREADPOOL_EXECUTOR = new ScheduledThreadPoolExecutor(1,
+            new DtThreadFactory("hashCacheConnectionKey"));
 
     static {
-        scheduledThreadPoolExecutor.scheduleAtFixedRate(new HashCacheConnectionKey.CacheTimerTask(), 0, 10,
+        SCHEDULED_THREADPOOL_EXECUTOR.scheduleAtFixedRate(new HashCacheConnectionKey.CacheTimerTask(), 0, 10,
                 TimeUnit.SECONDS);
     }
 
     public static List<String> getSimilarSessionKey(String similarKey) {
-        return sessionConnMap.keySet().stream().filter(key -> key.startsWith(similarKey)).collect(Collectors.toList());
+        return SESSION_CONN_MAP.keySet().stream().filter(key -> key.startsWith(similarKey)).collect(Collectors.toList());
     }
 
     static class CacheTimerTask implements Runnable {
         @Override
         public void run() {
-            Iterator<String> iterator = sessionConnMap.keySet().iterator();
+            Iterator<String> iterator = SESSION_CONN_MAP.keySet().iterator();
             while (iterator.hasNext()) {
                 clearKey(iterator.next());
             }
@@ -52,7 +52,7 @@ public class HashCacheConnectionKey {
      * @param cacheNode
      */
     public static void addKey(String sessionKey, DataSourceConnection cacheNode) {
-        sessionConnMap.put(sessionKey, cacheNode);
+        SESSION_CONN_MAP.put(sessionKey, cacheNode);
     }
 
     /**
@@ -62,7 +62,7 @@ public class HashCacheConnectionKey {
      * @return
      */
     public static Boolean isContainSessionKey(String sessionKey) {
-        return sessionConnMap.containsKey(sessionKey);
+        return SESSION_CONN_MAP.containsKey(sessionKey);
     }
 
     /**
@@ -73,7 +73,7 @@ public class HashCacheConnectionKey {
      */
     @Nullable
     public static DataSourceConnection getSourceConnection(String sessionKey) {
-        return sessionConnMap.get(sessionKey);
+        return SESSION_CONN_MAP.get(sessionKey);
     }
 
     public static void clearKey(String sessionKey) {
@@ -87,23 +87,23 @@ public class HashCacheConnectionKey {
      */
     public static void clearKey(String sessionKey, Integer sourceType, Boolean isCheck) {
         log.info("关闭连接 sessionKey: {} sourceType: {} isCheck: {}", sessionKey, sourceType, isCheck);
-        DataSourceConnection dataNode = sessionConnMap.get(sessionKey);
+        DataSourceConnection dataNode = SESSION_CONN_MAP.get(sessionKey);
         if (dataNode == null) {
-            sessionConnMap.remove(sessionKey);
+            SESSION_CONN_MAP.remove(sessionKey);
             return;
         }
 
         // 判断数据源时间是否超时，超时直接全部处理
         if (System.currentTimeMillis() > dataNode.getTimeoutStamp()) {
             dataNode.close();
-            sessionConnMap.remove(sessionKey);
+            SESSION_CONN_MAP.remove(sessionKey);
         }
 
         // 如果数据源不存在
         // 如果 isCheck 为 false 则说明删除整个节点
         if (null == sourceType && !isCheck) {
             dataNode.close();
-            sessionConnMap.remove(sessionKey);
+            SESSION_CONN_MAP.remove(sessionKey);
             return;
         }
 

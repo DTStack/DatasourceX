@@ -1,21 +1,19 @@
 package com.dtstack.dtcenter.common.loader.impala;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
-import com.dtstack.dtcenter.loader.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
+import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
-import com.dtstack.dtcenter.loader.utils.DBUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.security.PrivilegedAction;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.regex.Matcher;
 
 /**
@@ -34,29 +32,28 @@ public class ImpalaConnFactory extends ConnFactory {
     public Connection getConn(ISourceDTO iSource) throws Exception {
         init();
         ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
-        Connection connection = null;
-        if (MapUtils.isNotEmpty(impalaSourceDTO.getKerberosConfig())) {
-            String principalFile = (String) impalaSourceDTO.getKerberosConfig().get("principalFile");
-            String principal = (String) impalaSourceDTO.getKerberosConfig().get("principal");
-            log.info("getImpalaConnection principal {},principalFile:{}", principal, principalFile);
-            connection = KerberosUtil.loginKerberosWithUGI(impalaSourceDTO.getKerberosConfig()).doAs(
+
+        Connection conn;
+        if (MapUtils.isEmpty(impalaSourceDTO.getKerberosConfig())) {
+            conn = super.getConn(impalaSourceDTO);
+        } else {
+            conn = KerberosLoginUtil.loginKerberosWithUGI(impalaSourceDTO.getKerberosConfig()).doAs(
                     (PrivilegedAction<Connection>) () -> {
                         try {
                             return super.getConn(impalaSourceDTO);
                         } catch (Exception e) {
-                            throw new DtCenterDefException("getImpalaConnection error : " + e.getMessage(), e);
+                            throw new DtLoaderException("获取 Impala Connection 异常", e);
                         }
                     }
             );
-        } else {
-            connection = super.getConn(impalaSourceDTO);
         }
+
         String db = StringUtils.isBlank(impalaSourceDTO.getSchema()) ? getImpalaSchema(impalaSourceDTO.getUrl()) : impalaSourceDTO.getSchema();
         if (StringUtils.isNotBlank(db)) {
-            DBUtil.executeSqlWithoutResultSet(connection, String.format(DtClassConsistent.PublicConsistent.USE_DB, db),
+            DBUtil.executeSqlWithoutResultSet(conn, String.format(DtClassConsistent.PublicConsistent.USE_DB, db),
                     false);
         }
-        return connection;
+        return conn;
     }
 
     /**

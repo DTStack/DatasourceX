@@ -25,7 +25,7 @@ public class HdfsWriterDTO {
 
     private String oriCharSet;
 
-    private int startLine;
+    private Integer startLine;
 
     private Boolean topLineIsTitle;
 

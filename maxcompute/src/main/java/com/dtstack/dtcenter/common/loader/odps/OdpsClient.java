@@ -17,29 +17,26 @@ import com.aliyun.odps.data.DefaultRecordReader;
 import com.aliyun.odps.data.Record;
 import com.aliyun.odps.data.ResultSet;
 import com.aliyun.odps.task.SQLTask;
-import com.dtstack.dtcenter.common.exception.DBErrorCode;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.common.loader.odps.common.OdpsFields;
 import com.dtstack.dtcenter.common.loader.odps.pool.OdpsManager;
 import com.dtstack.dtcenter.common.loader.odps.pool.OdpsPool;
+import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.OdpsSourceDTO;
-import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.Field;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -54,23 +51,11 @@ import java.util.Set;
  * @Description：ODPS 客户端
  */
 @Slf4j
-public class OdpsClient extends AbsRdbmsClient {
+public class OdpsClient<T> implements IClient<T> {
 
-    private static final String poolConfigFieldName = "poolConfig";
-
-    public static final ThreadLocal<Boolean> isOpenPool = new ThreadLocal<>();
+    public static final ThreadLocal<Boolean> IS_OPEN_POOL = new ThreadLocal<>();
 
     private static OdpsManager odpsManager = OdpsManager.getInstance();
-
-    @Override
-    protected ConnFactory getConnFactory() {
-        return new OdpsConnFactory();
-    }
-
-    @Override
-    protected DataSourceType getSourceType() {
-        return DataSourceType.MAXCOMPUTE;
-    }
 
     @Override
     public Boolean testCon(ISourceDTO iSource) {
@@ -89,19 +74,11 @@ public class OdpsClient extends AbsRdbmsClient {
         return false;
     }
 
-
     public static Odps initOdps(OdpsSourceDTO odpsSourceDTO) {
         JSONObject odpsConfig = JSON.parseObject(odpsSourceDTO.getConfig());
 
-        Field[] fields = RdbmsSourceDTO.class.getDeclaredFields();
-        boolean check = false;
-        for (Field field:fields) {
-            if (poolConfigFieldName.equals(field.getName())) {
-                check = odpsSourceDTO.getPoolConfig() != null;
-                break;
-            }
-        }
-        isOpenPool.set(check);
+        boolean check = odpsSourceDTO.getPoolConfig() != null;
+        IS_OPEN_POOL.set(check);
         //不开启连接池
         if (!check) {
             return initOdps(odpsConfig.getString(OdpsFields.KEY_ODPS_SERVER), odpsConfig.getString(OdpsFields.KEY_ACCESS_ID),
@@ -112,7 +89,7 @@ public class OdpsClient extends AbsRdbmsClient {
         OdpsPool odpsPool = odpsManager.getConnection(odpsSourceDTO);
         Odps odps = odpsPool.getResource();
         if (Objects.isNull(odps)) {
-            throw new DtCenterDefException("没有可用的数据库连接");
+            throw new DtLoaderException("没有可用的数据库连接");
         }
         return odps;
     }
@@ -163,7 +140,7 @@ public class OdpsClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeQuery(odpsSourceDTO, queryDTO, false);
         List<String> tableList = new ArrayList<>();
@@ -171,8 +148,8 @@ public class OdpsClient extends AbsRdbmsClient {
         try {
             odps = initOdps(odpsSourceDTO);
             odps.tables().forEach((Table table) -> tableList.add(table.getName()));
-        } catch (Exception e){
-            throw new RuntimeException(e.getMessage(), e);
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -180,7 +157,7 @@ public class OdpsClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeColumnQuery(odpsSourceDTO, queryDTO);
         List<ColumnMetaDTO> columnList = new ArrayList<>();
@@ -208,8 +185,8 @@ public class OdpsClient extends AbsRdbmsClient {
                 columnMetaDTO.setPart(true);
                 columnList.add(columnMetaDTO);
             });
-        } catch (Exception e){
-            throw new RuntimeException(e.getMessage(), e);
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -246,7 +223,7 @@ public class OdpsClient extends AbsRdbmsClient {
                 columnList.add(columnMetaDTO);
             });
         } catch (OdpsException e) {
-            throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+            throw new DtLoaderException("SQL 执行异常", e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -269,7 +246,7 @@ public class OdpsClient extends AbsRdbmsClient {
                 columnClassInfo.add(recordColumn.getTypeInfo().getTypeName());
             }
         } catch (OdpsException e) {
-            throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+            throw new DtLoaderException("SQL 执行异常", e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -292,19 +269,19 @@ public class OdpsClient extends AbsRdbmsClient {
             Table t = odps.tables().get(queryDTO.getTableName());
             DefaultRecordReader recordReader;
             Map<String, String> partitionColumns = queryDTO.getPartitionColumns();
-            if (MapUtils.isNotEmpty(partitionColumns)){
+            if (MapUtils.isNotEmpty(partitionColumns)) {
                 PartitionSpec partitionSpec = new PartitionSpec();
                 Set<String> partSet = partitionColumns.keySet();
-                for (String part:partSet){
+                for (String part : partSet) {
                     partitionSpec.set(part, partitionColumns.get(part));
                 }
                 recordReader = (DefaultRecordReader) t.read(partitionSpec, null, previewNum);
-            }else {
+            } else {
                 recordReader = (DefaultRecordReader) t.read(previewNum);
             }
 
             List<ColumnMetaDTO> metaData = getColumnMetaData(odpsSourceDTO, queryDTO);
-            for (ColumnMetaDTO columnMetaDTO:metaData){
+            for (ColumnMetaDTO columnMetaDTO : metaData) {
                 columnMeta.add(columnMetaDTO.getKey());
             }
             dataList.add(columnMeta);
@@ -316,7 +293,7 @@ public class OdpsClient extends AbsRdbmsClient {
             }
             return dataList;
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -343,18 +320,23 @@ public class OdpsClient extends AbsRdbmsClient {
                 result.add(row);
             }
         } catch (OdpsException e) {
-            throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+            throw new DtLoaderException("SQL 执行异常", e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
         return result;
     }
 
-    //odps类型转换java类型
+    /**
+     * odps类型转换java类型
+     * @param record
+     * @param recordColumn
+     * @return
+     */
     private Object dealColumnType(Record record, Column recordColumn) {
         OdpsType odpsType = recordColumn.getTypeInfo().getOdpsType();
         String columnName = recordColumn.getName();
-        switch (odpsType){
+        switch (odpsType) {
             case STRING:
                 return record.getString(columnName);
             case DOUBLE:
@@ -373,7 +355,7 @@ public class OdpsClient extends AbsRdbmsClient {
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) {
         beforeQuery(source, queryDTO, true);
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) source;
         Odps odps = null;
@@ -383,7 +365,7 @@ public class OdpsClient extends AbsRdbmsClient {
             Instance instance = runOdpsTask(odps, queryDTO);
             isSuccessful = instance.isSuccessful();
         } catch (Exception e) {
-            throw new DtCenterDefException(DBErrorCode.SQL_EXE_EXCEPTION, e);
+            throw new DtLoaderException("SQL 执行异常", e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -391,16 +373,18 @@ public class OdpsClient extends AbsRdbmsClient {
         return isSuccessful;
     }
 
-    private void closeResource (Odps odps, OdpsSourceDTO odpsSourceDTO){
+    private void closeResource(Odps odps, OdpsSourceDTO odpsSourceDTO) {
         //归还对象
-        if (isOpenPool.get() && odps != null) {
+        if (BooleanUtils.isTrue(IS_OPEN_POOL.get()) && odps != null) {
             OdpsPool odpsPool = odpsManager.getConnection(odpsSourceDTO);
             odpsPool.returnResource(odps);
+            IS_OPEN_POOL.remove();
         }
     }
 
     /**
      * 以任务的形式运行 SQL
+     *
      * @param queryDTO
      * @return
      * @throws OdpsException
@@ -415,7 +399,7 @@ public class OdpsClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeColumnQuery(odpsSourceDTO, queryDTO);
         Odps odps = null;
@@ -424,14 +408,13 @@ public class OdpsClient extends AbsRdbmsClient {
             Table t = odps.tables().get(queryDTO.getTableName());
             return t.getComment();
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }finally {
+            throw new DtLoaderException(e.getMessage(), e);
+        } finally {
             closeResource(odps, odpsSourceDTO);
         }
     }
 
-    @Override
-    protected Integer beforeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO, boolean query) throws Exception {
+    protected Integer beforeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO, boolean query) {
         // 查询 SQL 不能为空
         if (query && StringUtils.isBlank(queryDTO.getSql())) {
             throw new DtLoaderException("查询 SQL 不能为空");
@@ -440,8 +423,7 @@ public class OdpsClient extends AbsRdbmsClient {
         return ConnectionClearStatus.CLOSE.getValue();
     }
 
-    @Override
-    protected Integer beforeColumnQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    protected Integer beforeColumnQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         Integer clearStatus = beforeQuery(odpsSourceDTO, queryDTO, false);
         if (queryDTO == null || StringUtils.isBlank(queryDTO.getTableName())) {
@@ -451,5 +433,40 @@ public class OdpsClient extends AbsRdbmsClient {
         queryDTO.setColumns(CollectionUtils.isEmpty(queryDTO.getColumns()) ? Collections.singletonList("*") :
                 queryDTO.getColumns());
         return clearStatus;
+    }
+
+    @Override
+    public Connection getCon(ISourceDTO source) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public com.dtstack.dtcenter.loader.dto.Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
     }
 }

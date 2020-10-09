@@ -1,18 +1,20 @@
 package com.dtstack.dtcenter.common.loader.impala;
 
 import com.alibaba.fastjson.JSONObject;
-import com.dtstack.dtcenter.common.exception.DBErrorCode;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
-import com.dtstack.dtcenter.loader.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
+import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
+import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.dtstack.dtcenter.loader.utils.DBUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,6 +22,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 
 /**
@@ -59,7 +62,7 @@ public class ImpalaClient extends AbsRdbmsClient {
                 tableList.add(rs.getString(columnSize == 1 ? 1 : 2));
             }
         } catch (Exception e) {
-            throw new DtCenterDefException("获取表异常", e);
+            throw new DtLoaderException("获取表异常", e);
         } finally {
             DBUtil.closeDBResources(rs, statement, impalaSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -128,9 +131,8 @@ public class ImpalaClient extends AbsRdbmsClient {
             }
 
         } catch (SQLException e) {
-            throw new DtCenterDefException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
-                    queryDTO.getTableName()),
-                    DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
+                    queryDTO.getTableName()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, stmt, impalaSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -160,9 +162,8 @@ public class ImpalaClient extends AbsRdbmsClient {
                 }
             }
         } catch (Exception e) {
-            throw new DtCenterDefException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
-                    queryDTO.getTableName()),
-                    DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+                    queryDTO.getTableName()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, impalaSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -190,14 +191,12 @@ public class ImpalaClient extends AbsRdbmsClient {
         return db;
     }
 
-
     @Override
     public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         List<String> databases = super.getAllDatabases(source, queryDTO);
         databases.remove(0);
         return databases;
     }
-
 
     @Override
     public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
@@ -209,5 +208,61 @@ public class ImpalaClient extends AbsRdbmsClient {
             }
         });
         return partitionColumnMeta;
+    }
+
+    @Override
+    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Table tableInfo = new Table();
+        tableInfo.setName(queryDTO.getTableName());
+        tableInfo.setComment(getTableMetaComment(source, queryDTO));
+        // 处理字段信息
+        tableInfo.setColumns(getColumnMetaData(source, queryDTO));
+
+        List<Map<String, Object>> result = executeQuery(source, SqlQueryDTO.builder().sql("DESCRIBE formatted " + queryDTO.getTableName()).build());
+        boolean isTableInfo = false;
+        for (Map<String, Object> row : result) {
+            String colName = MapUtils.getString(row, "name", "");
+            String dataType = MapUtils.getString(row, "type", "");
+            if (StringUtils.isBlank(colName) || StringUtils.isBlank(dataType)) {
+                if (StringUtils.isNotBlank(colName) && colName.contains("# Detailed Table Information")) {
+                    isTableInfo = true;
+                }
+            }
+            // 去空格处理
+            dataType = dataType.trim();
+            if (!isTableInfo) {
+                continue;
+            }
+
+            if (colName.contains("Location:")) {
+                tableInfo.setPath(dataType);
+                continue;
+            }
+
+            if (colName.contains("Table Type:")) {
+                tableInfo.setExternalOrManaged(dataType);
+                continue;
+            }
+
+            if (dataType.contains("field.delim")) {
+                tableInfo.setDelim(MapUtils.getString(row, "comment", "").trim());
+                continue;
+            }
+
+            if (colName.contains("Database")) {
+                tableInfo.setDb(dataType);
+                continue;
+            }
+
+            if (tableInfo.getStoreType() == null && colName.contains("InputFormat:")) {
+                for (StoredType hiveStoredType : StoredType.values()) {
+                    if (dataType.contains(hiveStoredType.getInputFormatClass())) {
+                        tableInfo.setStoreType(hiveStoredType.getValue());
+                        break;
+                    }
+                }
+            }
+        }
+        return tableInfo;
     }
 }

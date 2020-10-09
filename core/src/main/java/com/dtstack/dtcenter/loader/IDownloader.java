@@ -10,17 +10,59 @@ import java.util.List;
  */
 public interface IDownloader {
 
+    /**
+     * 配置下载器
+     *
+     * @return
+     * @throws Exception
+     */
     boolean configure() throws Exception;
 
+    /**
+     * 获取元数据信息
+     *
+     * @return
+     * @throws Exception
+     */
     List<String> getMetaInfo() throws Exception;
 
+    /**
+     * 读取下一行
+     *
+     * @return
+     * @throws Exception
+     */
     Object readNext() throws Exception;
 
+    /**
+     * 是否末行
+     *
+     * @return
+     * @throws Exception
+     */
     boolean reachedEnd() throws Exception;
 
+    /**
+     * 是否关闭
+     *
+     * @return
+     * @throws Exception
+     */
     boolean close() throws Exception;
 
-    String getFileName();
+    /**
+     * 获取文件名
+     *
+     * @return
+     * @throws Exception
+     */
+    String getFileName() throws Exception;
 
+    /**
+     * 获取容器
+     *
+     * @return
+     * @throws Exception
+     */
     List<String> getContainers() throws Exception;
 }

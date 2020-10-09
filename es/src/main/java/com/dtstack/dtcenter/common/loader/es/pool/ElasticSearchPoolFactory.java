@@ -1,8 +1,8 @@
 package com.dtstack.dtcenter.common.loader.es.pool;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
@@ -85,7 +85,7 @@ public class ElasticSearchPoolFactory implements PooledObjectFactory<RestHighLev
                 client.close();
             } catch (Exception e) {
                 log.error("close client error", e);
-                throw new DtCenterDefException("close client error", e);
+                throw new DtLoaderException("close client error", e);
             }
         }
     }

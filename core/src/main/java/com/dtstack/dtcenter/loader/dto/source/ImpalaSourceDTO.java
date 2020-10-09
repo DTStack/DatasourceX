@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
@@ -17,6 +18,7 @@ public class ImpalaSourceDTO extends RdbmsSourceDTO {
     /**
      * Hadoop defaultFS
      */
+    @Builder.Default
     private String defaultFS = "";
 
     /**

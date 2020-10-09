@@ -1,9 +1,9 @@
 package com.dtstack.dtcenter.loader.client.hdfs;
 
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.downloader.DownloaderProxy;
-import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.FileStatus;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
@@ -211,9 +211,9 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, String fieldDelimiter, String fileFormat) throws Exception {
+    public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat) throws Exception {
         try {
-            return ClassLoaderCallBackMethod.callbackAndReset(() -> new DownloaderProxy(targetClient.getDownloaderByFormat(source, tableLocation, fieldDelimiter, fileFormat)),
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> new DownloaderProxy(targetClient.getDownloaderByFormat(source, tableLocation, columnNames, fieldDelimiter, fileFormat)),
                     targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
