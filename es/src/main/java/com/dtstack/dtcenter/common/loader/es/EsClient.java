@@ -469,13 +469,14 @@ public class EsClient extends AbsRdbmsClient {
 
         RestHighLevelClient client = null;
         RestClient lowLevelClient = null;
+        NStringEntity entity = null;
         try {
             client = getClient(esSourceDTO);
             if (Objects.isNull(client)) {
                 throw new DtCenterDefException("没有可用的数据库连接");
             }
             lowLevelClient = client.getLowLevelClient();
-            HttpEntity entity = null;
+
             if (queryDTO.getSql() != null) {
                 entity = new NStringEntity(queryDTO.getSql(), ContentType.APPLICATION_JSON);
             }
@@ -523,6 +524,9 @@ public class EsClient extends AbsRdbmsClient {
             throw new DtCenterDefException(e.getMessage(), e);
         } finally {
             closeResource(lowLevelClient, client, esSourceDTO);
+            if (entity != null) {
+                entity.close();
+            }
         }
         return result;
     }
