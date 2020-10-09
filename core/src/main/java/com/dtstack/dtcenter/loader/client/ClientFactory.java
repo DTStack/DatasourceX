@@ -1,8 +1,12 @@
 package com.dtstack.dtcenter.loader.client;
 
+import com.alibaba.fastjson.serializer.DateCodec;
+import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.dtstack.dtcenter.loader.DtClassLoader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -19,6 +23,7 @@ import java.util.Map;
  * @Date ：Created in 15:36 2020/8/19
  * @Description：客户端工厂抽象类
  */
+@Slf4j
 public class ClientFactory {
     /**
      * 存储 插件名称 - ClassLoader 键值对信息
@@ -46,6 +51,7 @@ public class ClientFactory {
             }
         }
 
+        dealFastJSON(pluginName, classLoader);
         return classLoader;
     }
 
@@ -81,6 +87,23 @@ public class ClientFactory {
         }
 
         return new DtClassLoader(urlList.toArray(new URL[urlList.size()]), Thread.currentThread().getContextClassLoader());
+    }
+
+    /**
+     * 特殊处理序列化逻辑
+     */
+    private static void dealFastJSON(String pluginName, ClassLoader classLoader) {
+        // 处理 oracle 时间类型字段
+        if (DataSourceType.Oracle.getPluginName().equals(pluginName)) {
+            try {
+                Class<?> loadClass = classLoader.loadClass("oracle.sql.DATE");
+                SerializeConfig.getGlobalInstance().put(loadClass, DateCodec.instance);
+                loadClass = classLoader.loadClass("oracle.sql.TIMESTAMP");
+                SerializeConfig.getGlobalInstance().put(loadClass, DateCodec.instance);
+            } catch (ClassNotFoundException e) {
+                log.error("FastJSON 序列化工具异常", e);
+            }
+        }
     }
 
     /**
