@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.hdfs.client;
 
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
+import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsFileDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsORCDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsParquetDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsTextDownload;
@@ -80,6 +81,30 @@ public class HdfsFileClient implements IHdfsFile {
                         return yarnDownload;
                     } catch (Exception e) {
                         throw new DtLoaderException("创建下载器异常", e);
+                    }
+                }
+        );
+    }
+
+    @Override
+    public IDownloader getFileDownloader(ISourceDTO iSource, String path) throws Exception {
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
+
+        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
+            HdfsFileDownload hdfsFileDownload = new HdfsFileDownload(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), path, hdfsSourceDTO.getYarnConf(), null);
+            hdfsFileDownload.configure();
+            return hdfsFileDownload;
+        }
+
+        // 校验高可用配置
+        return KerberosLoginUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<IDownloader>) () -> {
+                    try {
+                        HdfsFileDownload hdfsFileDownload = new HdfsFileDownload(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), path, hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getKerberosConfig());
+                        hdfsFileDownload.configure();
+                        return hdfsFileDownload;
+                    } catch (Exception e) {
+                        throw new DtLoaderException("创建文件下载器异常", e);
                     }
                 }
         );

@@ -1,11 +1,14 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
+
 
 /**
  * @company: www.dtstack.com
@@ -33,5 +36,21 @@ public class HdfsTest {
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
         }
+    }
+
+    @Test
+    public void testFileDownloader() throws Exception {
+        IHdfsFile hdfs = ClientCache.getHdfs(DataSourceType.HDFS.getVal());
+        IDownloader fileDownloader = hdfs.getFileDownloader(source, "/tmp/textfile");
+        while (!fileDownloader.reachedEnd()) {
+            System.out.println(fileDownloader.readNext());
+            Thread.sleep(1000);
+        }
+    }
+
+    @Test
+    public void getFileStatus() throws Exception {
+        IHdfsFile hdfs = ClientCache.getHdfs(DataSourceType.HDFS.getVal());
+        System.out.println(hdfs.getStatus(source, "/jars"));
     }
 }

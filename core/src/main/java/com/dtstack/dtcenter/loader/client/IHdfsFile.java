@@ -37,6 +37,16 @@ public interface IHdfsFile {
     IDownloader getLogDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception;
 
     /**
+     * 文件下载器
+     *
+     * @param iSource
+     * @param path
+     * @return
+     * @throws Exception
+     */
+    IDownloader getFileDownloader(ISourceDTO iSource, String path) throws Exception;
+
+    /**
      * 从 HDFS 上下载文件或文件夹到本地
      *
      * @param source

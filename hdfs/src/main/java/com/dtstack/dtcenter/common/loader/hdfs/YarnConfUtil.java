@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.hdfs;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 
@@ -59,12 +60,14 @@ public class YarnConfUtil extends HadoopConfUtil {
      * @param map
      */
     private static void initYarnConfiguration(YarnConfiguration yarnConfiguration, Map<String, Object> map) {
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            if (entry.getValue() == null) {
-                continue;
-            }
+        if (MapUtils.isNotEmpty(map)) {
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                if (entry.getValue() == null) {
+                    continue;
+                }
 
-            yarnConfiguration.set(entry.getKey(), entry.getValue().toString());
+                yarnConfiguration.set(entry.getKey(), entry.getValue().toString());
+            }
         }
         setHadoopDefaultConfig(yarnConfiguration, null, null);
     }
