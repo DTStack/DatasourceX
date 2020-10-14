@@ -123,10 +123,6 @@
                     <artifactId>jetty-util</artifactId>
                     <groupId>org.eclipse.jetty</groupId>
                 </exclusion>
-                <exclusion>
-                    <artifactId>commons-logging</artifactId>
-                    <groupId>commons-logging</groupId>
-                </exclusion>
             </exclusions>
         </dependency>
 
