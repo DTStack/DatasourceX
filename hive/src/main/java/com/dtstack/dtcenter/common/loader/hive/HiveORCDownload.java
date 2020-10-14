@@ -1,11 +1,9 @@
 package com.dtstack.dtcenter.common.loader.hive;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.loader.IDownloader;
 import jodd.util.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -21,7 +19,6 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -105,23 +102,6 @@ public class HiveORCDownload implements IDownloader {
 
     @Override
     public List<String> readNext() throws Exception {
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return readNextWithKerberos();
-        }
-
-        // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<List<String>>) ()->{
-                    try {
-                        return readNextWithKerberos();
-                    } catch (Exception e){
-                        throw new DtCenterDefException("读取文件异常", e);
-                    }
-                });
-    }
-
-    private List<String> readNextWithKerberos(){
         List<String> row = new ArrayList<>();
 
         int fieldsSize = fields.size();
@@ -179,45 +159,15 @@ public class HiveORCDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return recordReader == null || !nextRecord();
-        }
-
-        // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) ()->{
-                    try {
-                        return recordReader == null || !nextRecord();
-                    } catch (Exception e){
-                        throw new DtCenterDefException("下载文件异常", e);
-                    }
-                });
+        return recordReader == null || !nextRecord();
     }
 
     @Override
     public boolean close() throws IOException {
-
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            if(recordReader != null){
-                recordReader.close();
-            }
-            return true;
+        if(recordReader != null){
+            recordReader.close();
         }
-
-        // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) ()->{
-                    try {
-                        if(recordReader != null){
-                            recordReader.close();
-                        }
-                        return true;
-                    } catch (Exception e){
-                        throw new DtCenterDefException("RecordReader 关闭异常", e);
-                    }
-                });
+        return true;
     }
 
     @Override
