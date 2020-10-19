@@ -273,6 +273,10 @@
                     <artifactId>jetty-util</artifactId>
                     <groupId>org.mortbay.jetty</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>snappy-java</artifactId>
+                    <groupId>org.xerial.snappy</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -348,6 +352,12 @@
         <dependency>
             <groupId>com.dtstack.dtcenter</groupId>
             <artifactId>common.loader.kerberos</artifactId>
+        </dependency>
+
+        <dependency>
+            <artifactId>snappy-java</artifactId>
+            <groupId>org.xerial.snappy</groupId>
+            <version>1.1.2.6</version>
         </dependency>
 
         <dependency>

@@ -53,7 +53,13 @@ public class HiveTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table nanqi1 (id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi1 values (1, 'nanqi')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan01").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan01 (id int, name string) STORED AS PARQUET").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into wangchuan01 values (1, 'wangchuan01'),(2,'wangchuan02')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -135,6 +141,18 @@ public class HiveTest {
         System.setProperty("HADOOP_USER_NAME", "root");
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+        IDownloader downloader = client.getDownloader(source, queryDTO);
+        System.out.println(downloader.getMetaInfo());
+        while (!downloader.reachedEnd()){
+            System.out.println(downloader.readNext());
+        }
+    }
+
+    @Test
+    public void getDownloaderForParquet() throws Exception {
+        System.setProperty("HADOOP_USER_NAME", "root");
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("wangchuan01").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         System.out.println(downloader.getMetaInfo());
         while (!downloader.reachedEnd()){
