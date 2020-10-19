@@ -1,9 +1,8 @@
 package com.dtstack.dtcenter.common.loader.postgresql;
 
-import com.dtstack.dtcenter.common.exception.DBErrorCode;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
+import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
@@ -11,9 +10,8 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.dtstack.dtcenter.loader.utils.DBUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -76,7 +74,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
             }
             return tableList;
         } catch (Exception e) {
-            throw new DtCenterDefException("获取表异常", e);
+            throw new DtLoaderException("获取表异常", e);
         } finally {
             DBUtil.closeDBResources(rs, statement, postgresqlSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -101,9 +99,8 @@ public class PostgresqlClient extends AbsRdbmsClient {
                 }
             }
         } catch (Exception e) {
-            throw new DtCenterDefException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
-                    queryDTO.getTableName()),
-                    DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+                    queryDTO.getTableName()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, postgresqlSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -207,10 +204,9 @@ public class PostgresqlClient extends AbsRdbmsClient {
 
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
+                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
             } else {
-                throw new DtCenterDefException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", queryDTO.getTableName()),
-                        DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+                throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", queryDTO.getTableName()), e);
             }
         } finally {
             DBUtil.closeDBResources(rs, statement, postgresqlSourceDTO.clearAfterGetConnection(clearStatus));

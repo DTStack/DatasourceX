@@ -1,14 +1,15 @@
 package com.dtstack.dtcenter.common.loader.ftp;
 
-import com.dtstack.dtcenter.common.sftp.SFTPHandler;
-import com.dtstack.dtcenter.common.util.AddressUtil;
-import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.common.loader.common.utils.AddressUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.FtpSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.jcraft.jsch.JSchException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
@@ -32,12 +33,12 @@ public abstract class AbsFtpClient<T> implements IClient<T> {
 
     @Override
     public Boolean testCon(ISourceDTO iSource) {
-        boolean check = false;
         FtpSourceDTO ftpSourceDTO = (FtpSourceDTO) iSource;
         if (ftpSourceDTO == null || !AddressUtil.telnet(ftpSourceDTO.getUrl(), Integer.valueOf(ftpSourceDTO.getHostPort()))) {
-            return check;
+            return Boolean.FALSE;
         }
-        if (ftpSourceDTO.getProtocol() != null && ftpSourceDTO.getProtocol().equalsIgnoreCase("sftp")) {
+
+        if (ftpSourceDTO.getProtocol() != null && "sftp".equalsIgnoreCase(ftpSourceDTO.getProtocol())) {
             SFTPHandler instance = null;
             try {
                 Integer finalPort = Integer.valueOf(ftpSourceDTO.getHostPort());
@@ -48,13 +49,12 @@ public abstract class AbsFtpClient<T> implements IClient<T> {
                             put(SFTPHandler.KEY_USERNAME, ftpSourceDTO.getUsername());
                             put(SFTPHandler.KEY_PASSWORD, ftpSourceDTO.getPassword());
                             put(SFTPHandler.KEY_TIMEOUT, String.valueOf(TIMEOUT));
-                            put(SFTPHandler.KEY_AUTHENTICATION,
-                                    Optional.ofNullable(ftpSourceDTO.getAuth()).orElse("").toString());
-                            put(SFTPHandler.KEY_RSA, Optional.ofNullable(ftpSourceDTO.getPath()).orElse("").toString());
+                            put(SFTPHandler.KEY_AUTHENTICATION, Optional.ofNullable(ftpSourceDTO.getAuth()).orElse(""));
+                            put(SFTPHandler.KEY_RSA, Optional.ofNullable(ftpSourceDTO.getPath()).orElse(""));
                         }});
-                check = true;
-            } catch (Exception e) {
-                log.error("无法通过sftp与服务器建立链接，请检查主机名和用户名是否正确, {}", e);
+            } catch (JSchException e) {
+                log.error("与ftp服务器建立连接失败,请检查用户名和密码是否正确: host = {}, port : {}, username = {}, rsaPath = {}", ftpSourceDTO.getUrl(), ftpSourceDTO.getHostPort(), ftpSourceDTO.getUsername(), ftpSourceDTO.getPath());
+                throw new DtLoaderException("与ftp服务器建立连接失败,请检查用户名和密码是否正确");
             } finally {
                 if (instance != null) {
                     instance.close();
@@ -79,67 +79,65 @@ public abstract class AbsFtpClient<T> implements IClient<T> {
                 int reply = ftpClient.getReplyCode();
                 if (!FTPReply.isPositiveCompletion(reply)) {
                     ftpClient.disconnect();
-                    String message = String.format("与ftp服务器建立连接失败,请检查用户名和密码是否正确: [%s]",
-                            "message:host =" + ftpSourceDTO.getUrl() + ",username = " + ftpSourceDTO.getUsername() + ",port =" + ftpSourceDTO.getPassword());
-                    log.error(message);
-                } else {
-                    check = true;
+                    log.error("与ftp服务器建立连接失败,请检查用户名和密码是否正确: host = {}, port : {}, username = {}", ftpSourceDTO.getUrl(), ftpSourceDTO.getHostPort(), ftpSourceDTO.getUsername());
+                    throw new DtLoaderException("与ftp服务器建立连接失败,请检查用户名和密码是否正确");
                 }
 
                 if (ftpClient != null) {
                     ftpClient.disconnect();
                 }
             } catch (Exception e) {
-                log.error("无法通过ftp与服务器建立链接，请检查主机名和用户名是否正确");
+                log.error("与ftp服务器建立连接失败,请检查用户名和密码是否正确: host = {}, port : {}, username = {}", ftpSourceDTO.getUrl(), ftpSourceDTO.getHostPort(), ftpSourceDTO.getUsername());
+                throw new DtLoaderException("与ftp服务器建立连接失败,请检查用户名和密码是否正确");
             }
         }
 
-        return check;
+        return true;
     }
 
     /********************************* FTP 数据库无需实现的方法 ******************************************/
     @Override
-    public Connection getCon(ISourceDTO iSource) throws Exception {
+    public Connection getCon(ISourceDTO iSource) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
@@ -149,22 +147,27 @@ public abstract class AbsFtpClient<T> implements IClient<T> {
     }
 
     @Override
-    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 }

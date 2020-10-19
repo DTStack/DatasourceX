@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.loader.cache.connection;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class DataSourceCacheNode {
                 log.info("close connection sourceType = {}", sourceType);
                 connection.close();
             } catch (SQLException e) {
-                throw new DtCenterDefException("缓存连接关闭失败", e);
+                throw new DtLoaderException("缓存连接关闭失败", e);
             }
         }
     }

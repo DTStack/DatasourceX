@@ -1,11 +1,11 @@
 package com.dtstack.dtcenter.common.loader.mysql;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.loader.common.utils.SqlFormatUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.Column;
-import com.dtstack.dtcenter.loader.utils.SqlFormatUtil;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -53,7 +53,7 @@ public class MysqlDownloader implements IDownloader {
     @Override
     public boolean configure() throws Exception {
         if (null == connection || StringUtils.isEmpty(sql)) {
-            throw new DtCenterDefException("文件不存在");
+            throw new DtLoaderException("文件不存在");
         }
         totalLine = 0;
         pageSize = 100;
@@ -90,7 +90,7 @@ public class MysqlDownloader implements IDownloader {
             //获取总页数
             pageAll = (int) Math.ceil(totalLine / (double) pageSize);
         } catch (Exception e) {
-            throw new DtCenterDefException("构造 Mysql 下载器信息异常 : " + e.getMessage(), e);
+            throw new DtLoaderException("构造 Mysql 下载器信息异常 : " + e.getMessage(), e);
         } finally {
             if (totalResultSet != null) {
                 totalResultSet.close();
@@ -125,7 +125,7 @@ public class MysqlDownloader implements IDownloader {
                 pageTemp.add(columns);
             }
         } catch (Exception e) {
-            throw new DtCenterDefException("读取 Mysql 信息异常 : " + e.getMessage(), e);
+            throw new DtLoaderException("读取 Mysql 信息异常 : " + e.getMessage(), e);
         }
 
         pageNum++;

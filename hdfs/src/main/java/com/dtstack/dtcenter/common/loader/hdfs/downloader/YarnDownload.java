@@ -1,13 +1,12 @@
 package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
-import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
-import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
+import com.dtstack.dtcenter.common.loader.hdfs.YarnConfUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
@@ -40,10 +39,9 @@ import java.util.Map;
  */
 @Slf4j
 public class YarnDownload implements IDownloader {
-    private static final int bufferSize = 4095;
+    private static final int BUFFER_SIZE = 4095;
 
-    //限制字节数
-    private int readLimit = bufferSize;
+    private int readLimit = BUFFER_SIZE;
 
     private Configuration configuration;
 
@@ -77,7 +75,7 @@ public class YarnDownload implements IDownloader {
 
     private Integer totalReadByte = 0;
 
-    private byte[] buf = new byte[bufferSize];
+    private byte[] buf = new byte[BUFFER_SIZE];
 
     private long curRead = 0L;
 
@@ -91,16 +89,13 @@ public class YarnDownload implements IDownloader {
 
     private String user;
 
-    private static final String FS_HDFS_IMPL_DISABLE_CACHE = "fs.hdfs.impl.disable.cache";
-    private static final String IPC_CLIENT_FALLBACK_TO_SIMPLE_AUTH_ALLOWED = "ipc.client.fallback-to-simple-auth-allowed";
-
     private YarnDownload(String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit) {
         this.appIdStr = appIdStr;
         this.yarnConf = yarnConf;
         this.hdfsConfig = hdfsConfig;
 
-        if (readLimit == null || readLimit < bufferSize) {
-            log.warn("it is not available readLimit set,it must bigger then " + bufferSize + ", and use default :" + bufferSize);
+        if (readLimit == null || readLimit < BUFFER_SIZE) {
+            log.warn("it is not available readLimit set,it must bigger then " + BUFFER_SIZE + ", and use default :" + BUFFER_SIZE);
         } else {
             this.readLimit = readLimit;
         }
@@ -115,7 +110,7 @@ public class YarnDownload implements IDownloader {
 
     @Override
     public boolean configure() throws Exception {
-        configuration = HadoopConfUtil.getFullConfiguration(hdfsConfig, yarnConf);
+        configuration = YarnConfUtil.getFullConfiguration(null, hdfsConfig, yarnConf, kerberosConfig);
 
         //TODO 暂时在这个地方加上
         configuration.set("fs.AbstractFileSystem.hdfs.impl", "org.apache.hadoop.fs.Hdfs");
@@ -147,7 +142,7 @@ public class YarnDownload implements IDownloader {
             nodeFiles = FileContext.getFileContext(qualifiedLogDir.toUri(), configuration).listStatus(remoteAppLogDir);
             nextLogFile();
         } catch (FileNotFoundException fnf) {
-            throw new DtCenterDefException("applicationId:" + appIdStr + " don't have any log file.");
+            throw new DtLoaderException("applicationId:" + appIdStr + " don't have any log file.");
         }
         return true;
     }
@@ -173,13 +168,13 @@ public class YarnDownload implements IDownloader {
         if (thr) {
             // 文件大小为0的时候不允许下载，需要重新调用configure接口
             log.error("path:{} size = 0", tableLocation);
-            throw new DtCenterDefException("path：" + tableLocation + " size = 0 ");
+            throw new DtLoaderException("path：" + tableLocation + " size = 0 ");
         }
     }
 
     @Override
     public List<String> getMetaInfo() throws Exception {
-        throw new DtCenterDefException("not support getMetaInfo of App log download");
+        throw new DtLoaderException("not support getMetaInfo of App log download");
     }
 
     @Override
@@ -196,55 +191,27 @@ public class YarnDownload implements IDownloader {
         }
 
         // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) ()->{
+        return KerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) () -> {
                     try {
                         return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
-                    } catch (Exception e){
-                        throw new DtCenterDefException("读取文件异常", e);
+                    } catch (Exception e) {
+                        throw new DtLoaderException("读取文件异常", e);
                     }
                 });
     }
 
     @Override
     public boolean close() throws Exception {
-
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            if(currValueStream != null){
-                currValueStream.close();
-            }
-            return true;
+        if (currValueStream != null) {
+            currValueStream.close();
         }
-
-        // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) ()->{
-                    try {
-                        if(currValueStream != null){
-                            currValueStream.close();
-                        }
-                        return true;
-                    } catch (Exception e){
-                        throw new DtCenterDefException("读取文件异常", e);
-                    }
-                });
+        return true;
     }
 
     @Override
     public String getFileName() {
         return null;
-    }
-
-    /**
-     * 设置默认 YARN 配置
-     *
-     * @param conf
-     */
-    public static void setDefaultConf(Configuration conf) {
-        conf.setBoolean(FS_HDFS_IMPL_DISABLE_CACHE, true);
-        conf.setBoolean(IPC_CLIENT_FALLBACK_TO_SIMPLE_AUTH_ALLOWED, true);
-        conf.set(HadoopConfTool.FS_HDFS_IMPL, HadoopConfTool.DEFAULT_FS_HDFS_IMPL);
     }
 
     /**
@@ -333,34 +300,34 @@ public class YarnDownload implements IDownloader {
     }
 
     private boolean nextRecord() throws IOException {
-        if(currValueStream == null && !nextLogFile()){
+        if (currValueStream == null && !nextLogFile()) {
             isReachedEnd = true;
             currLineValue = null;
             return false;
         }
 
-        if(currFileLength == curRead && logPreInfo != null){
+        if (currFileLength == curRead && logPreInfo != null) {
             currLineValue = logPreInfo;
             logPreInfo = null;
             return true;
         }
 
         //当前logtype已经读取完
-        if(currFileLength == curRead){
+        if (currFileLength == curRead) {
             logEndInfo = "End of LogType:" + currFileType + "\n";
-            try{
+            try {
                 nextLogType();
-            }catch (EOFException e){
+            } catch (EOFException e) {
                 //当前logfile已经读取完
                 currLineValue = logEndInfo;
                 logEndInfo = null;
-                if(!nextStream()){
+                if (!nextStream()) {
                     return nextLogFile();
                 }
                 try {
                     nextLogType();
                 } catch (EOFException e1) {
-                    if(!nextStream()){
+                    if (!nextStream()) {
                         return nextLogFile();
                     }
                     return false;
@@ -369,7 +336,7 @@ public class YarnDownload implements IDownloader {
             }
         }
 
-        if(currFileLength == 0){
+        if (currFileLength == 0) {
             currLineValue = logEndInfo;
             return true;
         }
@@ -380,14 +347,14 @@ public class YarnDownload implements IDownloader {
         int readNum = currValueStream.read(buf, 0, toRead);
         curRead += readNum;
 
-        if(readNum <= 0){
+        if (readNum <= 0) {
             //close stream
-            if(currValueStream != null){
+            if (currValueStream != null) {
                 currValueStream.close();
             }
 
             boolean hasNext = nextLogFile();
-            if(!hasNext){
+            if (!hasNext) {
                 isReachedEnd = true;
                 return false;
             }
@@ -398,12 +365,12 @@ public class YarnDownload implements IDownloader {
         String readLine = new String(buf, 0, readNum);
         totalReadByte += readNum;
 
-        if(logPreInfo != null){
+        if (logPreInfo != null) {
             readLine = logPreInfo + readLine;
             logPreInfo = null;
         }
 
-        if(logEndInfo != null){
+        if (logEndInfo != null) {
             readLine = logEndInfo + readLine;
             logEndInfo = null;
         }

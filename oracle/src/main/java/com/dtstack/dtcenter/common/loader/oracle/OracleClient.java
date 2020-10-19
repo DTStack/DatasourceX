@@ -1,10 +1,10 @@
 package com.dtstack.dtcenter.common.loader.oracle;
 
-import com.dtstack.dtcenter.common.exception.DBErrorCode;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
-import com.dtstack.dtcenter.loader.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.utils.CollectionUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
+import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
@@ -13,10 +13,8 @@ import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.dtstack.dtcenter.loader.utils.CollectionUtil;
-import com.dtstack.dtcenter.loader.utils.DBUtil;
 import oracle.jdbc.OracleResultSetMetaData;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -59,8 +57,8 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO ISource, SqlQueryDTO queryDTO) throws Exception {
-        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) ISource;
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) iSource;
         Integer clearStatus = beforeQuery(oracleSourceDTO, queryDTO, false);
 
         Statement statement = null;
@@ -75,7 +73,7 @@ public class OracleClient extends AbsRdbmsClient {
                 tableList.add(rs.getString(1));
             }
         } catch (Exception e) {
-            throw new DtCenterDefException("获取表异常", e);
+            throw new DtLoaderException("获取表异常", e);
         } finally {
             DBUtil.closeDBResources(rs, statement, oracleSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -83,8 +81,8 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO ISource, SqlQueryDTO queryDTO) throws Exception {
-        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) ISource;
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(oracleSourceDTO, queryDTO);
 
         String tableName = queryDTO.getTableName();
@@ -104,9 +102,8 @@ public class OracleClient extends AbsRdbmsClient {
                 return comment;
             }
         } catch (Exception e) {
-            throw new DtCenterDefException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
-                    queryDTO.getTableName()),
-                    DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+                    queryDTO.getTableName()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, oracleSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -114,16 +111,16 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO ISource, SqlQueryDTO queryDTO) throws Exception {
-        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) ISource;
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(oracleSourceDTO, queryDTO);
         Statement statement = null;
         ResultSet rs = null;
         List<ColumnMetaDTO> columns = new ArrayList<>();
         try {
             statement = oracleSourceDTO.getConnection().createStatement();
-            String schema_table = transferSchemaAndTableName(oracleSourceDTO.getSchema(), queryDTO.getTableName());
-            String queryColumnSql = "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + schema_table
+            String schemaTable = transferSchemaAndTableName(oracleSourceDTO.getSchema(), queryDTO.getTableName());
+            String queryColumnSql = "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + schemaTable
                         + " where 1=2";
             rs = statement.executeQuery(queryColumnSql);
             ResultSetMetaData rsMetaData = rs.getMetaData();
@@ -150,11 +147,10 @@ public class OracleClient extends AbsRdbmsClient {
 
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
+                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
             } else {
-                throw new DtCenterDefException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
-                        queryDTO.getTableName()),
-                        DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+                throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
+                        queryDTO.getTableName()), e);
             }
         } finally {
             DBUtil.closeDBResources(rs, statement, oracleSourceDTO.clearAfterGetConnection(clearStatus));
@@ -180,11 +176,10 @@ public class OracleClient extends AbsRdbmsClient {
 
         } catch (Exception e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtCenterDefException(queryDTO.getTableName() + "表不存在", DBErrorCode.TABLE_NOT_EXISTS, e);
+                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
             } else {
-                throw new DtCenterDefException(String.format("获取表:%s 的字段的注释信息时失败. 请联系 DBA 核查该库、表信息.",
-                        queryDTO.getTableName()),
-                        DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+                throw new DtLoaderException(String.format("获取表:%s 的字段的注释信息时失败. 请联系 DBA 核查该库、表信息.",
+                        queryDTO.getTableName()), e);
             }
         }finally {
             DBUtil.closeDBResources(rs, statement, sourceDTO.clearAfterGetConnection(clearStatus));
@@ -226,8 +221,9 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected String dealSql(RdbmsSourceDTO rdbmsSourceDTO, SqlQueryDTO sqlQueryDTO){
-        return "select * from " + transferSchemaAndTableName(rdbmsSourceDTO.getSchema(), sqlQueryDTO.getTableName()) + " where rownum <=" + sqlQueryDTO.getPreviewNum();
+    protected String dealSql(ISourceDTO iSourceDTO, SqlQueryDTO sqlQueryDTO){
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) iSourceDTO;
+        return "select * from " + transferSchemaAndTableName(oracleSourceDTO.getSchema(), sqlQueryDTO.getTableName()) + " where rownum <=" + sqlQueryDTO.getPreviewNum();
     }
 
     @Override

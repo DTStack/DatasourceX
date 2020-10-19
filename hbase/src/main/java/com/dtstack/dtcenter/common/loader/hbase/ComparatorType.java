@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hbase;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.enums.Comparator;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.hadoop.hbase.filter.BinaryComparator;
 import org.apache.hadoop.hbase.filter.BinaryPrefixComparator;
 import org.apache.hadoop.hbase.filter.BitComparator;
@@ -24,7 +24,7 @@ public enum ComparatorType {
 
         @Override
         public ByteArrayComparable getComparator(com.dtstack.dtcenter.loader.dto.comparator.ByteArrayComparable comparable) {
-            throw new DtCenterDefException("hbase 1.x版本不支持该比较器");
+            throw new DtLoaderException("hbase 1.x版本不支持该比较器");
         }
     },
 
@@ -111,7 +111,7 @@ public enum ComparatorType {
                 return comparatorType;
             }
         }
-        throw new DtCenterDefException("hbase自定义查询暂时不支持该比较器类型");
+        throw new DtLoaderException("hbase自定义查询暂时不支持该比较器类型");
     }
 
 }

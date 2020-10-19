@@ -1,15 +1,16 @@
 package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 
 import com.csvreader.CsvReader;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
-import com.dtstack.google.common.collect.Lists;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.google.common.collect.Lists;
 import org.apache.commons.compress.utils.Charsets;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -36,7 +37,9 @@ public class HdfsTextWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(HdfsTextWriter.class);
 
-    //换行符
+    /**
+     * 换行符
+     */
     private static final int NEWLINE = 10;
 
     /**
@@ -50,7 +53,8 @@ public class HdfsTextWriter {
     public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         int startLine = hdfsWriterDTO.getStartLine();
-        if (hdfsWriterDTO.getTopLineIsTitle()) {//首行是标题则内容从下一行开始
+        //首行是标题则内容从下一行开始
+        if (BooleanUtils.isTrue(hdfsWriterDTO.getTopLineIsTitle())) {
             startLine++;
         }
 
@@ -58,7 +62,7 @@ public class HdfsTextWriter {
         final String hdfsPath = hdfsWriterDTO.getHdfsDirPath() + "/" + UUID.randomUUID();
         final boolean overwrite = false;
 
-        final Configuration conf = HadoopConfUtil.getHdfsConfiguration(hdfsSourceDTO.getConfig());
+        final Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
         final FileSystem fs = FileSystem.get(conf);
         final Path p = new Path(hdfsPath);
         final OutputStream stream = fs.create(p, overwrite);
@@ -88,7 +92,7 @@ public class HdfsTextWriter {
             }
         } catch (final Exception e) {
             logger.error("", e);
-            throw new DtCenterDefException("第" + currLineNum + "行数据异常,请检查, 数据导入失败");
+            throw new DtLoaderException("第" + currLineNum + "行数据异常,请检查, 数据导入失败");
         } finally {
             stream.close();
 
@@ -116,7 +120,7 @@ public class HdfsTextWriter {
     public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         final boolean overwrite = false;
-        final Configuration conf = HadoopConfUtil.getHdfsConfiguration(hdfsSourceDTO.getConfig());
+        final Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
         final FileSystem fs = FileSystem.get(conf);
         final String hdfsPath = hdfsWriterDTO.getHdfsDirPath() + "/" + UUID.randomUUID();
         final Path p = new Path(hdfsPath);
@@ -139,8 +143,9 @@ public class HdfsTextWriter {
                 }
 
                 final String[] columnArr = reader.getValues();
-                if (currLineNum == (startLine - 1)) {//首行为标题行
-                    //计算出需要使用的索引位置
+                // 首行为标题行
+                if (currLineNum == (startLine - 1)) {
+                    // 计算出需要使用的索引位置
                     for (final HDFSImportColumn importColum : hdfsWriterDTO.getKeyList()) {
                         if (StringUtils.isBlank(importColum.getKey())) {
                             indexList.add(-1);
@@ -194,7 +199,7 @@ public class HdfsTextWriter {
             }
         } catch (final Exception e) {
             logger.error("", e);
-            throw new DtCenterDefException("(第" + currLineNum + "行数据异常,请检查。数据导入失败)");
+            throw new DtLoaderException("(第" + currLineNum + "行数据异常,请检查。数据导入失败)");
         } finally {
             stream.close();
 
@@ -212,7 +217,7 @@ public class HdfsTextWriter {
     private static String transformColumn(final List<ColumnMetaDTO> tableColumns, final List<HDFSImportColumn> keyList, final String[] columnValArr, final String delimiter) throws ParseException {
 
         if (columnValArr == null) {
-            throw new DtCenterDefException("记录不应该为空");
+            throw new DtLoaderException("记录不应该为空");
         }
 
         final int length = columnValArr.length > tableColumns.size() ? tableColumns.size() : columnValArr.length;

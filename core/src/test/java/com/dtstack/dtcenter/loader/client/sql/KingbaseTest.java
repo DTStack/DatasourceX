@@ -1,12 +1,13 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
-import com.dtstack.dtcenter.loader.client.AbsClientCache;
+import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.KingbaseSourceDTO;
-import com.dtstack.dtcenter.loader.enums.ClientType;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -21,16 +22,25 @@ import java.util.List;
  */
 public class KingbaseTest {
 
-    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
+    IClient client = ClientCache.getClient(DataSourceType.KINGBASE8.getVal());
 
-    IClient client = clientCache.getClient(DataSourceType.KINGBASE8.getPluginName());
-
-    KingbaseSourceDTO source = KingbaseSourceDTO.builder()
-            .url("jdbc:kingbase8://172.16.8.182:54321/ide")
+    private static KingbaseSourceDTO source = KingbaseSourceDTO.builder()
+            .url("jdbc:kingbase8://172.16.8.182:54321/dev")
             .username("admin")
             .password("Abc123")
-            //.poolConfig(PoolConfig.builder().maximumPoolSize(2).build())
+            .poolConfig(PoolConfig.builder().maximumPoolSize(2).build())
             .build();
+
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.KINGBASE8.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int, name varchar(50))").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+    }
 
     /**
      * 获取连接 - 支持连接池测试
@@ -59,9 +69,8 @@ public class KingbaseTest {
      * 测试连通性
      */
     @Test
-    public void testCon() {
-        Boolean check = client.testCon(source);
-        assert check;
+    public void testCon() throws Exception {
+        client.testCon(source);
     }
 
     /**
@@ -79,7 +88,7 @@ public class KingbaseTest {
      */
     @Test
     public void getColumnMetaData() throws Exception {
-        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("\"PUBLIC\".\"rdos_dict\"").build());
+        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("nanqi").build());
         System.out.println(metaData);
     }
 
@@ -89,7 +98,7 @@ public class KingbaseTest {
      */
     @Test
     public void getColumnMetaDataHiveComment() throws Exception {
-        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("table_test").build());
+        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("nanqi").build());
         System.out.println(metaData);
     }
 
@@ -99,13 +108,7 @@ public class KingbaseTest {
      */
     @Test
     public void getColumnMetaDataBySchema() throws Exception {
-        KingbaseSourceDTO source = KingbaseSourceDTO.builder()
-                .url("jdbc:kingbase8://172.16.8.182:54321/ide")
-                .username("admin")
-                .password("Abc123")
-                .schema("wangchuan_test")
-                .build();
-        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("test_table1.aaaa").build());
+        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("nanqi").build());
         System.out.println(metaData);
     }
 
@@ -114,7 +117,7 @@ public class KingbaseTest {
      */
     @Test
     public void getColumnClassInfo() throws Exception {
-        List rdos_dict = client.getColumnClassInfo(source, SqlQueryDTO.builder().tableName("\"PUBLIC\".\"rdos_dict\"").build());
+        List rdos_dict = client.getColumnClassInfo(source, SqlQueryDTO.builder().tableName("nanqi").build());
         System.out.println(rdos_dict);
     }
 
@@ -123,13 +126,7 @@ public class KingbaseTest {
      */
     @Test
     public void getColumnClassInfoBySchema() throws Exception {
-        KingbaseSourceDTO source = KingbaseSourceDTO.builder()
-                .url("jdbc:kingbase8://172.16.8.182:54321/ide")
-                .username("admin")
-                .password("Abc123")
-                .schema("wangchuan_test")
-                .build();
-        List rdos_dict = client.getColumnClassInfo(source, SqlQueryDTO.builder().tableName("test_table1.aaaa").build());
+        List rdos_dict = client.getColumnClassInfo(source, SqlQueryDTO.builder().tableName("nanqi").build());
         System.out.println(rdos_dict);
     }
 
@@ -149,12 +146,6 @@ public class KingbaseTest {
      */
     @Test
     public void getTableListBySchema() throws Exception {
-        KingbaseSourceDTO source = KingbaseSourceDTO.builder()
-                .url("jdbc:kingbase8://172.16.8.182:54321/ide")
-                .username("admin")
-                .password("Abc123")
-                .schema("admin")
-                .build();
         List tableList = client.getTableList(source, SqlQueryDTO.builder().build());
         System.out.println(tableList);
     }
@@ -164,7 +155,7 @@ public class KingbaseTest {
      */
     @Test
     public void getPreview() throws Exception {
-        List dict = client.getPreview(source, SqlQueryDTO.builder().tableName("\"PUBLIC\".\"rdos_dict\"").previewNum(5).build());
+        List dict = client.getPreview(source, SqlQueryDTO.builder().tableName("nanqi").previewNum(5).build());
         System.out.println(dict);
     }
 
@@ -173,23 +164,16 @@ public class KingbaseTest {
      */
     @Test
     public void getPreviewBySchema() throws Exception {
-        KingbaseSourceDTO source = KingbaseSourceDTO.builder()
-                .url("jdbc:kingbase8://172.16.8.182:54321/ide")
-                .username("admin")
-                .password("Abc123")
-                .schema("wangchuan_test")
-                .build();
-        List dict = client.getPreview(source, SqlQueryDTO.builder().tableName("test_table1.aaaa").previewNum(5).build());
+        List dict = client.getPreview(source, SqlQueryDTO.builder().tableName("nanqi").previewNum(5).build());
         System.out.println(dict);
     }
 
     /**
      * 异常测试 - 数据预览 - 不指定schema， 且表名不再搜索范围内
      */
-    @Test(expected = Exception.class)
+    @Test(expected = DtLoaderException.class)
     public void getPreviewException() throws Exception {
-        List dict = client.getPreview(source, SqlQueryDTO.builder().tableName("test_table1.aaaa").previewNum(5).build());
-        System.out.println(dict);
+        client.getPreview(source, SqlQueryDTO.builder().tableName("dev").previewNum(5).build());
     }
 
     /**
@@ -198,8 +182,7 @@ public class KingbaseTest {
      */
     @Test
     public void executeQuery() throws Exception {
-        List list = client.executeQuery(source, SqlQueryDTO.builder().sql("select * from rdos_dict").build());
-        System.out.println(list);
+        client.executeQuery(source, SqlQueryDTO.builder().sql("select * from nanqi").build());
     }
 
     /**
@@ -207,7 +190,7 @@ public class KingbaseTest {
      */
     @Test
     public void getTableMetaComment() throws Exception {
-        String metaComment = client.getTableMetaComment(source, SqlQueryDTO.builder().tableName("table_test").build());
+        String metaComment = client.getTableMetaComment(source, SqlQueryDTO.builder().tableName("nanqi").build());
         System.out.println(metaComment);
     }
 }

@@ -2,24 +2,23 @@ package com.dtstack.dtcenter.common.loader.hbase;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
-import com.dtstack.dtcenter.loader.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.utils.JSONUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.dtcenter.loader.utils.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 
 import java.io.IOException;
 import java.security.PrivilegedAction;
-import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,12 +29,11 @@ import java.util.Map;
  * @Description：Hbase 连接工厂
  */
 @Slf4j
-public class HbaseConnFactory extends ConnFactory {
-    @Override
+public class HbaseConnFactory {
     public Boolean testConn(ISourceDTO iSource) {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) iSource;
         boolean check = false;
-        org.apache.hadoop.hbase.client.Connection hConn = null;
+        Connection hConn = null;
         try {
             hConn = getHbaseConn(hbaseSourceDTO, null);
             hConn.getAdmin().getClusterStatus();
@@ -54,36 +52,28 @@ public class HbaseConnFactory extends ConnFactory {
         return check;
     }
 
-    public static org.apache.hadoop.hbase.client.Connection getHbaseConn(HbaseSourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public static Connection getHbaseConn(HbaseSourceDTO source, SqlQueryDTO queryDTO) {
         Map<String, Object> sourceToMap = sourceToMap(source, queryDTO);
-        if (MapUtils.isEmpty(source.getKerberosConfig())) {
-            Configuration hConfig = HBaseConfiguration.create();
-            for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {
-                hConfig.set(entry.getKey(), (String) entry.getValue());
-            }
+        Configuration hConfig = HBaseConfiguration.create();
+        for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {
+            hConfig.set(entry.getKey(), (String) entry.getValue());
+        }
 
-            org.apache.hadoop.hbase.client.Connection hConn = null;
+        log.info("获取 Hbase 数据源连接, url : {}, path : {}, kerberosConfig : {}", source.getUrl(), source.getUsername(), source.getKerberosConfig());
+        if (MapUtils.isEmpty(source.getKerberosConfig())) {
             try {
-                hConn = ConnectionFactory.createConnection(hConfig);
-                return hConn;
+                return ConnectionFactory.createConnection(hConfig);
             } catch (Exception e) {
-                throw new RuntimeException("获取 hbase 连接异常", e);
+                throw new DtLoaderException("获取 hbase 连接异常", e);
             }
         }
 
-        return KerberosUtil.loginKerberosWithUGI(new HashMap<>(source.getKerberosConfig())).doAs(
-                (PrivilegedAction<org.apache.hadoop.hbase.client.Connection>) () -> {
-                    Configuration hConfig = HBaseConfiguration.create();
-                    for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {
-                        hConfig.set(entry.getKey(), (String) entry.getValue());
-                    }
-
-                    org.apache.hadoop.hbase.client.Connection hConn = null;
+        return KerberosLoginUtil.loginKerberosWithUGI(new HashMap<>(source.getKerberosConfig())).doAs(
+                (PrivilegedAction<Connection>) () -> {
                     try {
-                        hConn = ConnectionFactory.createConnection(hConfig);
-                        return hConn;
+                        return ConnectionFactory.createConnection(hConfig);
                     } catch (Exception e) {
-                        throw new RuntimeException("获取 hbase 连接异常", e);
+                        throw new DtLoaderException("获取 hbase 连接异常", e);
                     }
                 }
         );
@@ -106,7 +96,7 @@ public class HbaseConnFactory extends ConnFactory {
             hbaseMap.putAll(jsonObject);
         } else {
             if (StringUtils.isBlank(hbaseSourceDTO.getUrl())) {
-                throw new DtCenterDefException("集群地址不能为空");
+                throw new DtLoaderException("集群地址不能为空");
             }
             // 设置集群地址
             hbaseMap.put(DtClassConsistent.HBaseConsistent.KEY_HBASE_ZOOKEEPER_QUORUM, hbaseSourceDTO.getUrl());
@@ -137,10 +127,5 @@ public class HbaseConnFactory extends ConnFactory {
         // 设置其他信息
         hbaseMap.putAll(JSONUtil.parseMap(hbaseSourceDTO.getOthers()));
         return hbaseMap;
-    }
-
-    @Override
-    public Connection getConn(ISourceDTO source) {
-        throw new DtLoaderException("Not Support");
     }
 }

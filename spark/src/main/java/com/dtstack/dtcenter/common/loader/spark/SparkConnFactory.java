@@ -1,20 +1,19 @@
 package com.dtstack.dtcenter.common.loader.spark;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
-import com.dtstack.dtcenter.loader.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
+import com.dtstack.dtcenter.common.loader.spark.util.SparkKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
-import com.dtstack.dtcenter.loader.utils.DBUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.security.PrivilegedAction;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.regex.Matcher;
 
 /**
@@ -34,26 +33,19 @@ public class SparkConnFactory extends ConnFactory {
         init();
         SparkSourceDTO sparkSourceDTO = (SparkSourceDTO) iSource;
 
-        Connection connection = null;
+        Connection connection;
         if (MapUtils.isNotEmpty(sparkSourceDTO.getKerberosConfig())) {
-            String principalFile = (String) sparkSourceDTO.getKerberosConfig().get("principalFile");
-            log.info("getHiveConnection principalFile:{}", principalFile);
-
-            connection = KerberosUtil.loginKerberosWithUGI(sparkSourceDTO.getKerberosConfig()).doAs(
+            connection = SparkKerberosLoginUtil.loginKerberosWithUGI(sparkSourceDTO.getUrl(), sparkSourceDTO.getKerberosConfig()).doAs(
                     (PrivilegedAction<Connection>) () -> {
                         try {
-                            DriverManager.setLoginTimeout(30);
-                            return DriverManager.getConnection(sparkSourceDTO.getUrl(), sparkSourceDTO.getUsername(),
-                                    sparkSourceDTO.getPassword());
-                        } catch (SQLException e) {
-                            throw new DtCenterDefException("getHiveConnection error : " + e.getMessage(), e);
+                            return super.getConn(sparkSourceDTO);
+                        } catch (Exception e) {
+                            throw new DtLoaderException("getHiveConnection error : " + e.getMessage(), e);
                         }
                     }
             );
         } else {
-            DriverManager.setLoginTimeout(30);
-            connection = DriverManager.getConnection(sparkSourceDTO.getUrl(), sparkSourceDTO.getUsername(),
-                    sparkSourceDTO.getPassword());
+            connection = super.getConn(sparkSourceDTO);
         }
 
         Matcher matcher = DtClassConsistent.PatternConsistent.HIVE_JDBC_PATTERN.matcher(sparkSourceDTO.getUrl());

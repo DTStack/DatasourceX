@@ -1,10 +1,9 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.loader.client.AbsClientCache;
+import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.source.FtpSourceDTO;
-import com.dtstack.dtcenter.loader.enums.ClientType;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
 
@@ -15,9 +14,8 @@ import org.junit.Test;
  * @Description：FTP 测试
  */
 public class FtpTest {
-    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
     FtpSourceDTO source = FtpSourceDTO.builder()
-            .url("kudu1")
+            .url("kudu4")
             .hostPort("22")
             .username("root")
             .password("abc123")
@@ -26,10 +24,10 @@ public class FtpTest {
 
     @Test
     public void testCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.FTP.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.FTP.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtCenterDefException("连接异常");
+            throw new DtLoaderException("连接异常");
         }
     }
 }

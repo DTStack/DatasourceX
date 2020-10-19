@@ -1,15 +1,14 @@
 package com.dtstack.dtcenter.common.loader.kudu;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
+import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.KuduSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -27,8 +26,6 @@ import org.apache.kudu.client.RowResultIterator;
 
 import java.security.PrivilegedAction;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,7 +40,7 @@ import java.util.stream.Collectors;
  * @Description：Kudu 客户端
  */
 @Slf4j
-public class DtKuduClient extends AbsRdbmsClient {
+public class DtKuduClient<T> implements IClient<T> {
 
     private static final int TIME_OUT = 5 * 1000;
     private static int PRE_SIZE = 3;
@@ -64,7 +61,7 @@ public class DtKuduClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         List<String> tableList = null;
         try (KuduClient client = getConnection(iSource);){
             tableList = client.getTablesList().getTablesList();
@@ -77,7 +74,7 @@ public class DtKuduClient extends AbsRdbmsClient {
     @Override
     public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         if (queryDTO == null || StringUtils.isBlank(queryDTO.getTableName())) {
-            throw new DtCenterDefException("表名称不能为空");
+            throw new DtLoaderException("表名称不能为空");
         }
         try (KuduClient client = getConnection(iSource);) {
             return getTableColumns(client, queryDTO.getTableName());
@@ -105,44 +102,25 @@ public class DtKuduClient extends AbsRdbmsClient {
                 metaDTOS.add(metaDTO);
             });
         } catch (KuduException e) {
-            throw new DtCenterDefException(e.getMessage(), e);
+            throw new DtLoaderException(e.getMessage(), e);
         }
         return metaDTOS;
-    }
-
-    @Override
-    protected ConnFactory getConnFactory() {
-        return null;
-    }
-
-    @Override
-    protected DataSourceType getSourceType() {
-        return DataSourceType.Kudu;
     }
 
     private static KuduClient getConnection(ISourceDTO iSource) {
         KuduSourceDTO kuduSourceDTO = (KuduSourceDTO) iSource;
         if (kuduSourceDTO == null || StringUtils.isBlank(kuduSourceDTO.getUrl())) {
-            throw new DtCenterDefException("集群地址不能为空");
+            throw new DtLoaderException("集群地址不能为空");
         }
         List<String> hosts = Arrays.stream(kuduSourceDTO.getUrl().split(",")).collect(Collectors.toList());
-        if (MapUtils.isNotEmpty(kuduSourceDTO.getKerberosConfig())) {
-            String principalFile = (String) kuduSourceDTO.getKerberosConfig().get("principalFile");
-            String principal = (String) kuduSourceDTO.getKerberosConfig().get("principal");
-            log.info("getKuduClient principal {},principalFile:{}", principal, principalFile);
-            return  KerberosUtil.loginKerberosWithUGI(kuduSourceDTO.getKerberosConfig()).doAs(
-                    (PrivilegedAction<KuduClient>) () -> {
-                        try {
-                            return new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build();
-                        } catch (Exception e) {
-                            throw new DtCenterDefException("getKuduClient error : " + e.getMessage(), e);
-                        }
-                    }
-            );
-        } else {
+        log.info("获取 Kudu 数据源连接, url : {}, kerberosConfig : {}", hosts, kuduSourceDTO.getKerberosConfig());
+        if (MapUtils.isEmpty(kuduSourceDTO.getKerberosConfig())) {
             return new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build();
         }
 
+        return KerberosLoginUtil.loginKerberosWithUGI(kuduSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<KuduClient>) () -> new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build()
+        );
     }
 
 
@@ -178,7 +156,7 @@ public class DtKuduClient extends AbsRdbmsClient {
                 }
             }
         } catch (KuduException e) {
-            throw new DtCenterDefException(e.getMessage(), e);
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             closeClient(client, null, scanner);
         }
@@ -207,8 +185,6 @@ public class DtKuduClient extends AbsRdbmsClient {
                         row.add(String.valueOf(rowResult.getLong(columnSchema.getName())));
                         break;
                     case BINARY:
-                        //二进制字段不显示
-//						row.add(rowResult.getBinary(columnSchema.getName()));
                         row.add("[BINARY]");
                         break;
                     case STRING:
@@ -251,27 +227,62 @@ public class DtKuduClient extends AbsRdbmsClient {
 
     /******************** 未支持的方法 **********************/
     @Override
-    public Connection getCon(ISourceDTO iSource) throws Exception {
+    public Connection getCon(ISourceDTO iSource) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 }

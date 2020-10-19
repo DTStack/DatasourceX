@@ -1,10 +1,9 @@
 package com.dtstack.dtcenter.common.loader.sqlserver;
 
-import com.dtstack.dtcenter.common.exception.DBErrorCode;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
-import com.dtstack.dtcenter.common.loader.common.ConnFactory;
-import com.dtstack.dtcenter.loader.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
+import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
@@ -13,7 +12,6 @@ import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SqlserverSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.dtstack.dtcenter.loader.utils.DBUtil;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -34,7 +32,9 @@ public class SqlServerClient extends AbsRdbmsClient {
 
     private static final String TABLE_SHOW = "[%s].[%s]";
 
-    //获取所有的表和对应的schema-备用
+    /**
+     * 获取所有的表和对应的schema-备用
+     */
     private static final String TABLE_QUERY_ALL_SCHEMA = "select sys.objects.name tableName,sys.schemas.name schemaName from sys.objects,sys.schemas where sys.objects.type='U' and sys.objects.schema_id=sys.schemas.schema_id";
     private static final String TABLE_QUERY_SCHEMA = "select sys.objects.name tableName,sys.schemas.name schemaName from sys.objects,sys.schemas where sys.objects.type='U' or type='V' and sys.objects.schema_id=sys.schemas.schema_id";
 
@@ -69,7 +69,7 @@ public class SqlServerClient extends AbsRdbmsClient {
                 tableList.add(String.format(TABLE_SHOW, rs.getString(2), rs.getString(1)));
             }
         } catch (Exception e) {
-            throw new DtCenterDefException("获取表异常", e);
+            throw new DtLoaderException("获取表异常", e);
         } finally {
             DBUtil.closeDBResources(rs, statement, sqlserverSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -97,9 +97,8 @@ public class SqlServerClient extends AbsRdbmsClient {
                 }
             }
         } catch (Exception e) {
-            throw new DtCenterDefException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
-                    queryDTO.getTableName()),
-                    DBErrorCode.GET_COLUMN_INFO_FAILED, e);
+            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+                    queryDTO.getTableName()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, sqlserverSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -115,7 +114,7 @@ public class SqlServerClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected String dealSql(SqlQueryDTO sqlQueryDTO) {
+    protected String dealSql(ISourceDTO iSourceDTO, SqlQueryDTO sqlQueryDTO) {
         return "select top "+sqlQueryDTO.getPreviewNum()+" * from "+transferTableName(sqlQueryDTO.getTableName());
     }
 

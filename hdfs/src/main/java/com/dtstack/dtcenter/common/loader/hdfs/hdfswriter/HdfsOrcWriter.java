@@ -1,16 +1,17 @@
 package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 
 import com.csvreader.CsvReader;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
-import com.dtstack.dtcenter.common.util.DateUtil;
-import com.dtstack.dtcenter.common.util.MathUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.DateUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.MathUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -53,11 +54,12 @@ public class HdfsOrcWriter {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Boolean topLineIsTitle = hdfsWriterDTO.getTopLineIsTitle();
         int startLine = hdfsWriterDTO.getStartLine();
-        if (topLineIsTitle) {//首行是标题则内容从下一行开始
+        // 首行是标题则内容从下一行开始
+        if (BooleanUtils.isTrue(topLineIsTitle)) {
             startLine++;
         }
 
-        Configuration conf = HadoopConfUtil.getHdfsConfiguration(hdfsSourceDTO.getConfig());
+        Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
         String typeInfoStr = buildTypeInfo(hdfsWriterDTO.getColumnsList());
 
         TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeInfoStr);
@@ -104,7 +106,7 @@ public class HdfsOrcWriter {
             }
         } catch (Exception e) {
             logger.error("{}", "第" + (currLineNum - (topLineIsTitle ? 1 : 0)) + "行数据异常,请检查", e);
-            throw new DtCenterDefException("第" + (currLineNum - (topLineIsTitle ? 1 : 0)) + "行数据异常,请检查");
+            throw new DtLoaderException("第" + (currLineNum - (topLineIsTitle ? 1 : 0)) + "行数据异常,请检查");
         } finally {
             try {
                 if (writer != null) {
@@ -129,7 +131,7 @@ public class HdfsOrcWriter {
     public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
 
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
-        Configuration conf = HadoopConfUtil.getHdfsConfiguration(hdfsSourceDTO.getConfig());
+        Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
         String typeInfoStr = buildTypeInfo(hdfsWriterDTO.getColumnsList());
 
         int startLine = hdfsWriterDTO.getStartLine();
@@ -159,8 +161,9 @@ public class HdfsOrcWriter {
                 }
 
                 String[] columnArr = reader.getValues();
-                if (currLineNum == (startLine - 1)) {//首行为标题行
-                    //计算出需要使用的索引位置
+                // 首行为标题行
+                if (currLineNum == (startLine - 1)) {
+                    // 计算出需要使用的索引位置
                     for (HDFSImportColumn importColum : hdfsWriterDTO.getKeyList()) {
                         if (StringUtils.isBlank(importColum.getKey())) {
                             indexList.add(-1);
@@ -216,7 +219,7 @@ public class HdfsOrcWriter {
             }
         } catch (Exception e) {
             logger.error("{}", "第" + (currLineNum - (hdfsWriterDTO.getTopLineIsTitle() ? 1 : 0)) + "行数据异常,请检查", e);
-            throw new DtCenterDefException("第" + currLineNum + "行数据异常,请检查");
+            throw new DtLoaderException("第" + currLineNum + "行数据异常,请检查");
         } finally {
             try {
                 if (writer != null) {

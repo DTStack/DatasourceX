@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -21,6 +22,7 @@ public class SparkSourceDTO extends RdbmsSourceDTO {
     /**
      * Hadoop defaultFS
      */
+    @Builder.Default
     private String defaultFS = "";
 
     /**

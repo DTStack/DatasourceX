@@ -12,6 +12,7 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.URLEncoder;
 import java.util.List;
@@ -96,10 +97,10 @@ public class MongoManager {
             mongoClient = new MongoClient(clientURI);
         } else {
             List<ServerAddress> serverAddress = MongoDBUtils.getServerAddress(hostPorts);
-            if (org.apache.commons.lang.StringUtils.isEmpty(username) || org.apache.commons.lang.StringUtils.isEmpty(password)) {
+            if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password)) {
                 mongoClient = new MongoClient(serverAddress, options);
             } else {
-                if (org.apache.commons.lang.StringUtils.isBlank(schema)){
+                if (StringUtils.isBlank(schema)){
                     schema = MongoDBUtils.dealSchema(hostPorts);
                 }
                 MongoCredential credential = MongoCredential.createScramSha1Credential(username, schema,

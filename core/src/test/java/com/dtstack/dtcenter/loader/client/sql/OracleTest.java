@@ -1,15 +1,15 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
-import com.dtstack.dtcenter.loader.client.AbsClientCache;
-import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
+import com.dtstack.dtcenter.loader.client.ClientCache;
+import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
-import com.dtstack.dtcenter.loader.enums.ClientType;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -23,73 +23,61 @@ import java.util.Map;
  * @Description：Oracle 测试
  */
 public class OracleTest {
-    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
-
-    OracleSourceDTO source = OracleSourceDTO.builder()
-            .url("jdbc:oracle:thin:@172.16.8.193:1521:orcl")
-            .username("system")
-            .password("oracle")
+    private static OracleSourceDTO source = OracleSourceDTO.builder()
+            .url("jdbc:oracle:thin:@172.16.8.193:1521:xe")
+            .username("kminer")
+            .password("kminerpass")
+            .schema("KMINER")
             .poolConfig(new PoolConfig())
-            .schema("MDSYS")
             .build();
+
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table \"nanqi\"").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table \"nanqi\" (id int, name VARCHAR2(50))").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("comment on table \"nanqi\" is 'table comment'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into \"nanqi\" values (1, 'nanqi')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+    }
 
     @Test
     public void getCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
         Connection con1 = client.getCon(source);
-        String con1JdbcConn = con1.toString().split("wrapping")[1];
-        Connection con2 = client.getCon(source);
-        Connection con3 = client.getCon(source);
-        Connection con4 = client.getCon(source);
-        Connection con5 = client.getCon(source);
-        Connection con6 = client.getCon(source);
-        Connection con7 = client.getCon(source);
-        Connection con8 = client.getCon(source);
-        Connection con9 = client.getCon(source);
-        Connection con10 = client.getCon(source);
         con1.close();
-        Connection con11 = client.getCon(source);
-        String con11JdbcConn = con11.toString().split("wrapping")[1];
-        con2.close();
-        con3.close();
-        con4.close();
-        con5.close();
-        con6.close();
-        con7.close();
-        con8.close();
-        con9.close();
-        con10.close();
-        con11.close();
-        assert con1JdbcConn.equals(con11JdbcConn);
     }
 
     @Test
     public void testCon() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtCenterDefException("连接异常");
+            throw new DtLoaderException("连接异常");
         }
     }
 
     @Test
     public void executeQuery() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from MUYUN1226").build();
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from \"nanqi\"").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
     }
 
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from MUYUN1226").build();
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from \"nanqi\"").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
     public void getTableList() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList);
@@ -97,24 +85,24 @@ public class OracleTest {
 
     @Test
     public void getColumnClassInfo() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("sidetest").build();
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
 
     @Test
     public void getColumnMetaData() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("MVIEW$_ADV_TEMP").build();
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData);
     }
 
     @Test
     public void getTableMetaComment() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test_side").build();
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
@@ -125,16 +113,16 @@ public class OracleTest {
      */
     @Test
     public void testGetPreview() throws Exception{
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("MVIEW$_ADV_TEMP").previewNum(1).build();
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").previewNum(1).build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }
 
     @Test
     public void testGetDownloader() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from MVIEW$_ADV_TEMP").build();
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from \"nanqi\"").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         downloader.configure();
         List<String> metaInfo = downloader.getMetaInfo();
@@ -149,15 +137,15 @@ public class OracleTest {
 
     @Test
     public void getFlinkColumnMetaData() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        List data = client.getFlinkColumnMetaData(source, SqlQueryDTO.builder().tableName("JIANGBO.TB1").build());
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        List data = client.getFlinkColumnMetaData(source, SqlQueryDTO.builder().tableName("nanqi").build());
         System.out.println(data);
     }
 
     @Test
     public void getColumnMetaDataWithSql() throws Exception{
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from MVIEW$_ADV_TEMP left join DEF$_ORIGIN on 1=1 ").build();
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from \"nanqi\" ").build();
 
         List list = client.getColumnMetaDataWithSql(source, queryDTO);
 
@@ -166,15 +154,15 @@ public class OracleTest {
 
     @Test
     public void getAllDatabases() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         System.out.println(client.getAllDatabases(source,queryDTO));
     }
 
     @Test
     public void getCreateTableSql() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("SDO_CS_SRS").build();
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         System.out.println(client.getCreateTableSql(source,queryDTO));
     }
 

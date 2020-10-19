@@ -1,11 +1,10 @@
 package com.dtstack.dtcenter.loader.source;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -80,32 +79,38 @@ public enum DataSourceType {
         this.pluginName = pluginName;
     }
 
-    private static List<Integer> rdbms = new ArrayList<>();
+    private static final List<Integer> RDBM_S = new ArrayList<>();
+    private static final List<Integer> KAFKA_S = new ArrayList<>();
 
     static {
-        rdbms.add(MySQL.val);
-        rdbms.add(MySQL8.val);
-        rdbms.add(Polardb_For_MySQL.val);
-        rdbms.add(Oracle.val);
-        rdbms.add(SQLServer.val);
-        rdbms.add(SQLSERVER_2017_LATER.val);
-        rdbms.add(PostgreSQL.val);
-        rdbms.add(DB2.val);
-        rdbms.add(DMDB.val);
-        rdbms.add(RDBMS.val);
-        rdbms.add(HIVE.val);
-        rdbms.add(HIVE1X.val);
-        rdbms.add(GREENPLUM6.val);
-        rdbms.add(LIBRA.val);
-        rdbms.add(GBase_8a.val);
-        rdbms.add(Clickhouse.val);
-        rdbms.add(TiDB.val);
-        rdbms.add(CarbonData.val);
-        rdbms.add(ADS.val);
-        rdbms.add(Phoenix.val);
-        rdbms.add(PHOENIX5.val);
+        RDBM_S.add(MySQL.val);
+        RDBM_S.add(MySQL8.val);
+        RDBM_S.add(Polardb_For_MySQL.val);
+        RDBM_S.add(Oracle.val);
+        RDBM_S.add(SQLServer.val);
+        RDBM_S.add(SQLSERVER_2017_LATER.val);
+        RDBM_S.add(PostgreSQL.val);
+        RDBM_S.add(DB2.val);
+        RDBM_S.add(DMDB.val);
+        RDBM_S.add(RDBMS.val);
+        RDBM_S.add(HIVE.val);
+        RDBM_S.add(HIVE1X.val);
+        RDBM_S.add(GREENPLUM6.val);
+        RDBM_S.add(LIBRA.val);
+        RDBM_S.add(GBase_8a.val);
+        RDBM_S.add(Clickhouse.val);
+        RDBM_S.add(TiDB.val);
+        RDBM_S.add(CarbonData.val);
+        RDBM_S.add(ADS.val);
+        RDBM_S.add(Phoenix.val);
+        RDBM_S.add(PHOENIX5.val);
+        RDBM_S.add(IMPALA.val);
 
-        rdbms = rdbms.stream().distinct().collect(Collectors.toList());
+        KAFKA_S.add(KAFKA.val);
+        KAFKA_S.add(KAFKA_09.val);
+        KAFKA_S.add(KAFKA_10.val);
+        KAFKA_S.add(KAFKA_11.val);
+        KAFKA_S.add(KAFKA_2X.val);
     }
 
     /**
@@ -138,10 +143,10 @@ public enum DataSourceType {
             }
         }
 
-        throw new DtCenterDefException("不支持数据源类型");
+        throw new DtLoaderException("不支持数据源类型");
     }
 
-    public int getVal() {
+    public Integer getVal() {
         return val;
     }
 
@@ -163,6 +168,14 @@ public enum DataSourceType {
      * @return
      */
     public static List<Integer> getRDBMS() {
-        return rdbms;
+        return RDBM_S;
+    }
+
+    /**
+     * 获取所有的 kafka 相关数据源
+     * @return
+     */
+    public static List<Integer> getKafkaS() {
+        return KAFKA_S;
     }
 }

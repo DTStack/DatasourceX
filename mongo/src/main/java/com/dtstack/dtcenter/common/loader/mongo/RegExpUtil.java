@@ -1,4 +1,6 @@
 package com.dtstack.dtcenter.common.loader.mongo;
+
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.util.ArrayList;
@@ -12,7 +14,7 @@ import java.util.regex.Pattern;
  * @author: 遥远
  * @create: 2020-05-14 21:06
  */
-
+@Slf4j
 public class RegExpUtil {
 
     static String collectionRegExp = "getCollection\\('(\\w+?)'\\)";
@@ -23,14 +25,7 @@ public class RegExpUtil {
     static String sortRegExp = "\\.sort\\(([\\w\\W].*?)\\)[;|.]";
 
     public static String getCollectionName(String sql) {
-        return GetWithRegExp(sql, collectionRegExp);
-    }
-
-    public static void main(String[] args) {
-        String sql = "db.getCollection('table_name').find({'age':20});";
-        System.out.println(getQuery(sql));
-        System.out.println(getCollectionName(sql));
-
+        return getWithRegExp(sql, collectionRegExp);
     }
 
     public static String getQuery(String sql) {
@@ -44,22 +39,22 @@ public class RegExpUtil {
     }
 
     public static String getSkip(String sql) {
-        return GetWithRegExp(sql, skipRegExp);
+        return getWithRegExp(sql, skipRegExp);
     }
 
     public static String getLimit(String sql) {
-        return GetWithRegExp(sql, limitRegExp);
+        return getWithRegExp(sql, limitRegExp);
     }
 
     public static String getBatchSize(String sql) {
-        return GetWithRegExp(sql, batchSizeRegExp);
+        return getWithRegExp(sql, batchSizeRegExp);
     }
 
     public static String getSort(String sql) {
-        return GetWithRegExp(sql, sortRegExp);
+        return getWithRegExp(sql, sortRegExp);
     }
 
-    private static String GetWithRegExp(String s, String regExp) {
+    private static String getWithRegExp(String s, String regExp) {
         Pattern r = Pattern.compile(regExp);
         // 现在创建 matcher 对象
         Matcher m = r.matcher(s);
@@ -70,7 +65,7 @@ public class RegExpUtil {
         return null;
     }
 
-    private static List<String> GetWithRegExps(String s, String regExp) {
+    private static List<String> getWithRegExps(String s, String regExp) {
         List<String> ss = new ArrayList<String>();
         Pattern r = Pattern.compile(regExp);
         // 现在创建 matcher 对象

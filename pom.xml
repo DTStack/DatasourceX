@@ -6,14 +6,13 @@
 
     <groupId>com.dtstack.dtcenter</groupId>
     <artifactId>common-loader</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.3.0-SNAPSHOT</version>
     <modules>
         <module>core</module>
         <module>rdbms</module>
         <module>clickhouse</module>
         <module>db2</module>
         <module>dm</module>
-        <module>drds</module>
         <module>es</module>
         <module>gbase</module>
         <module>greenplum6</module>
@@ -42,6 +41,8 @@
         <module>hbase2</module>
         <module>spark</module>
         <module>kingbase8</module>
+        <module>common</module>
+        <module>kerberos</module>
         <module>hbase_gateway</module>
     </modules>
     <packaging>pom</packaging>
@@ -51,108 +52,20 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <dtstack.common>4.0.3-SNAPSHOT</dtstack.common>
-        <spring.version>4.1.9.RELEASE</spring.version>
+        <spring.version>5.2.9.RELEASE</spring.version>
+
+        <!--将所有jacoco定位到同样的父目录位置-->
+        <sonar.jacoco.reportPaths>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPaths>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- Junit 测试相关 -->
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.11</version>
                 <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>1.7.21</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>3.4</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>27.1-jre</version>
-            </dependency>
-
-            <dependency>
-                <artifactId>jedis</artifactId>
-                <groupId>redis.clients</groupId>
-                <version>2.9.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.mongodb</groupId>
-                <artifactId>mongodb-driver</artifactId>
-                <version>3.12.4</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.kingbase8</groupId>
-                <artifactId>kingbase8</artifactId>
-                <version>8.2.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.dtstack.dtcenter</groupId>
-                <artifactId>common.loader.rdbms</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.dtstack.dtcenter</groupId>
-                <artifactId>common.base</artifactId>
-                <version>${dtstack.common}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.dtstack.dtcenter</groupId>
-                <artifactId>common.hadoop</artifactId>
-                <version>${dtstack.common}</version>
-                <scope>compile</scope>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>xml-apis</artifactId>
-                        <groupId>xml-apis</groupId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>com.dtstack.dtcenter</groupId>
-                <artifactId>common.loader.core</artifactId>
-                <version>${project.version}</version>
-                <scope>provided</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>42.2.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.ibm.db2</groupId>
-                <artifactId>jcc</artifactId>
-                <version>11.5.0.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>ru.yandex.clickhouse</groupId>
-                <artifactId>clickhouse-jdbc</artifactId>
-                <version>0.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.aliyun.odps</groupId>
-                <artifactId>odps-sdk-core</artifactId>
-                <version>0.33.7-public</version>
             </dependency>
 
             <dependency>
@@ -163,29 +76,22 @@
             </dependency>
 
             <dependency>
-                <groupId>com.pivotal</groupId>
-                <artifactId>greenplum-jdbc</artifactId>
-                <version>5.1.4</version>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.2.3</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
-                <groupId>com.esen.jdbc</groupId>
-                <artifactId>gbase</artifactId>
-                <version>8.3.81.53</version>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.21</version>
+                <scope>provided</scope>
             </dependency>
 
-            <dependency>
-                <groupId>org.apache.kylin</groupId>
-                <artifactId>kylin-jdbc</artifactId>
-                <version>3.0.0</version>
-            </dependency>
+            <!-- Junit 测试相关结束 -->
 
-            <dependency>
-                <groupId>com.cloudera.impala.jdbc</groupId>
-                <artifactId>ImpalaJDBC41</artifactId>
-                <version>2.6.12</version>
-            </dependency>
-
+            <!-- 不参与编译相关 -->
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
@@ -194,88 +100,52 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka_2.11</artifactId>
-                <version>0.11.0.2</version>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>1.2.73</version>
             </dependency>
 
             <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-core</artifactId>
-                <version>${spring.version}</version>
-                <scope>compile</scope>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.11.2</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.dtstack.dtcenter</groupId>
+                <artifactId>common.loader.core</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- Spring 相关-->
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-beans</artifactId>
                 <version>${spring.version}</version>
-                <scope>compile</scope>
+                <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-context</artifactId>
-                <version>${spring.version}</version>
-                <scope>compile</scope>
-            </dependency>
+
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-tx</artifactId>
                 <version>${spring.version}</version>
-                <scope>compile</scope>
+                <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-jdbc</artifactId>
-                <version>${spring.version}</version>
-                <scope>compile</scope>
-            </dependency>
+
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context-support</artifactId>
                 <version>${spring.version}</version>
-                <scope>compile</scope>
+                <scope>test</scope>
             </dependency>
+            <!-- 不参与编译相关结束 -->
 
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>2.6</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.kerby</groupId>
-                <artifactId>kerb-util</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.hive</groupId>
-                <artifactId>hive-exec</artifactId>
-                <version>2.1.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.dtstack</groupId>
-                <artifactId>shaded-elasticsearch-client</artifactId>
-                <version>6.1.3</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.kudu</groupId>
-                <artifactId>kudu-client</artifactId>
-                <version>1.9.0</version>
-            </dependency>
-
+            <!-- core 包依赖相关 -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
-                <artifactId>commons-pool2</artifactId>
-                <version>2.4.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>net.sourceforge.javacsv</groupId>
-                <artifactId>javacsv</artifactId>
-                <version>2.0</version>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.4</version>
             </dependency>
 
             <dependency>
@@ -285,11 +155,95 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-pool2</artifactId>
+                <version>2.4.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>27.1-jre</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>3.2.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-net</groupId>
+                <artifactId>commons-net</artifactId>
+                <version>3.6</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>17.0.0</version>
+            </dependency>
+            <!-- core 包依赖相关结束 -->
+
+            <dependency>
+                <groupId>com.dtstack.dtcenter</groupId>
+                <artifactId>common.loader.rdbms</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.dtstack.dtcenter</groupId>
+                <artifactId>common.loader.common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.dtstack.dtcenter</groupId>
+                <artifactId>common.loader.kerberos</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ant</groupId>
+                <artifactId>ant</artifactId>
+                <version>1.6.5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>dom4j</groupId>
+                <artifactId>dom4j</artifactId>
+                <version>1.6.1</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>xml-apis</artifactId>
+                        <groupId>xml-apis</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.kerby</groupId>
+                <artifactId>kerb-util</artifactId>
+                <version>2.0.0</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-1.2-api</artifactId>
                 <version>2.10.0</version>
             </dependency>
 
+            <dependency>
+                <groupId>net.sourceforge.javacsv</groupId>
+                <artifactId>javacsv</artifactId>
+                <version>2.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka_2.11</artifactId>
+                <version>0.11.0.2</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -298,18 +252,19 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.8.1</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
                     <compilerVersion>1.8</compilerVersion>
+                    <compilerArgument>-XDignore.symbol.file</compilerArgument>
                 </configuration>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.3</version>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -323,15 +278,31 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.8</version>
+                <version>0.8.5</version>
                 <executions>
                     <execution>
+                        <id>pre-unit-test</id>
                         <goals>
                             <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>jacocoArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>post-unit-test</id>
+                        <phase>package</phase>
+                        <goals>
                             <goal>report</goal>
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <!--使用前面定义的位置-->
+                    <destFile>${sonar.jacoco.reportPaths}</destFile>
+                    <!--重要！用追加的模式-->
+                    <append>true</append>
+                </configuration>
             </plugin>
         </plugins>
     </build>
