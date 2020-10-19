@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.hive1.downloader;
 
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hive1.GroupTypeIgnoreCase;
+import com.dtstack.dtcenter.common.loader.hive1.util.HiveKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
@@ -122,7 +123,7 @@ public class HiveParquetDownload implements IDownloader {
 
         ParquetReader.Builder<Group> reader = ParquetReader.builder(readSupport, new Path(currFile)).withConf(conf);
         if (MapUtils.isNotEmpty(kerberosConfig)) {
-            build = KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+            build = HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                     (PrivilegedAction<ParquetReader<Group>>) () -> {
                         try {
                             return reader.build();

@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.spark.downloader;
 
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
+import com.dtstack.dtcenter.common.loader.spark.util.SparkKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
@@ -158,7 +159,7 @@ public class SparkTextDownload implements IDownloader {
         }
 
         if (MapUtils.isNotEmpty(kerberosConfig)) {
-            recordReader = KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+            recordReader = SparkKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                     (PrivilegedAction<RecordReader>) () -> {
                         try {
                             return inputFormat.getRecordReader(fileSplit, conf, Reporter.NULL);
