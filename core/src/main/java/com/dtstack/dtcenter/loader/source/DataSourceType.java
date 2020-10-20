@@ -25,12 +25,13 @@ public enum DataSourceType {
     DB2(19, 7, "DB2", "db2"),
     DMDB(35, 8, "DMDB", "dmdb"),
     RDBMS(5, 9, "RDBMS", "mysql"),
-    KINGBASE8(40, 10, "KingbaseES", "kingbase8"),
+    KINGBASE8(40, 10, "KingbaseES8", "kingbase8"),
 
     // Hadoop
     HIVE(7, 20, "Hive2.x", "hive"),
     HIVE1X(27, 21, "Hive1.x", "hive1"),
     MAXCOMPUTE(10, 22, "MaxCompute", "maxcompute"),
+    S3(41, 23, "AWS S3", "s3"),
 
     // MPP
     GREENPLUM6(36, 40, "Greenplum", "greenplum6"),

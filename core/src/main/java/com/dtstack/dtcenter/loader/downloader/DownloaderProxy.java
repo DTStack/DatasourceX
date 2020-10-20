@@ -28,7 +28,7 @@ public class DownloaderProxy implements IDownloader {
     public boolean configure() throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.configure(),
-                    targetDownloader.getClass().getClassLoader(), true);
+                    targetDownloader.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
         }
@@ -38,7 +38,7 @@ public class DownloaderProxy implements IDownloader {
     public List<String> getMetaInfo() throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.getMetaInfo(),
-                    targetDownloader.getClass().getClassLoader(), true);
+                    targetDownloader.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
         }
@@ -48,7 +48,7 @@ public class DownloaderProxy implements IDownloader {
     public Object readNext() throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.readNext(),
-                    targetDownloader.getClass().getClassLoader(), true);
+                    targetDownloader.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
         }
@@ -58,7 +58,7 @@ public class DownloaderProxy implements IDownloader {
     public boolean reachedEnd() throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.reachedEnd(),
-                    targetDownloader.getClass().getClassLoader(), true);
+                    targetDownloader.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
         }
@@ -68,7 +68,7 @@ public class DownloaderProxy implements IDownloader {
     public boolean close() throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.close(),
-                    targetDownloader.getClass().getClassLoader(), true);
+                    targetDownloader.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
         }
@@ -78,7 +78,7 @@ public class DownloaderProxy implements IDownloader {
     public String getFileName() {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.getFileName(),
-                    targetDownloader.getClass().getClassLoader(), true);
+                    targetDownloader.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
         }
@@ -88,7 +88,7 @@ public class DownloaderProxy implements IDownloader {
     public List<String> getContainers() {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.getContainers(),
-                    targetDownloader.getClass().getClassLoader(), true);
+                    targetDownloader.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
         }

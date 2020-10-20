@@ -32,7 +32,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public Connection getCon(ISourceDTO source) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getCon(source),
-                    targetClient.getClass().getClassLoader(), true);
+                    targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
         }
@@ -42,7 +42,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public Boolean testCon(ISourceDTO source) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.testCon(source),
-                    targetClient.getClass().getClassLoader(), true);
+                    targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
         }
@@ -52,7 +52,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeQuery(source, queryDTO),
-                    targetClient.getClass().getClassLoader(), true);
+                    targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
         }
@@ -62,7 +62,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeSqlWithoutResultSet(source,
-                    queryDTO), targetClient.getClass().getClassLoader(), true);
+                    queryDTO), targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return false;
@@ -73,7 +73,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableList(source, queryDTO),
-                    targetClient.getClass().getClassLoader(), true);
+                    targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
         }
@@ -83,7 +83,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public List<String> getColumnClassInfo(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnClassInfo(source, queryDTO),
-                    targetClient.getClass().getClassLoader(), true);
+                    targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
         }
@@ -93,7 +93,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnMetaData(source, queryDTO),
-                    targetClient.getClass().getClassLoader(), true);
+                    targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
         }
@@ -103,7 +103,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnMetaDataWithSql(source, queryDTO),
-                    targetClient.getClass().getClassLoader(), true);
+                    targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
         }
@@ -113,7 +113,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getFlinkColumnMetaData(source, queryDTO),
-                    targetClient.getClass().getClassLoader(), true);
+                    targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
         }
@@ -123,7 +123,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableMetaComment(source, queryDTO),
-                    targetClient.getClass().getClassLoader(), true);
+                    targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
         }
@@ -133,7 +133,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPreview(source, queryDTO),
-                    targetClient.getClass().getClassLoader(), true);
+                    targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
         }
@@ -143,7 +143,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> new DownloaderProxy(targetClient.getDownloader(source, queryDTO)),
-                    targetClient.getClass().getClassLoader(), true);
+                    targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
         }
@@ -153,7 +153,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getAllDatabases(source, queryDTO),
-                    targetClient.getClass().getClassLoader(), true);
+                    targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
         }
@@ -163,7 +163,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getCreateTableSql(source, queryDTO),
-                    targetClient.getClass().getClassLoader(), true);
+                    targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
         }
@@ -173,7 +173,7 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPartitionColumn(source, queryDTO),
-                    targetClient.getClass().getClassLoader(), true);
+                    targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtCenterDefException(e.getMessage(), e);
         }

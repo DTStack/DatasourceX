@@ -42,7 +42,7 @@ public class HdfsFileClientFactory {
 
             IHdfsFile hdfsFile = iClientIterator.next();
             return new HdfsFileProxy(hdfsFile);
-        }, classLoader, true);
+        }, classLoader);
     }
 
     public static void addClassLoader(String pluginName, ClassLoader classLoader) {

@@ -42,7 +42,7 @@ public class KafkaClientFactory {
 
             IKafka kafka = iClientIterator.next();
             return new KafkaClientProxy(kafka);
-        }, classLoader, true);
+        }, classLoader);
     }
 
     public static void addClassLoader(String pluginName, ClassLoader classLoader) {

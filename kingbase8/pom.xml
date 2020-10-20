@@ -10,14 +10,14 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>common.loader.kingbase</artifactId>
+    <artifactId>common.loader.kingbase8</artifactId>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <jar.package.name>kingbase</jar.package.name>
-        <jar.name>dtKingbase</jar.name>
+        <jar.package.name>kingbase8</jar.package.name>
+        <jar.name>dtKingbase8</jar.name>
     </properties>
 
     <dependencies>
