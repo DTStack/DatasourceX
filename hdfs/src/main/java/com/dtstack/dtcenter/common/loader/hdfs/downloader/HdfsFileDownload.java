@@ -241,12 +241,11 @@ public class HdfsFileDownload implements IDownloader {
         readNum++;
         try {
             //第一行和最后一行乱码跳过
-            if (readNum == 1 || Math.abs(recordReader.getProgress() - 1.0F) == 0) {
+            if (readNum == 1 || Math.abs(recordReader.getProgress() - 1.0F) < 0.000001) {
                 return "";
             }
         } catch (IOException e) {
-            logger.error("readNext error");
-            e.printStackTrace();
+            logger.error("readNext error", e);
         }
         String line = new String(value.toString());
         line = line + CRLF;
