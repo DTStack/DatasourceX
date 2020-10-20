@@ -43,6 +43,7 @@
         <module>spark</module>
         <module>kingbase8</module>
         <module>hbase_gateway</module>
+        <module>s3</module>
     </modules>
     <packaging>pom</packaging>
 
