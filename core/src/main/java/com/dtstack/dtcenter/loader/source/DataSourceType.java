@@ -30,6 +30,7 @@ public enum DataSourceType {
     HIVE(7, 20, "Hive2.x", "hive"),
     HIVE1X(27, 21, "Hive1.x", "hive1"),
     MAXCOMPUTE(10, 22, "MaxCompute", "maxcompute"),
+    S3(41, 23, "AWS S3", "s3"),
 
     // MPP
     GREENPLUM6(36, 40, "Greenplum", "greenplum6"),
