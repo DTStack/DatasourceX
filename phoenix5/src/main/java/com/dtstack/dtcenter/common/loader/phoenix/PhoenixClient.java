@@ -6,13 +6,17 @@ import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.Phoenix5SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.PhoenixSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @company: www.dtstack.com
@@ -65,4 +69,38 @@ public class PhoenixClient extends AbsRdbmsClient {
         }
         return "";
     }
+
+
+    @Override
+    public List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
+        Phoenix5SourceDTO rdbmsSourceDTO = (Phoenix5SourceDTO) source;
+        ResultSet rs = null;
+        List<String> tableList = new ArrayList<>();
+        try {
+            DatabaseMetaData meta = rdbmsSourceDTO.getConnection().getMetaData();
+            if (null == queryDTO) {
+                rs = meta.getTables(null, rdbmsSourceDTO.getSchema(), null, null);
+            } else {
+                rs = meta.getTables(null, rdbmsSourceDTO.getSchema(),
+                        StringUtils.isBlank(queryDTO.getTableNamePattern()) ? queryDTO.getTableNamePattern() :
+                                queryDTO.getTableName(),
+                        DBUtil.getTableTypes(queryDTO));
+            }
+            while (rs.next()) {
+                if (StringUtils.isBlank(rdbmsSourceDTO.getSchema()) && StringUtils.isNotBlank(rs.getString(2))) {
+                    // 返回 "schema"."tableName"形式
+                    tableList.add(String.format("\"%s\".\"%s\"", rs.getString(2), rs.getString(3)));
+                }else {
+                    tableList.add(rs.getString(3));
+                }
+            }
+        } catch (Exception e) {
+            throw new DtLoaderException("获取数据库表异常", e);
+        } finally {
+            DBUtil.closeDBResources(rs, null, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        return tableList;
+    }
+
 }
