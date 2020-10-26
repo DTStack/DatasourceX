@@ -42,7 +42,7 @@ public class DBUtil {
             int columns = res.getMetaData().getColumnCount();
             List<String> columnName = Lists.newArrayList();
             for (int i = 0; i < columns; i++) {
-                columnName.add(res.getMetaData().getColumnName(i + 1));
+                columnName.add(res.getMetaData().getColumnLabel(i + 1));
             }
 
             while (res.next()) {
@@ -88,7 +88,7 @@ public class DBUtil {
             int columns = res.getMetaData().getColumnCount();
             List<String> columnName = Lists.newArrayList();
             for (int i = 0; i < columns; i++) {
-                columnName.add(res.getMetaData().getColumnName(i + 1));
+                columnName.add(res.getMetaData().getColumnLabel(i + 1));
             }
 
             while (res.next()) {
