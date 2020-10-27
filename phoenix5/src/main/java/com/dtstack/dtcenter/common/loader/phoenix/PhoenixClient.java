@@ -35,9 +35,25 @@ public class PhoenixClient extends AbsRdbmsClient {
         return DataSourceType.Phoenix;
     }
 
-    @Override
-    protected String transferTableName(String tableName) {
-        return tableName.contains("\"") ? tableName : String.format("\"%s\"", tableName);
+    /**
+     * 处理schema和表名
+     *
+     * @param schema
+     * @param tableName
+     * @return
+     */
+    protected String transferSchemaAndTableName(String schema,String tableName) {
+        // schema为空直接返回
+        if (StringUtils.isBlank(schema)) {
+            return tableName;
+        }
+        if (!tableName.startsWith("\"") || !tableName.endsWith("\"")) {
+            tableName = String.format("\"%s\"", tableName);
+        }
+        if (!schema.startsWith("\"") || !schema.endsWith("\"")){
+            schema = String.format("\"%s\"", schema);
+        }
+        return String.format("%s.%s", schema, tableName);
     }
 
     @Override
@@ -89,8 +105,8 @@ public class PhoenixClient extends AbsRdbmsClient {
             }
             while (rs.next()) {
                 if (StringUtils.isBlank(rdbmsSourceDTO.getSchema()) && StringUtils.isNotBlank(rs.getString(2))) {
-                    // 返回 "schema"."tableName"形式
-                    tableList.add(String.format("\"%s\".\"%s\"", rs.getString(2), rs.getString(3)));
+                    // 返回 schema.tableName形式 TODO 待FlinkX支持 "schema"."tableName"时修改
+                    tableList.add(String.format("%s.%s", rs.getString(2), rs.getString(3)));
                 }else {
                     tableList.add(rs.getString(3));
                 }
