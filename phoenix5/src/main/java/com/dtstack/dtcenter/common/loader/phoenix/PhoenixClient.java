@@ -37,9 +37,25 @@ public class PhoenixClient extends AbsRdbmsClient {
         return DataSourceType.Phoenix;
     }
 
-    @Override
-    protected String transferTableName(String tableName) {
-        return tableName.contains("\"") ? tableName : String.format("\"%s\"", tableName);
+    /**
+     * 处理schema和表名
+     *
+     * @param schema
+     * @param tableName
+     * @return
+     */
+    protected String transferSchemaAndTableName(String schema,String tableName) {
+        // schema为空直接返回
+        if (StringUtils.isBlank(schema)) {
+            return tableName;
+        }
+        if (!tableName.startsWith("\"") || !tableName.endsWith("\"")) {
+            tableName = String.format("\"%s\"", tableName);
+        }
+        if (!schema.startsWith("\"") || !schema.endsWith("\"")){
+            schema = String.format("\"%s\"", schema);
+        }
+        return String.format("%s.%s", schema, tableName);
     }
 
     @Override
