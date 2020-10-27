@@ -50,7 +50,7 @@ public class Phoenix5Test {
     @Test
     public void executeQuery() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from \"DBAML\".\"ODL_TRADER_PF\" limit 2000").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from DBAML.ODL_TRADER_PF limit 2000").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
     }
