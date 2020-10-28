@@ -1,9 +1,12 @@
 package com.dtstack.dtcenter.loader.utils;
 
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.BooleanUtils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -121,6 +124,26 @@ public class DBUtil {
         } finally {
             DBUtil.closeDBResources(null, statement, closeConn ? conn : null);
         }
+    }
+
+    /**
+     * 重置表类型
+     * {@link java.sql.DatabaseMetaData#getTableTypes()}
+     *
+     * @param queryDTO
+     * @return
+     */
+    public static String[] getTableTypes(SqlQueryDTO queryDTO) {
+        if (ArrayUtils.isNotEmpty(queryDTO.getTableTypes())) {
+            return queryDTO.getTableTypes();
+        }
+
+        String[] types = new String[BooleanUtils.isTrue(queryDTO.getView()) ? 2 : 1];
+        types[0] = "TABLE";
+        if (BooleanUtils.isTrue(queryDTO.getView())) {
+            types[1] = "VIEW";
+        }
+        return types;
     }
 
     /**
