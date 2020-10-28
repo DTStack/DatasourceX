@@ -225,6 +225,11 @@ public class DtKuduClient<T> implements IClient<T> {
         }
     }
 
+    @Override
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        return getColumnMetaData(source, queryDTO);
+    }
+
     /******************** 未支持的方法 **********************/
     @Override
     public Connection getCon(ISourceDTO iSource) {
@@ -248,11 +253,6 @@ public class DtKuduClient<T> implements IClient<T> {
 
     @Override
     public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 

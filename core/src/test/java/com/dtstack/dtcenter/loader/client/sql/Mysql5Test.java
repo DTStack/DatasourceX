@@ -82,6 +82,15 @@ public class Mysql5Test {
     }
 
     @Test
+    public void executeQueryAlias() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.MySQL.getVal());
+        String sql = "select id as testAlias from nanqi;";
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).build();
+        List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
+        System.out.println(mapList);
+    }
+
+    @Test
     public void executeSqlWithoutResultSet() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.MySQL.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();

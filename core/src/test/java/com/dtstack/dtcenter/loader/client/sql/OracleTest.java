@@ -69,6 +69,14 @@ public class OracleTest {
     }
 
     @Test
+    public void executeQueryAlias() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select id as tAlias from \"nanqi\"").build();
+        List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
+        System.out.println(mapList);
+    }
+
+    @Test
     public void executeSqlWithoutResultSet() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from \"nanqi\"").build();
