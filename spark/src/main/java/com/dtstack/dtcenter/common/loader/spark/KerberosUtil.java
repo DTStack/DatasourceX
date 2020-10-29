@@ -80,7 +80,7 @@ public class KerberosUtil {
             throw new DtLoaderException("Kerberos Login fail, principal or keytab is null");
         }
         // 判断缓存UGI，如果存在则直接使用
-        UGICacheData cacheData = UGI_INFO.get(principal);
+        UGICacheData cacheData = UGI_INFO.get(principal + "_" + keytab);
         if (cacheData != null) {
             return cacheData.getUgi();
         }
@@ -98,7 +98,7 @@ public class KerberosUtil {
             config.set("hadoop.security.authentication", "Kerberos");
             UserGroupInformation.setConfiguration(config);
             UserGroupInformation ugi = UserGroupInformation.loginUserFromKeytabAndReturnUGI(principal, keytab);
-            UGI_INFO.put(principal, new UGICacheData(ugi));
+            UGI_INFO.put(principal + "_" + keytab, new UGICacheData(ugi));
             log.info("login kerberos success, currentUser={}", UserGroupInformation.getCurrentUser());
             return ugi;
         } catch (Exception var6) {
