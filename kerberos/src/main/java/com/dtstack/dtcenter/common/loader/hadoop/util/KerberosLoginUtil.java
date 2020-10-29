@@ -9,7 +9,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import sun.security.krb5.Config;
 
+import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @company: www.dtstack.com
@@ -19,6 +24,38 @@ import java.util.Map;
  */
 @Slf4j
 public class KerberosLoginUtil {
+    private static ConcurrentHashMap<String, UGICacheData> UGI_INFO = new ConcurrentHashMap<>();
+
+    private static final ScheduledExecutorService scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
+
+    static {
+        scheduledThreadPoolExecutor.scheduleAtFixedRate(new KerberosLoginUtil.CacheTimerTask(), 0, 10, TimeUnit.SECONDS);
+    }
+
+    static class CacheTimerTask implements Runnable {
+        @Override
+        public void run() {
+            Iterator<String> iterator = UGI_INFO.keySet().iterator();
+            while (iterator.hasNext()) {
+                clearKey(iterator.next());
+            }
+        }
+
+        private void clearKey(String principal) {
+            UGICacheData ugiCacheData = UGI_INFO.get(principal);
+            if (ugiCacheData == null || ugiCacheData.getUgi() == null) {
+                UGI_INFO.remove(principal);
+                log.info("KerberosLogin CLEAR UGI {}", principal);
+                return;
+            }
+
+            if (System.currentTimeMillis() > ugiCacheData.getTimeoutStamp()) {
+                UGI_INFO.remove(principal);
+                log.info("KerberosLogin CLEAR UGI {}", principal);
+            }
+        }
+    }
+
     public static synchronized UserGroupInformation loginKerberosWithUGI(Map<String, Object> confMap) {
         return loginKerberosWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
     }
@@ -52,6 +89,11 @@ public class KerberosLoginUtil {
         if (StringUtils.isEmpty(principal) || StringUtils.isEmpty(keytab)) {
             throw new DtLoaderException("Kerberos Login fail, principal or keytab is null");
         }
+        // 判断缓存UGI，如果存在则直接使用
+        UGICacheData cacheData = UGI_INFO.get(principal + "_" + keytab);
+        if (cacheData != null) {
+            return cacheData.getUgi();
+        }
 
         try {
             // 设置 Krb5 配置文件
@@ -66,6 +108,7 @@ public class KerberosLoginUtil {
             config.set("hadoop.security.authentication", "Kerberos");
             UserGroupInformation.setConfiguration(config);
             UserGroupInformation ugi = UserGroupInformation.loginUserFromKeytabAndReturnUGI(principal, keytab);
+            UGI_INFO.put(principal + "_" + keytab, new UGICacheData(ugi));
             log.info("login kerberos success, currentUser={}", UserGroupInformation.getCurrentUser());
             return ugi;
         } catch (Exception var6) {

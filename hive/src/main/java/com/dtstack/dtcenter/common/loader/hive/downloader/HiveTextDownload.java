@@ -159,19 +159,7 @@ public class HiveTextDownload implements IDownloader {
             close();
         }
 
-        if (MapUtils.isNotEmpty(kerberosConfig)) {
-            recordReader = HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                    (PrivilegedAction<RecordReader>) () -> {
-                        try {
-                            return inputFormat.getRecordReader(fileSplit, conf, Reporter.NULL);
-                        } catch (IOException e) {
-                            throw new DtLoaderException(e.getMessage(), e);
-                        }
-                    }
-            );
-        } else {
-            recordReader = inputFormat.getRecordReader(fileSplit, conf, Reporter.NULL);
-        }
+        recordReader = inputFormat.getRecordReader(fileSplit, conf, Reporter.NULL);
         return true;
     }
 
@@ -229,9 +217,25 @@ public class HiveTextDownload implements IDownloader {
         return metaInfo;
     }
 
-
     @Override
     public List<String> readNext(){
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return readNextWithKerberos();
+        }
+
+        // kerberos认证
+        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<List<String>>) ()->{
+                    try {
+                        return readNextWithKerberos();
+                    } catch (Exception e){
+                        throw new DtLoaderException("读取文件异常", e);
+                    }
+                });
+    }
+
+    public List<String> readNextWithKerberos(){
         readNum++;
         String line = value.toString();
         value.clear();
@@ -256,7 +260,20 @@ public class HiveTextDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-        return recordReader == null || !nextRecord();
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return recordReader == null || !nextRecord();
+        }
+
+        // kerberos认证
+        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) ()->{
+                    try {
+                        return recordReader == null || !nextRecord();
+                    } catch (Exception e){
+                        throw new DtLoaderException("下载文件异常", e);
+                    }
+                });
     }
 
     @Override

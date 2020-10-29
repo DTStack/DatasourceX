@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.common.loader.spark.util;
 
-import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosConfigUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -22,8 +21,6 @@ public class SparkKerberosLoginUtil extends KerberosLoginUtil {
      * @return
      */
     public static synchronized UserGroupInformation loginKerberosWithUGI(String jdbcUrl, Map<String, Object> confMap) {
-        String principal = KerberosConfigUtil.getPrincipalFromUrl(jdbcUrl);
-        confMap.put(HadoopConfTool.PRINCIPAL, principal);
         return loginKerberosWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
     }
 }
