@@ -159,19 +159,7 @@ public class HiveTextDownload implements IDownloader {
             close();
         }
 
-        if (MapUtils.isNotEmpty(kerberosConfig)) {
-            recordReader = HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                    (PrivilegedAction<RecordReader>) () -> {
-                        try {
-                            return inputFormat.getRecordReader(fileSplit, conf, Reporter.NULL);
-                        } catch (IOException e) {
-                            throw new DtLoaderException(e.getMessage(), e);
-                        }
-                    }
-            );
-        } else {
-            recordReader = inputFormat.getRecordReader(fileSplit, conf, Reporter.NULL);
-        }
+        recordReader = inputFormat.getRecordReader(fileSplit, conf, Reporter.NULL);
         return true;
     }
 
