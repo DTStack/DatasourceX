@@ -45,7 +45,10 @@ public class Xml2JsonUtil {
             } else {
                 jsonArray = (JSONArray) propertyObject;
             }
-            jsonArray.forEach(single -> map.putAll((Map<String,String>) single));
+            jsonArray.forEach(o -> {
+                JSONObject single = (JSONObject) o ;
+                map.put(single.getString("name"), single.getString("value"));
+            });
             return map;
         }
         return Collections.emptyMap();
