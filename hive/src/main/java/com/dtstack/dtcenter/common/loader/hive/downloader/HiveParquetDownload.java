@@ -3,10 +3,8 @@ package com.dtstack.dtcenter.common.loader.hive.downloader;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hive.GroupTypeIgnoreCase;
 import com.dtstack.dtcenter.common.loader.hive.util.HiveKerberosLoginUtil;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.hadoop.GroupTypeIgnoreCase;
-import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
@@ -168,12 +166,12 @@ public class HiveParquetDownload implements IDownloader {
             return readNextWithKerberos();
         }
         // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
-                        throw new DtCenterDefException("读取文件异常", e);
+                        throw new DtLoaderException("读取文件异常", e);
                     }
                 });
     }
@@ -288,12 +286,12 @@ public class HiveParquetDownload implements IDownloader {
         }
 
         // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return !nextRecord();
                     } catch (Exception e){
-                        throw new DtCenterDefException("下载文件异常", e);
+                        throw new DtLoaderException("下载文件异常", e);
                     }
                 });
     }

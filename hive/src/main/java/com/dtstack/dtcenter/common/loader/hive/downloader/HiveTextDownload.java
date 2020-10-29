@@ -225,7 +225,7 @@ public class HiveTextDownload implements IDownloader {
         }
 
         // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
@@ -266,7 +266,7 @@ public class HiveTextDownload implements IDownloader {
         }
 
         // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return recordReader == null || !nextRecord();

@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.common.loader.spark;
+package com.dtstack.dtcenter.common.loader.hadoop.util;
 
 import lombok.Data;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -6,7 +6,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 /**
  * @company: www.dtstack.com
  * @Author ：Nanqi
- * @Date ：Created in 17:54 2020/10/29
+ * @Date ：Created in 19:05 2020/10/29
  * @Description：UGI 缓存信息
  */
 @Data
