@@ -2,6 +2,8 @@ package com.dtstack.dtcenter.common.loader.hive1.downloader;
 
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hive1.util.HiveKerberosLoginUtil;
+import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
@@ -232,6 +234,24 @@ public class HiveTextDownload implements IDownloader {
 
     @Override
     public List<String> readNext(){
+
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return readNextWithKerberos();
+        }
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<List<String>>) ()->{
+                    try {
+                        return readNextWithKerberos();
+                    } catch (Exception e){
+                        throw new DtLoaderException("读取文件异常", e);
+                    }
+                });
+    }
+
+    public List<String> readNextWithKerberos(){
         readNum++;
         String line = value.toString();
         value.clear();
@@ -256,7 +276,21 @@ public class HiveTextDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-        return recordReader == null || !nextRecord();
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return recordReader == null || !nextRecord();
+        }
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) ()->{
+                    try {
+                        return recordReader == null || !nextRecord();
+                    } catch (Exception e){
+                        throw new DtLoaderException("下载文件异常", e);
+                    }
+                });
+
     }
 
     @Override

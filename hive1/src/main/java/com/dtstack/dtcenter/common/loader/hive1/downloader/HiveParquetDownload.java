@@ -3,6 +3,9 @@ package com.dtstack.dtcenter.common.loader.hive1.downloader;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hive1.GroupTypeIgnoreCase;
 import com.dtstack.dtcenter.common.loader.hive1.util.HiveKerberosLoginUtil;
+import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.hadoop.GroupTypeIgnoreCase;
+import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
@@ -122,19 +125,7 @@ public class HiveParquetDownload implements IDownloader {
         }
 
         ParquetReader.Builder<Group> reader = ParquetReader.builder(readSupport, new Path(currFile)).withConf(conf);
-        if (MapUtils.isNotEmpty(kerberosConfig)) {
-            build = HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                    (PrivilegedAction<ParquetReader<Group>>) () -> {
-                        try {
-                            return reader.build();
-                        } catch (IOException e) {
-                            throw new DtLoaderException(e.getMessage(), e);
-                        }
-                    }
-            );
-        } else {
-            build = reader.build();
-        }
+        build = reader.build();
 
         if(CollectionUtils.isNotEmpty(partitionColumns)){
             currentPartData = HdfsOperator.parsePartitionDataFromUrl(currFile, partitionColumns);
@@ -173,6 +164,23 @@ public class HiveParquetDownload implements IDownloader {
 
     @Override
     public List<String> readNext() throws Exception {
+
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return readNextWithKerberos();
+        }
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<List<String>>) ()->{
+                    try {
+                        return readNextWithKerberos();
+                    } catch (Exception e){
+                        throw new DtCenterDefException("读取文件异常", e);
+                    }
+                });
+    }
+
+    public List<String> readNextWithKerberos() throws Exception {
         readNum++;
 
         List<String> line = null;
@@ -275,7 +283,22 @@ public class HiveParquetDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws Exception {
-        return !nextRecord();
+
+        // 无kerberos认证
+        if (MapUtils.isEmpty(kerberosConfig)) {
+            return !nextRecord();
+        }
+
+        // kerberos认证
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) ()->{
+                    try {
+                        return !nextRecord();
+                    } catch (Exception e){
+                        throw new DtCenterDefException("下载文件异常", e);
+                    }
+                });
+
     }
 
     @Override
