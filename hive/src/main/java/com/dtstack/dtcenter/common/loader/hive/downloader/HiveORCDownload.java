@@ -1,7 +1,9 @@
 package com.dtstack.dtcenter.common.loader.hive.downloader;
 
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
+import com.dtstack.dtcenter.common.loader.hive.util.HiveKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import jodd.util.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -110,12 +112,12 @@ public class HiveORCDownload implements IDownloader {
         }
 
         // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
-                        throw new DtCenterDefException("读取文件异常", e);
+                        throw new DtLoaderException("读取文件异常", e);
                     }
                 });
     }
@@ -185,12 +187,12 @@ public class HiveORCDownload implements IDownloader {
         }
 
         // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return recordReader == null || !nextRecord();
                     } catch (Exception e){
-                        throw new DtCenterDefException("下载文件异常", e);
+                        throw new DtLoaderException("下载文件异常", e);
                     }
                 });
     }

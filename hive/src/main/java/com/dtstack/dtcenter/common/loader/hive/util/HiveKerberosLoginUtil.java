@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.common.loader.hive.util;
 
-import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosConfigUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -22,9 +21,6 @@ public class HiveKerberosLoginUtil extends KerberosLoginUtil {
      * @return
      */
     public static synchronized UserGroupInformation loginKerberosWithUGI(String jdbcUrl, Map<String, Object> confMap) {
-        String principal = KerberosConfigUtil.getPrincipalFromUrl(jdbcUrl);
-        confMap.put(HadoopConfTool.PRINCIPAL, principal);
-
         // 因为 Hive 需要下载所以设置 ResourceManager Principal
         confMap.put(HadoopConfTool.RM_PRINCIPAL, confMap.get(HadoopConfTool.PRINCIPAL));
         return loginKerberosWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
