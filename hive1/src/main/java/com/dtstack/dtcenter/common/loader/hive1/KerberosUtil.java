@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.hive1;
 
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
+import com.dtstack.dtcenter.common.thread.RdosThreadFactory;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
@@ -10,7 +11,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import sun.security.krb5.Config;
 
+import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @company: www.dtstack.com
@@ -20,6 +26,39 @@ import java.util.Map;
  */
 @Slf4j
 public class KerberosUtil {
+    private static ConcurrentHashMap<String, UGICacheData> UGI_INFO = new ConcurrentHashMap<>();
+
+    private static final ScheduledExecutorService scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1,
+            new RdosThreadFactory("Hive1KerberosTimerTask"));
+
+    static {
+        scheduledThreadPoolExecutor.scheduleAtFixedRate(new KerberosUtil.CacheTimerTask(), 0, 10, TimeUnit.SECONDS);
+    }
+
+    static class CacheTimerTask implements Runnable {
+        @Override
+        public void run() {
+            Iterator<String> iterator = UGI_INFO.keySet().iterator();
+            while (iterator.hasNext()) {
+                clearKey(iterator.next());
+            }
+        }
+
+        private void clearKey(String principal) {
+            UGICacheData ugiCacheData = UGI_INFO.get(principal);
+            if (ugiCacheData == null || ugiCacheData.getUgi() == null) {
+                UGI_INFO.remove(principal);
+                log.info("Hive1KerberosTimerTask CLEAR UGI {}", principal);
+                return;
+            }
+
+            if (System.currentTimeMillis() > ugiCacheData.getTimeoutStamp()) {
+                UGI_INFO.remove(principal);
+                log.info("Hive1KerberosTimerTask CLEAR UGI {}", principal);
+            }
+        }
+    }
+
     public static synchronized UserGroupInformation loginKerberosWithUGI(Map<String, Object> confMap) {
         return loginKerberosWithUGI(confMap, "principal", "principalFile", "java.security.krb5.conf");
     }
@@ -40,6 +79,12 @@ public class KerberosUtil {
         if (StringUtils.isEmpty(principal) || StringUtils.isEmpty(keytab)) {
             throw new DtLoaderException("Kerberos Login fail, principal or keytab is null");
         }
+        // 判断缓存UGI，如果存在则直接使用
+        UGICacheData cacheData = UGI_INFO.get(principal);
+        if (cacheData != null) {
+            return cacheData.getUgi();
+        }
+
         // 处理 yarn.resourcemanager.principal，变与参数下载
         if (!confMap.containsKey("yarn.resourcemanager.principal")){
             confMap.put("yarn.resourcemanager.principal", principal);
@@ -58,6 +103,7 @@ public class KerberosUtil {
             config.set("hadoop.security.authentication", "Kerberos");
             UserGroupInformation.setConfiguration(config);
             UserGroupInformation ugi = UserGroupInformation.loginUserFromKeytabAndReturnUGI(principal, keytab);
+            UGI_INFO.put(principal, new UGICacheData(ugi));
             log.info("login kerberos success, currentUser={}", UserGroupInformation.getCurrentUser());
             return ugi;
         } catch (Exception var6) {

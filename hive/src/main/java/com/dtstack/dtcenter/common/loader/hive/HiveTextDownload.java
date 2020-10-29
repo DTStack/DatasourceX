@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.common.loader.hive;
 
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -159,19 +158,7 @@ public class HiveTextDownload implements IDownloader {
             close();
         }
 
-        if (MapUtils.isNotEmpty(kerberosConfig)) {
-            recordReader = KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                    (PrivilegedAction<RecordReader>) () -> {
-                        try {
-                            return inputFormat.getRecordReader(fileSplit, conf, Reporter.NULL);
-                        } catch (IOException e) {
-                            throw new DtLoaderException(e.getMessage(), e);
-                        }
-                    }
-            );
-        } else {
-            recordReader = inputFormat.getRecordReader(fileSplit, conf, Reporter.NULL);
-        }
+        recordReader = inputFormat.getRecordReader(fileSplit, conf, Reporter.NULL);
         return true;
     }
 
