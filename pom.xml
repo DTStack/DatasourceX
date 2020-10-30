@@ -122,6 +122,10 @@
                         <artifactId>xml-apis</artifactId>
                         <groupId>xml-apis</groupId>
                     </exclusion>
+                    <exclusion>
+                        <artifactId>sql-core</artifactId>
+                        <groupId>com.dtstack.dtcenter</groupId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
