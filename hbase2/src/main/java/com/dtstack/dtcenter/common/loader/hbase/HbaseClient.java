@@ -139,7 +139,6 @@ public class HbaseClient<T> implements IClient<T> {
         try {
             //获取hbase连接
             connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO, queryDTO);
-            System.out.println(System.currentTimeMillis()+"......");
             //获取hbase扫描列，格式 - 列族:列名
             List<String> columns = queryDTO.getColumns();
             //获取hbase自定义查询的过滤器
