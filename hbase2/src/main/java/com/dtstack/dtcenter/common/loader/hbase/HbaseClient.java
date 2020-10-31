@@ -77,13 +77,13 @@ public class HbaseClient<T> implements IClient<T> {
             throw new DtLoaderException("获取 hbase table list 异常", e);
         } finally {
             closeAdmin(admin);
-            closeConnection(hConn);
+            closeConnection(hConn,hbaseSourceDTO);
         }
         return tableList;
     }
 
-    private static void closeConnection(Connection hConn) {
-        if (hConn != null) {
+    private static void closeConnection(Connection hConn, HbaseSourceDTO hbaseSourceDTO) {
+        if (hbaseSourceDTO.getPoolConfig() == null && hConn != null) {
             try {
                 hConn.close();
             } catch (IOException e) {
@@ -123,7 +123,7 @@ public class HbaseClient<T> implements IClient<T> {
             throw new DtLoaderException("hbase list column families error", e);
         } finally {
             closeTable(tb);
-            closeConnection(hConn);
+            closeConnection(hConn,hbaseSourceDTO);
         }
         return cfList;
     }
@@ -139,6 +139,7 @@ public class HbaseClient<T> implements IClient<T> {
         try {
             //获取hbase连接
             connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO, queryDTO);
+            System.out.println(System.currentTimeMillis()+"......");
             //获取hbase扫描列，格式 - 列族:列名
             List<String> columns = queryDTO.getColumns();
             //获取hbase自定义查询的过滤器
@@ -181,7 +182,11 @@ public class HbaseClient<T> implements IClient<T> {
         } catch (Exception e){
             throw new DtLoaderException("执行hbase自定义失败", e);
         } finally {
-            close(rs, table, connection);
+            if(hbaseSourceDTO.getPoolConfig() ==null){
+                close(rs, table, connection);
+            }else{
+                close(rs, table, null);
+            }
         }
 
         //理解为一行记录
@@ -244,7 +249,11 @@ public class HbaseClient<T> implements IClient<T> {
             log.error("数据预览失败{}", e);
             throw new DtLoaderException("数据预览失败", e);
         } finally {
-            close(rs, table, connection);
+            if(hbaseSourceDTO.getPoolConfig() ==null){
+                close(rs, table, connection);
+            }else{
+                close(rs, table, null);
+            }
         }
 
         //理解为一行记录
