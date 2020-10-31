@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
@@ -28,6 +29,7 @@ public class Hbase2Test {
     HbaseSourceDTO source = HbaseSourceDTO.builder()
             .url("kudu1,kudu2,kudu3:2181")
             .path("/hbase")
+            .poolConfig(new PoolConfig())
             .build();
 
     @Test
@@ -75,6 +77,8 @@ public class Hbase2Test {
         List list1 = client.executeQuery(source, SqlQueryDTO.builder().tableName("wuren_foo").hbaseFilter(filters).build());
         System.out.println(System.currentTimeMillis());
         List list2 = client.executeQuery(source, SqlQueryDTO.builder().tableName("wuren_foo").hbaseFilter(filters).build());
+        System.out.println(System.currentTimeMillis());
+        List list3 = client.executeQuery(source, SqlQueryDTO.builder().tableName("wuren_foo").hbaseFilter(filters).build());
         System.out.println(System.currentTimeMillis());
         System.out.println(list);
     }
