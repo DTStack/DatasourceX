@@ -47,17 +47,16 @@ public class PhoenixConnFactory extends ConnFactory {
         init();
         PhoenixSourceDTO phoenixSourceDTO = (PhoenixSourceDTO) source;
         Connection conn;
+        Future<Connection> future = null;
         try {
             // Phoenix不支持直接设置连接超时，所以这里使用线程池的方式来控制数据库连接超时
-            final ExecutorService exec = Executors.newFixedThreadPool(1);
             Callable<Connection> call = () -> PhoenixConnFactory.super.getConn(phoenixSourceDTO);
-            Future<Connection> future = exec.submit(call);
+            future = executor.submit(call);
             // 如果在设定超时(以秒为单位)之内，还没得到 Connection 对象，则认为连接超时，不继续阻塞
             conn = future.get(CONN_TIMEOUT, TimeUnit.SECONDS);
             if (Objects.isNull(conn)) {
                 throw new DtLoaderException("获取phoenix连接失败！");
             }
-            exec.shutdownNow();
         } catch (InterruptedException e) {
             log.error("获取连接线程中断！url=" + phoenixSourceDTO.getUrl(), e);
             throw new DtLoaderException("获取phoenix连接过程中线程中中断！", e);
@@ -67,6 +66,10 @@ public class PhoenixConnFactory extends ConnFactory {
         } catch (TimeoutException e) {
             log.error("获取连接超时！url=" + phoenixSourceDTO.getUrl(), e);
             throw new DtLoaderException("获取phoenix连接超时！", e);
+        } finally {
+            if (Objects.nonNull(future)) {
+                future.cancel(true);
+            }
         }
         return conn;
     }
