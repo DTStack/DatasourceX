@@ -54,7 +54,7 @@ public class HbaseConnFactory {
     }
 
     public static Connection getHbaseConn(HbaseSourceDTO source, SqlQueryDTO queryDTO) {
-        if (source.getPoolConfig() == null) {
+        if (source.getPoolConfig() == null || MapUtils.isNotEmpty(source.getKerberosConfig())) {
             return HbasePoolManager.initHbaseConn(source, queryDTO);
         }
         return HbasePoolManager.getConnection(source, queryDTO);
