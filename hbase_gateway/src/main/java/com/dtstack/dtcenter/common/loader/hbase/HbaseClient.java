@@ -13,6 +13,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -83,7 +84,7 @@ public class HbaseClient<T> implements IClient<T> {
     }
 
     private static void closeConnection(Connection hConn, HbaseSourceDTO hbaseSourceDTO) {
-        if (hbaseSourceDTO.getPoolConfig() == null && hConn != null) {
+        if ((hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) && hConn != null) {
             try {
                 hConn.close();
             } catch (IOException e) {
@@ -182,9 +183,9 @@ public class HbaseClient<T> implements IClient<T> {
             log.error("执行hbase自定义失败", e);
             throw new DtLoaderException("执行hbase自定义失败", e);
         } finally {
-            if(hbaseSourceDTO.getPoolConfig() ==null){
+            if (hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
                 close(rs, table, connection);
-            }else{
+            } else {
                 close(rs, table, null);
             }
         }
@@ -252,9 +253,9 @@ public class HbaseClient<T> implements IClient<T> {
             log.error("数据预览失败{}", e);
             throw new DtLoaderException("数据预览失败", e);
         } finally {
-            if(hbaseSourceDTO.getPoolConfig() ==null){
+            if (hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
                 close(rs, table, connection);
-            }else{
+            } else {
                 close(rs, table, null);
             }
         }

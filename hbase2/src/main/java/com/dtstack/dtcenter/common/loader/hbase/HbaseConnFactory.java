@@ -42,12 +42,12 @@ public class HbaseConnFactory {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
-            try {
-                if (hbaseSourceDTO.getPoolConfig() == null && hConn != null) {
+            if ((hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) && hConn != null) {
+                try {
                     hConn.close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
                 }
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
             }
         }
         return check;
