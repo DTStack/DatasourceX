@@ -1,11 +1,14 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.comparator.BinaryComparator;
 import com.dtstack.dtcenter.loader.dto.comparator.RegexStringComparator;
 import com.dtstack.dtcenter.loader.dto.filter.Filter;
 import com.dtstack.dtcenter.loader.dto.filter.PageFilter;
+import com.dtstack.dtcenter.loader.dto.filter.RowFilter;
 import com.dtstack.dtcenter.loader.dto.filter.SingleColumnValueFilter;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.enums.CompareOp;
@@ -26,6 +29,7 @@ public class HbaseTest {
     HbaseSourceDTO source = HbaseSourceDTO.builder()
             .url("172.16.8.107,172.16.8.108,172.16.8.109:2181")
             .path("/hbase")
+            .poolConfig(new PoolConfig())
             .build();
 
     @Test
@@ -41,7 +45,7 @@ public class HbaseTest {
     public void getTableList() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
         List<String> tableList = client.getTableList(source, null);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
     }
 
     @Test
@@ -54,13 +58,28 @@ public class HbaseTest {
     @Test
     public void executorQuery() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
-        PageFilter pageFilter = new PageFilter(2);
+//        PageFilter pageFilter = new PageFilter(2);
         ArrayList<Filter> filters = new ArrayList<>();
-        SingleColumnValueFilter filter = new SingleColumnValueFilter("baseInfo".getBytes(), "age".getBytes(), CompareOp.EQUAL, new RegexStringComparator("."));
-        filter.setFilterIfMissing(true);
-        filters.add(filter);
-        filters.add(pageFilter);
-        List list = client.executeQuery(source, SqlQueryDTO.builder().tableName("TEST").hbaseFilter(filters).build());
+//        filters.add(pageFilter);
+//        String column = "baseInfo:age";
+//        String column2 = "liftInfo:girlFriend";
+//        ArrayList<Object> columns = Lists.newArrayList(column, column2);
+//        SingleColumnValueFilter filter = new SingleColumnValueFilter("baseInfo".getBytes(), "age".getBytes(), CompareOp.EQUAL, new RegexStringComparator("."));
+//        filter.setFilterIfMissing(true);
+//        filters.add(filter);
+        RowFilter hbaseRowFilter = new RowFilter(
+                CompareOp.EQUAL,new BinaryComparator("0_k".getBytes()));
+        hbaseRowFilter.setReversed(true);
+//        filters.add(pageFilter);
+        filters.add(hbaseRowFilter);
+        List list = client.executeQuery(source, SqlQueryDTO.builder().tableName("wuren_foo").hbaseFilter(filters).build());
+        System.out.println(System.currentTimeMillis());
+        List list1 = client.executeQuery(source, SqlQueryDTO.builder().tableName("wuren_foo").hbaseFilter(filters).build());
+        System.out.println(System.currentTimeMillis());
+        List list2 = client.executeQuery(source, SqlQueryDTO.builder().tableName("wuren_foo").hbaseFilter(filters).build());
+        System.out.println(System.currentTimeMillis());
+        List list3 = client.executeQuery(source, SqlQueryDTO.builder().tableName("wuren_foo").hbaseFilter(filters).build());
+        System.out.println(System.currentTimeMillis());
         System.out.println(list);
     }
 
