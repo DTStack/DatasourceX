@@ -45,7 +45,7 @@ public class Hbase2Test {
     public void getTableList() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.HBASE2.getVal());
         List<String> tableList = client.getTableList(source, null);
-        System.out.println(tableList.size());
+        System.out.println(tableList);
     }
 
     @Test
