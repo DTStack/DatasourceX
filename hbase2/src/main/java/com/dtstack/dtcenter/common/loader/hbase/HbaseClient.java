@@ -13,7 +13,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -56,15 +55,12 @@ public class HbaseClient<T> implements IClient<T> {
 
     @Override
     public Boolean testCon(ISourceDTO iSource) {
-        HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) iSource;
-        checkKerberosConfig(hbaseSourceDTO);
         return hbaseConnFactory.testConn(iSource);
     }
 
     @Override
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) iSource;
-        checkKerberosConfig(hbaseSourceDTO);
         Connection hConn = null;
         Admin admin = null;
         List<String> tableList = new ArrayList<>();
@@ -84,13 +80,6 @@ public class HbaseClient<T> implements IClient<T> {
             closeConnection(hConn,hbaseSourceDTO);
         }
         return tableList;
-    }
-
-    private void checkKerberosConfig(HbaseSourceDTO hbaseSourceDTO) {
-        //如果开启了kerberos，暂时屏蔽池化功能
-        if (MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
-            hbaseSourceDTO.setPoolConfig(null);
-        }
     }
 
     private static void closeConnection(Connection hConn, HbaseSourceDTO hbaseSourceDTO) {
@@ -116,7 +105,6 @@ public class HbaseClient<T> implements IClient<T> {
     @Override
     public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) iSource;
-        checkKerberosConfig(hbaseSourceDTO);
         Connection hConn = null;
         Table tb = null;
         List<ColumnMetaDTO> cfList = new ArrayList<>();
@@ -143,7 +131,6 @@ public class HbaseClient<T> implements IClient<T> {
     @Override
     public List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
-        checkKerberosConfig(hbaseSourceDTO);
         Connection connection = null;
         Table table = null;
         ResultScanner rs = null;
@@ -240,7 +227,6 @@ public class HbaseClient<T> implements IClient<T> {
     @Override
     public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
-        checkKerberosConfig(hbaseSourceDTO);
         Connection connection = null;
         Table table = null;
         ResultScanner rs = null;
