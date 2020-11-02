@@ -89,6 +89,8 @@ public class YarnDownload implements IDownloader {
 
     private String user;
 
+    private String containerId;
+
     private YarnDownload(String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit) {
         this.appIdStr = appIdStr;
         this.yarnConf = yarnConf;
@@ -106,6 +108,11 @@ public class YarnDownload implements IDownloader {
         this.logType = logType;
         this.kerberosConfig = kerberosConfig;
         this.user = user;
+    }
+
+    public YarnDownload(String user, String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit, String logType, Map<String, Object> kerberosConfig, String containerId) {
+        this(user, hdfsConfig, yarnConf, appIdStr, readLimit, logType, kerberosConfig);
+        this.containerId = containerId;
     }
 
     @Override
@@ -280,23 +287,24 @@ public class YarnDownload implements IDownloader {
      * @throws IOException
      */
     private boolean nextLogType() throws IOException {
-        currFileType = currValueStream.readUTF();
-        String fileLengthStr = currValueStream.readUTF();
-        currFileLength = Long.parseLong(fileLengthStr);
-
-        if (StringUtils.isNotBlank(logType) && !currFileType.toUpperCase().startsWith(logType)) {
-            currValueStream.skipBytes(Integer.valueOf(fileLengthStr));
-            return nextLogType();
+        this.currFileType = this.currValueStream.readUTF();
+        String fileLengthStr = this.currValueStream.readUTF();
+        this.currFileLength = Long.parseLong(fileLengthStr);
+        if (org.apache.commons.lang.StringUtils.isNotBlank(this.logType) && !this.currFileType.toUpperCase().startsWith(this.logType)) {
+            this.currValueStream.skipBytes(Integer.valueOf(fileLengthStr));
+            return this.nextLogType();
+        } else if (org.apache.commons.lang.StringUtils.isNotBlank(this.containerId) && !this.containerId.equals(this.currLogKey.toString())) {
+            this.currValueStream.skipBytes(Integer.valueOf(fileLengthStr));
+            return this.nextLogType();
+        } else {
+            this.logPreInfo = "\n\nContainer: " + this.currLogKey + " on " + this.currFileStatus.getPath().getName() + "\n";
+            this.logPreInfo = this.logPreInfo + org.apache.commons.lang.StringUtils.repeat("=", this.logPreInfo.length()) + "\n";
+            this.logPreInfo = this.logPreInfo + "LogType:" + this.currFileType + "\n";
+            this.logPreInfo = this.logPreInfo + "LogLength:" + this.currFileLength + "\n";
+            this.logPreInfo = this.logPreInfo + "Log Contents:\n";
+            this.curRead = 0L;
+            return true;
         }
-
-        logPreInfo = "\n\nContainer: " + currLogKey + " on " + currFileStatus.getPath().getName() + "\n";
-        logPreInfo = logPreInfo + StringUtils.repeat("=", logPreInfo.length()) + "\n";
-        logPreInfo = logPreInfo + "LogType:" + currFileType + "\n";
-        logPreInfo = logPreInfo + "LogLength:" + currFileLength + "\n";
-        logPreInfo = logPreInfo + "Log Contents:\n";
-        curRead = 0L;
-
-        return true;
     }
 
     private boolean nextRecord() throws IOException {
