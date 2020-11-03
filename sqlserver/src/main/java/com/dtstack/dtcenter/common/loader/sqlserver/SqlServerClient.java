@@ -38,6 +38,15 @@ public class SqlServerClient extends AbsRdbmsClient {
     private static final String TABLE_QUERY_ALL_SCHEMA = "select sys.objects.name tableName,sys.schemas.name schemaName from sys.objects,sys.schemas where sys.objects.type='U' and sys.objects.schema_id=sys.schemas.schema_id";
     private static final String TABLE_QUERY_SCHEMA = "select sys.objects.name tableName,sys.schemas.name schemaName from sys.objects,sys.schemas where sys.objects.type='U' or type='V' and sys.objects.schema_id=sys.schemas.schema_id";
 
+    /**
+     * 根据schema获取对应的表：开启cdc的表。TODO 目前只有流计算使用该方法
+     */
+    private static final String TABLE_BY_SCHEMA = "SELECT sys.tables.name AS table_name,sys.schemas.name AS schema_name \n" +
+            "FROM sys.tables LEFT JOIN sys.schemas ON sys.tables.schema_id=sys.schemas.schema_id \n" +
+            "WHERE sys.tables.type='U' AND sys.tables.is_tracked_by_cdc =1\n" +
+            "AND sys.schemas.name = '%s'";
+
+    private static final String SCHEMAS_QUERY = "select distinct(sys.schemas.name) as schema_name from sys.objects,sys.schemas where sys.objects.type='U' and sys.objects.schema_id=sys.schemas.schema_id";
     private static String SQL_SERVER_COLUMN_NAME = "column_name";
     private static String SQL_SERVER_COLUMN_COMMENT = "column_description";
     private static final String COMMENT_QUERY = "SELECT B.name AS column_name, C.value AS column_description FROM sys.tables A INNER JOIN sys.columns B ON B.object_id = A.object_id LEFT JOIN sys.extended_properties C ON C.major_id = B.object_id AND C.minor_id = B.column_id WHERE A.name = N";
@@ -119,6 +128,11 @@ public class SqlServerClient extends AbsRdbmsClient {
     }
 
     @Override
+    protected String getTableBySchemaSql(SqlQueryDTO queryDTO) {
+        return String.format(TABLE_BY_SCHEMA, queryDTO.getSchema());
+    }
+
+    @Override
     protected String transferTableName(String tableName) {
         //如果传过来是[tableName]格式直接当成表名
         if (tableName.startsWith("[") && tableName.endsWith("]")){
@@ -134,11 +148,6 @@ public class SqlServerClient extends AbsRdbmsClient {
         }
         //判断表名
         return String.format("[%s]", tableName);
-    }
-
-    @Override
-    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
     }
 
     @Override
@@ -178,5 +187,10 @@ public class SqlServerClient extends AbsRdbmsClient {
     private static String addSingleQuotes(String str) {
         str = str.contains("'") ? str : String.format("'%s'", str);
         return str;
+    }
+
+    @Override
+    public String getShowDbSql() {
+        return SCHEMAS_QUERY;
     }
 }

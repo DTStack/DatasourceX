@@ -37,6 +37,9 @@ public class PostgresqlClient extends AbsRdbmsClient {
 
     private static final String DONT_EXIST = "doesn't exist";
 
+    // 获取指定schema下的表
+    private static final String SHOW_TABLE_BY_SCHEMA_SQL = "SELECT table_name FROM information_schema.tables WHERE table_schema = '%s'";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new PostgresqlConnFactory();
@@ -227,6 +230,10 @@ public class PostgresqlClient extends AbsRdbmsClient {
     @Override
     public String getShowDbSql() {
         return DATABASE_QUERY;
+    }
+
+    protected String getTableBySchemaSql(SqlQueryDTO queryDTO) {
+        return String.format(SHOW_TABLE_BY_SCHEMA_SQL, queryDTO.getSchema());
     }
 
     /**

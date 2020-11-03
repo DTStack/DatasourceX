@@ -34,6 +34,14 @@ public class SqlServerClient extends AbsRdbmsClient {
     private static String SQL_SERVER_COLUMN_COMMENT = "column_description";
     private static final String SCHEMAS_QUERY = "select distinct(sys.schemas.name) as schema_name from sys.objects,sys.schemas where sys.objects.type='U' and sys.objects.schema_id=sys.schemas.schema_id";
     private static final String COMMENT_QUERY = "SELECT B.name AS column_name, C.value AS column_description FROM sys.tables A INNER JOIN sys.columns B ON B.object_id = A.object_id LEFT JOIN sys.extended_properties C ON C.major_id = B.object_id AND C.minor_id = B.column_id WHERE A.name = N";
+    /**
+     * 根据schema获取对应的表：开启cdc的表
+     */
+    private static final String TABLE_BY_SCHEMA = "SELECT sys.tables.name AS table_name,sys.schemas.name AS schema_name \n" +
+            "FROM sys.tables LEFT JOIN sys.schemas ON sys.tables.schema_id=sys.schemas.schema_id \n" +
+            "WHERE sys.tables.type='U' AND sys.tables.is_tracked_by_cdc =1\n" +
+            "AND sys.schemas.name = '%s'";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new SQLServerConnFactory();
@@ -126,6 +134,11 @@ public class SqlServerClient extends AbsRdbmsClient {
         }
         //判断表名
         return String.format("[%s]", tableName);
+    }
+
+    @Override
+    protected String getTableBySchemaSql(SqlQueryDTO queryDTO) {
+        return String.format(TABLE_BY_SCHEMA, queryDTO.getSchema());
     }
 
     @Override
