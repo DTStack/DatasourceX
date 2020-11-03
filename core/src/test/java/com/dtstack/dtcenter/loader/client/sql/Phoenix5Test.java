@@ -5,7 +5,7 @@ import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
-import com.dtstack.dtcenter.loader.dto.source.PhoenixSourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.Phoenix5SourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
@@ -23,10 +23,10 @@ import java.util.Map;
 public class Phoenix5Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
-    PhoenixSourceDTO source = PhoenixSourceDTO.builder()
-            .url("jdbc:phoenix:kudu1,kudu2,kudu3:2181")
-            .username("root")
-            .password("flink123")
+    Phoenix5SourceDTO source = Phoenix5SourceDTO.builder()
+            .url("jdbc:phoenix:flinkx1,flinkx2,flinkx3:2181")
+            //.username("root")
+            //.password("flink123")
             .build();
 
     @Test
