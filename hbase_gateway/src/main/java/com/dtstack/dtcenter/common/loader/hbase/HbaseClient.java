@@ -324,6 +324,11 @@ public class HbaseClient<T> implements IClient<T> {
     }
 
     @Override
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
     public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }

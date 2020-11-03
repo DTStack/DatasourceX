@@ -29,6 +29,8 @@ public class Db2Client extends AbsRdbmsClient {
 
     private static final String DATABASE_QUERY = "select schemaname from syscat.schemata where ownertype != 'S'";
 
+    private static final String TABLE_BY_SCHEMA = "select TABLE_NAME AS Name from SYSIBM.TABLES where TABLE_SCHEMA='%s'";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new Db2ConnFactory();
@@ -109,6 +111,11 @@ public class Db2Client extends AbsRdbmsClient {
     @Override
     public String getShowDbSql() {
         return DATABASE_QUERY;
+    }
+
+    @Override
+    protected String getTableBySchemaSql(SqlQueryDTO queryDTO) {
+        return String.format(TABLE_BY_SCHEMA, queryDTO.getSchema());
     }
 
     /**

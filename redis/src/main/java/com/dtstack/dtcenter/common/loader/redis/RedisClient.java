@@ -46,6 +46,11 @@ public class RedisClient<T> implements IClient<T> {
     }
 
     @Override
+    public List<String> getTableListBySchema(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
     public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
