@@ -81,6 +81,14 @@ public class SQLServerTest {
     }
 
     @Test
+    public void getTableListBySchema() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.SQLServer.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("dbo").build();
+        List<String> tableList = client.getTableListBySchema(source, queryDTO);
+        System.out.println(tableList);
+    }
+
+    @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.SQLServer.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
@@ -135,5 +143,12 @@ public class SQLServerTest {
                 System.out.println(list);
             }
         }
+    }
+
+    @Test
+    public void getAllDatabases() throws Exception{
+        IClient client = ClientCache.getClient(DataSourceType.SQLServer.getVal());
+        List<String> databases = client.getAllDatabases(source, SqlQueryDTO.builder().build());
+        System.out.println(databases);
     }
 }

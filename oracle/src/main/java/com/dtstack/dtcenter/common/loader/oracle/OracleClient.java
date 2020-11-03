@@ -46,6 +46,10 @@ public class OracleClient extends AbsRdbmsClient {
 
     private static final String TABLE_CREATE_SQL = "select dbms_metadata.get_ddl('TABLE','%s','%s') from dual";
 
+    // 获取指定schema下的表
+    private static final String SHOW_TABLE_BY_SCHEMA_SQL = "SELECT TABLE_NAME  FROM all_tables WHERE OWNER = '%s'";
+
+
     @Override
     protected ConnFactory getConnFactory() {
         return new OracleConnFactory();
@@ -224,6 +228,10 @@ public class OracleClient extends AbsRdbmsClient {
     protected String dealSql(ISourceDTO iSourceDTO, SqlQueryDTO sqlQueryDTO){
         OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) iSourceDTO;
         return "select * from " + transferSchemaAndTableName(oracleSourceDTO.getSchema(), sqlQueryDTO.getTableName()) + " where rownum <=" + sqlQueryDTO.getPreviewNum();
+    }
+
+    protected String getTableBySchemaSql(SqlQueryDTO queryDTO) {
+        return String.format(SHOW_TABLE_BY_SCHEMA_SQL, queryDTO.getSchema());
     }
 
     @Override

@@ -106,6 +106,14 @@ public class Mysql5Test {
     }
 
     @Test
+    public void getTableListBySchema() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.MySQL.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("ide").build();
+        List<String> tableList = client.getTableListBySchema(source, queryDTO);
+        System.out.println(tableList);
+    }
+
+    @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.MySQL.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();

@@ -25,6 +25,11 @@ public class SqlQueryDTO {
     private String sql;
 
     /**
+     * schema/db
+     */
+    private String schema;
+
+    /**
      * 表名称
      */
     private String tableName;

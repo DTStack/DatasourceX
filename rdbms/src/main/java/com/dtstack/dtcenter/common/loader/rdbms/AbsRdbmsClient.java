@@ -58,6 +58,8 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     private static final String SHOW_DB_SQL = "show databases";
 
+    private static final String SHOW_TABLE_BY_SCHEMA_SQL = "select table_name from information_schema.tables where table_schema='%s' and table_type='base table'";
+
     @Override
     public Connection getCon(ISourceDTO iSource) throws Exception {
         log.info("-------get connection success-----");
@@ -182,6 +184,37 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
             throw new DtLoaderException("获取数据库表异常", e);
         } finally {
             DBUtil.closeDBResources(rs, null, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        return tableList;
+    }
+
+    /**
+     * 暂不支持太多数据源
+     *
+     * @param source
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        // 获取根据schema获取表的sql
+        String sql = getTableBySchemaSql(queryDTO);
+        Statement statement = null;
+        ResultSet rs = null;
+        List<String> tableList = new ArrayList<>();
+        try {
+            statement = rdbmsSourceDTO.getConnection().createStatement();
+            rs = statement.executeQuery(sql);
+            while (rs.next()) {
+                tableList.add(rs.getString(1));
+            }
+        } catch (Exception e) {
+            throw new DtLoaderException("根据schema获取表异常", e);
+        } finally {
+            DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return tableList;
     }
@@ -408,6 +441,10 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
         return null;
+    }
+
+    protected String getTableBySchemaSql(SqlQueryDTO queryDTO) {
+        return String.format(SHOW_TABLE_BY_SCHEMA_SQL, queryDTO.getSchema());
     }
 
     @Override

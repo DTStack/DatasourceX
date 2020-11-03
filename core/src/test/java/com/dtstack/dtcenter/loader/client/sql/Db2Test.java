@@ -26,9 +26,9 @@ import java.util.Map;
 @Slf4j
 public class Db2Test {
     private static Db2SourceDTO source = Db2SourceDTO.builder()
-            .url("jdbc:db2://172.16.8.147:50000/SAMPLE")
-            .username("db2inst1")
-            .password("db.2.admin")
+            .url("jdbc:db2://172.16.10.168:50000/SAMPLE")
+            .username("DB2INST1")
+            .password("db2root-pwd")
             .schema("SAMPLE")
             .poolConfig(new PoolConfig())
             .build();
@@ -87,6 +87,13 @@ public class Db2Test {
     public void getTableList() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
         List<String> tableList = client.getTableList(source, null);
+    }
+
+    @Test
+    public void getTableListBySchema() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
+        List<String> tableList = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("TEST_WANGCHUAN").build());
+        System.out.println(tableList.size());
     }
 
     @Test

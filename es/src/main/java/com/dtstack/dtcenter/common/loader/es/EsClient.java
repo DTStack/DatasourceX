@@ -417,6 +417,11 @@ public class EsClient<T> implements IClient<T> {
         throw new DtLoaderException("Not Support");
     }
 
+    @Override
+    public List<String> getTableListBySchema(ISourceDTO iSource, SqlQueryDTO sqlQueryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
     /**
      * 执行增删改等操作
      * <p><p/>
