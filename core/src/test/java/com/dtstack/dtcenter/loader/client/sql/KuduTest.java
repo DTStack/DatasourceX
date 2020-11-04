@@ -10,6 +10,8 @@ import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @company: www.dtstack.com
@@ -21,6 +23,9 @@ public class KuduTest {
     KuduSourceDTO source = KuduSourceDTO.builder()
             .url("172.16.101.13:7051,172.16.100.105:7051,172.16.100.132:7051")
             .build();
+
+    private static final Pattern TABLE_COLUMN = Pattern.compile("(?i)schema.columns\\s*");
+
 
     @Test
     public void testCon() throws Exception {
@@ -45,5 +50,12 @@ public class KuduTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("impala::default.nanqi01").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
+    }
+
+    @Test
+    public void testRegx(){
+        String errorMessage = "error is : schema.columns[120]sass";
+        Matcher passLine = TABLE_COLUMN.matcher(errorMessage);
+        System.out.println(passLine.find());
     }
 }
