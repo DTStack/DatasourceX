@@ -31,6 +31,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -44,6 +46,11 @@ public class DtKuduClient<T> implements IClient<T> {
 
     private static final int TIME_OUT = 5 * 1000;
     private static int PRE_SIZE = 3;
+
+    private static final Pattern TABLE_COLUMN = Pattern.compile("(?i)schema.columns\\s*");
+
+    private static final String COLUMN_TYPE_NOT_SUPPORT= "DECIMAL、CHAR、VARCHAR、DATE";
+
 
     @Override
     public Boolean testCon(ISourceDTO iSource) {
@@ -102,9 +109,18 @@ public class DtKuduClient<T> implements IClient<T> {
                 metaDTOS.add(metaDTO);
             });
         } catch (KuduException e) {
-            throw new DtLoaderException(e.getMessage(), e);
+
+            throw new DtLoaderException(dealMessageError(e.getMessage()), e);
         }
         return metaDTOS;
+    }
+
+    private String dealMessageError(String errorMessage){
+        Matcher passLine = TABLE_COLUMN.matcher(errorMessage);
+        if (passLine.find()) {
+           return String.format("请校验字段类型,kudu表暂时不持%s等类型",COLUMN_TYPE_NOT_SUPPORT);
+        }
+        return errorMessage;
     }
 
     private static KuduClient getConnection(ISourceDTO iSource) {
@@ -156,7 +172,7 @@ public class DtKuduClient<T> implements IClient<T> {
                 }
             }
         } catch (KuduException e) {
-            throw new DtLoaderException(e.getMessage(), e);
+            throw new DtLoaderException(dealMessageError(e.getMessage()), e);
         } finally {
             closeClient(client, null, scanner);
         }
