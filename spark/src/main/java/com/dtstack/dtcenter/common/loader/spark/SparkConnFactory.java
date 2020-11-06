@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 public class SparkConnFactory extends ConnFactory {
     public SparkConnFactory() {
         this.driverName = DataBaseType.Spark.getDriverClassName();
+        this.errorPattern = new SparkErrorPattern();
     }
 
     @Override

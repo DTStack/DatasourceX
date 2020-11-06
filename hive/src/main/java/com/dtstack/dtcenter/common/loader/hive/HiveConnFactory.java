@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 public class HiveConnFactory extends ConnFactory {
     public HiveConnFactory() {
         this.driverName = DataBaseType.HIVE.getDriverClassName();
+        this.errorPattern = new HiveErrorPattern();
     }
 
     @Override
@@ -40,7 +41,7 @@ public class HiveConnFactory extends ConnFactory {
                         try {
                             return super.getConn(hiveSourceDTO);
                         } catch (Exception e) {
-                            throw new DtLoaderException("getHiveConnection error : " + e.getMessage(), e);
+                            throw new DtLoaderException(e.getMessage(), e);
                         }
                     }
             );

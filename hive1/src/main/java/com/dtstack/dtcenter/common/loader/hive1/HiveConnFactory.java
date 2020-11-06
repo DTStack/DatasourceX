@@ -27,6 +27,7 @@ public class HiveConnFactory extends ConnFactory {
     public HiveConnFactory() {
         this.driverName = DataBaseType.HIVE1X.getDriverClassName();
         this.testSql = DataBaseType.HIVE1X.getTestSql();
+        this.errorPattern = new Hive1ErrorPattern();
     }
 
     @Override
