@@ -17,6 +17,7 @@ public enum DataSourceType {
     // RDBMS
     MySQL(1, 0, "MySQL", "mysql5"),
     MySQL8(1001, 1, "MySQL8", "mysql8"),
+    MySQLPXP(1002, 1, "MySQL PXP", "mysql5"),
     Polardb_For_MySQL(28, 2, "PolarDB for MySQL8", "mysql5"),
     Oracle(2, 3, "Oracle", "oracle"),
     SQLServer(3, 4, "SQLServer", "sqlServer"),
