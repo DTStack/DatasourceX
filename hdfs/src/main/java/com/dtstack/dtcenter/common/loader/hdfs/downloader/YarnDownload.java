@@ -129,7 +129,7 @@ public class YarnDownload implements IDownloader {
         //kerberos认证User
         String jobOwner = UserGroupInformation.getCurrentUser().getShortUserName();
         // 支持其他用户的日志下载
-        if (user != null) {
+        if (StringUtils.isNotBlank(user)) {
             jobOwner = user;
         }
         log.info("applicationId:{},jobOwner:{}", appId, jobOwner);
