@@ -41,7 +41,8 @@ public class PhoenixClient extends AbsRdbmsClient {
      * @param tableName
      * @return
      */
-    protected String transferSchemaAndTableName(String schema,String tableName) {
+    @Override
+    protected String transferSchemaAndTableName(String schema, String tableName) {
         // schema为空直接返回
         if (StringUtils.isBlank(schema)) {
             return tableName;
