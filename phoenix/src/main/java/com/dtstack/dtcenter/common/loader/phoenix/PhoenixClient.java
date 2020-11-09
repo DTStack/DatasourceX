@@ -6,11 +6,9 @@ import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
-import com.dtstack.dtcenter.loader.dto.source.Phoenix5SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.PhoenixSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.dtstack.dtcenter.loader.utils.DBUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.DatabaseMetaData;
@@ -43,7 +41,8 @@ public class PhoenixClient extends AbsRdbmsClient {
      * @param tableName
      * @return
      */
-    protected String transferSchemaAndTableName(String schema,String tableName) {
+    @Override
+    protected String transferSchemaAndTableName(String schema, String tableName) {
         // schema为空直接返回
         if (StringUtils.isBlank(schema)) {
             return tableName;
