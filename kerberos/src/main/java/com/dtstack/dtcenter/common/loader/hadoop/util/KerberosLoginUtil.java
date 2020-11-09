@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hadoop.util;
 
+import com.dtstack.dtcenter.common.loader.common.DtClassThreadFactory;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class KerberosLoginUtil {
     private static ConcurrentHashMap<String, UGICacheData> UGI_INFO = new ConcurrentHashMap<>();
 
-    private static final ScheduledExecutorService scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
+    private static final ScheduledExecutorService scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new DtClassThreadFactory("ugiCacheFactory"));
 
     static {
         scheduledThreadPoolExecutor.scheduleAtFixedRate(new KerberosLoginUtil.CacheTimerTask(), 0, 10, TimeUnit.SECONDS);
