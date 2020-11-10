@@ -1,5 +1,7 @@
 package com.dtstack.dtcenter.common.loader.rdbms;
 
+import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
+import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.common.utils.CollectionUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -60,20 +62,32 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     private static final String SHOW_TABLE_BY_SCHEMA_SQL = "select table_name from information_schema.tables where table_schema='%s' and table_type='base table'";
 
+    /**
+     * rdbms数据库获取连接唯一入口，对抛出异常进行统一处理
+     * @param iSource
+     * @return
+     * @throws Exception
+     */
     @Override
     public Connection getCon(ISourceDTO iSource) throws Exception {
-        log.info("-------get connection success-----");
+        log.info("-------getting connection....-----");
         if (!CacheConnectionHelper.isStart()) {
             try {
                 return connFactory.getConn(iSource);
-            } catch (Exception e) {
-                throw new DtLoaderException("获取数据库连接异常", e);
+            } catch (DtLoaderException e) {
+                // 定义过的dtLoaderException直接抛出
+                throw e;
+            } catch (Exception e){
+                throw new DtLoaderException("获取数据库连接异常！", e);
             }
         }
 
         return CacheConnectionHelper.getConnection(getSourceType().getVal(), con -> {
             try {
                 return connFactory.getConn(iSource);
+            } catch (DtLoaderException e) {
+                // 定义过的dtLoaderException直接抛出
+                throw e;
             } catch (Exception e) {
                 throw new DtLoaderException("获取数据库连接异常", e);
             }

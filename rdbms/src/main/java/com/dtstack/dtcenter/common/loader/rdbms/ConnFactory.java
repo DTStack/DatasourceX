@@ -1,5 +1,8 @@
 package com.dtstack.dtcenter.common.loader.rdbms;
 
+import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
+import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
+import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.common.DtClassThreadFactory;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -13,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -29,6 +33,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class ConnFactory {
     protected String driverName = null;
+
+    // 错误匹配规则类，需要各个数据源去实现该规则接口并在创建连接工厂时初始化该成员变量
+    protected IErrorPattern errorPattern = null;
+
+    // 异常适配器
+    private IErrorAdapter errorAdapter = new ErrorAdapterImpl();
 
     protected String testSql;
 
@@ -57,14 +67,30 @@ public class ConnFactory {
         }
     }
 
+    /**
+     * 获取连接，对抛出异常进行统一处理
+     *
+     * @param source
+     * @return
+     * @throws Exception
+     */
     public Connection getConn(ISourceDTO source) throws Exception {
         if (source == null) {
             throw new DtLoaderException("数据源信息为 NULL");
         }
-        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
-        boolean isStart = rdbmsSourceDTO.getPoolConfig() != null;
-        return isStart && MapUtils.isEmpty(rdbmsSourceDTO.getKerberosConfig()) ?
-                getCpConn(rdbmsSourceDTO) : getSimpleConn(rdbmsSourceDTO);
+        try {
+            RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+            boolean isStart = rdbmsSourceDTO.getPoolConfig() != null;
+            return isStart && MapUtils.isEmpty(rdbmsSourceDTO.getKerberosConfig()) ?
+                    getCpConn(rdbmsSourceDTO) : getSimpleConn(rdbmsSourceDTO);
+        } catch (Exception e){
+            if (Objects.isNull(errorPattern)) {
+                throw new DtLoaderException("获取数据库连接异常！", e);
+            }
+            // 对异常进行统一处理
+            String msg = errorAdapter.connAdapter(e.getMessage(), errorPattern);
+            throw new DtLoaderException(msg, e);
+        }
     }
 
     /**
@@ -133,11 +159,12 @@ public class ConnFactory {
                 statement = conn.createStatement();
                 statement.execute((testSql));
             }
-
             return true;
+        } catch (DtLoaderException e) {
+            throw e;
         } catch (Exception e) {
             throw new DtLoaderException("数据源连接异常:" + e.getMessage(), e);
-        } finally {
+        }finally {
             DBUtil.closeDBResources(null, statement, conn);
         }
     }
