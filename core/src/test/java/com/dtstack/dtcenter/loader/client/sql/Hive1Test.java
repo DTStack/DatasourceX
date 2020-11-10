@@ -6,7 +6,9 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
 
@@ -38,6 +40,21 @@ public class Hive1Test {
 
     @Test
     public void testCon() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.HIVE1X.getPluginName());
+        Boolean isConnected = client.testCon(source);
+        if (Boolean.FALSE.equals(isConnected)) {
+            throw new DtCenterDefException("连接异常");
+        }
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void testConTimeout() {
+        Hive1SourceDTO source = Hive1SourceDTO.builder()
+                .url("jdbc:hive2://172.16.8.107:10000/default")
+                .schema("default")
+                .defaultFS("hdfs://1.1.1.1")
+                .username("admin")
+                .build();
         IClient client = clientCache.getClient(DataSourceType.HIVE1X.getPluginName());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
