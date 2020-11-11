@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -142,5 +143,12 @@ public class PostgreSQLTest {
         IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         List<String> databases = client.getAllDatabases(source, SqlQueryDTO.builder().build());
         System.out.println(databases);
+    }
+
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
     }
 }

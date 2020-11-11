@@ -32,6 +32,9 @@ public class SqlServerClient extends AbsRdbmsClient {
 
     private static final String TABLE_SHOW = "[%s].[%s]";
 
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "Select Name From Master..SysDataBases Where DbId=(Select Dbid From Master..SysProcesses Where Spid = @@spid)";
+
     /**
      * 获取所有的表和对应的schema-备用
      */
@@ -192,5 +195,10 @@ public class SqlServerClient extends AbsRdbmsClient {
     @Override
     public String getShowDbSql() {
         return SCHEMAS_QUERY;
+    }
+
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
     }
 }

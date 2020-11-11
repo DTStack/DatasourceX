@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Mysql8SourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -160,5 +161,12 @@ public class Mysql8Test {
         IClient client = ClientCache.getClient(DataSourceType.MySQL8.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         System.out.println(client.getPartitionColumn(source,queryDTO));
+    }
+
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.MySQL8.getVal());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
     }
 }

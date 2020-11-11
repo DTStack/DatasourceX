@@ -32,6 +32,10 @@ import java.util.regex.Matcher;
  * @Description：Impala 连接
  */
 public class ImpalaClient extends AbsRdbmsClient {
+
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "select current_database()";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new ImpalaConnFactory();
@@ -264,5 +268,10 @@ public class ImpalaClient extends AbsRdbmsClient {
             }
         }
         return tableInfo;
+    }
+
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
     }
 }

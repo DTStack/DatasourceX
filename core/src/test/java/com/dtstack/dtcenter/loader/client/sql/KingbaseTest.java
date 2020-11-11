@@ -7,6 +7,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.KingbaseSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -25,9 +26,9 @@ public class KingbaseTest {
     IClient client = ClientCache.getClient(DataSourceType.KINGBASE8.getVal());
 
     private static KingbaseSourceDTO source = KingbaseSourceDTO.builder()
-            .url("jdbc:kingbase8://172.16.8.182:54321/dev")
-            .username("admin")
-            .password("Abc123")
+            .url("jdbc:kingbase8://172.16.10.131:54321/WANGCHUAN")
+            .username("root")
+            .password("abc123")
             .poolConfig(PoolConfig.builder().maximumPoolSize(2).build())
             .build();
 
@@ -192,5 +193,12 @@ public class KingbaseTest {
     public void getTableMetaComment() throws Exception {
         String metaComment = client.getTableMetaComment(source, SqlQueryDTO.builder().tableName("nanqi").build());
         System.out.println(metaComment);
+    }
+
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.KINGBASE8.getVal());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
     }
 }

@@ -22,6 +22,10 @@ import java.util.List;
  * @Description：Libra 客户端
  */
 public class LibraClient extends AbsRdbmsClient {
+
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "select current_database()";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new LibraConnFactory();
@@ -57,5 +61,10 @@ public class LibraClient extends AbsRdbmsClient {
         } finally {
             DBUtil.closeDBResources(rs, statement, libraSourceDTO.clearAfterGetConnection(clearStatus));
         }
+    }
+
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
     }
 }

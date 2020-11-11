@@ -46,6 +46,10 @@ import java.util.stream.Collectors;
  * @Description：Hive 连接
  */
 public class HiveClient extends AbsRdbmsClient {
+
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "select current_database()";
+
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Override
@@ -421,5 +425,10 @@ public class HiveClient extends AbsRdbmsClient {
             }
         }
         return tableInfo;
+    }
+
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
     }
 }

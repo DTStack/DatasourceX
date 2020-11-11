@@ -26,6 +26,10 @@ import java.util.List;
  * @Description：clickhouse 客户端
  */
 public class ClickhouseClient extends AbsRdbmsClient {
+
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "select currentDatabase()";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new ClickhouseConnFactory();
@@ -147,5 +151,10 @@ public class ClickhouseClient extends AbsRdbmsClient {
         ClickHouseDownloader clickHouseDownloader = new ClickHouseDownloader(getCon(clickHouseSourceDTO), queryDTO.getSql(), clickHouseSourceDTO.getSchema());
         clickHouseDownloader.configure();
         return clickHouseDownloader;
+    }
+
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
     }
 }
