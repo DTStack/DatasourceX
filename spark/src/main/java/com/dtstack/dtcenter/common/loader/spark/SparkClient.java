@@ -23,7 +23,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.security.PrivilegedAction;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -35,7 +34,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -242,12 +240,8 @@ public class SparkClient extends AbsRdbmsClient {
         conf.set("hadoop.security.authorization", "false");
         conf.set("dfs.namenode.kerberos.principal.pattern", "*");
 
-        if (MapUtils.isEmpty(sparkSourceDTO.getKerberosConfig())) {
-            return HdfsOperator.checkConnection(conf);
-        }
-
         // 校验高可用配置
-        return KerberosUtil.loginKerberosWithUGI(sparkSourceDTO.getKerberosConfig()).doAs(
+        return KerberosUtil.loginWithUGI(sparkSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Boolean>) () -> HdfsOperator.checkConnection(conf)
         );
     }
@@ -331,24 +325,19 @@ public class SparkClient extends AbsRdbmsClient {
             conf.set("dfs.namenode.kerberos.principal.pattern", "*");
         }
 
-        //kerberos认证，目前暂不支持多次不同认证，下个版本做 TODO
-        if (MapUtils.isNotEmpty(sparkSourceDTO.getKerberosConfig())) {
-            String finalStorageMode = storageMode;
-            Configuration finalConf = conf;
-            String finalTableLocation = tableLocation;
-            String finalFieldDelimiter = fieldDelimiter;
-            return KerberosUtil.loginKerberosWithUGI(sparkSourceDTO.getKerberosConfig()).doAs(
-                    (PrivilegedAction<IDownloader>) () -> {
-                        try {
-                            return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), sparkSourceDTO.getKerberosConfig());
-                        } catch (Exception e) {
-                            throw new DtCenterDefException("创建下载器异常", e);
-                        }
+        String finalStorageMode = storageMode;
+        Configuration finalConf = conf;
+        String finalTableLocation = tableLocation;
+        String finalFieldDelimiter = fieldDelimiter;
+        return KerberosUtil.loginWithUGI(sparkSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<IDownloader>) () -> {
+                    try {
+                        return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), sparkSourceDTO.getKerberosConfig());
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("创建下载器异常", e);
                     }
-            );
-        }
-
-        return createDownloader(storageMode, conf, tableLocation, columnNames, fieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), sparkSourceDTO.getKerberosConfig());
+                }
+        );
     }
 
     /**

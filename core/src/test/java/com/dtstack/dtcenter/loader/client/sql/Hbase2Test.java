@@ -5,17 +5,12 @@ import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.comparator.BinaryComparator;
-import com.dtstack.dtcenter.loader.dto.comparator.RegexStringComparator;
 import com.dtstack.dtcenter.loader.dto.filter.Filter;
-import com.dtstack.dtcenter.loader.dto.filter.PageFilter;
 import com.dtstack.dtcenter.loader.dto.filter.RowFilter;
-import com.dtstack.dtcenter.loader.dto.filter.SingleColumnValueFilter;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.enums.CompareOp;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.google.common.collect.Lists;
-import com.google.common.primitives.Bytes;
 import org.junit.Test;
 
 import java.util.ArrayList;

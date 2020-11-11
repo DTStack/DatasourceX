@@ -240,12 +240,8 @@ public class HiveClient extends AbsRdbmsClient {
         conf.set("hadoop.security.authorization", "false");
         conf.set("dfs.namenode.kerberos.principal.pattern", "*");
 
-        if (MapUtils.isEmpty(hiveSourceDTO.getKerberosConfig())) {
-            return HdfsOperator.checkConnection(conf);
-        }
-
         // 校验高可用配置
-        return KerberosUtil.loginKerberosWithUGI(hiveSourceDTO.getKerberosConfig()).doAs(
+        return KerberosUtil.loginWithUGI(hiveSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Boolean>) () -> HdfsOperator.checkConnection(conf)
         );
     }
@@ -327,23 +323,19 @@ public class HiveClient extends AbsRdbmsClient {
             conf.set("dfs.namenode.kerberos.principal.pattern", "*");
         }
 
-        //kerberos认证，目前暂不支持多次不同认证，下个版本做 TODO
-        if (MapUtils.isNotEmpty(hiveSourceDTO.getKerberosConfig())) {
-            String finalStorageMode = storageMode;
-            Configuration finalConf = conf;
-            String finalTableLocation = tableLocation;
-            String finalFieldDelimiter = fieldDelimiter;
-            return KerberosUtil.loginKerberosWithUGI(hiveSourceDTO.getKerberosConfig()).doAs(
-                    (PrivilegedAction<IDownloader>) () -> {
-                        try {
-                            return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), hiveSourceDTO.getKerberosConfig());
-                        } catch (Exception e) {
-                            throw new DtCenterDefException("创建下载器异常", e);
-                        }
+        String finalStorageMode = storageMode;
+        Configuration finalConf = conf;
+        String finalTableLocation = tableLocation;
+        String finalFieldDelimiter = fieldDelimiter;
+        return KerberosUtil.loginWithUGI(hiveSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<IDownloader>) () -> {
+                    try {
+                        return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), hiveSourceDTO.getKerberosConfig());
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("创建下载器异常", e);
                     }
-            );
-        }
-        return createDownloader(storageMode, conf, tableLocation, columnNames, fieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), null);
+                }
+        );
     }
 
     /**

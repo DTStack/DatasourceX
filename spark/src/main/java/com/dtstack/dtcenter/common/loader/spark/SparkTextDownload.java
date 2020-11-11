@@ -5,7 +5,6 @@ import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -217,13 +216,7 @@ public class SparkTextDownload implements IDownloader {
 
     @Override
     public List<String> readNext(){
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return readNextWithKerberos();
-        }
-
-        // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
@@ -258,13 +251,7 @@ public class SparkTextDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return recordReader == null || !nextRecord();
-        }
-
-        // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return recordReader == null || !nextRecord();

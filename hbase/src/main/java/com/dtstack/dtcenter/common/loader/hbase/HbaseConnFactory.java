@@ -56,22 +56,7 @@ public class HbaseConnFactory extends ConnFactory {
 
     public static org.apache.hadoop.hbase.client.Connection getHbaseConn(HbaseSourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         Map<String, Object> sourceToMap = sourceToMap(source, queryDTO);
-        if (MapUtils.isEmpty(source.getKerberosConfig())) {
-            Configuration hConfig = HBaseConfiguration.create();
-            for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {
-                hConfig.set(entry.getKey(), (String) entry.getValue());
-            }
-
-            org.apache.hadoop.hbase.client.Connection hConn = null;
-            try {
-                hConn = ConnectionFactory.createConnection(hConfig);
-                return hConn;
-            } catch (Exception e) {
-                throw new RuntimeException("获取 hbase 连接异常", e);
-            }
-        }
-
-        return KerberosUtil.loginKerberosWithUGI(new HashMap<>(source.getKerberosConfig())).doAs(
+        return KerberosUtil.loginWithUGI(new HashMap<>(source.getKerberosConfig())).doAs(
                 (PrivilegedAction<org.apache.hadoop.hbase.client.Connection>) () -> {
                     Configuration hConfig = HBaseConfiguration.create();
                     for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {

@@ -6,7 +6,6 @@ import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
@@ -189,14 +188,7 @@ public class YarnDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws Exception {
-
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
-        }
-
-        // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
@@ -208,17 +200,7 @@ public class YarnDownload implements IDownloader {
 
     @Override
     public boolean close() throws Exception {
-
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            if(currValueStream != null){
-                currValueStream.close();
-            }
-            return true;
-        }
-
-        // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         if(currValueStream != null){

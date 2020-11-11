@@ -20,11 +20,23 @@ import java.util.Map;
  */
 @Slf4j
 public class KerberosUtil {
-    public static synchronized UserGroupInformation loginKerberosWithUGI(Map<String, Object> confMap) {
-        return loginKerberosWithUGI(confMap, "principal", "principalFile", "java.security.krb5.conf");
+    public static synchronized UserGroupInformation loginWithUGI(Map<String, Object> confMap) {
+        return loginWithUGI(confMap, "principal", "principalFile", "java.security.krb5.conf");
     }
 
-    public static synchronized UserGroupInformation loginKerberosWithUGI(Map<String, Object> confMap, String principal, String keytab, String krb5Conf) {
+    public static synchronized UserGroupInformation loginWithUGI(Map<String, Object> confMap, String principal, String keytab, String krb5Conf) {
+        // 非 Kerberos 认证，需要重新刷 UGI 信息
+        if (MapUtils.isEmpty(confMap)) {
+            try {
+                Config.refresh();
+                UserGroupInformation.setConfiguration(new Configuration());
+                return UserGroupInformation.getCurrentUser();
+            } catch (Exception e) {
+                throw new DtLoaderException("simple login failed", e);
+            }
+        }
+
+        //Kerberos 认证属性
         principal = MapUtils.getString(confMap, principal);
         keytab = MapUtils.getString(confMap, keytab);
         krb5Conf = MapUtils.getString(confMap, krb5Conf);

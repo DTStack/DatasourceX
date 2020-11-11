@@ -1,7 +1,6 @@
 package com.dtstack.dtcenter.common.loader.kudu;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
-import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
 import com.dtstack.dtcenter.common.loader.common.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -12,7 +11,6 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kudu.ColumnSchema;
 import org.apache.kudu.Schema;
@@ -27,8 +25,6 @@ import org.apache.kudu.client.RowResultIterator;
 
 import java.security.PrivilegedAction;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -126,23 +122,18 @@ public class DtKuduClient extends AbsRdbmsClient {
             throw new DtCenterDefException("集群地址不能为空");
         }
         List<String> hosts = Arrays.stream(kuduSourceDTO.getUrl().split(",")).collect(Collectors.toList());
-        if (MapUtils.isNotEmpty(kuduSourceDTO.getKerberosConfig())) {
-            String principalFile = (String) kuduSourceDTO.getKerberosConfig().get("principalFile");
-            String principal = (String) kuduSourceDTO.getKerberosConfig().get("principal");
-            log.info("getKuduClient principal {},principalFile:{}", principal, principalFile);
-            return  KerberosUtil.loginKerberosWithUGI(kuduSourceDTO.getKerberosConfig()).doAs(
-                    (PrivilegedAction<KuduClient>) () -> {
-                        try {
-                            return new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build();
-                        } catch (Exception e) {
-                            throw new DtCenterDefException("getKuduClient error : " + e.getMessage(), e);
-                        }
+        String principalFile = (String) kuduSourceDTO.getKerberosConfig().get("principalFile");
+        String principal = (String) kuduSourceDTO.getKerberosConfig().get("principal");
+        log.info("getKuduClient principal {},principalFile:{}", principal, principalFile);
+        return  KerberosUtil.loginWithUGI(kuduSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<KuduClient>) () -> {
+                    try {
+                        return new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build();
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("getKuduClient error : " + e.getMessage(), e);
                     }
-            );
-        } else {
-            return new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build();
-        }
-
+                }
+        );
     }
 
 

@@ -5,7 +5,6 @@ import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.loader.IDownloader;
 import jodd.util.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -105,13 +104,7 @@ public class HiveORCDownload implements IDownloader {
 
     @Override
     public List<String> readNext() throws Exception {
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return readNextWithKerberos();
-        }
-
-        // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
@@ -178,13 +171,7 @@ public class HiveORCDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return recordReader == null || !nextRecord();
-        }
-
-        // kerberos认证
-        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return recordReader == null || !nextRecord();
