@@ -20,8 +20,6 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.dtstack.dtcenter.loader.utils.DBUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +27,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.PrivilegedAction;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -40,7 +37,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -225,7 +221,7 @@ public class SparkClient extends AbsRdbmsClient {
         }
     }
 
-    private Boolean testConnection(ISourceDTO iSource) {
+    private Boolean testConnection(ISourceDTO iSource) throws Exception {
         // 先校验数据源连接性
         Boolean testCon = super.testCon(iSource);
         if (!testCon) {

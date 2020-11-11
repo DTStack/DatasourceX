@@ -226,7 +226,7 @@ public class HiveClient extends AbsRdbmsClient {
         }
     }
 
-    private Boolean testConnection(ISourceDTO iSource) {
+    private Boolean testConnection(ISourceDTO iSource) throws Exception {
         // 先校验数据源连接性
         Boolean testCon = super.testCon(iSource);
         if (!testCon) {
