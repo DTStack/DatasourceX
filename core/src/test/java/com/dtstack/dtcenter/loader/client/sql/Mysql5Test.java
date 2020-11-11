@@ -189,4 +189,11 @@ public class Mysql5Test {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         System.out.println(client.getCreateTableSql(source,queryDTO));
     }
+
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.MySQL.getVal());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
+    }
 }

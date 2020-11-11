@@ -55,6 +55,9 @@ public class KingbaseClient extends AbsRdbmsClient {
      */
     private static final String COL_COMMENT_SQL = "SELECT COLUMN_NAME,COMMENTS FROM ALL_COL_COMMENTS WHERE TABLE_NAME = '%s' ";
 
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "select current_database()";
+
     private static final String DONT_EXIST = "doesn't exist";
 
     @Override
@@ -252,4 +255,8 @@ public class KingbaseClient extends AbsRdbmsClient {
         throw new DtLoaderException("Not Support");
     }
 
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
+    }
 }

@@ -37,6 +37,9 @@ public class PostgresqlClient extends AbsRdbmsClient {
 
     private static final String DONT_EXIST = "doesn't exist";
 
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "select current_database()";
+
     // 获取指定schema下的表
     private static final String SHOW_TABLE_BY_SCHEMA_SQL = "SELECT table_name FROM information_schema.tables WHERE table_schema = '%s'";
 
@@ -254,5 +257,10 @@ public class PostgresqlClient extends AbsRdbmsClient {
             schema = String.format("\"%s\"", schema);
         }
         return String.format("%s.%s", schema, tableName);
+    }
+
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
     }
 }

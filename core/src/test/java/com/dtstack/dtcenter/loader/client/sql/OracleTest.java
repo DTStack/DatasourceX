@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -182,4 +183,10 @@ public class OracleTest {
         System.out.println(client.getCreateTableSql(source,queryDTO));
     }
 
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
+    }
 }

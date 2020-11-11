@@ -143,4 +143,10 @@ public class TiDBTest {
         System.out.println(preview);
     }
 
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
+    }
 }

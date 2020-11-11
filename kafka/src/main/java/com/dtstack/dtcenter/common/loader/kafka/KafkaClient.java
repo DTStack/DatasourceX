@@ -107,4 +107,9 @@ public class KafkaClient<T> implements IClient<T> {
     public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
+
+    @Override
+    public String getCurrentDatabase(ISourceDTO source) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
 }

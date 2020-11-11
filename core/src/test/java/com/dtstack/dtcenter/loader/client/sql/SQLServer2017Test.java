@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.source.Sqlserver2017SourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -25,9 +26,9 @@ import java.util.Map;
 @Slf4j
 public class SQLServer2017Test {
     private static Sqlserver2017SourceDTO source = Sqlserver2017SourceDTO.builder()
-            .url("jdbc:sqlserver://kudu5:1433;databaseName=dev")
+            .url("jdbc:sqlserver://172.16.100.146:1433;DatabaseName=cdc1")
             .username("sa")
-            .password("<root@Passw0rd>")
+            .password("dtstack@2020#")
             .poolConfig(new PoolConfig())
             .build();
 
@@ -125,6 +126,13 @@ public class SQLServer2017Test {
         IClient client = ClientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getVal());
         List<String> databases = client.getAllDatabases(source, SqlQueryDTO.builder().build());
         System.out.println(databases);
+    }
+
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getVal());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
     }
 
 }

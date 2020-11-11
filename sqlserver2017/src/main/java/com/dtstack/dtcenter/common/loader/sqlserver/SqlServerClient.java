@@ -34,6 +34,8 @@ public class SqlServerClient extends AbsRdbmsClient {
     private static String SQL_SERVER_COLUMN_COMMENT = "column_description";
     private static final String SCHEMAS_QUERY = "select distinct(sys.schemas.name) as schema_name from sys.objects,sys.schemas where sys.objects.type='U' and sys.objects.schema_id=sys.schemas.schema_id";
     private static final String COMMENT_QUERY = "SELECT B.name AS column_name, C.value AS column_description FROM sys.tables A INNER JOIN sys.columns B ON B.object_id = A.object_id LEFT JOIN sys.extended_properties C ON C.major_id = B.object_id AND C.minor_id = B.column_id WHERE A.name = N";
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "Select Name From Master..SysDataBases Where DbId=(Select Dbid From Master..SysProcesses Where Spid = @@spid)";
     /**
      * 根据schema获取对应的表：开启cdc的表
      */
@@ -183,5 +185,10 @@ public class SqlServerClient extends AbsRdbmsClient {
     @Override
     public String getShowDbSql() {
         return SCHEMAS_QUERY;
+    }
+
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
     }
 }
