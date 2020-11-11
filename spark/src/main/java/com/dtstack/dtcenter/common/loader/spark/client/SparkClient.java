@@ -20,20 +20,30 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import com.dtstack.dtcenter.loader.utils.DBUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.PrivilegedAction;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +52,7 @@ import java.util.stream.Collectors;
  * @Date ：Created in 17:06 2020/1/7
  * @Description：Spark 连接
  */
+@Slf4j
 public class SparkClient extends AbsRdbmsClient {
     @Override
     protected ConnFactory getConnFactory() {
@@ -52,6 +63,9 @@ public class SparkClient extends AbsRdbmsClient {
     protected DataSourceType getSourceType() {
         return DataSourceType.Spark;
     }
+
+    // 测试连通性超时时间。单位：秒
+    private final static int TEST_CONN_TIMEOUT = 30;
 
     @Override
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
@@ -190,7 +204,28 @@ public class SparkClient extends AbsRdbmsClient {
     }
 
     @Override
-    public Boolean testCon(ISourceDTO iSource) throws Exception {
+    public Boolean testCon(ISourceDTO sourceDTO) {
+        Future<Boolean> future = null;
+        try {
+            // 使用线程池的方式来控制连通超时
+            Callable<Boolean> call = () -> testConnection(sourceDTO);
+            future = executor.submit(call);
+            // 如果在设定超时(以秒为单位)之内，还没得到连通性测试结果，则认为连通性测试连接超时，不继续阻塞
+            return future.get(TEST_CONN_TIMEOUT, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            log.error("测试连通性超时！", e);
+            throw new DtLoaderException("测试连通性超时！", e);
+        } catch (Exception e){
+            log.error("测试连通性出错！", e);
+            throw new DtLoaderException("测试连通性出错！", e);
+        } finally {
+            if (Objects.nonNull(future)) {
+                future.cancel(true);
+            }
+        }
+    }
+
+    private Boolean testConnection(ISourceDTO iSource) {
         // 先校验数据源连接性
         Boolean testCon = super.testCon(iSource);
         if (!testCon) {
