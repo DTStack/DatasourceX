@@ -42,12 +42,7 @@ public class HdfsConnFactory extends ConnFactory {
         //不在做重复认证 主要用于 HdfsOperator.checkConnection 中有一些数栈自己的逻辑
         conf.set("hadoop.security.authorization", "false");
         conf.set("dfs.namenode.kerberos.principal.pattern", "*");
-
-        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
-            return HdfsOperator.checkConnection(conf);
-        }
-
-        return KerberosUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Boolean>) () -> HdfsOperator.checkConnection(conf)
         );
     }

@@ -8,7 +8,6 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.security.PrivilegedAction;
@@ -35,27 +34,17 @@ public class HiveConnFactory extends ConnFactory {
         init();
         Hive1SourceDTO hive1SourceDTO = (Hive1SourceDTO) iSource;
 
-        Connection connection = null;
-        if (MapUtils.isNotEmpty(hive1SourceDTO.getKerberosConfig())) {
-            String principalFile = (String) hive1SourceDTO.getKerberosConfig().get("principalFile");
-            log.info("getHiveConnection principalFile:{}", principalFile);
-
-            connection = KerberosUtil.loginKerberosWithUGI(hive1SourceDTO.getKerberosConfig()).doAs(
-                    (PrivilegedAction<Connection>) () -> {
-                        try {
-                            DriverManager.setLoginTimeout(30);
-                            return DriverManager.getConnection(hive1SourceDTO.getUrl(), hive1SourceDTO.getUsername(),
-                                    hive1SourceDTO.getPassword());
-                        } catch (SQLException e) {
-                            throw new DtCenterDefException("getHiveConnection error : " + e.getMessage(), e);
-                        }
+        Connection connection = KerberosUtil.loginWithUGI(hive1SourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Connection>) () -> {
+                    try {
+                        DriverManager.setLoginTimeout(30);
+                        return DriverManager.getConnection(hive1SourceDTO.getUrl(), hive1SourceDTO.getUsername(),
+                                hive1SourceDTO.getPassword());
+                    } catch (SQLException e) {
+                        throw new DtCenterDefException("getHiveConnection error : " + e.getMessage(), e);
                     }
-            );
-        } else {
-            DriverManager.setLoginTimeout(30);
-            connection = DriverManager.getConnection(hive1SourceDTO.getUrl(), hive1SourceDTO.getUsername(),
-                    hive1SourceDTO.getPassword());
-        }
+                }
+        );
 
         Matcher matcher = DtClassConsistent.PatternConsistent.HIVE_JDBC_PATTERN.matcher(hive1SourceDTO.getUrl());
         String db = null;
