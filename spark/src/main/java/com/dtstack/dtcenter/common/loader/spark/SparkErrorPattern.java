@@ -2,9 +2,7 @@ package com.dtstack.dtcenter.common.loader.spark;
 
 import com.dtstack.dtcenter.common.loader.common.exception.AbsErrorPattern;
 import com.dtstack.dtcenter.common.loader.common.exception.ConnErrorCode;
-import com.google.common.collect.Maps;
 
-import java.util.Map;
 import java.util.regex.Pattern;
 
 /**

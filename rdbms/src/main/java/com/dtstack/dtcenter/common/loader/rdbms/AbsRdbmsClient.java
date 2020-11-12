@@ -1,8 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms;
 
 import com.dtstack.dtcenter.common.loader.common.DtClassThreadFactory;
-import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
-import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.common.utils.CollectionUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -17,7 +15,6 @@ import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
