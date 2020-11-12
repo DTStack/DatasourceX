@@ -9,7 +9,6 @@ import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -161,13 +160,7 @@ public class HiveParquetDownload implements IDownloader {
 
     @Override
     public List<String> readNext() throws Exception {
-
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return readNextWithKerberos();
-        }
-        // kerberos认证
-        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return HiveKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
@@ -280,14 +273,7 @@ public class HiveParquetDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws Exception {
-
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return !nextRecord();
-        }
-
-        // kerberos认证
-        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return HiveKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return !nextRecord();

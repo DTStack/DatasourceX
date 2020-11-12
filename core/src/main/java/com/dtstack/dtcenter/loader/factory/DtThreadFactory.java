@@ -7,8 +7,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @company: www.dtstack.com
  * @Author ：Nanqi
  * @Date ：Created in 21:15 2020/8/21
- * @Description：Loader 线程池工厂
+ * @Description：Loader 线程池工厂 后续使用 com.dtstack.dtcenter.common.loader.common.DtClassThreadFactory
  */
+@Deprecated
 public class DtThreadFactory implements ThreadFactory {
     private final static AtomicInteger POOL_NUMBER = new AtomicInteger(1);
     private final static AtomicInteger THREAD_NUMBER = new AtomicInteger(1);

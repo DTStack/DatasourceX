@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms;
 
+import com.dtstack.dtcenter.common.loader.common.DtClassThreadFactory;
 import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
 import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.common.utils.CollectionUtil;
@@ -33,6 +34,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @company: www.dtstack.com
@@ -63,6 +68,9 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     private static final String SHOW_DB_SQL = "show databases";
 
     private static final String SHOW_TABLE_BY_SCHEMA_SQL = "select table_name from information_schema.tables where table_schema='%s' and table_type='base table'";
+
+    //线程池 - 用于部分数据源测试连通性超时处理
+    protected static ExecutorService executor = new ThreadPoolExecutor(5, 10, 1L, TimeUnit.MINUTES, new ArrayBlockingQueue<>(5), new DtClassThreadFactory("testConnFactory"));
 
     /**
      * rdbms数据库获取连接唯一入口，对抛出异常进行统一处理

@@ -20,13 +20,12 @@ import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,9 +33,13 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -45,12 +48,14 @@ import java.util.stream.Collectors;
  * @Date ：Created in 17:06 2020/1/7
  * @Description：Hive 连接
  */
+@Slf4j
 public class HiveClient extends AbsRdbmsClient {
 
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select current_database()";
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    // 测试连通性超时时间。单位：秒
+    private final static int TEST_CONN_TIMEOUT = 30;
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -199,7 +204,28 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public Boolean testCon(ISourceDTO iSource) throws Exception {
+    public Boolean testCon(ISourceDTO sourceDTO) {
+        Future<Boolean> future = null;
+        try {
+            // 使用线程池的方式来控制连通超时
+            Callable<Boolean> call = () -> testConnection(sourceDTO);
+            future = executor.submit(call);
+            // 如果在设定超时(以秒为单位)之内，还没得到连通性测试结果，则认为连通性测试连接超时，不继续阻塞
+            return future.get(TEST_CONN_TIMEOUT, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            log.error("测试连通性超时！", e);
+            throw new DtLoaderException("测试连通性超时！", e);
+        } catch (Exception e){
+            log.error("测试连通性出错！", e);
+            throw new DtLoaderException("测试连通性出错！", e);
+        } finally {
+            if (Objects.nonNull(future)) {
+                future.cancel(true);
+            }
+        }
+    }
+
+    private Boolean testConnection(ISourceDTO iSource) throws Exception {
         // 先校验数据源连接性
         Boolean testCon = super.testCon(iSource);
         if (!testCon) {
@@ -211,30 +237,6 @@ public class HiveClient extends AbsRdbmsClient {
         }
 
         return HdfsOperator.checkConnection(hiveSourceDTO.getDefaultFS(), hiveSourceDTO.getConfig(), hiveSourceDTO.getKerberosConfig());
-    }
-
-    /**
-     * 高可用配置
-     *
-     * @param hadoopConfig
-     * @param confMap
-     * @return
-     */
-    private Properties combineHdfsConfig(String hadoopConfig, Map<String, Object> confMap) {
-        Properties properties = new Properties();
-        if (StringUtils.isNotBlank(hadoopConfig)) {
-            try {
-                properties = OBJECT_MAPPER.readValue(hadoopConfig, Properties.class);
-            } catch (IOException e) {
-                throw new DtLoaderException("高可用配置格式错误", e);
-            }
-        }
-        if (confMap != null) {
-            for (String key : confMap.keySet()) {
-                properties.setProperty(key, confMap.get(key).toString());
-            }
-        }
-        return properties;
     }
 
     @Override
@@ -279,23 +281,19 @@ public class HiveClient extends AbsRdbmsClient {
         }
         Configuration conf = HadoopConfUtil.getHdfsConf(hiveSourceDTO.getDefaultFS(), hiveSourceDTO.getConfig(), hiveSourceDTO.getKerberosConfig());
 
-        //kerberos认证，目前暂不支持多次不同认证，下个版本做 TODO
-        if (MapUtils.isNotEmpty(hiveSourceDTO.getKerberosConfig())) {
-            String finalStorageMode = storageMode;
-            Configuration finalConf = conf;
-            String finalTableLocation = tableLocation;
-            String finalFieldDelimiter = fieldDelimiter;
-            return HiveKerberosLoginUtil.loginKerberosWithUGI(hiveSourceDTO.getUrl(), hiveSourceDTO.getKerberosConfig()).doAs(
-                    (PrivilegedAction<IDownloader>) () -> {
-                        try {
-                            return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), hiveSourceDTO.getKerberosConfig());
-                        } catch (Exception e) {
-                            throw new DtLoaderException("创建下载器异常", e);
-                        }
+        String finalStorageMode = storageMode;
+        Configuration finalConf = conf;
+        String finalTableLocation = tableLocation;
+        String finalFieldDelimiter = fieldDelimiter;
+        return HiveKerberosLoginUtil.loginWithUGI(hiveSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<IDownloader>) () -> {
+                    try {
+                        return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), hiveSourceDTO.getKerberosConfig());
+                    } catch (Exception e) {
+                        throw new DtLoaderException("创建下载器异常", e);
                     }
-            );
-        }
-        return createDownloader(storageMode, conf, tableLocation, columnNames, fieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), null);
+                }
+        );
     }
 
     /**

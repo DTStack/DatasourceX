@@ -9,11 +9,12 @@ import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.security.PrivilegedAction;
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.regex.Matcher;
 
 /**
@@ -34,20 +35,17 @@ public class SparkConnFactory extends ConnFactory {
         init();
         SparkSourceDTO sparkSourceDTO = (SparkSourceDTO) iSource;
 
-        Connection connection;
-        if (MapUtils.isNotEmpty(sparkSourceDTO.getKerberosConfig())) {
-            connection = SparkKerberosLoginUtil.loginKerberosWithUGI(sparkSourceDTO.getUrl(), sparkSourceDTO.getKerberosConfig()).doAs(
-                    (PrivilegedAction<Connection>) () -> {
-                        try {
-                            return super.getConn(sparkSourceDTO);
-                        } catch (Exception e) {
-                            throw new DtLoaderException("getHiveConnection error : " + e.getMessage(), e);
-                        }
+        Connection connection = SparkKerberosLoginUtil.loginWithUGI(sparkSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Connection>) () -> {
+                    try {
+                        DriverManager.setLoginTimeout(30);
+                        return DriverManager.getConnection(sparkSourceDTO.getUrl(), sparkSourceDTO.getUsername(),
+                                sparkSourceDTO.getPassword());
+                    } catch (SQLException e) {
+                        throw new DtLoaderException("getHiveConnection error : " + e.getMessage(), e);
                     }
-            );
-        } else {
-            connection = super.getConn(sparkSourceDTO);
-        }
+                }
+        );
 
         Matcher matcher = DtClassConsistent.PatternConsistent.HIVE_JDBC_PATTERN.matcher(sparkSourceDTO.getUrl());
         String db = null;

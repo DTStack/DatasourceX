@@ -1,14 +1,13 @@
 package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
-import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.YarnConfUtil;
+import com.dtstack.dtcenter.common.loader.hdfs.util.HdfsKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -212,13 +211,7 @@ public class HdfsTextDownload implements IDownloader {
 
     @Override
     public List<String> readNext(){
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return readNextWithKerberos();
-        }
-
-        // kerberos认证
-        return KerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return HdfsKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
@@ -252,14 +245,7 @@ public class HdfsTextDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return recordReader == null || !nextRecord();
-        }
-
-        // kerberos认证
-        return KerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return HdfsKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
             try {
                 return recordReader == null || !nextRecord();
