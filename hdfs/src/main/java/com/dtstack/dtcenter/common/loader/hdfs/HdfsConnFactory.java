@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hdfs;
 
+import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.common.ConnFactory;
@@ -8,12 +9,10 @@ import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 
-import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.util.Map;
@@ -26,8 +25,6 @@ import java.util.Properties;
  * @Description：HDFS 连接工厂
  */
 public class HdfsConnFactory extends ConnFactory {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
     @Override
     public Connection getConn(ISourceDTO source) throws Exception {
         throw new DtLoaderException("Not Support");
@@ -66,8 +63,9 @@ public class HdfsConnFactory extends ConnFactory {
         Properties properties = new Properties();
         if (StringUtils.isNotBlank(hadoopConfig)) {
             try {
-                properties = objectMapper.readValue(hadoopConfig, Properties.class);
-            } catch (IOException e) {
+                Map<String, Object> hadoopMap = JSONObject.parseObject(hadoopConfig);
+                properties.putAll(hadoopMap);
+            } catch (Exception e) {
                 throw new DtCenterDefException("高可用配置格式错误", e);
             }
         }
