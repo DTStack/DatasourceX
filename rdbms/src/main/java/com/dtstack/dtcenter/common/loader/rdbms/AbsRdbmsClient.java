@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms;
 
+import com.dtstack.dtcenter.common.loader.common.DtClassThreadFactory;
 import com.dtstack.dtcenter.common.loader.common.utils.CollectionUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -12,7 +13,6 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.dtcenter.loader.factory.DtThreadFactory;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -67,7 +66,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     private static final String SHOW_TABLE_BY_SCHEMA_SQL = "select table_name from information_schema.tables where table_schema='%s' and table_type='base table'";
 
     //线程池 - 用于部分数据源测试连通性超时处理
-    protected static ExecutorService executor = new ThreadPoolExecutor(5, 10, 1L, TimeUnit.MINUTES, new ArrayBlockingQueue<>(5), new DtThreadFactory("testConnFactory"));
+    protected static ExecutorService executor = new ThreadPoolExecutor(5, 10, 1L, TimeUnit.MINUTES, new ArrayBlockingQueue<>(5), new DtClassThreadFactory("testConnFactory"));
 
     @Override
     public Connection getCon(ISourceDTO iSource) throws Exception {
