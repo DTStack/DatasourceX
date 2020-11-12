@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.common.loader.hive.client;
 
-import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
@@ -36,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -235,31 +233,6 @@ public class HiveClient extends AbsRdbmsClient {
         }
 
         return HdfsOperator.checkConnection(hiveSourceDTO.getDefaultFS(), hiveSourceDTO.getConfig(), hiveSourceDTO.getKerberosConfig());
-    }
-
-    /**
-     * 高可用配置
-     *
-     * @param hadoopConfig
-     * @param confMap
-     * @return
-     */
-    private Properties combineHdfsConfig(String hadoopConfig, Map<String, Object> confMap) {
-        Properties properties = new Properties();
-        if (StringUtils.isNotBlank(hadoopConfig)) {
-            try {
-                Map<String, Object> hadoopMap = JSONObject.parseObject(hadoopConfig);
-                properties.putAll(hadoopMap);
-            } catch (Exception e) {
-                throw new DtLoaderException("高可用配置格式错误", e);
-            }
-        }
-        if (confMap != null) {
-            for (String key : confMap.keySet()) {
-                properties.setProperty(key, confMap.get(key).toString());
-            }
-        }
-        return properties;
     }
 
     @Override

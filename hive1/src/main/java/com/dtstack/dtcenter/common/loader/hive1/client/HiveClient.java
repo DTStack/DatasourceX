@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.common.loader.hive1.client;
 
-import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
@@ -16,6 +15,7 @@ import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -235,31 +234,6 @@ public class HiveClient extends AbsRdbmsClient {
         }
 
         return HdfsOperator.checkConnection(hive1SourceDTO.getDefaultFS(), hive1SourceDTO.getConfig(), hive1SourceDTO.getKerberosConfig());
-    }
-
-    /**
-     * 高可用配置
-     *
-     * @param hadoopConfig
-     * @param confMap
-     * @return
-     */
-    private Properties combineHdfsConfig(String hadoopConfig, Map<String, Object> confMap) {
-        Properties properties = new Properties();
-        if (StringUtils.isNotBlank(hadoopConfig)) {
-            try {
-                Map<String, Object> hadoopMap = JSONObject.parseObject(hadoopConfig);
-                properties.putAll(hadoopMap);
-            } catch (Exception e) {
-                throw new DtLoaderException("高可用配置格式错误", e);
-            }
-        }
-        if (confMap != null) {
-            for (String key : confMap.keySet()) {
-                properties.setProperty(key, confMap.get(key).toString());
-            }
-        }
-        return properties;
     }
 
     @Override
