@@ -254,7 +254,7 @@ public class HdfsOperator {
         log.info("校验文件是否存在 HDFS : {}", remotePath);
         remotePath = uri(remotePath);
         Path path = new Path(remotePath);
-        return fs.exists(path) && fs.isFile(path);
+        return fs.exists(path) || fs.isFile(path);
     }
 
     /**
