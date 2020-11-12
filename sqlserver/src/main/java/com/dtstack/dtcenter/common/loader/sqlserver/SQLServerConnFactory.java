@@ -11,7 +11,7 @@ import com.dtstack.dtcenter.loader.source.DataBaseType;
  */
 public class SQLServerConnFactory extends ConnFactory {
     public SQLServerConnFactory() {
-        driverName = DataBaseType.SQLServer.getDriverClassName();
+        driverName = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
         testSql = DataBaseType.SQLServer.getTestSql();
     }
 }

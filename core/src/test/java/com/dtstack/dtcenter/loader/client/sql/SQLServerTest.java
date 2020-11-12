@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public class SQLServerTest {
     private static SqlserverSourceDTO source = SqlserverSourceDTO.builder()
-            .url("jdbc:jtds:sqlserver://172.16.8.149:1433;DatabaseName=DTstack")
+            .url("jdbc:sqlserver://172.16.8.149:1433;DatabaseName=DTstack")
             .username("sa")
             .password("Dtstack2018")
             .poolConfig(PoolConfig.builder().build())

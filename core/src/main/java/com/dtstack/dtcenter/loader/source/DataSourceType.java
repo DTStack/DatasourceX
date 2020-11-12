@@ -15,12 +15,12 @@ import java.util.List;
 public enum DataSourceType {
     // RDBMS
     MySQL(1, 0, "MySQL", "mysql5"),
-    MySQL8(1001, 1, "MySQL8", "mysql8"),
+    MySQL8(1001, 1, "MySQL", "mysql5"),
     MySQLPXP(98, 1, "MySQL PXP", "mysql5"),
     Polardb_For_MySQL(28, 2, "PolarDB for MySQL8", "mysql5"),
     Oracle(2, 3, "Oracle", "oracle"),
     SQLServer(3, 4, "SQLServer", "sqlServer"),
-    SQLSERVER_2017_LATER(32, 5, "SQLServer2017_and_later", "sqlServer2017"),
+    SQLSERVER_2017_LATER(32, 5, "sqlServer", "sqlServer"),
     PostgreSQL(4, 6, "PostgreSQL", "postgresql"),
     DB2(19, 7, "DB2", "db2"),
     DMDB(35, 8, "DMDB", "dmdb"),
