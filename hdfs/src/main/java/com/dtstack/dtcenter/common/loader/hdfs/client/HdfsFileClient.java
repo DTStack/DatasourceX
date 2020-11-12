@@ -1,7 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hdfs.client;
 
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
-import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsFileDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsORCDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsParquetDownload;
@@ -10,6 +9,7 @@ import com.dtstack.dtcenter.common.loader.hdfs.downloader.YarnDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsOrcWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsParquetWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsTextWriter;
+import com.dtstack.dtcenter.common.loader.hdfs.util.HdfsKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -20,7 +20,6 @@ import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -65,15 +64,7 @@ public class HdfsFileClient implements IHdfsFile {
     @Override
     public IDownloader getLogDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
-
-        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
-            YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), null);
-            yarnDownload.configure();
-            return yarnDownload;
-        }
-
-        // 校验高可用配置
-        return KerberosLoginUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return HdfsKerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
                         YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig());
@@ -89,15 +80,7 @@ public class HdfsFileClient implements IHdfsFile {
     @Override
     public IDownloader getFileDownloader(ISourceDTO iSource, String path) throws Exception {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
-
-        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
-            HdfsFileDownload hdfsFileDownload = new HdfsFileDownload(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), path, hdfsSourceDTO.getYarnConf(), null);
-            hdfsFileDownload.configure();
-            return hdfsFileDownload;
-        }
-
-        // 校验高可用配置
-        return KerberosLoginUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return HdfsKerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
                         HdfsFileDownload hdfsFileDownload = new HdfsFileDownload(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), path, hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getKerberosConfig());
@@ -242,17 +225,7 @@ public class HdfsFileClient implements IHdfsFile {
     @Override
     public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat) throws Exception {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
-        FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
-        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
-            try {
-                return createDownloader(hdfsSourceDTO, tableLocation, columnNames, fieldDelimiter, fileFormat, null);
-            } catch (Exception e) {
-                throw new DtLoaderException("创建下载器异常", e);
-            }
-        }
-
-        // kerberos认证
-        return KerberosLoginUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return HdfsKerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
                         return createDownloader(hdfsSourceDTO, tableLocation, columnNames, fieldDelimiter, fileFormat, hdfsSourceDTO.getKerberosConfig());
@@ -305,17 +278,7 @@ public class HdfsFileClient implements IHdfsFile {
     @Override
     public int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
-
-        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
-            try {
-                return writeByPosWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
-            } catch (Exception e) {
-                throw new DtLoaderException("写入hdfs异常", e);
-            }
-        }
-
-        // kerberos认证
-        return KerberosLoginUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return HdfsKerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Integer>) () -> {
                     try {
                         return writeByPosWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
@@ -329,17 +292,7 @@ public class HdfsFileClient implements IHdfsFile {
     @Override
     public int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
-
-        if (MapUtils.isEmpty(hdfsSourceDTO.getKerberosConfig())) {
-            try {
-                return writeByNameWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
-            } catch (Exception e) {
-                throw new DtLoaderException("写入hdfs异常", e);
-            }
-        }
-
-        // kerberos认证
-        return KerberosLoginUtil.loginKerberosWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return HdfsKerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Integer>) () -> {
                     try {
                         return writeByNameWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);

@@ -37,10 +37,6 @@ public class HbasePoolManager {
 
     private volatile static Map<String, Connection> sourcePool = Maps.newConcurrentMap();
 
-
-    private static HbasePoolManager hbaseManager = HbasePoolManager.getInstance();
-
-
     private static final String HBASE_KEY = "zookeeperUrl:%s,zNode:%s";
 
     private HbasePoolManager() {
@@ -85,15 +81,7 @@ public class HbasePoolManager {
         }
 
         log.info("获取 Hbase 数据源连接, url : {}, path : {}, kerberosConfig : {}", source.getUrl(), source.getUsername(), source.getKerberosConfig());
-        if (MapUtils.isEmpty(source.getKerberosConfig())) {
-            try {
-                return ConnectionFactory.createConnection(hConfig);
-            } catch (Exception e) {
-                throw new DtLoaderException("获取 hbase 连接异常", e);
-            }
-        }
-
-        return KerberosLoginUtil.loginKerberosWithUGI(new HashMap<>(source.getKerberosConfig())).doAs(
+        return KerberosLoginUtil.loginWithUGI(new HashMap<>(source.getKerberosConfig())).doAs(
                 (PrivilegedAction<Connection>) () -> {
                     try {
                         return ConnectionFactory.createConnection(hConfig);
@@ -169,6 +157,4 @@ public class HbasePoolManager {
             }
         }
     }
-
-
 }

@@ -71,7 +71,7 @@ public class KerberosLoginUtil {
     public static synchronized UserGroupInformation loginWithUGI(String jdbcUrl, Map<String, Object> confMap) {
         String principal = KerberosConfigUtil.getPrincipalFromUrl(jdbcUrl);
         confMap.put(HadoopConfTool.PRINCIPAL, principal);
-        return loginKerberosWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
+        return loginWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
     }
 
     public static synchronized UserGroupInformation loginWithUGI(Map<String, Object> confMap, String principal, String keytab, String krb5Conf) {

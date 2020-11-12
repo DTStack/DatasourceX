@@ -20,7 +20,7 @@ public class SparkKerberosLoginUtil extends KerberosLoginUtil {
      * @param confMap
      * @return
      */
-    public static synchronized UserGroupInformation loginKerberosWithUGI(String jdbcUrl, Map<String, Object> confMap) {
-        return loginKerberosWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
+    public static synchronized UserGroupInformation loginWithUGI(String jdbcUrl, Map<String, Object> confMap) {
+        return loginWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
     }
 }

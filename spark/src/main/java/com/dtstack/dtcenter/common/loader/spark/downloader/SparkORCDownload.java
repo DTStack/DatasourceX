@@ -6,7 +6,6 @@ import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import jodd.util.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;

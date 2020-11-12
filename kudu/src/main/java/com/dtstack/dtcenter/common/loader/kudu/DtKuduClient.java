@@ -113,13 +113,7 @@ public class DtKuduClient<T> implements IClient<T> {
         }
         List<String> hosts = Arrays.stream(kuduSourceDTO.getUrl().split(",")).collect(Collectors.toList());
         return KerberosLoginUtil.loginWithUGI(kuduSourceDTO.getKerberosConfig()).doAs(
-                (PrivilegedAction<KuduClient>) () -> {
-                    try {
-                        return new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build();
-                    } catch (Exception e) {
-                        throw new DtCenterDefException("getKuduClient error : " + e.getMessage(), e);
-                    }
-                }
+                (PrivilegedAction<KuduClient>) () -> new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build()
         );
     }
 

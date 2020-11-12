@@ -218,7 +218,7 @@ public class HiveTextDownload implements IDownloader {
 
     @Override
     public List<String> readNext(){
-        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
+        return HiveKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
@@ -253,7 +253,7 @@ public class HiveTextDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
+        return HiveKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return recordReader == null || !nextRecord();

@@ -281,12 +281,12 @@ public class HiveClient extends AbsRdbmsClient {
         Configuration finalConf = conf;
         String finalTableLocation = tableLocation;
         String finalFieldDelimiter = fieldDelimiter;
-        return KerberosLoginUtil.loginWithUGI(hiveSourceDTO.getKerberosConfig()).doAs(
+        return HiveKerberosLoginUtil.loginWithUGI(hiveSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
                         return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), hiveSourceDTO.getKerberosConfig());
                     } catch (Exception e) {
-                        throw new DtCenterDefException("创建下载器异常", e);
+                        throw new DtLoaderException("创建下载器异常", e);
                     }
                 }
         );

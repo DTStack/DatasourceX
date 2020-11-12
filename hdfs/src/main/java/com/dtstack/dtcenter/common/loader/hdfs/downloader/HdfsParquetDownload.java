@@ -266,19 +266,10 @@ public class HdfsParquetDownload implements IDownloader {
 
     @Override
     public boolean close() throws Exception {
-        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) ()->{
-                    try {
-                        if (build != null){
-                            build.close();
-                            HdfsOperator.release();
-                        }
-                        return true;
-                    } catch (Exception e){
-                        throw new DtCenterDefException("下载文件异常", e);
-                    }
-                });
-
+        if (build != null) {
+            build.close();
+        }
+        return true;
     }
 
     @Override

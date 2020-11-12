@@ -9,11 +9,12 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.security.PrivilegedAction;
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.regex.Matcher;
 
 /**
@@ -34,14 +35,14 @@ public class HiveConnFactory extends ConnFactory {
         init();
         Hive1SourceDTO hive1SourceDTO = (Hive1SourceDTO) iSource;
 
-        Connection connection = KerberosLoginUtil.loginWithUGI(hive1SourceDTO.getKerberosConfig()).doAs(
+        Connection connection = HiveKerberosLoginUtil.loginWithUGI(hive1SourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Connection>) () -> {
                     try {
                         DriverManager.setLoginTimeout(30);
                         return DriverManager.getConnection(hive1SourceDTO.getUrl(), hive1SourceDTO.getUsername(),
                                 hive1SourceDTO.getPassword());
                     } catch (SQLException e) {
-                        throw new DtCenterDefException("getHiveConnection error : " + e.getMessage(), e);
+                        throw new DtLoaderException("getHiveConnection error : " + e.getMessage(), e);
                     }
                 }
         );

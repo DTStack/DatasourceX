@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hive1.downloader;
 
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.hive1.util.HiveKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -105,7 +106,7 @@ public class HiveORCDownload implements IDownloader {
 
     @Override
     public List<String> readNext() throws Exception {
-        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
+        return HiveKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();

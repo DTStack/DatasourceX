@@ -20,9 +20,9 @@ public class HiveKerberosLoginUtil extends KerberosLoginUtil {
      * @param confMap
      * @return
      */
-    public static synchronized UserGroupInformation loginKerberosWithUGI(String jdbcUrl, Map<String, Object> confMap) {
+    public static synchronized UserGroupInformation loginWithUGI(String jdbcUrl, Map<String, Object> confMap) {
         // 因为 Hive 需要下载所以设置 ResourceManager Principal
         confMap.put(HadoopConfTool.RM_PRINCIPAL, confMap.get(HadoopConfTool.PRINCIPAL));
-        return loginKerberosWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
+        return loginWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
     }
 }

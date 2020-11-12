@@ -1,11 +1,10 @@
 package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
-import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.YarnConfUtil;
+import com.dtstack.dtcenter.common.loader.hdfs.util.HdfsKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
@@ -184,7 +183,7 @@ public class YarnDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws Exception {
-        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
+        return HdfsKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return isReachedEnd || totalReadByte >= readLimit || !nextRecord();

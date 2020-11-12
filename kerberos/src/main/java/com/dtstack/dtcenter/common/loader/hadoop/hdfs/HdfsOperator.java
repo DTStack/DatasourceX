@@ -4,7 +4,6 @@ import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
@@ -76,19 +75,15 @@ public class HdfsOperator {
     public static FileSystem getFileSystem(Map<String, Object> kerberosConfig, String config, String defaultFS) throws IOException {
         Configuration conf = HadoopConfUtil.getHdfsConf(defaultFS, config, kerberosConfig);
         log.info("获取 Hdfs FileSystem 信息, defaultFS : {}, config : {}, kerberosConfig : {}", defaultFS, config, kerberosConfig);
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return FileSystem.get(conf);
-        } else {
-            return KerberosLoginUtil.loginKerberosWithUGI(new HashMap<>(kerberosConfig)).doAs(
-                    (PrivilegedAction<FileSystem>) () -> {
-                        try {
-                            return FileSystem.get(conf);
-                        } catch (IOException e) {
-                            throw new DtLoaderException("Hdfs 校验连通性异常", e);
-                        }
+        return KerberosLoginUtil.loginWithUGI(new HashMap<>(kerberosConfig)).doAs(
+                (PrivilegedAction<FileSystem>) () -> {
+                    try {
+                        return FileSystem.get(conf);
+                    } catch (IOException e) {
+                        throw new DtLoaderException("Hdfs 校验连通性异常", e);
                     }
-            );
-        }
+                }
+        );
     }
 
     /**

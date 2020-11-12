@@ -286,7 +286,7 @@ public class SparkClient extends AbsRdbmsClient {
                     try {
                         return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), sparkSourceDTO.getKerberosConfig());
                     } catch (Exception e) {
-                        throw new DtCenterDefException("创建下载器异常", e);
+                        throw new DtLoaderException("创建下载器异常", e);
                     }
                 }
         );

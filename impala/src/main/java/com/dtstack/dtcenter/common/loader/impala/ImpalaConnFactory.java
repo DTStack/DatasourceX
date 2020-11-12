@@ -9,7 +9,6 @@ import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.security.PrivilegedAction;
@@ -37,16 +36,16 @@ public class ImpalaConnFactory extends ConnFactory {
                     try {
                         return super.getConn(impalaSourceDTO);
                     } catch (Exception e) {
-                        throw new DtCenterDefException("getImpalaConnection error : " + e.getMessage(), e);
+                        throw new DtLoaderException("getImpalaConnection error : " + e.getMessage(), e);
                     }
                 }
         );
         String db = StringUtils.isBlank(impalaSourceDTO.getSchema()) ? getImpalaSchema(impalaSourceDTO.getUrl()) : impalaSourceDTO.getSchema();
         if (StringUtils.isNotBlank(db)) {
-            DBUtil.executeSqlWithoutResultSet(conn, String.format(DtClassConsistent.PublicConsistent.USE_DB, db),
+            DBUtil.executeSqlWithoutResultSet(connection, String.format(DtClassConsistent.PublicConsistent.USE_DB, db),
                     false);
         }
-        return conn;
+        return connection;
     }
 
     /**
