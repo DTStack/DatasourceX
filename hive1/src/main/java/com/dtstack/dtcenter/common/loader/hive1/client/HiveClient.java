@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hive1.client;
 
+import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
@@ -15,19 +16,16 @@ import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
-import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -53,8 +51,6 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class HiveClient extends AbsRdbmsClient {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
     // 测试连通性超时时间。单位：秒
     private final static int TEST_CONN_TIMEOUT = 30;
 
@@ -252,8 +248,9 @@ public class HiveClient extends AbsRdbmsClient {
         Properties properties = new Properties();
         if (StringUtils.isNotBlank(hadoopConfig)) {
             try {
-                properties = OBJECT_MAPPER.readValue(hadoopConfig, Properties.class);
-            } catch (IOException e) {
+                Map<String, Object> hadoopMap = JSONObject.parseObject(hadoopConfig);
+                properties.putAll(hadoopMap);
+            } catch (Exception e) {
                 throw new DtLoaderException("高可用配置格式错误", e);
             }
         }
