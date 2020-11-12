@@ -57,8 +57,8 @@ public class KerberosLoginUtil {
         }
     }
 
-    public static synchronized UserGroupInformation loginKerberosWithUGI(Map<String, Object> confMap) {
-        return loginKerberosWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
+    public static synchronized UserGroupInformation loginWithUGI(Map<String, Object> confMap) {
+        return loginWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
     }
 
     /**
@@ -68,13 +68,25 @@ public class KerberosLoginUtil {
      * @param confMap
      * @return
      */
-    public static synchronized UserGroupInformation loginKerberosWithUGI(String jdbcUrl, Map<String, Object> confMap) {
+    public static synchronized UserGroupInformation loginWithUGI(String jdbcUrl, Map<String, Object> confMap) {
         String principal = KerberosConfigUtil.getPrincipalFromUrl(jdbcUrl);
         confMap.put(HadoopConfTool.PRINCIPAL, principal);
         return loginKerberosWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
     }
 
-    public static synchronized UserGroupInformation loginKerberosWithUGI(Map<String, Object> confMap, String principal, String keytab, String krb5Conf) {
+    public static synchronized UserGroupInformation loginWithUGI(Map<String, Object> confMap, String principal, String keytab, String krb5Conf) {
+        // 非 Kerberos 认证，需要重新刷 UGI 信息
+        if (MapUtils.isEmpty(confMap)) {
+            try {
+                Config.refresh();
+                UserGroupInformation.setConfiguration(new Configuration());
+                return UserGroupInformation.getCurrentUser();
+            } catch (Exception e) {
+                throw new DtLoaderException("simple login failed", e);
+            }
+        }
+
+        //Kerberos 认证属性
         principal = MapUtils.getString(confMap, principal);
         keytab = MapUtils.getString(confMap, keytab);
         krb5Conf = MapUtils.getString(confMap, krb5Conf);

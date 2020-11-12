@@ -161,13 +161,7 @@ public class HiveParquetDownload implements IDownloader {
 
     @Override
     public List<String> readNext() throws Exception {
-
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return readNextWithKerberos();
-        }
-        // kerberos认证
-        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
@@ -280,14 +274,7 @@ public class HiveParquetDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws Exception {
-
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return !nextRecord();
-        }
-
-        // kerberos认证
-        return HiveKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return !nextRecord();

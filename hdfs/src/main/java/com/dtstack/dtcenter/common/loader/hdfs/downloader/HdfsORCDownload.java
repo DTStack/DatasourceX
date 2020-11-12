@@ -118,7 +118,7 @@ public class HdfsORCDownload implements IDownloader {
         }
 
         // kerberos认证
-        return KerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return KerberosUtil.loginKerberosWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();

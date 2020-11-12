@@ -278,23 +278,19 @@ public class HiveClient extends AbsRdbmsClient {
         }
         Configuration conf = HadoopConfUtil.getHdfsConf(hive1SourceDTO.getDefaultFS(), hive1SourceDTO.getConfig(), hive1SourceDTO.getKerberosConfig());
 
-        if (MapUtils.isNotEmpty(hive1SourceDTO.getKerberosConfig())) {
-            String finalStorageMode = storageMode;
-            Configuration finalConf = conf;
-            String finalTableLocation = tableLocation;
-            String finalFieldDelimiter = fieldDelimiter;
-            return HiveKerberosLoginUtil.loginKerberosWithUGI(hive1SourceDTO.getUrl(), hive1SourceDTO.getKerberosConfig()).doAs(
-                    (PrivilegedAction<IDownloader>) () -> {
-                        try {
-                            return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), hive1SourceDTO.getKerberosConfig());
-                        } catch (Exception e) {
-                            throw new DtLoaderException("创建下载器异常", e);
-                        }
+        String finalStorageMode = storageMode;
+        Configuration finalConf = conf;
+        String finalTableLocation = tableLocation;
+        String finalFieldDelimiter = fieldDelimiter;
+        return KerberosLoginUtil.loginWithUGI(hive1SourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<IDownloader>) () -> {
+                    try {
+                        return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), hive1SourceDTO.getKerberosConfig());
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("创建下载器异常", e);
                     }
-            );
-        }
-
-        return createDownloader(storageMode, conf, tableLocation, columnNames, fieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), null);
+                }
+        );
     }
 
     /**

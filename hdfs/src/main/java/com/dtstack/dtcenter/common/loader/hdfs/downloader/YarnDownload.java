@@ -184,15 +184,8 @@ public class YarnDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws Exception {
-
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
-        }
-
-        // kerberos认证
-        return KerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) () -> {
+        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) ()->{
                     try {
                         return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
                     } catch (Exception e) {

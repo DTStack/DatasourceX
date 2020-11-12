@@ -277,24 +277,19 @@ public class SparkClient extends AbsRdbmsClient {
         }
         Configuration conf = HadoopConfUtil.getHdfsConf(sparkSourceDTO.getDefaultFS(), sparkSourceDTO.getConfig(), sparkSourceDTO.getKerberosConfig());
 
-        //kerberos认证，目前暂不支持多次不同认证，下个版本做 TODO
-        if (MapUtils.isNotEmpty(sparkSourceDTO.getKerberosConfig())) {
-            String finalStorageMode = storageMode;
-            Configuration finalConf = conf;
-            String finalTableLocation = tableLocation;
-            String finalFieldDelimiter = fieldDelimiter;
-            return SparkKerberosLoginUtil.loginKerberosWithUGI(sparkSourceDTO.getUrl(), sparkSourceDTO.getKerberosConfig()).doAs(
-                    (PrivilegedAction<IDownloader>) () -> {
-                        try {
-                            return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), sparkSourceDTO.getKerberosConfig());
-                        } catch (Exception e) {
-                            throw new DtLoaderException("创建下载器异常", e);
-                        }
+        String finalStorageMode = storageMode;
+        Configuration finalConf = conf;
+        String finalTableLocation = tableLocation;
+        String finalFieldDelimiter = fieldDelimiter;
+        return SparkKerberosLoginUtil.loginWithUGI(sparkSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<IDownloader>) () -> {
+                    try {
+                        return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), sparkSourceDTO.getKerberosConfig());
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("创建下载器异常", e);
                     }
-            );
-        }
-
-        return createDownloader(storageMode, conf, tableLocation, columnNames, fieldDelimiter, partitionColumns, queryDTO.getPartitionColumns(), sparkSourceDTO.getKerberosConfig());
+                }
+        );
     }
 
     /**

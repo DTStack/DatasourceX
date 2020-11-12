@@ -106,13 +106,7 @@ public class SparkORCDownload implements IDownloader {
 
     @Override
     public List<String> readNext() throws Exception {
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return readNextWithKerberos();
-        }
-
-        // kerberos认证
-        return SparkKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return SparkKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
@@ -180,14 +174,7 @@ public class SparkORCDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-
-        // 无kerberos认证
-        if (MapUtils.isEmpty(kerberosConfig)) {
-            return recordReader == null || !nextRecord();
-        }
-
-        // kerberos认证
-        return SparkKerberosLoginUtil.loginKerberosWithUGI(kerberosConfig).doAs(
+        return SparkKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return recordReader == null || !nextRecord();

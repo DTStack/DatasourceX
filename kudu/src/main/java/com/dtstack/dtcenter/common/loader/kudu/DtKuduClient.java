@@ -11,7 +11,6 @@ import com.dtstack.dtcenter.loader.dto.source.KuduSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kudu.ColumnSchema;
 import org.apache.kudu.Schema;
@@ -113,13 +112,14 @@ public class DtKuduClient<T> implements IClient<T> {
             throw new DtLoaderException("集群地址不能为空");
         }
         List<String> hosts = Arrays.stream(kuduSourceDTO.getUrl().split(",")).collect(Collectors.toList());
-        log.info("获取 Kudu 数据源连接, url : {}, kerberosConfig : {}", hosts, kuduSourceDTO.getKerberosConfig());
-        if (MapUtils.isEmpty(kuduSourceDTO.getKerberosConfig())) {
-            return new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build();
-        }
-
-        return KerberosLoginUtil.loginKerberosWithUGI(kuduSourceDTO.getKerberosConfig()).doAs(
-                (PrivilegedAction<KuduClient>) () -> new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build()
+        return KerberosLoginUtil.loginWithUGI(kuduSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<KuduClient>) () -> {
+                    try {
+                        return new KuduClient.KuduClientBuilder(hosts).defaultOperationTimeoutMs(TIME_OUT).build();
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("getKuduClient error : " + e.getMessage(), e);
+                    }
+                }
         );
     }
 

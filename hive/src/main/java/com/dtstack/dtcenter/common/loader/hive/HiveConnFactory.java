@@ -33,20 +33,17 @@ public class HiveConnFactory extends ConnFactory {
         init();
         HiveSourceDTO hiveSourceDTO = (HiveSourceDTO) iSource;
 
-        Connection connection;
-        if (MapUtils.isNotEmpty(hiveSourceDTO.getKerberosConfig())) {
-            connection = HiveKerberosLoginUtil.loginKerberosWithUGI(hiveSourceDTO.getUrl(), hiveSourceDTO.getKerberosConfig()).doAs(
-                    (PrivilegedAction<Connection>) () -> {
-                        try {
-                            return super.getConn(hiveSourceDTO);
-                        } catch (Exception e) {
-                            throw new DtLoaderException("getHiveConnection error : " + e.getMessage(), e);
-                        }
+        Connection connection = KerberosLoginUtil.loginWithUGI(hiveSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Connection>) () -> {
+                    try {
+                        DriverManager.setLoginTimeout(30);
+                        return DriverManager.getConnection(hiveSourceDTO.getUrl(), hiveSourceDTO.getUsername(),
+                                hiveSourceDTO.getPassword());
+                    } catch (SQLException e) {
+                        throw new DtCenterDefException("getHiveConnection error : " + e.getMessage(), e);
                     }
-            );
-        } else {
-            connection = super.getConn(hiveSourceDTO);
-        }
+                }
+        );
 
         Matcher matcher = DtClassConsistent.PatternConsistent.HIVE_JDBC_PATTERN.matcher(hiveSourceDTO.getUrl());
         String db = null;
