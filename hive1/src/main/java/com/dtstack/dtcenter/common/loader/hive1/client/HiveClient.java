@@ -21,6 +21,7 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -51,6 +52,12 @@ public class HiveClient extends AbsRdbmsClient {
     private static final String CURRENT_DB = "select current_database()";
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    // 创建库
+    private static final String CREATE_DB_SQL_TMPL = "create database if not exists %s comment '%s'";
+
+    // 查询指定schema下的表
+    private static final String TABLE_BY_SCHEMA = "show tables in %s";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -430,5 +437,38 @@ public class HiveClient extends AbsRdbmsClient {
     @Override
     protected String getCurrentDbSql() {
         return CURRENT_DB;
+    }
+
+    @Override
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空");
+        }
+        String createSchemaSql = String.format(CREATE_DB_SQL_TMPL, dbName, comment);
+        return executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(createSchemaSql).build());
+    }
+
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空！");
+        }
+        return checkSqlFirstResult(source, dbName, getShowDbSql());
+    }
+
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) throws Exception {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空！");
+        }
+        List<Map<String, Object>> results = executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_BY_SCHEMA, dbName)).build());
+        if (CollectionUtils.isNotEmpty(results)) {
+            for (Map<String, Object> result : results) {
+                if (tableName.equalsIgnoreCase(MapUtils.getString(result, "tableName"))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
