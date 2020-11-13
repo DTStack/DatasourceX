@@ -44,7 +44,7 @@ public class OracleClient extends AbsRdbmsClient {
     private static String ORACLE_COLUMN_COMMENT = "COMMENTS";
     private static final String DONT_EXIST = "doesn't exist";
 
-    private static final String DATABASE_QUERY = "select USERNAME from sys.dba_users order by USERNAME";
+    private static final String DATABASE_QUERY = "select USERNAME from ALL_USERS order by USERNAME";
 
     private static final String TABLE_CREATE_SQL = "select dbms_metadata.get_ddl('TABLE','%s','%s') from dual";
 
