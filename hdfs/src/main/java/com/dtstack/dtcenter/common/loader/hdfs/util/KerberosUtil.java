@@ -59,6 +59,11 @@ public class KerberosUtil {
                 System.setProperty(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, krb5Conf);
             }
 
+            // 处理 yarn.resourcemanager.principal，变与参数下载
+            if (!confMap.containsKey("yarn.resourcemanager.principal")){
+                confMap.put("yarn.resourcemanager.principal", principal);
+            }
+
             // 开始 Kerberos 认证
             log.info("login kerberos, currentUser={}, principal={}, principalFilePath={}, krb5ConfPath={}", UserGroupInformation.getCurrentUser(), principal, keytab, krb5Conf);
             Config.refresh();
