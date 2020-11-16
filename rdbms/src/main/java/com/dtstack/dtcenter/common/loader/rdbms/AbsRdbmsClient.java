@@ -64,8 +64,6 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     private static final String SHOW_DB_SQL = "show databases";
 
-    private static final String SHOW_TABLE_BY_SCHEMA_SQL = "select table_name from information_schema.tables where table_schema='%s' and table_type='base table'";
-
     //线程池 - 用于部分数据源测试连通性超时处理
     protected static ExecutorService executor = new ThreadPoolExecutor(5, 10, 1L, TimeUnit.MINUTES, new ArrayBlockingQueue<>(5), new DtClassThreadFactory("testConnFactory"));
 
@@ -222,7 +220,8 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         Integer clearStatus = beforeQuery(source, queryDTO, false);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
         // 获取根据schema获取表的sql
-        String sql = getTableBySchemaSql(queryDTO);
+        String sql = getTableBySchemaSql(source, queryDTO);
+        log.info("最终获取表的sql语句：{}", sql);
         Statement statement = null;
         ResultSet rs = null;
         List<String> tableList = new ArrayList<>();
@@ -464,8 +463,14 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         return null;
     }
 
-    protected String getTableBySchemaSql(SqlQueryDTO queryDTO) {
-        return String.format(SHOW_TABLE_BY_SCHEMA_SQL, queryDTO.getSchema());
+    /**
+     * 根据schema获取表，默认不支持。需要支持的数据源自己去实现该方法
+     *
+     * @param queryDTO
+     * @return
+     */
+    protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("该数据源暂不支持该方法！");
     }
 
     @Override

@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,13 +29,13 @@ public class OracleTest {
             .url("jdbc:oracle:thin:@172.16.8.193:1521:xe")
             .username("kminer")
             .password("kminerpass")
-            .schema("KMINER")
-            .poolConfig(new PoolConfig())
+            //.schema("KMINER")
+            //.poolConfig(new PoolConfig())
             .build();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        /*IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table \"nanqi\"").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table \"nanqi\" (id int, name VARCHAR2(50))").build();
@@ -42,7 +43,7 @@ public class OracleTest {
         queryDTO = SqlQueryDTO.builder().sql("comment on table \"nanqi\" is 'table comment'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into \"nanqi\" values (1, 'nanqi')").build();
-        client.executeSqlWithoutResultSet(source, queryDTO);
+        client.executeSqlWithoutResultSet(source, queryDTO);*/
     }
 
     @Test
@@ -188,5 +189,89 @@ public class OracleTest {
         IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
+    }
+
+    /**
+     * 模糊查询表，不指定schema，限制条数
+     * @throws Exception
+     */
+    @Test
+    public void searchTableByNameLimit () throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        long oldDate = System.currentTimeMillis();
+        List list = client.getTableListBySchema(source, SqlQueryDTO.builder().view(true).tableNamePattern("test_vie").limit(5).build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
+        long newDate = System.currentTimeMillis();
+        System.out.println("------用时：" + (newDate - oldDate) / 1000 + "s");
+    }
+
+    /**
+     * 模糊查询表，不指定schema，不获取视图，限制条数
+     * @throws Exception
+     */
+    @Test
+    public void searchTableByNameLimitNoView () throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        long oldDate = System.currentTimeMillis();
+        List list = client.getTableListBySchema(source, SqlQueryDTO.builder().view(false).tableNamePattern(" ").limit(100).build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
+        long newDate = System.currentTimeMillis();
+        System.out.println("------用时：" + (newDate - oldDate) / 1000 + "s");
+    }
+
+    /**
+     * 获取指定schema下的表，模糊查询，限制条数
+     * @throws Exception
+     */
+    @Test
+    public void searchTableBySchemaLimit () throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        long oldDate = System.currentTimeMillis();
+        List list = client.getTableListBySchema(source, SqlQueryDTO.builder().view(true).schema("JIANGBO").tableNamePattern("s").limit(3).build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
+        long newDate = System.currentTimeMillis();
+        System.out.println("------用时：" + (newDate - oldDate) / 1000 + "s");
+    }
+
+    /**
+     * 获取指定schema下的表，模糊查询，不限制条数
+     * @throws Exception
+     */
+    @Test
+    public void searchTableBySchema () throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        long oldDate = System.currentTimeMillis();
+        List list = client.getTableListBySchema(source, SqlQueryDTO.builder().view(true).schema("JIANGBO").tableNamePattern("s").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
+        long newDate = System.currentTimeMillis();
+        System.out.println("------用时：" + (newDate - oldDate) / 1000 + "s");
+    }
+
+    /**
+     * 获取指定schema下的表，模糊查询，查询条件为空字符，不限制条数
+     * @throws Exception
+     */
+    @Test
+    public void searchTableBySchemaEmptyName () throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        long oldDate = System.currentTimeMillis();
+        List list = client.getTableListBySchema(source, SqlQueryDTO.builder().view(true).schema("JIANGBO").tableNamePattern(" ").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
+        long newDate = System.currentTimeMillis();
+        System.out.println("------用时：" + (newDate - oldDate) / 1000 + "s");
+    }
+
+    /**
+     * 获取指定schema下的表，不获取视图，限制条数
+     * @throws Exception
+     */
+    @Test
+    public void searchTableAndViewBySchema () throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        long oldDate = System.currentTimeMillis();
+        List list = client.getTableListBySchema(source, SqlQueryDTO.builder().view(false).schema("SYS").tableNamePattern("test_view").limit(200).build());
+        Assert.assertTrue(CollectionUtils.isEmpty(list));
+        long newDate = System.currentTimeMillis();
+        System.out.println("------用时：" + (newDate - oldDate) / 1000 + "s");
     }
 }
