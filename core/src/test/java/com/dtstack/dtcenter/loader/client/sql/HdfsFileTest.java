@@ -156,8 +156,8 @@ public class HdfsFileTest {
     @Test
     public void createDir() throws Exception {
         client.checkAndDelete(source, "/tmp/test");
-        short t = 14;
-        assert client.createDir(source, "/tmp/test", t);
+        assert client.createDir(source, "/tmp/test", null);
+        assert client.createDir(source, "/tmp/test", (short) 7);
     }
 
     /**
