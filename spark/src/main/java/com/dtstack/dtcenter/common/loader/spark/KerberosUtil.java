@@ -91,15 +91,16 @@ public class KerberosUtil {
         if (StringUtils.isEmpty(principal) || StringUtils.isEmpty(keytab)) {
             throw new DtLoaderException("Kerberos Login fail, principal or keytab is null");
         }
-        // 判断缓存UGI，如果存在则直接使用
-        UGICacheData cacheData = UGI_INFO.get(principal + "_" + keytab);
-        if (cacheData != null) {
-            return cacheData.getUgi();
-        }
 
         // 处理 yarn.resourcemanager.principal，变与参数下载
         if (!confMap.containsKey("yarn.resourcemanager.principal")){
             confMap.put("yarn.resourcemanager.principal", principal);
+        }
+
+        // 判断缓存UGI，如果存在则直接使用
+        UGICacheData cacheData = UGI_INFO.get(principal + "_" + keytab);
+        if (cacheData != null) {
+            return cacheData.getUgi();
         }
 
         try {
