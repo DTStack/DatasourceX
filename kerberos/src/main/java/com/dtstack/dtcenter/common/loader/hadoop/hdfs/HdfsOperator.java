@@ -75,7 +75,7 @@ public class HdfsOperator {
     public static FileSystem getFileSystem(Map<String, Object> kerberosConfig, String config, String defaultFS) throws IOException {
         Configuration conf = HadoopConfUtil.getHdfsConf(defaultFS, config, kerberosConfig);
         log.info("获取 Hdfs FileSystem 信息, defaultFS : {}, config : {}, kerberosConfig : {}", defaultFS, config, kerberosConfig);
-        return KerberosLoginUtil.loginWithUGI(new HashMap<>(kerberosConfig)).doAs(
+        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<FileSystem>) () -> {
                     try {
                         return FileSystem.get(conf);

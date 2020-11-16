@@ -81,7 +81,7 @@ public class HbasePoolManager {
         }
 
         log.info("获取 Hbase 数据源连接, url : {}, path : {}, kerberosConfig : {}", source.getUrl(), source.getUsername(), source.getKerberosConfig());
-        return KerberosLoginUtil.loginWithUGI(new HashMap<>(source.getKerberosConfig())).doAs(
+        return KerberosLoginUtil.loginWithUGI(source.getKerberosConfig()).doAs(
                 (PrivilegedAction<Connection>) () -> {
                     try {
                         return ConnectionFactory.createConnection(hConfig);

@@ -79,7 +79,7 @@ public class HbasePoolManager {
         for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {
             hConfig.set(entry.getKey(), (String) entry.getValue());
         }
-        return KerberosLoginUtil.loginWithUGI(new HashMap<>(source.getKerberosConfig())).doAs(
+        return KerberosLoginUtil.loginWithUGI(source.getKerberosConfig()).doAs(
                 (PrivilegedAction<Connection>) () -> {
                     try {
                         return ConnectionFactory.createConnection(hConfig);
