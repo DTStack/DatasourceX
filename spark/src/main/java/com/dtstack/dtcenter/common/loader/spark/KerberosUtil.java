@@ -97,6 +97,11 @@ public class KerberosUtil {
             return cacheData.getUgi();
         }
 
+        // 处理 yarn.resourcemanager.principal，变与参数下载
+        if (!confMap.containsKey("yarn.resourcemanager.principal")){
+            confMap.put("yarn.resourcemanager.principal", principal);
+        }
+
         try {
             // 设置 Krb5 配置文件
             if (StringUtils.isNotEmpty(krb5Conf)) {
