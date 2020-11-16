@@ -16,7 +16,7 @@ public enum DataSourceType {
     // RDBMS
     MySQL(1, 0, "MySQL", "mysql5"),
     MySQL8(1001, 1, "MySQL", "mysql5"),
-    MySQLPXP(98, 1, "MySQL PXP", "mysql5"),
+    MySQLPXC(98, 1, "MySQL PXC", "mysql5"),
     Polardb_For_MySQL(28, 2, "PolarDB for MySQL8", "mysql5"),
     Oracle(2, 3, "Oracle", "oracle"),
     SQLServer(3, 4, "SQLServer", "sqlServer"),
@@ -87,7 +87,7 @@ public enum DataSourceType {
     static {
         RDBM_S.add(MySQL.val);
         RDBM_S.add(MySQL8.val);
-        RDBM_S.add(MySQLPXP.val);
+        RDBM_S.add(MySQLPXC.val);
         RDBM_S.add(Polardb_For_MySQL.val);
         RDBM_S.add(Oracle.val);
         RDBM_S.add(SQLServer.val);
