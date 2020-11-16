@@ -56,7 +56,7 @@ public class HbaseConnFactory extends ConnFactory {
 
     public static org.apache.hadoop.hbase.client.Connection getHbaseConn(HbaseSourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         Map<String, Object> sourceToMap = sourceToMap(source, queryDTO);
-        return KerberosUtil.loginWithUGI(new HashMap<>(source.getKerberosConfig())).doAs(
+        return KerberosUtil.loginWithUGI(source.getKerberosConfig()).doAs(
                 (PrivilegedAction<org.apache.hadoop.hbase.client.Connection>) () -> {
                     Configuration hConfig = HBaseConfiguration.create();
                     for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {
