@@ -102,15 +102,16 @@ public class KerberosLoginUtil {
         if (StringUtils.isEmpty(principal) || StringUtils.isEmpty(keytab)) {
             throw new DtLoaderException("Kerberos Login fail, principal or keytab is null");
         }
-        // 判断缓存UGI，如果存在则直接使用
-        UGICacheData cacheData = UGI_INFO.get(principal + "_" + keytab);
-        if (cacheData != null) {
-            return cacheData.getUgi();
-        }
 
         // 因为 Hive 需要下载，所有优先设置 ResourceManager Principal
         if (confMap.get(HadoopConfTool.RM_PRINCIPAL) == null) {
             confMap.put(HadoopConfTool.RM_PRINCIPAL, principal);
+        }
+
+        // 判断缓存UGI，如果存在则直接使用
+        UGICacheData cacheData = UGI_INFO.get(principal + "_" + keytab);
+        if (cacheData != null) {
+            return cacheData.getUgi();
         }
 
         try {
