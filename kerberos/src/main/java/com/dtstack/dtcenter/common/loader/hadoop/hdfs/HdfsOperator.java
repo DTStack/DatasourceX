@@ -221,6 +221,10 @@ public class HdfsOperator {
     public static boolean createDir(FileSystem fs, String remotePath, Short permission) throws IOException {
         log.info("新建目录 HDFS : {}", remotePath);
         remotePath = uri(remotePath);
+        if (null == permission) {
+            return fs.mkdirs(new Path(remotePath));
+        }
+
         return fs.mkdirs(new Path(remotePath), new FsPermission(permission));
     }
 
