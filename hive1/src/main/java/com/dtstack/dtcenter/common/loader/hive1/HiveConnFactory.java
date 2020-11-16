@@ -2,7 +2,7 @@ package com.dtstack.dtcenter.common.loader.hive1;
 
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
-import com.dtstack.dtcenter.common.loader.hive1.util.HiveKerberosLoginUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -35,7 +35,7 @@ public class HiveConnFactory extends ConnFactory {
         init();
         Hive1SourceDTO hive1SourceDTO = (Hive1SourceDTO) iSource;
 
-        Connection connection = HiveKerberosLoginUtil.loginWithUGI(hive1SourceDTO.getKerberosConfig()).doAs(
+        Connection connection = KerberosLoginUtil.loginWithUGI(hive1SourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Connection>) () -> {
                     try {
                         DriverManager.setLoginTimeout(30);

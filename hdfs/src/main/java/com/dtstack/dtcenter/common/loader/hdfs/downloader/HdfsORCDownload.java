@@ -1,8 +1,8 @@
 package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.YarnConfUtil;
-import com.dtstack.dtcenter.common.loader.hdfs.util.HdfsKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -110,7 +110,7 @@ public class HdfsORCDownload implements IDownloader {
 
     @Override
     public List<String> readNext() throws Exception {
-        return HdfsKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
+        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
@@ -179,7 +179,7 @@ public class HdfsORCDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-        return HdfsKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
+        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return recordReader == null || !nextRecord();

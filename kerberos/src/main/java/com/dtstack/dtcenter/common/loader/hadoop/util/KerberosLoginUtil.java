@@ -108,6 +108,11 @@ public class KerberosLoginUtil {
             return cacheData.getUgi();
         }
 
+        // 因为 Hive 需要下载，所有优先设置 ResourceManager Principal
+        if (confMap.get(HadoopConfTool.RM_PRINCIPAL) == null) {
+            confMap.put(HadoopConfTool.RM_PRINCIPAL, principal);
+        }
+
         try {
             // 设置 Krb5 配置文件
             if (StringUtils.isNotEmpty(krb5Conf)) {

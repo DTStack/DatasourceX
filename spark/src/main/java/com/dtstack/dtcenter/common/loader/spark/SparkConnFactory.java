@@ -2,8 +2,8 @@ package com.dtstack.dtcenter.common.loader.spark;
 
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
-import com.dtstack.dtcenter.common.loader.spark.util.SparkKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -34,7 +34,7 @@ public class SparkConnFactory extends ConnFactory {
         init();
         SparkSourceDTO sparkSourceDTO = (SparkSourceDTO) iSource;
 
-        Connection connection = SparkKerberosLoginUtil.loginWithUGI(sparkSourceDTO.getKerberosConfig()).doAs(
+        Connection connection = KerberosLoginUtil.loginWithUGI(sparkSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Connection>) () -> {
                     try {
                         DriverManager.setLoginTimeout(30);

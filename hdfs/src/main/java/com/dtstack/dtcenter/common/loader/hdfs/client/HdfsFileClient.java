@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hdfs.client;
 
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsFileDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsORCDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsParquetDownload;
@@ -9,7 +10,6 @@ import com.dtstack.dtcenter.common.loader.hdfs.downloader.YarnDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsOrcWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsParquetWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsTextWriter;
-import com.dtstack.dtcenter.common.loader.hdfs.util.HdfsKerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -64,7 +64,7 @@ public class HdfsFileClient implements IHdfsFile {
     @Override
     public IDownloader getLogDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
-        return HdfsKerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
                         YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig());
@@ -80,7 +80,7 @@ public class HdfsFileClient implements IHdfsFile {
     @Override
     public IDownloader getFileDownloader(ISourceDTO iSource, String path) throws Exception {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
-        return HdfsKerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
                         HdfsFileDownload hdfsFileDownload = new HdfsFileDownload(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), path, hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getKerberosConfig());
@@ -225,7 +225,7 @@ public class HdfsFileClient implements IHdfsFile {
     @Override
     public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat) throws Exception {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
-        return HdfsKerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
                         return createDownloader(hdfsSourceDTO, tableLocation, columnNames, fieldDelimiter, fileFormat, hdfsSourceDTO.getKerberosConfig());
@@ -278,7 +278,7 @@ public class HdfsFileClient implements IHdfsFile {
     @Override
     public int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
-        return HdfsKerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Integer>) () -> {
                     try {
                         return writeByPosWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
@@ -292,7 +292,7 @@ public class HdfsFileClient implements IHdfsFile {
     @Override
     public int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
-        return HdfsKerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Integer>) () -> {
                     try {
                         return writeByNameWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
