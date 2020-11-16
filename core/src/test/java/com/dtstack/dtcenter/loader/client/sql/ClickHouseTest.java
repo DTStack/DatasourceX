@@ -10,6 +10,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ClickHouseSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -152,5 +153,12 @@ public class ClickHouseTest {
         IClient client = clientCache.getClient(DataSourceType.Clickhouse.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("cust").build();
         System.out.println(client.getPartitionColumn(source,queryDTO));
+    }
+
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.Clickhouse.getPluginName());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
     }
 }

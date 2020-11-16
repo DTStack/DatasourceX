@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -128,5 +129,12 @@ public class Hive1Test {
         IClient client = clientCache.getClient(DataSourceType.HIVE1X.getPluginName());
         SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().build();
         System.out.println(client.getAllDatabases(source, sqlQueryDTO));
+    }
+
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.HIVE1X.getPluginName());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
     }
 }

@@ -10,6 +10,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Db2SourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -128,6 +129,13 @@ public class Db2Test {
         IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
         List preview = client.getPreview(source, SqlQueryDTO.builder().tableName("WANGCHUAN01").build());
         System.out.println(preview);
+    }
+
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
     }
 
     @Test
