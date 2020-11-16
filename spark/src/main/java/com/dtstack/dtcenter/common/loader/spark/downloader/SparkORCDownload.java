@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.spark.downloader;
 
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
-import com.dtstack.dtcenter.common.loader.spark.util.SparkKerberosLoginUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import jodd.util.StringUtil;
@@ -105,7 +105,7 @@ public class SparkORCDownload implements IDownloader {
 
     @Override
     public List<String> readNext() throws Exception {
-        return SparkKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
+        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
@@ -173,7 +173,7 @@ public class SparkORCDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-        return SparkKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
+        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return recordReader == null || !nextRecord();

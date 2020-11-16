@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hive1.downloader;
 
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
-import com.dtstack.dtcenter.common.loader.hive1.util.HiveKerberosLoginUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
@@ -219,7 +219,7 @@ public class HiveTextDownload implements IDownloader {
 
     @Override
     public List<String> readNext(){
-        return HiveKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
+        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
@@ -254,7 +254,7 @@ public class HiveTextDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-        return HiveKerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
+        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return recordReader == null || !nextRecord();
