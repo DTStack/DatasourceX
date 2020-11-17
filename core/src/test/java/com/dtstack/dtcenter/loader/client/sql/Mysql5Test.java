@@ -9,6 +9,8 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Mysql5SourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -194,6 +196,13 @@ public class Mysql5Test {
     public void getCurrentDatabase() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.MySQL.getVal());
         String currentDatabase = client.getCurrentDatabase(source);
-        Assert.assertNotNull(currentDatabase);
+        Assert.assertTrue(StringUtils.isNotBlank(currentDatabase));
+    }
+
+    @Test
+    public void getTableBySchema () throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.MySQL.getVal());
+        List tableListBySchema = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("api").tableNamePattern(" ").limit(5).build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableListBySchema));
     }
 }

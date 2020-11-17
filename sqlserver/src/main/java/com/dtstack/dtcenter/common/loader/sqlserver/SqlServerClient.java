@@ -131,7 +131,7 @@ public class SqlServerClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected String getTableBySchemaSql(SqlQueryDTO queryDTO) {
+    protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         return String.format(TABLE_BY_SCHEMA, queryDTO.getSchema());
     }
 

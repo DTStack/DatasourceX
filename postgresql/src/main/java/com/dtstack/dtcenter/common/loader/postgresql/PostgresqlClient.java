@@ -235,7 +235,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
         return DATABASE_QUERY;
     }
 
-    protected String getTableBySchemaSql(SqlQueryDTO queryDTO) {
+    protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         return String.format(SHOW_TABLE_BY_SCHEMA_SQL, queryDTO.getSchema());
     }
 

@@ -12,6 +12,8 @@ import com.dtstack.dtcenter.loader.dto.source.Mysql5SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -21,6 +23,7 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -28,12 +31,22 @@ import java.util.Map;
  * @Date ：Created in 17:18 2020/1/3
  * @Description：Mysql 客户端
  */
+@Slf4j
 public class MysqlClient extends AbsRdbmsClient {
 
     private static final String DONT_EXIST = "doesn't exist";
 
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select database()";
+
+    // 获取指定数据库下的表
+    private static final String SHOW_TABLE_BY_SCHEMA_SQL = "select table_name from information_schema.tables where table_schema='%s' and table_type='base table' %s";
+
+    // 表名正则匹配模糊查询
+    private static final String SEARCH_SQL = " AND table_name REGEXP '%s' ";
+
+    // 限制条数语句
+    private static final String LIMIT_SQL = " limit %s ";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -149,4 +162,34 @@ public class MysqlClient extends AbsRdbmsClient {
         return CURRENT_DB;
     }
 
+    /**
+     * 获取指定schema下的表，如果没有填schema，默认使用当前schema。支持正则匹配查询、条数限制
+     * @param sourceDTO 数据源信息
+     * @param queryDTO 查询条件
+     * @return
+     */
+    @Override
+    protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        String schema = queryDTO.getSchema();
+        // 如果不传scheme，默认使用当前连接使用的schema
+        if (StringUtils.isBlank(schema)) {
+            log.info("schema为空，获取当前正在使用的schema!");
+            // 获取当前数据库
+            try {
+                schema = getCurrentDatabase(sourceDTO);
+            } catch (Exception e) {
+                throw new DtLoaderException("获取当前使用数据库失败！", e);
+            }
+
+        }
+        log.info("当前使用schema：{}", schema);
+        StringBuilder constr = new StringBuilder();
+        if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+            constr.append(String.format(SEARCH_SQL, queryDTO.getTableNamePattern()));
+        }
+        if (Objects.nonNull(queryDTO.getLimit())) {
+            constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));
+        }
+        return String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema, constr.toString());
+    }
 }
