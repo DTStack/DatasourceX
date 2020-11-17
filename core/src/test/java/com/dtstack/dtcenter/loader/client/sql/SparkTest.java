@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -195,5 +196,12 @@ public class SparkTest {
         IClient client = ClientCache.getClient(DataSourceType.Spark.getVal());
         Table table = client.getTable(source, SqlQueryDTO.builder().tableName("nanqi1").build());
         System.out.println(table);
+    }
+
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.Spark.getPluginName());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
     }
 }

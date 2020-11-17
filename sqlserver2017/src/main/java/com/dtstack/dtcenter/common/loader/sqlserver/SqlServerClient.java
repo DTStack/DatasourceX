@@ -42,6 +42,10 @@ public class SqlServerClient extends AbsRdbmsClient {
             "WHERE sys.tables.type='U' AND sys.tables.is_tracked_by_cdc =1\n" +
             "AND sys.schemas.name = '%s'";
 
+
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "Select Name From Master..SysDataBases Where DbId=(Select Dbid From Master..SysProcesses Where Spid = @@spid)";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new SQLServerConnFactory();
@@ -183,5 +187,10 @@ public class SqlServerClient extends AbsRdbmsClient {
     @Override
     public String getShowDbSql() {
         return SCHEMAS_QUERY;
+    }
+
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
     }
 }

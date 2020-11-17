@@ -9,6 +9,8 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -72,12 +74,55 @@ public class PostgreSQLTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
+    /**
+     * 获取表测试：没有schema，包括视图
+     * @throws Exception
+     */
     @Test
     public void getTableList() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+    }
+
+    /**
+     * 获取表测试：没有schema，不包括视图
+     * @throws Exception
+     */
+    @Test
+    public void getTableListNoSchemaNoView() throws Exception {
+        source.setSchema(null);
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().view(false).build();
+        List<String> tableList = client.getTableList(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+    }
+
+    /**
+     * 获取表测试：有schema，包括视图
+     * @throws Exception
+     */
+    @Test
+    public void getTableListSchemaView() throws Exception {
+        source.setSchema("pg_catalog");
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().view(true).build();
+        List<String> tableList = client.getTableList(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+    }
+
+    /**
+     * 获取表测试：有schema，不包括视图
+     * @throws Exception
+     */
+    @Test
+    public void getTableListSchemaNoView() throws Exception {
+        source.setSchema("pg_catalog");
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().view(false).build();
+        List<String> tableList = client.getTableList(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
     @Test
@@ -102,6 +147,15 @@ public class PostgreSQLTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
+    }
+
+    @Test
+    public void getColumnMetaDataBySchema() throws Exception {
+        source.setSchema("yunchuan");
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test").build();
+        List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 
     @Test
@@ -134,7 +188,19 @@ public class PostgreSQLTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").previewNum(6).build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
+    }
 
+    /**
+     * 根据schema + tableName 数据预览
+     * @throws Exception
+     */
+    @Test
+    public void getPreviewBySchema() throws Exception {
+        source.setSchema("yunchuan");
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getPluginName());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test").previewNum(3).build();
+        List preview = client.getPreview(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(preview));
     }
 
     @Test
@@ -142,5 +208,12 @@ public class PostgreSQLTest {
         IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         List<String> databases = client.getAllDatabases(source, SqlQueryDTO.builder().build());
         System.out.println(databases);
+    }
+
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getPluginName());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
     }
 }

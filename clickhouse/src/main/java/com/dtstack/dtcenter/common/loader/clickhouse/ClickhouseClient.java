@@ -40,6 +40,9 @@ public class ClickhouseClient extends AbsRdbmsClient {
 
     private static final String DONT_EXIST = "doesn't exist";
 
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "select currentDatabase()";
+
     @Override
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
@@ -147,5 +150,10 @@ public class ClickhouseClient extends AbsRdbmsClient {
         ClickHouseDownloader clickHouseDownloader = new ClickHouseDownloader(getCon(clickHouseSourceDTO), queryDTO.getSql(), clickHouseSourceDTO.getSchema());
         clickHouseDownloader.configure();
         return clickHouseDownloader;
+    }
+
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
     }
 }

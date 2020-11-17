@@ -17,6 +17,7 @@ import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
@@ -532,6 +533,25 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      */
     protected String getShowDbSql(){
         return SHOW_DB_SQL;
+    }
+
+    @Override
+    public String getCurrentDatabase(ISourceDTO source) throws Exception {
+        // 获取根据schema获取表的sql
+        String sql = getCurrentDbSql();
+        List<Map<String, Object>> result = executeQuery(source, SqlQueryDTO.builder().sql(sql).build());
+        if (CollectionUtils.isEmpty(result) || MapUtils.isEmpty(result.get(0))) {
+            throw new DtLoaderException("获取当前数据库失败！");
+        }
+        return (String) result.get(0).entrySet().stream().findAny().orElseThrow(() -> new DtLoaderException("获取当前数据库失败！")).getValue();
+    }
+
+    /**
+     * 获取当前使用db的sql语句，需要支持的数据源中重写该方法
+     * @return 对应的sql
+     */
+    protected String getCurrentDbSql() {
+        throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
 }
