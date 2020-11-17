@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
@@ -39,6 +40,18 @@ public class PostgresqlClient extends AbsRdbmsClient {
 
     private static final String DONT_EXIST = "doesn't exist";
 
+    // 获取指定schema下的表，包括视图
+    private static final String SHOW_TABLE_AND_VIEW_BY_SCHEMA_SQL = "SELECT table_name FROM information_schema.tables WHERE table_schema = '%s' ";
+
+    // 获取指定schema下的表，不包括视图
+    private static final String SHOW_TABLE_BY_SCHEMA_SQL = "SELECT table_name FROM information_schema.tables WHERE table_schema = '%s' AND table_type = 'BASE TABLE' ";
+
+    //获取所有表名，包括视图，表名前拼接schema，并对schema和tableName进行增加双引号处理
+    private static final String ALL_TABLE_AND_VIEW_SQL = "SELECT '\"'||table_schema||'\".\"'||table_name||'\"' AS schema_table FROM information_schema.tables order by schema_table ";
+
+    //获取所有表名，不包括视图，表名前拼接schema，并对schema和tableName进行增加双引号处理
+    private static final String ALL_TABLE_SQL = "SELECT '\"'||table_schema||'\".\"'||table_name||'\"' AS schema_table FROM information_schema.tables WHERE table_type = 'BASE TABLE'  order by schema_table ";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new PostgresqlConnFactory();
@@ -53,23 +66,18 @@ public class PostgresqlClient extends AbsRdbmsClient {
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         PostgresqlSourceDTO postgresqlSourceDTO = (PostgresqlSourceDTO) iSource;
         Integer clearStatus = beforeQuery(postgresqlSourceDTO, queryDTO, false);
-
-        String database = getPostgreSchema(postgresqlSourceDTO.getConnection(), postgresqlSourceDTO.getUsername());
-        if (StringUtils.isNotBlank(database) && database.contains(",")) {
-            //处理 "root,'public"这种情况
-            String[] split = database.split(",");
-            if (split.length > 1 && StringUtils.isNotBlank(split[1])) {
-                database = split[1].replace("'", "").trim();
-            }
-        }
-
         Statement statement = null;
         ResultSet rs = null;
         try {
             statement = postgresqlSourceDTO.getConnection().createStatement();
-            //大小写区分
-            rs = statement.executeQuery(String.format("select table_name from information_schema.tables WHERE " +
-                    "table_schema in ( '%s' )", database));
+            //大小写区分，不传schema默认获取所有表，并且表名签名拼接schema，格式："schema"."tableName"
+            String querySql;
+            if (StringUtils.isNotBlank(postgresqlSourceDTO.getSchema())) {
+                querySql = queryDTO.getView() ? String.format(SHOW_TABLE_AND_VIEW_BY_SCHEMA_SQL, postgresqlSourceDTO.getSchema()) : String.format(SHOW_TABLE_BY_SCHEMA_SQL, postgresqlSourceDTO.getSchema());
+            }else {
+                querySql = queryDTO.getView() ? ALL_TABLE_AND_VIEW_SQL : ALL_TABLE_SQL;
+            }
+            rs = statement.executeQuery(querySql);
             List<String> tableList = new ArrayList<>();
             while (rs.next()) {
                 tableList.add(rs.getString(1));
@@ -120,43 +128,6 @@ public class PostgresqlClient extends AbsRdbmsClient {
         }
 
         return type;
-    }
-
-    /**
-     * 获取 SCHEMA
-     *
-     * @param conn
-     * @param user
-     * @return
-     * @throws SQLException
-     */
-    private static String getPostgreSchema(Connection conn, String user) throws SQLException {
-        ResultSet rs = null;
-        Statement statement = null;
-        List<String> tableList = new ArrayList<>();
-        try {
-            statement = conn.createStatement();
-            rs = statement.executeQuery("SHOW search_path;");
-            while (rs.next()) {
-                tableList.add(rs.getString("search_path"));
-            }
-
-        } catch (SQLException e) {
-            throw e;
-        } finally {
-            DBUtil.closeDBResources(rs, statement, null);
-        }
-        Set<String> backList = new HashSet<>();
-        for (String table : tableList) {
-            if (!table.contains(",")) {
-                backList.add("\"$user\"".equals(table) ? user : table.trim());
-            }
-            String[] tables = table.split(",");
-            for (String temptable : tables) {
-                backList.add("\"$user\"".equals(temptable) ? user : temptable.trim());
-            }
-        }
-        return String.join("','", backList);
     }
 
     @Override
@@ -251,5 +222,17 @@ public class PostgresqlClient extends AbsRdbmsClient {
             schema = String.format("\"%s\"", schema);
         }
         return String.format("%s.%s", schema, tableName);
+    }
+
+    /**
+     * 处理Postgresql数据预览sql
+     * @param rdbmsSourceDTO
+     * @param sqlQueryDTO
+     * @return
+     */
+    @Override
+    protected String dealSql(RdbmsSourceDTO rdbmsSourceDTO, SqlQueryDTO sqlQueryDTO){
+        return "select * from " + transferSchemaAndTableName(rdbmsSourceDTO.getSchema(), sqlQueryDTO.getTableName())
+                + " limit " + sqlQueryDTO.getPreviewNum();
     }
 }
