@@ -129,4 +129,11 @@ public class DataSourceClientProxy<T> implements IClient<T> {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTable(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
+
+    @Override
+    public String getCurrentDatabase(ISourceDTO source) throws Exception {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getCurrentDatabase(source),
+                targetClient.getClass().getClassLoader());
+    }
+
 }

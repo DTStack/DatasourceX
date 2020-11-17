@@ -10,6 +10,7 @@ import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.BeforeClass;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -147,5 +148,12 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         Table table = client.getTable(source, SqlQueryDTO.builder().tableName("nanqi1").build());
         System.out.println(table);
+    }
+
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.IMPALA.getPluginName());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
     }
 }

@@ -10,6 +10,7 @@ import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.BeforeClass;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -23,7 +24,9 @@ import java.util.Map;
  * @Description：Oracle 测试
  */
 public class OracleTest {
-    private static OracleSourceDTO source = OracleSourceDTO.builder()
+    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
+
+    OracleSourceDTO source = OracleSourceDTO.builder()
             .url("jdbc:oracle:thin:@172.16.8.193:1521:xe")
             .username("kminer")
             .password("kminerpass")
@@ -180,6 +183,13 @@ public class OracleTest {
         IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         System.out.println(client.getCreateTableSql(source,queryDTO));
+    }
+
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
     }
 
 }

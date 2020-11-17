@@ -50,6 +50,10 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class HiveClient extends AbsRdbmsClient {
+
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "select current_database()";
+
     // 测试连通性超时时间。单位：秒
     private final static int TEST_CONN_TIMEOUT = 30;
 
@@ -424,5 +428,10 @@ public class HiveClient extends AbsRdbmsClient {
             }
         }
         return tableInfo;
+    }
+
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
     }
 }

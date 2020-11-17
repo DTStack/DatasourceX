@@ -50,6 +50,9 @@ public class OracleClient extends AbsRdbmsClient {
     private static final String SHOW_TABLE_BY_SCHEMA_SQL = "SELECT TABLE_NAME  FROM all_tables WHERE OWNER = '%s'";
 
 
+    // 获取oracle默认使用的schema
+    private static final String CURRENT_DB = "select sys_context('USERENV', 'CURRENT_SCHEMA') as schema_name from dual";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new OracleConnFactory();
@@ -272,4 +275,8 @@ public class OracleClient extends AbsRdbmsClient {
         return String.format("%s.%s", schema, tableName);
     }
 
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
+    }
 }
