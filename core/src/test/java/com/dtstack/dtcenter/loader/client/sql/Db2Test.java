@@ -10,8 +10,8 @@ import com.dtstack.dtcenter.loader.dto.source.Db2SourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.BeforeClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -126,7 +126,7 @@ public class Db2Test {
 
     @Test
     public void getCurrentDatabase() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.DB2.getPluginName());
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
     }

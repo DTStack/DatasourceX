@@ -10,8 +10,8 @@ import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.BeforeClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -223,7 +223,7 @@ public class HiveTest {
 
     @Test
     public void getCurrentDatabase() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getPluginName());
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
     }

@@ -8,9 +8,9 @@ import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -150,7 +150,7 @@ public class Hive1Test {
 
     @Test
     public void getCurrentDatabase() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.HIVE1X.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getPluginName());
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
     }

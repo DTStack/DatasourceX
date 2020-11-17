@@ -9,8 +9,8 @@ import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import org.junit.BeforeClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -200,7 +200,7 @@ public class SparkTest {
 
     @Test
     public void getCurrentDatabase() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Spark.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Spark.getPluginName());
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
     }

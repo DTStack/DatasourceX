@@ -8,7 +8,6 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
-import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
@@ -34,9 +33,6 @@ public class PostgresqlClient extends AbsRdbmsClient {
     private static final String DATABASE_QUERY = "select nspname from pg_namespace";
 
     private static final String DONT_EXIST = "doesn't exist";
-
-    // 获取指定schema下的表
-    private static final String SHOW_TABLE_BY_SCHEMA_SQL = "SELECT table_name FROM information_schema.tables WHERE table_schema = '%s'";
 
     // 获取指定schema下的表，包括视图
     private static final String SHOW_TABLE_AND_VIEW_BY_SCHEMA_SQL = "SELECT table_name FROM information_schema.tables WHERE table_schema = '%s' ";
@@ -203,6 +199,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
         return DATABASE_QUERY;
     }
 
+    @Override
     protected String getTableBySchemaSql(SqlQueryDTO queryDTO) {
         return String.format(SHOW_TABLE_BY_SCHEMA_SQL, queryDTO.getSchema());
     }
@@ -229,13 +226,14 @@ public class PostgresqlClient extends AbsRdbmsClient {
 
     /**
      * 处理Postgresql数据预览sql
-     * @param rdbmsSourceDTO
+     * @param iSourceDTO
      * @param sqlQueryDTO
      * @return
      */
     @Override
-    protected String dealSql(RdbmsSourceDTO rdbmsSourceDTO, SqlQueryDTO sqlQueryDTO){
-        return "select * from " + transferSchemaAndTableName(rdbmsSourceDTO.getSchema(), sqlQueryDTO.getTableName())
+    protected String dealSql(ISourceDTO iSourceDTO, SqlQueryDTO sqlQueryDTO){
+        PostgresqlSourceDTO postgresqlSourceDTO = (PostgresqlSourceDTO)iSourceDTO;
+        return "select * from " + transferSchemaAndTableName(postgresqlSourceDTO.getSchema(), sqlQueryDTO.getTableName())
                 + " limit " + sqlQueryDTO.getPreviewNum();
     }
 

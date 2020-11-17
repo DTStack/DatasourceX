@@ -365,4 +365,9 @@ public class HbaseClient<T> implements IClient<T> {
     public com.dtstack.dtcenter.loader.dto.Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
+
+    @Override
+    public String getCurrentDatabase(ISourceDTO source) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
 }
