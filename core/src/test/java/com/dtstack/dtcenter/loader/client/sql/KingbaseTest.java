@@ -7,6 +7,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.KingbaseSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -209,5 +210,12 @@ public class KingbaseTest {
     public void getTableMetaComment() throws Exception {
         String metaComment = client.getTableMetaComment(source, SqlQueryDTO.builder().tableName("table_test").build());
         System.out.println(metaComment);
+    }
+
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.KINGBASE8.getPluginName());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
     }
 }

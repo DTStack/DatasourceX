@@ -193,4 +193,11 @@ public class Mysql5Test {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("rdos_dict").build();
         System.out.println(client.getPartitionColumn(source,queryDTO));
     }
+
+    @Test
+    public void getCurrentDatabase() throws Exception {
+        IClient client = clientCache.getClient(DataSourceType.MySQL.getPluginName());
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertNotNull(currentDatabase);
+    }
 }

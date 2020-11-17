@@ -166,4 +166,13 @@ public interface IClient<T> {
      * @throws Exception
      */
     List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+
+    /**
+     * 获取当前使用的数据库
+     *
+     * @param source 数据源信息
+     * @return 当前使用的数据库
+     * @throws Exception
+     */
+    String getCurrentDatabase(ISourceDTO source) throws Exception;
 }

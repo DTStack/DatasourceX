@@ -93,4 +93,9 @@ public class RedisClient<T> implements IClient<T> {
     public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
+
+    @Override
+    public String getCurrentDatabase(ISourceDTO source) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
 }
