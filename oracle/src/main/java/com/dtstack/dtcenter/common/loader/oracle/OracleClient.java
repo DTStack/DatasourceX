@@ -48,6 +48,9 @@ public class OracleClient extends AbsRdbmsClient {
 
     private static final String TABLE_CREATE_SQL = "select dbms_metadata.get_ddl('TABLE','%s','%s') from dual";
 
+    // 获取oracle默认使用的schema
+    private static final String CURRENT_DB = "select sys_context('USERENV', 'CURRENT_SCHEMA') as schema_name from dual";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new OracleConnFactory();
@@ -268,4 +271,8 @@ public class OracleClient extends AbsRdbmsClient {
         return String.format("%s.%s", schema, tableName);
     }
 
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
+    }
 }

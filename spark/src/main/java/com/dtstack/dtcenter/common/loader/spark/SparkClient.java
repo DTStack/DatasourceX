@@ -46,6 +46,10 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class SparkClient extends AbsRdbmsClient {
+
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "select current_database()";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new SparkConnFactory();
@@ -415,5 +419,10 @@ public class SparkClient extends AbsRdbmsClient {
             }
         });
         return partitionColumnMeta;
+    }
+
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
     }
 }

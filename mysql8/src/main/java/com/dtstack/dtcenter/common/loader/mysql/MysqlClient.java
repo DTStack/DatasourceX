@@ -28,6 +28,9 @@ public class MysqlClient extends AbsRdbmsClient {
 
     private static final String DONT_EXIST = "doesn't exist";
 
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "select database()";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new MysqlConnFactory();
@@ -109,4 +112,8 @@ public class MysqlClient extends AbsRdbmsClient {
         return columnComments;
     }
 
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
+    }
 }
