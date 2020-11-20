@@ -135,7 +135,8 @@ public class HbasePoolManager {
         hbaseMap.put("hbase.client.pause", "100");
         hbaseMap.put("zookeeper.recovery.retry", "3");
         hbaseMap.put("hbase.client.ipc.pool.type","RoundRobinPool");
-        hbaseMap.put("hbase.client.ipc.pool.size","10");
+        Integer poolSize = hbaseSourceDTO.getPoolConfig() == null ? 10 : hbaseSourceDTO.getPoolConfig().getMaximumPoolSize();
+        hbaseMap.put("hbase.client.ipc.pool.size", String.valueOf(poolSize));
 
         // 设置其他信息
         hbaseMap.putAll(JSONUtil.parseMap(hbaseSourceDTO.getOthers()));
