@@ -31,6 +31,8 @@ public class Db2Client extends AbsRdbmsClient {
 
     private static final String DATABASE_QUERY = "select schemaname from syscat.schemata where ownertype != 'S'";
 
+    private static final String TABLE_BY_SCHEMA = "select TABLE_NAME AS Name from SYSIBM.TABLES where TABLE_SCHEMA='%s'";
+
     // 获取db2的当前database
     private static final String CURRENT_DB = "select CURRENT schema from sysibm.sysdummy1";
 
@@ -115,6 +117,11 @@ public class Db2Client extends AbsRdbmsClient {
     @Override
     public String getShowDbSql() {
         return DATABASE_QUERY;
+    }
+
+    @Override
+    protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        return String.format(TABLE_BY_SCHEMA, queryDTO.getSchema());
     }
 
     /**

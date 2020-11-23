@@ -45,6 +45,14 @@ public class SqlServerClient extends AbsRdbmsClient {
     // 获取正在使用数据库
     private static final String CURRENT_DB = "Select Name From Master..SysDataBases Where DbId=(Select Dbid From Master..SysProcesses Where Spid = @@spid)";
 
+    /**
+     * 根据schema获取对应的表：开启cdc的表
+     */
+    private static final String TABLE_BY_SCHEMA = "SELECT sys.tables.name AS table_name,sys.schemas.name AS schema_name \n" +
+            "FROM sys.tables LEFT JOIN sys.schemas ON sys.tables.schema_id=sys.schemas.schema_id \n" +
+            "WHERE sys.tables.type='U' AND sys.tables.is_tracked_by_cdc =1\n" +
+            "AND sys.schemas.name = '%s'";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new SQLServerConnFactory();
@@ -138,6 +146,11 @@ public class SqlServerClient extends AbsRdbmsClient {
         }
         //判断表名
         return String.format("[%s]", tableName);
+    }
+
+    @Override
+    protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        return String.format(TABLE_BY_SCHEMA, queryDTO.getSchema());
     }
 
     @Override
