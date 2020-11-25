@@ -71,9 +71,6 @@ public class OracleClient extends AbsRdbmsClient {
     private static final String LIMIT_SQL = " AND ROWNUM <= %s ";
     /* ----------------------------------------------------------------------------------------- */
 
-    // 获取oracle默认使用的schema
-    private static final String CURRENT_DB = "select sys_context('USERENV', 'CURRENT_SCHEMA') as schema_name from dual";
-
     @Override
     protected ConnFactory getConnFactory() {
         return new OracleConnFactory();
@@ -261,6 +258,7 @@ public class OracleClient extends AbsRdbmsClient {
      * @param queryDTO 查询条件
      * @return 对应的sql语句
      */
+    @Override
     protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         // 构造表名模糊查询和条数限制sql
         String tableConstr = buildSearchSql(TABLE_SEARCH_SQL, queryDTO.getTableNamePattern(), queryDTO.getLimit());

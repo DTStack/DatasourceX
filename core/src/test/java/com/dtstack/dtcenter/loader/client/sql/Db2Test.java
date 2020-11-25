@@ -125,13 +125,6 @@ public class Db2Test {
     }
 
     @Test
-    public void getCurrentDatabase() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.DB2.getPluginName());
-        String currentDatabase = client.getCurrentDatabase(source);
-        Assert.assertNotNull(currentDatabase);
-    }
-
-    @Test
     public void getAllDatabases() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();

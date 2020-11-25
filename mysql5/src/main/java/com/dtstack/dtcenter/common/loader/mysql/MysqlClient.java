@@ -39,9 +39,6 @@ public class MysqlClient extends AbsRdbmsClient {
 
     private static final String DONT_EXIST = "doesn't exist";
 
-    // 获取正在使用数据库
-    private static final String CURRENT_DB = "select database()";
-
     // 获取指定数据库下的表
     private static final String SHOW_TABLE_BY_SCHEMA_SQL = "select table_name from information_schema.tables where table_schema='%s' and table_type='base table' %s";
 

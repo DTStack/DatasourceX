@@ -57,9 +57,6 @@ public class HiveClient extends AbsRdbmsClient {
     // 测试连通性超时时间。单位：秒
     private final static int TEST_CONN_TIMEOUT = 30;
 
-    // 获取正在使用数据库
-    private static final String CURRENT_DB = "select current_database()";
-
     @Override
     protected ConnFactory getConnFactory() {
         return new HiveConnFactory();
