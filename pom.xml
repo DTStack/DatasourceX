@@ -45,6 +45,7 @@
         <module>kerberos</module>
         <module>hbase_gateway</module>
         <module>s3</module>
+        <module>websocket</module>
     </modules>
     <packaging>pom</packaging>
 
