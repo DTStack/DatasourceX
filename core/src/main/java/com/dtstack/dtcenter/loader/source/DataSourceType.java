@@ -4,7 +4,10 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -70,8 +73,9 @@ public enum DataSourceType {
     KAFKA_10(17, 123, "Kafka_0.10", "kafka"),
     KAFKA_09(18, 124, "Kafka_0.9", "kafka"),
     EMQ(34, 125, "EMQ", "emq"),
-    BEATS(16, 126, "Beats", "null"),
-    Spark(1002, 127, "Spark", "spark"),
+    WEB_SOCKET(42, 126, "WebSocket", "websocket"),
+    BEATS(16, 127, "Beats", "null"),
+    Spark(1002, 128, "Spark", "spark"),
     ;
 
     DataSourceType(int val, int order, String name, String pluginName) {
@@ -180,5 +184,14 @@ public enum DataSourceType {
      */
     public static List<Integer> getKafkaS() {
         return KAFKA_S;
+    }
+
+    public static void main(String[] args) {
+        List<DataSourceType> collect = Arrays.stream(DataSourceType.values()).sorted(Comparator.comparingInt(DataSourceType::getVal)).collect(Collectors.toList());
+        int val = 1;
+        for (DataSourceType dataSourceType : collect) {
+            val = val == dataSourceType.getVal() - 1 ? dataSourceType.getVal() : val;
+        }
+        System.out.println("Sys.out.currentVal : " + (val + 1));
     }
 }
