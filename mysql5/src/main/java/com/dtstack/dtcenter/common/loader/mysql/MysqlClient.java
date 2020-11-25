@@ -34,6 +34,9 @@ import java.util.Objects;
 @Slf4j
 public class MysqlClient extends AbsRdbmsClient {
 
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "select database()";
+
     private static final String DONT_EXIST = "doesn't exist";
 
     // 获取正在使用数据库
