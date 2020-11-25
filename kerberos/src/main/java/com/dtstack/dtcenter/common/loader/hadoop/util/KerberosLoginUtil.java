@@ -25,6 +25,12 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class KerberosLoginUtil {
+    /**
+     * Kerberos 默认角色配置信息
+     */
+    private static final String SECURITY_TO_LOCAL = "hadoop.security.auth_to_local";
+    private static final String SECURITY_TO_LOCAL_DEFAULT = "RULE:[1:$1] RULE:[2:$1]";
+
     private static ConcurrentHashMap<String, UGICacheData> UGI_INFO = new ConcurrentHashMap<>();
 
     private static final ScheduledExecutorService scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new DtClassThreadFactory("ugiCacheFactory"));
@@ -106,6 +112,11 @@ public class KerberosLoginUtil {
         // 因为 Hive 需要下载，所有优先设置 ResourceManager Principal
         if (confMap.get(HadoopConfTool.RM_PRINCIPAL) == null) {
             confMap.put(HadoopConfTool.RM_PRINCIPAL, principal);
+        }
+
+        // 处理 Default 角色
+        if (MapUtils.getString(confMap, SECURITY_TO_LOCAL) == null || "DEFAULT".equals(MapUtils.getString(confMap, SECURITY_TO_LOCAL))) {
+            confMap.put(SECURITY_TO_LOCAL, SECURITY_TO_LOCAL_DEFAULT);
         }
 
         // 判断缓存UGI，如果存在则直接使用
