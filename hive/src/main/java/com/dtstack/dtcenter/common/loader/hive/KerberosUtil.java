@@ -26,6 +26,9 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class KerberosUtil {
+    private static final String SECURITY_TO_LOCAL = "hadoop.security.auth_to_local";
+    private static final String SECURITY_TO_LOCAL_DEFAULT = "RULE:[1:$1] RULE:[2:$1]";
+
     private static ConcurrentHashMap<String, UGICacheData> UGI_INFO = new ConcurrentHashMap<>();
 
     private static final ScheduledExecutorService scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1,
@@ -95,6 +98,11 @@ public class KerberosUtil {
         // 处理 yarn.resourcemanager.principal，变与参数下载
         if (!confMap.containsKey("yarn.resourcemanager.principal")){
             confMap.put("yarn.resourcemanager.principal", principal);
+        }
+
+        // 处理 Default 角色
+        if (MapUtils.getString(confMap, SECURITY_TO_LOCAL) == null || "DEFAULT".equals(MapUtils.getString(confMap, SECURITY_TO_LOCAL))) {
+            confMap.put(SECURITY_TO_LOCAL, SECURITY_TO_LOCAL_DEFAULT);
         }
 
         // 判断缓存UGI，如果存在则直接使用
