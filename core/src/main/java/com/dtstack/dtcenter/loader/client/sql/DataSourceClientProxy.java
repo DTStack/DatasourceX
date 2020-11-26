@@ -65,12 +65,6 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     }
 
     @Override
-    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableListBySchema(source, queryDTO),
-                targetClient.getClass().getClassLoader());
-    }
-
-    @Override
     public List<String> getColumnClassInfo(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnClassInfo(source, queryDTO),
                 targetClient.getClass().getClassLoader());

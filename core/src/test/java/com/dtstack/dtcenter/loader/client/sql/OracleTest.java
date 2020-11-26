@@ -197,7 +197,7 @@ public class OracleTest {
      */
     @Test
     public void searchTableByNameLimit () throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getPluginName());
         long oldDate = System.currentTimeMillis();
         List list = client.getTableListBySchema(source, SqlQueryDTO.builder().view(true).tableNamePattern("test_vie").limit(5).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(list));
@@ -211,7 +211,7 @@ public class OracleTest {
      */
     @Test
     public void searchTableByNameLimitNoView () throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getPluginName());
         long oldDate = System.currentTimeMillis();
         List list = client.getTableListBySchema(source, SqlQueryDTO.builder().view(false).tableNamePattern(" ").limit(10).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(list));
@@ -225,7 +225,7 @@ public class OracleTest {
      */
     @Test
     public void searchTableBySchemaLimit () throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getPluginName());
         long oldDate = System.currentTimeMillis();
         List list = client.getTableListBySchema(source, SqlQueryDTO.builder().view(true).schema("JIANGBO").tableNamePattern("s").limit(3).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(list));
@@ -239,7 +239,7 @@ public class OracleTest {
      */
     @Test
     public void searchTableBySchema () throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getPluginName());
         long oldDate = System.currentTimeMillis();
         List list = client.getTableListBySchema(source, SqlQueryDTO.builder().view(true).schema("JIANGBO").tableNamePattern("s").build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(list));
@@ -253,7 +253,7 @@ public class OracleTest {
      */
     @Test
     public void searchTableBySchemaEmptyName () throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getPluginName());
         long oldDate = System.currentTimeMillis();
         List list = client.getTableListBySchema(source, SqlQueryDTO.builder().view(true).schema("JIANGBO").tableNamePattern(" ").build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(list));
@@ -267,7 +267,7 @@ public class OracleTest {
      */
     @Test
     public void searchTableAndViewBySchema () throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getPluginName());
         long oldDate = System.currentTimeMillis();
         List list = client.getTableListBySchema(source, SqlQueryDTO.builder().view(false).schema("SYS").tableNamePattern("").limit(200).build());
         Assert.assertTrue(CollectionUtils.isEmpty(list));

@@ -47,10 +47,6 @@ public class OracleClient extends AbsRdbmsClient {
 
     private static final String TABLE_CREATE_SQL = "select dbms_metadata.get_ddl('TABLE','%s','%s') from dual";
 
-    // 获取指定schema下的表
-    private static final String SHOW_TABLE_BY_SCHEMA_SQL = "SELECT TABLE_NAME  FROM all_tables WHERE OWNER = '%s'";
-
-
     // 获取oracle默认使用的schema
     private static final String CURRENT_DB = "select sys_context('USERENV', 'CURRENT_SCHEMA') as schema_name from dual";
 
