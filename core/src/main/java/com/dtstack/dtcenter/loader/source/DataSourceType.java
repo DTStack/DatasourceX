@@ -56,7 +56,7 @@ public enum DataSourceType {
 
     // NoSQL
     HBASE(8, 100, "HBase1.x", "hbase"),
-    HBASE2(39, 101, "HBase2.x", "hbase2"),
+    HBASE2(39, 101, "HBase2.x", "hbase"),
     Phoenix(30, 102, "Phoenix4.x", "phoenix"),
     PHOENIX5(38, 103, "Phoenix5.x", "phoenix5"),
     ES(11, 104, "ElasticSearch5.x", "es"),
