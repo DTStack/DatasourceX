@@ -212,6 +212,38 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         return tableList;
     }
 
+    /**
+     * 暂不支持太多数据源
+     *
+     * @param source
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        // 获取根据schema获取表的sql
+        String sql = getTableBySchemaSql(source, queryDTO);
+        log.info("最终获取表的sql语句：{}", sql);
+        Statement statement = null;
+        ResultSet rs = null;
+        List<String> tableList = new ArrayList<>();
+        try {
+            statement = rdbmsSourceDTO.getConnection().createStatement();
+            rs = statement.executeQuery(sql);
+            while (rs.next()) {
+                tableList.add(rs.getString(1));
+            }
+        } catch (Exception e) {
+            throw new DtLoaderException("根据schema获取表异常", e);
+        } finally {
+            DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        return tableList;
+    }
+
     @Override
     public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
@@ -438,6 +470,16 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
         return null;
+    }
+
+    /**
+     * 根据schema获取表，默认不支持。需要支持的数据源自己去实现该方法
+     *
+     * @param queryDTO
+     * @return
+     */
+    protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("该数据源暂不支持该方法！");
     }
 
     @Override
