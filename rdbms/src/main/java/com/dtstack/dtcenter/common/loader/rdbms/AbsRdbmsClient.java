@@ -210,7 +210,8 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         Integer clearStatus = beforeQuery(source, queryDTO, false);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
         // 获取根据schema获取表的sql
-        String sql = getTableBySchemaSql(queryDTO);
+        String sql = getTableBySchemaSql(source, queryDTO);
+        log.info("最终获取表的sql语句：{}", sql);
         Statement statement = null;
         ResultSet rs = null;
         List<String> tableList = new ArrayList<>();
@@ -452,8 +453,14 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         return null;
     }
 
-    protected String getTableBySchemaSql(SqlQueryDTO queryDTO) {
-        return String.format(SHOW_TABLE_BY_SCHEMA_SQL, queryDTO.getSchema());
+    /**
+     * 根据schema获取表，默认不支持。需要支持的数据源自己去实现该方法
+     *
+     * @param queryDTO
+     * @return
+     */
+    protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("该数据源暂不支持该方法！");
     }
 
     @Override

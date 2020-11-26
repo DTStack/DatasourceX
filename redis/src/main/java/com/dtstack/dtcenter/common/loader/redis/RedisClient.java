@@ -109,4 +109,9 @@ public class RedisClient<T> implements IClient<T> {
     public String getCurrentDatabase(ISourceDTO source) throws Exception {
         throw new DtLoaderException("Not Support");
     }
+
+    @Override
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
 }

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -52,6 +53,25 @@ public class OracleClient extends AbsRdbmsClient {
 
     // 获取oracle默认使用的schema
     private static final String CURRENT_DB = "select sys_context('USERENV', 'CURRENT_SCHEMA') as schema_name from dual";
+
+    /* -------------------------------------获取表操作相关sql------------------------------------- */
+    // oracle获取指定schema下的表
+    private static final String SHOW_TABLE_BY_SCHEMA_SQL = " SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s' %s ";
+    // oracle获取指定schema下的视图
+    private static final String SHOW_VIEW_BY_SCHEMA_SQL = " UNION SELECT VIEW_NAME FROM ALL_VIEWS WHERE OWNER = '%s' %s ";
+    // oracle获取所有的schema下所有表 ： 新sql
+    private static final String SHOW_ALL_TABLE_SQL = "SELECT '\"'||OWNER||'\"'||'.'||'\"'||TABLE_NAME||'\"' AS TABLE_NAME FROM ALL_TABLES WHERE OWNER != 'SYS' %s ";
+    // oracle获取所有的schema下所有视图 ： 新sql
+    private static final String SHOW_ALL_VIEW_SQL = " UNION SELECT '\"'||OWNER||'\"'||'.'||'\"'||VIEW_NAME||'\"' AS TABLE_NAME FROM ALL_VIEWS WHERE OWNER != 'SYS' %s ";
+    // 表查询基础sql
+    private static final String TABLE_BASE_SQL = "SELECT TABLE_NAME FROM (%s) WHERE 1 = 1 %s ";
+    // 表名正则匹配模糊查询，忽略大小写
+    private static final String TABLE_SEARCH_SQL = " AND REGEXP_LIKE (TABLE_NAME, '%s', 'i') ";
+    // 视图正则匹配模糊查询，忽略大小写
+    private static final String VIEW_SEARCH_SQL = " AND REGEXP_LIKE (VIEW_NAME, '%s', 'i') ";
+    // 限制条数语句
+    private static final String LIMIT_SQL = " AND ROWNUM <= %s ";
+    /* ----------------------------------------------------------------------------------------- */
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -235,6 +255,48 @@ public class OracleClient extends AbsRdbmsClient {
 
     protected String getTableBySchemaSql(SqlQueryDTO queryDTO) {
         return String.format(SHOW_TABLE_BY_SCHEMA_SQL, queryDTO.getSchema());
+    }
+
+    /**
+     * 查询指定schema下的表，如果没有填schema，默认使用当前schema：支持条数限制、正则匹配
+     *
+     * @param sourceDTO 数据源信息
+     * @param queryDTO 查询条件
+     * @return 对应的sql语句
+     */
+    protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        // 构造表名模糊查询和条数限制sql
+        String tableConstr = buildSearchSql(TABLE_SEARCH_SQL, queryDTO.getTableNamePattern(), queryDTO.getLimit());
+        // 构造视图模糊查询和条数限制sql
+        String viewConstr = buildSearchSql(VIEW_SEARCH_SQL, queryDTO.getTableNamePattern(), queryDTO.getLimit());
+        String schema = queryDTO.getSchema();
+        // schema若为空，则查询所有schema下的表
+        String searchSql;
+        if (org.apache.commons.lang3.StringUtils.isBlank(schema)) {
+            searchSql = queryDTO.getView() ? String.format(SHOW_ALL_TABLE_SQL + SHOW_ALL_VIEW_SQL, tableConstr, viewConstr) : String.format(SHOW_ALL_TABLE_SQL, tableConstr);
+        } else {
+            searchSql = queryDTO.getView() ?  String.format(SHOW_TABLE_BY_SCHEMA_SQL + SHOW_VIEW_BY_SCHEMA_SQL, schema, tableConstr, schema, viewConstr) : String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema, tableConstr);
+        }
+
+        return String.format(TABLE_BASE_SQL, searchSql, tableConstr);
+    }
+
+    /**
+     * 构造模糊查询、条数限制sql
+     * @param tableSearchSql
+     * @param tableNamePattern
+     * @param limit
+     * @return
+     */
+    private String buildSearchSql(String tableSearchSql, String tableNamePattern, Integer limit) {
+        StringBuilder constr = new StringBuilder();
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(tableNamePattern)) {
+            constr.append(String.format(tableSearchSql, tableNamePattern));
+        }
+        if (Objects.nonNull(limit)) {
+            constr.append(String.format(LIMIT_SQL, limit));
+        }
+        return constr.toString();
     }
 
     @Override
