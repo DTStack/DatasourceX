@@ -131,11 +131,6 @@ public class SqlServerClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected String getTableBySchemaSql(SqlQueryDTO queryDTO) {
-        return String.format(TABLE_BY_SCHEMA, queryDTO.getSchema());
-    }
-
-    @Override
     protected String transferTableName(String tableName) {
         //如果传过来是[tableName]格式直接当成表名
         if (tableName.startsWith("[") && tableName.endsWith("]")){
@@ -151,6 +146,16 @@ public class SqlServerClient extends AbsRdbmsClient {
         }
         //判断表名
         return String.format("[%s]", tableName);
+    }
+
+    @Override
+    protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        return String.format(TABLE_BY_SCHEMA, queryDTO.getSchema());
+    }
+
+    @Override
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("Not Support");
     }
 
     @Override
