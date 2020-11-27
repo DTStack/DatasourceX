@@ -27,7 +27,7 @@ public class PhoenixConnFactory extends ConnFactory {
     /**
      * 获取phoenix连接超时时间。单位：秒
      */
-    private final static int CONN_TIMEOUT = 15;
+    private final static int CONN_TIMEOUT = 60;
 
     public PhoenixConnFactory() {
         this.driverName = DataBaseType.Phoenix.getDriverClassName();
