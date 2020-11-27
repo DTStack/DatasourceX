@@ -24,19 +24,19 @@ import java.util.Map;
 @Ignore
 public class PhoenixTest {
     private static PhoenixSourceDTO source = PhoenixSourceDTO.builder()
-            .url("jdbc:phoenix:172.16.101.136:2181")
+            .url("jdbc:phoenix:kudu1,kudu2,kudu3:2181")
             .username("root")
-            .password("abc123")
+            .password("flink123")
             .build();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.Phoenix.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists NANQI").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int, name string) comment 'table comment'").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table NANQI (id INTEGER, name VARCHAR CONSTRAINT my_pk PRIMARY KEY (id))").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        queryDTO = SqlQueryDTO.builder().sql("UPSERT into NANQI(id,name) values (1,'nanqi')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -60,7 +60,7 @@ public class PhoenixTest {
     @Test
     public void executeQuery() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.Phoenix.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from PERSON").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from NANQI").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
     }
@@ -68,7 +68,7 @@ public class PhoenixTest {
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.Phoenix.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from PERSON").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from NANQI").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -83,7 +83,7 @@ public class PhoenixTest {
     @Test
     public void getColumnClassInfo() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.Phoenix.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("PERSON").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("NANQI").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
@@ -91,7 +91,7 @@ public class PhoenixTest {
     @Test
     public void getColumnMetaData() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.Phoenix.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("PERSON").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("NANQI").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
@@ -99,7 +99,7 @@ public class PhoenixTest {
     @Test
     public void getTableMetaComment() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.Phoenix.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("PERSON").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("NANQI").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
     }
