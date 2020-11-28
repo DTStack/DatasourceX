@@ -5,6 +5,7 @@ import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
 import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -406,6 +407,18 @@ public class YarnDownload implements IDownloader {
 
     @Override
     public List<String> getContainers() throws Exception {
+        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<List<String>>) ()->{
+                    try {
+                        return getContainersWithKerberos();
+                    } catch (Exception e){
+                        throw new DtLoaderException("读取文件异常", e);
+                    }
+                });
+    }
+
+
+    public List<String> getContainersWithKerberos() throws Exception {
         HashSet<String> containers = new HashSet();
         if (this.currValueStream != null) {
             if (this.currFileType.toUpperCase().startsWith("TASKMANAGER")) {
@@ -438,4 +451,5 @@ public class YarnDownload implements IDownloader {
 
         return new ArrayList(containers);
     }
+
 }
