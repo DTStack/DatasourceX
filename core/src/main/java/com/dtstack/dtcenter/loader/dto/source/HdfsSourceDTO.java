@@ -41,4 +41,9 @@ public class HdfsSourceDTO extends RdbmsSourceDTO {
     private String logType = null;
 
     private Map<String, Object> yarnConf;
+
+    /**
+     * taskmanager id
+     */
+    private String containerId;
 }

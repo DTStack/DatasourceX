@@ -20,6 +20,9 @@ import java.util.Map;
  */
 @Slf4j
 public class KerberosUtil {
+    private static final String SECURITY_TO_LOCAL = "hadoop.security.auth_to_local";
+    private static final String SECURITY_TO_LOCAL_DEFAULT = "RULE:[1:$1] RULE:[2:$1]";
+
     public static synchronized UserGroupInformation loginWithUGI(Map<String, Object> confMap) {
         return loginWithUGI(confMap, "principal", "principalFile", "java.security.krb5.conf");
     }
@@ -59,6 +62,11 @@ public class KerberosUtil {
         // 校验 Principal 和 Keytab 文件
         if (StringUtils.isEmpty(principal) || StringUtils.isEmpty(keytab)) {
             throw new DtLoaderException("Kerberos Login fail, principal or keytab is null");
+        }
+
+        // 处理 Default 角色
+        if (MapUtils.getString(confMap, SECURITY_TO_LOCAL) == null || "DEFAULT".equals(MapUtils.getString(confMap, SECURITY_TO_LOCAL))) {
+            confMap.put(SECURITY_TO_LOCAL, SECURITY_TO_LOCAL_DEFAULT);
         }
 
         try {
