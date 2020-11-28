@@ -33,7 +33,7 @@ public class KerberosUtil {
     private static ConcurrentHashMap<String, UGICacheData> UGI_INFO = new ConcurrentHashMap<>();
 
     private static final ScheduledExecutorService scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1,
-            new RdosThreadFactory("HiveKerberosTimerTask"));
+            new RdosThreadFactory("HDFSKerberosTimerTask"));
 
     static {
         scheduledThreadPoolExecutor.scheduleAtFixedRate(new CacheTimerTask(), 0, 10, TimeUnit.SECONDS);
@@ -52,13 +52,13 @@ public class KerberosUtil {
             UGICacheData ugiCacheData = UGI_INFO.get(principal);
             if (ugiCacheData == null || ugiCacheData.getUgi() == null) {
                 UGI_INFO.remove(principal);
-                log.info("HiveKerberosTimerTask CLEAR UGI {}", principal);
+                log.info("HDFSKerberosTimerTask CLEAR UGI {}", principal);
                 return;
             }
 
             if (System.currentTimeMillis() > ugiCacheData.getTimeoutStamp()) {
                 UGI_INFO.remove(principal);
-                log.info("HiveKerberosTimerTask CLEAR UGI {}", principal);
+                log.info("HDFSKerberosTimerTask CLEAR UGI {}", principal);
             }
         }
     }
