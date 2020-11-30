@@ -82,6 +82,7 @@ public class ClientFactory {
         for (File f : files) {
             String jarName = f.getName();
             if (f.isFile() && jarName.endsWith(".jar")) {
+                log.info("数据源插件拉取 Jar 包，插件名称 : {}, Jar 包名称 : {}", pluginName, jarName);
                 urlList.add(f.toURI().toURL());
             }
         }
