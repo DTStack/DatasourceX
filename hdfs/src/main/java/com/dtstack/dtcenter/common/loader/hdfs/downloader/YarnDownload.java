@@ -90,9 +90,6 @@ public class YarnDownload implements IDownloader {
 
     private String containerId;
 
-    private static final String FS_HDFS_IMPL_DISABLE_CACHE = "fs.hdfs.impl.disable.cache";
-    private static final String IPC_CLIENT_FALLBACK_TO_SIMPLE_AUTH_ALLOWED = "ipc.client.fallback-to-simple-auth-allowed";
-
     private YarnDownload(String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit) {
         this.appIdStr = appIdStr;
         this.yarnConf = yarnConf;
@@ -386,7 +383,7 @@ public class YarnDownload implements IDownloader {
 
     @Override
     public List<String> getContainers() throws Exception {
-        return .loginWithUGI(kerberosConfig).doAs(
+        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return getContainersWithKerberos();
