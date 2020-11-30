@@ -279,24 +279,26 @@ public class YarnDownload implements IDownloader {
      * @throws IOException
      */
     private boolean nextLogType() throws IOException {
-        this.currFileType = this.currValueStream.readUTF();
-        String fileLengthStr = this.currValueStream.readUTF();
-        this.currFileLength = Long.parseLong(fileLengthStr);
-        if (org.apache.commons.lang.StringUtils.isNotBlank(this.logType) && !this.currFileType.toUpperCase().startsWith(this.logType)) {
-            this.currValueStream.skipBytes(Integer.valueOf(fileLengthStr));
-            return this.nextLogType();
-        } else if (org.apache.commons.lang.StringUtils.isNotBlank(this.containerId) && !this.containerId.equals(this.currLogKey.toString())) {
-            this.currValueStream.skipBytes(Integer.valueOf(fileLengthStr));
-            return this.nextLogType();
-        } else {
-            this.logPreInfo = "\n\nContainer: " + this.currLogKey + " on " + this.currFileStatus.getPath().getName() + "\n";
-            this.logPreInfo = this.logPreInfo + org.apache.commons.lang.StringUtils.repeat("=", this.logPreInfo.length()) + "\n";
-            this.logPreInfo = this.logPreInfo + "LogType:" + this.currFileType + "\n";
-            this.logPreInfo = this.logPreInfo + "LogLength:" + this.currFileLength + "\n";
-            this.logPreInfo = this.logPreInfo + "Log Contents:\n";
-            this.curRead = 0L;
-            return true;
+        currFileType = currValueStream.readUTF();
+        String fileLengthStr = currValueStream.readUTF();
+        currFileLength = Long.parseLong(fileLengthStr);
+
+        if (StringUtils.isNotBlank(logType) && !currFileType.toUpperCase().startsWith(logType)) {
+            currValueStream.skipBytes(Integer.valueOf(fileLengthStr));
+            return nextLogType();
+        } else if (StringUtils.isNotBlank(containerId) && !containerId.equals(currLogKey.toString())) {
+            currValueStream.skipBytes(Integer.valueOf(fileLengthStr));
+            return nextLogType();
         }
+
+        logPreInfo = "\n\nContainer: " + currLogKey + " on " + currFileStatus.getPath().getName() + "\n";
+        logPreInfo = logPreInfo + StringUtils.repeat("=", logPreInfo.length()) + "\n";
+        logPreInfo = logPreInfo + "LogType:" + currFileType + "\n";
+        logPreInfo = logPreInfo + "LogLength:" + currFileLength + "\n";
+        logPreInfo = logPreInfo + "Log Contents:\n";
+        curRead = 0L;
+
+        return true;
     }
 
     private boolean nextRecord() throws IOException {
@@ -381,6 +383,18 @@ public class YarnDownload implements IDownloader {
 
     @Override
     public List<String> getContainers() throws Exception {
+        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<List<String>>) ()->{
+                    try {
+                        return getContainersWithKerberos();
+                    } catch (Exception e){
+                        throw new DtLoaderException("读取文件异常", e);
+                    }
+                });
+    }
+
+
+    public List<String> getContainersWithKerberos() throws Exception {
         HashSet<String> containers = new HashSet();
         if (this.currValueStream != null) {
             if (this.currFileType.toUpperCase().startsWith("TASKMANAGER")) {
