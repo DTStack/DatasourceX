@@ -88,6 +88,11 @@ public class YarnDownload implements IDownloader {
 
     private String user;
 
+    private String containerId;
+
+    private static final String FS_HDFS_IMPL_DISABLE_CACHE = "fs.hdfs.impl.disable.cache";
+    private static final String IPC_CLIENT_FALLBACK_TO_SIMPLE_AUTH_ALLOWED = "ipc.client.fallback-to-simple-auth-allowed";
+
     private YarnDownload(String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit) {
         this.appIdStr = appIdStr;
         this.yarnConf = yarnConf;
@@ -105,6 +110,11 @@ public class YarnDownload implements IDownloader {
         this.logType = logType;
         this.kerberosConfig = kerberosConfig;
         this.user = user;
+    }
+
+    public YarnDownload(String user, String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit, String logType, Map<String, Object> kerberosConfig, String containerId) {
+        this(user, hdfsConfig, yarnConf, appIdStr, readLimit, logType, kerberosConfig);
+        this.containerId = containerId;
     }
 
     @Override
@@ -279,6 +289,9 @@ public class YarnDownload implements IDownloader {
         if (StringUtils.isNotBlank(logType) && !currFileType.toUpperCase().startsWith(logType)) {
             currValueStream.skipBytes(Integer.valueOf(fileLengthStr));
             return nextLogType();
+        } else if (StringUtils.isNotBlank(containerId) && !containerId.equals(currLogKey.toString())) {
+            currValueStream.skipBytes(Integer.valueOf(fileLengthStr));
+            return nextLogType();
         }
 
         logPreInfo = "\n\nContainer: " + currLogKey + " on " + currFileStatus.getPath().getName() + "\n";
@@ -373,6 +386,18 @@ public class YarnDownload implements IDownloader {
 
     @Override
     public List<String> getContainers() throws Exception {
+        return .loginWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<List<String>>) ()->{
+                    try {
+                        return getContainersWithKerberos();
+                    } catch (Exception e){
+                        throw new DtLoaderException("读取文件异常", e);
+                    }
+                });
+    }
+
+
+    public List<String> getContainersWithKerberos() throws Exception {
         HashSet<String> containers = new HashSet();
         if (this.currValueStream != null) {
             if (this.currFileType.toUpperCase().startsWith("TASKMANAGER")) {

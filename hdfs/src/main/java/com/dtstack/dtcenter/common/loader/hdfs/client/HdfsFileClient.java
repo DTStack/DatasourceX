@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +68,14 @@ public class HdfsFileClient implements IHdfsFile {
         return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
-                        YarnDownload yarnDownload = new YarnDownload(hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig());
+                        YarnDownload yarnDownload;
+                        boolean containerFiledExists = Arrays.stream(HdfsSourceDTO.class.getDeclaredFields())
+                                .filter(field -> "ContainerId".equalsIgnoreCase(field.getName())).findFirst().isPresent();
+                        if (!containerFiledExists || StringUtils.isEmpty(hdfsSourceDTO.getContainerId())) {
+                            yarnDownload = new YarnDownload(hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig());
+                        } else {
+                            yarnDownload = new YarnDownload(hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getContainerId());
+                        }
                         yarnDownload.configure();
                         return yarnDownload;
                     } catch (Exception e) {
