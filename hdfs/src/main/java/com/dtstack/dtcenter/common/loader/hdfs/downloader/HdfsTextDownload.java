@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
+import com.dtstack.dtcenter.common.loader.hdfs.TimeoutExecutor;
 import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -211,14 +212,14 @@ public class HdfsTextDownload implements IDownloader {
 
     @Override
     public List<String> readNext(){
-        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
+        return TimeoutExecutor.execAsync(() ->KerberosUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
                         throw new DtCenterDefException("读取文件异常", e);
                     }
-                });
+                }));
     }
 
     private List<String> readNextWithKerberos(){
