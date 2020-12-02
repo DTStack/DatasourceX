@@ -104,14 +104,14 @@ public class HiveORCDownload implements IDownloader {
 
     @Override
     public List<String> readNext() throws Exception {
-        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
+        return TimeoutExecutor.execAsync(() -> KerberosUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
                         throw new DtCenterDefException("读取文件异常", e);
                     }
-                });
+                }));
     }
 
     private List<String> readNextWithKerberos() {
