@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client;
 
+import com.dtstack.dtcenter.loader.client.hbase.HbaseClientFactory;
 import com.dtstack.dtcenter.loader.client.hdfs.HdfsFileClientFactory;
 import com.dtstack.dtcenter.loader.client.kerberos.KerberosClientFactory;
 import com.dtstack.dtcenter.loader.client.mq.KafkaClientFactory;
@@ -39,6 +40,11 @@ public class ClientCache {
      * Kerberos 认证服务客户端缓存
      */
     private static final Map<String, IKerberos> KERBEROS_CLIENT = Maps.newConcurrentMap();
+
+    /**
+     * hbase 服务客户端缓存
+     */
+    private static final Map<String, IHbase> HBASE_CLIENT = Maps.newConcurrentMap();
 
     protected static String userDir = String.format("%s/pluginLibs/", System.getProperty("user.dir"));
 
@@ -210,6 +216,42 @@ public class ClientCache {
             }
 
             return kerberos;
+        } catch (Throwable e) {
+            throw new ClientAccessException(e);
+        }
+    }
+
+    /**
+     * 获取 hbase 服务客户端
+     *
+     * @param sourceType 数据源类型
+     * @return hbase新客户端
+     * @throws ClientAccessException 插件化加载异常
+     */
+    public static IHbase getHbase(Integer sourceType) throws ClientAccessException {
+        String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
+        return getHbase(pluginName);
+    }
+
+    /**
+     * 获取 hbase 服务客户端
+     *
+     * @param pluginName 数据源插件包名称
+     * @return hbase新客户端
+     * @throws ClientAccessException 插件化加载异常
+     */
+    private static IHbase getHbase(String pluginName) throws ClientAccessException {
+        try {
+            IHbase hbase = HBASE_CLIENT.get(pluginName);
+            if (hbase == null) {
+                synchronized (HBASE_CLIENT) {
+                    if (hbase == null) {
+                        hbase = HbaseClientFactory.createPluginClass(pluginName);
+                        HBASE_CLIENT.put(pluginName, hbase);
+                    }
+                }
+            }
+            return hbase;
         } catch (Throwable e) {
             throw new ClientAccessException(e);
         }

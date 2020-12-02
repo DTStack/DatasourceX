@@ -18,12 +18,16 @@ import java.io.IOException;
  */
 @Slf4j
 public class HbaseConnFactory {
+
+    // 连接超时时间 单位：秒。 默认60秒
+    private static final Integer TIMEOUT = 60;
+
     public Boolean testConn(ISourceDTO iSource) {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) iSource;
         boolean check = false;
         Connection hConn = null;
         try {
-            hConn = getHbaseConn(hbaseSourceDTO, null);
+            hConn = getHbaseConn(hbaseSourceDTO, SqlQueryDTO.builder().build());
             hConn.getAdmin().getClusterStatus();
             check = true;
         } catch (Exception e) {
@@ -45,5 +49,15 @@ public class HbaseConnFactory {
             return HbasePoolManager.initHbaseConn(source, queryDTO);
         }
         return HbasePoolManager.getConnection(source, queryDTO);
+    }
+
+    public static Connection getHbaseConn(HbaseSourceDTO source, Integer queryTimeout) {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().queryTimeout(queryTimeout).build();
+        return getHbaseConn(source, queryDTO);
+    }
+
+    public static Connection getHbaseConn(HbaseSourceDTO source) {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().queryTimeout(TIMEOUT).build();
+        return getHbaseConn(source, queryDTO);
     }
 }
