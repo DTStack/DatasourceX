@@ -154,11 +154,6 @@ public class SqlServerClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
     public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
