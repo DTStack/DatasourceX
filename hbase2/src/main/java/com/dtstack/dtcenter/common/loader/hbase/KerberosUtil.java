@@ -54,7 +54,7 @@ public class KerberosUtil {
 
         // 手动替换 Principal 参数，临时方案
         String hbaseMasterPrincipal = MapUtils.getString(confMap, HadoopConfTool.KEY_HBASE_MASTER_KERBEROS_PRINCIPAL);
-        if (StringUtils.isNotBlank(hbaseMasterPrincipal) && StringUtils.isNotBlank(principal)) {
+        if (StringUtils.isNotBlank(hbaseMasterPrincipal) && StringUtils.isNotBlank(principal)&& hbaseMasterPrincipal.contains("/") && principal.contains("/")) {
             int hbaseMasterPrincipalLos = hbaseMasterPrincipal.indexOf("/");
             int principalLos = principal.indexOf("/");
             principal = principal.replaceFirst(principal.substring(0, principalLos), hbaseMasterPrincipal.substring(0, hbaseMasterPrincipalLos));
