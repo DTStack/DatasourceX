@@ -309,6 +309,7 @@ public class HiveParquetDownload implements IDownloader {
         //剔除隐藏系统文件和无关文件
         FileStatus[] fsStatus = fs.listStatus(inputPath, path -> !path.getName().startsWith(".") && !path.getName().startsWith("_SUCCESS") && !path.getName().startsWith("_common_metadata"));
         if(fsStatus == null || fsStatus.length == 0){
+            pathList.add(tableLocation);
             return;
         }
         for (FileStatus status : fsStatus) {
