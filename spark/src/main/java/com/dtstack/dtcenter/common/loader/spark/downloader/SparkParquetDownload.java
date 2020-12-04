@@ -97,10 +97,10 @@ public class SparkParquetDownload implements IDownloader {
     @Override
     public boolean configure() throws Exception {
 
-
         jobConf = new JobConf(conf);
-
-        paths = getAllPartitionPath(tableLocation);
+        paths = Lists.newArrayList();
+        // 递归获取表路径下所有文件
+        getAllPartitionPath(tableLocation, paths);
         if(paths.size() == 0){
             throw new DtLoaderException("非法路径:" + tableLocation);
         }
@@ -296,27 +296,27 @@ public class SparkParquetDownload implements IDownloader {
         return null;
     }
 
-    private List<String> getAllPartitionPath(String tableLocation) throws IOException {
+    /**
+     * 递归获取文件夹下所有文件，排除隐藏文件和无关文件
+     *
+     * @param tableLocation hdfs文件路径
+     * @param pathList 所有文件集合
+     */
+    private void getAllPartitionPath(String tableLocation, List<String> pathList) throws IOException {
         Path inputPath = new Path(tableLocation);
         FileSystem fs =  FileSystem.get(jobConf);
-
-        List<String> pathList = Lists.newArrayList();
-        //剔除隐藏系统文件
-        FileStatus[] fsStatus = fs.listStatus(inputPath, path -> !path.getName().startsWith("."));
-
+        //剔除隐藏系统文件和无关文件
+        FileStatus[] fsStatus = fs.listStatus(inputPath, path -> !path.getName().startsWith(".") && !path.getName().startsWith("_SUCCESS") && !path.getName().startsWith("_common_metadata"));
         if(fsStatus == null || fsStatus.length == 0){
             pathList.add(tableLocation);
-            return pathList;
+            return;
         }
-
-        if(fsStatus[0].isDirectory()){
-            for(FileStatus status : fsStatus){
-                pathList.addAll(getAllPartitionPath(status.getPath().toString()));
+        for (FileStatus status : fsStatus) {
+            if (status.isFile()) {
+                pathList.add(status.getPath().toString());
+            }else {
+                getAllPartitionPath(status.getPath().toString(), pathList);
             }
-            return pathList;
-        }else{
-            pathList.add(tableLocation);
-            return pathList;
         }
     }
 
