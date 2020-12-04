@@ -1,13 +1,12 @@
 package com.dtstack.dtcenter.loader.client.bug.issue_30000;
 
 import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.client.AbsClientCache;
+import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
-import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,10 +23,6 @@ import org.junit.Test;
  * company: www.dtstack.com
  */
 public class Issue33097 {
-
-    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
-
-    private static final AbsClientCache hdfsClientCache = ClientType.HDFS_CLIENT.getClientCache();
 
     private static final String localKerberosPath = Issue33097.class.getResource("/bug/issue_33097").getPath();
 
@@ -64,8 +59,8 @@ public class Issue33097 {
     @BeforeClass
     public static void setUp () throws Exception {
         System.setProperty("HADOOP_USER_NAME", "root");
-        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
-        IHdfsFile hdfsClient = hdfsClientCache.getHdfs(DataSourceType.HDFS.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+        IHdfsFile hdfsClient = ClientCache.getHdfs(DataSourceType.HDFS.getVal());
         hdfsClient.checkAndDelete(hdfsSourceDTO, "/tmp/bug_33097");
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists bug_33097").build();
         client.executeSqlWithoutResultSet(hiveSourceDTO, queryDTO);
@@ -79,7 +74,7 @@ public class Issue33097 {
 
     @Test
     public void test_for_issue() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
         IDownloader download = client.getDownloader(hiveSourceDTO, SqlQueryDTO.builder().tableName("bug_33097").build());
         while (!download.reachedEnd()) {
             System.out.println("---------------------------------");
