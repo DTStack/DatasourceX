@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hadoop.util;
 
 import com.dtstack.dtcenter.common.loader.common.DtClassThreadFactory;
+import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import lombok.extern.slf4j.Slf4j;
@@ -87,7 +88,7 @@ public class KerberosLoginUtil {
                 UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
                 if (UserGroupInformation.isSecurityEnabled() || !UserGroupInformation.AuthenticationMethod.SIMPLE.equals(currentUser.getAuthenticationMethod())) {
                     Config.refresh();
-                    UserGroupInformation.setConfiguration(HadoopConf.getDefaultConfig());
+                    UserGroupInformation.setConfiguration(HadoopConfUtil.getDefaultConfiguration());
                 }
                 return currentUser;
             } catch (Exception e) {
