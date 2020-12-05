@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hbase;
 
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
+import com.dtstack.dtcenter.common.hadoop.HadoopConf;
 import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
@@ -31,9 +32,12 @@ public class KerberosUtil {
         // 非 Kerberos 认证，需要重新刷 UGI 信息
         if (MapUtils.isEmpty(confMap)) {
             try {
-                Config.refresh();
-                UserGroupInformation.setConfiguration(new Configuration());
-                return UserGroupInformation.getCurrentUser();
+                UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
+                if (UserGroupInformation.isSecurityEnabled() || !UserGroupInformation.AuthenticationMethod.SIMPLE.equals(currentUser.getAuthenticationMethod())) {
+                    Config.refresh();
+                    UserGroupInformation.setConfiguration(HadoopConf.getDefaultConfig());
+                }
+                return currentUser;
             } catch (Exception e) {
                 throw new DtLoaderException("simple login failed", e);
             }
@@ -54,7 +58,7 @@ public class KerberosUtil {
 
         // 手动替换 Principal 参数，临时方案
         String hbaseMasterPrincipal = MapUtils.getString(confMap, HadoopConfTool.KEY_HBASE_MASTER_KERBEROS_PRINCIPAL);
-        if (StringUtils.isNotBlank(hbaseMasterPrincipal) && StringUtils.isNotBlank(principal)) {
+        if (StringUtils.isNotBlank(hbaseMasterPrincipal) && StringUtils.isNotBlank(principal) && hbaseMasterPrincipal.contains("/") && principal.contains("/")) {
             int hbaseMasterPrincipalLos = hbaseMasterPrincipal.indexOf("/");
             int principalLos = principal.indexOf("/");
             principal = principal.replaceFirst(principal.substring(0, principalLos), hbaseMasterPrincipal.substring(0, hbaseMasterPrincipalLos));
