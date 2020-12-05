@@ -89,6 +89,28 @@ public class HiveTest {
         System.out.println(mapList.size());
     }
 
+//    @Test
+//    public void executeQueryForThreadTest() throws Exception {
+//        try {
+//            IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+//            SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi1030").build();
+//            List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
+//            ExecutorService threadPool = Executors.newFixedThreadPool(6, new RdosThreadFactory("test_nanqi"));
+//            for (int i = 0; i < 20000000; i++) {
+//                threadPool.submit(() -> {
+//                    try {
+//                        client.executeQuery(source, queryDTO);
+//                    } catch (Exception e) {
+//
+//                    }
+//                });
+//            }
+//            Thread.sleep(1000000L);
+//        } catch (Exception e) {
+//            System.out.println(e.getMessage());
+//        }
+//    }
+
     @Test
     public void executeSqlWithoutResultSet() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());

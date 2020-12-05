@@ -27,6 +27,15 @@ public class HadoopConfUtil {
      */
     private static Configuration defaultConfiguration = new Configuration(false);
 
+    /**
+     * 获取默认集群信息
+     *
+     * @return
+     */
+    public static Configuration getDefaultConfiguration() {
+        return defaultConfiguration;
+    }
+
     static {
         try {
             // 默认配置
