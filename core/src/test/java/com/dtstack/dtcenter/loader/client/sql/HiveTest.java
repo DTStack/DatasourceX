@@ -1,5 +1,7 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
+import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.thread.RdosThreadFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -88,6 +90,28 @@ public class HiveTest {
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
     }
+
+//    @Test
+//    public void executeQueryForThreadTest() throws Exception {
+//        try {
+//            IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+//            SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi1030").build();
+//            List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
+//            ExecutorService threadPool = Executors.newFixedThreadPool(6, new RdosThreadFactory("test_nanqi"));
+//            for (int i = 0; i < 20000000; i++) {
+//                threadPool.submit(() -> {
+//                    try {
+//                        client.executeQuery(source, queryDTO);
+//                    } catch (Exception e) {
+//
+//                    }
+//                });
+//            }
+//            Thread.sleep(1000000L);
+//        } catch (Exception e) {
+//            System.out.println(e.getMessage());
+//        }
+//    }
 
     @Test
     public void executeSqlWithoutResultSet() throws Exception {

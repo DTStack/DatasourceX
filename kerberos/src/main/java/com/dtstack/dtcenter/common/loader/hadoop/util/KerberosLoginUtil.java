@@ -84,9 +84,12 @@ public class KerberosLoginUtil {
         // 非 Kerberos 认证，需要重新刷 UGI 信息
         if (MapUtils.isEmpty(confMap)) {
             try {
-                Config.refresh();
-                UserGroupInformation.setConfiguration(new Configuration());
-                return UserGroupInformation.getCurrentUser();
+                UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
+                if (UserGroupInformation.isSecurityEnabled() || !UserGroupInformation.AuthenticationMethod.SIMPLE.equals(currentUser.getAuthenticationMethod())) {
+                    Config.refresh();
+                    UserGroupInformation.setConfiguration(HadoopConf.getDefaultConfig());
+                }
+                return currentUser;
             } catch (Exception e) {
                 throw new DtLoaderException("simple login failed", e);
             }
