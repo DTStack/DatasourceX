@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hdfs.util;
 
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
+import com.dtstack.dtcenter.common.hadoop.HadoopConf;
 import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
 import com.dtstack.dtcenter.common.loader.hdfs.UGICacheData;
 import com.dtstack.dtcenter.common.thread.RdosThreadFactory;
@@ -71,9 +72,12 @@ public class KerberosUtil {
         // 非 Kerberos 认证，需要重新刷 UGI 信息
         if (MapUtils.isEmpty(confMap)) {
             try {
-                Config.refresh();
-                UserGroupInformation.setConfiguration(new Configuration());
-                return UserGroupInformation.getCurrentUser();
+                UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
+                if (UserGroupInformation.isSecurityEnabled() || !UserGroupInformation.AuthenticationMethod.SIMPLE.equals(currentUser.getAuthenticationMethod())) {
+                    Config.refresh();
+                    UserGroupInformation.setConfiguration(HadoopConf.getDefaultConfig());
+                }
+                return currentUser;
             } catch (Exception e) {
                 throw new DtLoaderException("simple login failed", e);
             }
