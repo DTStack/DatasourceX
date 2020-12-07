@@ -59,8 +59,7 @@ public class HbaseClientSpecial implements IHbase {
         } catch (NamespaceNotFoundException namespaceNotFoundException) {
             log.error("namespace [{}] not found!", namespace);
         } catch (Exception e) {
-            log.error(String.format("namespaceExists error, namespace->%s", namespace), e);
-            throw new DtLoaderException(String.format("获取namespace异常, namespace：'%s'", namespace));
+            throw new DtLoaderException(String.format("获取namespace异常, namespace：'%s'", namespace), e);
         } finally {
             close(admin);
             closeConnection(connection, hbaseSourceDTO);
@@ -87,7 +86,6 @@ public class HbaseClientSpecial implements IHbase {
             connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
             admin = connection.getAdmin();
             if (admin.tableExists(tableName)) {
-                log.info("hbase table '{}' is exists!", tbName);
                 throw new DtLoaderException(String.format("当前表已经存在！:'%s'", tbName));
             } else {
                 HTableDescriptor hTableDescriptor = new HTableDescriptor(tableName);
@@ -101,10 +99,7 @@ public class HbaseClientSpecial implements IHbase {
         } catch (DtLoaderException e) {
             throw e;
         } catch (Exception e) {
-            log.error(String.format("hbase createTable error, myTableName->%s colFamily->%s",
-                    tbName, Arrays.toString(colFamily)), e);
-            throw new DtLoaderException(String.format("hbase创建表失败！namespace：'%s'，表名：'%s'，列族：'%s'", namespace, tbName, Arrays.toString(colFamily)));
-
+            throw new DtLoaderException(String.format("hbase创建表失败！namespace：'%s'，表名：'%s'，列族：'%s'", namespace, tbName, Arrays.toString(colFamily)), e);
         } finally {
             close(admin);
             closeConnection(connection, hbaseSourceDTO);
@@ -133,7 +128,6 @@ public class HbaseClientSpecial implements IHbase {
         } catch (DtLoaderException e) {
             throw e;
         } catch (Exception e) {
-            log.error(String.format("hbase scanByRegex error, regex -> %s", regex), e);
             throw new DtLoaderException(String.format("hbase根据正则扫描数据异常！,regex：%s", regex), e);
         } finally {
             close(rs, table);
@@ -164,7 +158,6 @@ public class HbaseClientSpecial implements IHbase {
         } catch (DtLoaderException e) {
             throw e;
         } catch (Exception e) {
-            log.error(String.format("hbase deleteRow error, rowKeys -> %s", rowKeys), e);
             throw new DtLoaderException(String.format("hbase删除数据异常! rowKeys： %s", rowKeys), e);
         } finally {
             close(table);
@@ -188,7 +181,6 @@ public class HbaseClientSpecial implements IHbase {
         } catch (DtLoaderException e) {
             throw e;
         } catch (Exception e) {
-            log.error(String.format("hbase putRow error! rowKey -> %s data -> %s", rowKey, data), e);
             throw new DtLoaderException(String.format("hbase插入数据异常! rowKey： %s， data： %s", rowKey, data), e);
         } finally {
             close(table);
@@ -213,7 +205,6 @@ public class HbaseClientSpecial implements IHbase {
         } catch (DtLoaderException e) {
             throw e;
         } catch (Exception e) {
-            log.error(String.format("hbase get error, rowKey -> %s", rowKey), e);
             throw new DtLoaderException(String.format("hbase获取数据异常! rowKey： %s ", rowKey), e);
         } finally {
             close(table);
