@@ -176,13 +176,14 @@ public class SparkParquetDownload implements IDownloader {
         List<String> line = null;
         if (currentLine != null){
             line = new ArrayList<>();
-            if (columnIndex == null){
-                columnIndex = new ArrayList<>();
-                for (String columnName : columnNames) {
-                    GroupTypeIgnoreCase groupType = new GroupTypeIgnoreCase(currentLine.getType());
-                    columnIndex.add(groupType.containsField(columnName) ?
-                            groupType.getFieldIndex(columnName) : -1);
-                }
+            // 每次重新构建columnIndex，对于parquet来说，如果对应schema下没有该列，
+            // currentLine.getType().getFields()返回值的size可能会不同，导致数组越界异常!
+            // bug 连接：http://redmine.prod.dtstack.cn/issues/33045
+            columnIndex = new ArrayList<>();
+            for (String columnName : columnNames) {
+                GroupTypeIgnoreCase groupType = new GroupTypeIgnoreCase(currentLine.getType());
+                columnIndex.add(groupType.containsField(columnName) ?
+                        groupType.getFieldIndex(columnName) : -1);
             }
 
             if (CollectionUtils.isNotEmpty(columnIndex)){
