@@ -26,6 +26,15 @@ public class LibraClient extends AbsRdbmsClient {
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select current_database()";
 
+    // 创建schema
+    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
+
+    // 获取所有schema
+    private static final String SHOW_DATABASE = "select nspname from pg_namespace";
+
+    // 根据schema 获取表名
+    private static final String SHOW_TABLES_BY_SCHEMA = "select table_name from information_schema.tables WHERE table_schema = '%s'";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new LibraConnFactory();
@@ -66,5 +75,53 @@ public class LibraClient extends AbsRdbmsClient {
     @Override
     protected String getCurrentDbSql() {
         return CURRENT_DB;
+    }
+
+    /**
+     * 此处方法为创建schema
+     *
+     * @param source 数据源信息
+     * @param dbName schema名称
+     * @param comment 注释
+     * @return 创建结果
+     */
+    @Override
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("schema名称不能为空");
+        }
+        String createSchemaSql = String.format(CREATE_SCHEMA_SQL_TMPL, dbName);
+        return executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(createSchemaSql).build());
+    }
+
+    /**
+     * 此处方法为判断schema是否存在
+     *
+     * @param source 数据源信息
+     * @param dbName schema 名称
+     * @return 是否存在结果
+     */
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("schema名称不能为空");
+        }
+        return checkSqlFirstResult(source, dbName, SHOW_DATABASE);
+    }
+
+    /**
+     * 此处方法为判断指定schema 是否有该表
+     *
+     * @param source 数据源信息
+     * @param tableName 表名
+     * @param dbName schema名
+     * @return 判断结果
+     */
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) throws Exception {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("schema名称不能为空");
+        }
+        return checkSqlFirstResult(source, tableName, String.format(SHOW_TABLES_BY_SCHEMA, dbName));
     }
 }

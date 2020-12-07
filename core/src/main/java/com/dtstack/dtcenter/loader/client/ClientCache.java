@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client;
 
+import com.dtstack.dtcenter.loader.client.Table.TableClientFactory;
 import com.dtstack.dtcenter.loader.client.hdfs.HdfsFileClientFactory;
 import com.dtstack.dtcenter.loader.client.kerberos.KerberosClientFactory;
 import com.dtstack.dtcenter.loader.client.mq.KafkaClientFactory;
@@ -39,6 +40,11 @@ public class ClientCache {
      * Kerberos 认证服务客户端缓存
      */
     private static final Map<String, IKerberos> KERBEROS_CLIENT = Maps.newConcurrentMap();
+
+    /**
+     * table 客户端缓存
+     */
+    private static final Map<String, ITable> TABLE_CLIENT = Maps.newConcurrentMap();
 
     protected static String userDir = String.format("%s/pluginLibs/", System.getProperty("user.dir"));
 
@@ -214,4 +220,35 @@ public class ClientCache {
             throw new ClientAccessException(e);
         }
     }
+
+    /**
+     * 获取 table Client 客户端
+     *
+     * @param sourceType
+     * @return
+     * @throws ClientAccessException
+     */
+    public static ITable getTable(Integer sourceType) throws ClientAccessException {
+        String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
+        return getTable(pluginName);
+    }
+
+    private static ITable getTable(String pluginName) {
+        try {
+            ITable table = TABLE_CLIENT.get(pluginName);
+            if (table == null) {
+                synchronized (TABLE_CLIENT) {
+                    if (table == null) {
+                        table = TableClientFactory.createPluginClass(pluginName);
+                        TABLE_CLIENT.put(pluginName, table);
+                    }
+                }
+            }
+
+            return table;
+        } catch (Throwable e) {
+            throw new ClientAccessException(e);
+        }
+    }
+
 }

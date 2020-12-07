@@ -180,4 +180,19 @@ public abstract class AbsFtpClient<T> implements IClient<T> {
     public String getCurrentDatabase(ISourceDTO source) throws Exception {
         throw new DtLoaderException("Not Support");
     }
+
+    @Override
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
+        throw new DtLoaderException("ftp数据源不支持该方法");
+    }
+
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception {
+        throw new DtLoaderException("ftp数据源不支持该方法");
+    }
+
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) throws Exception {
+        throw new DtLoaderException("ftp数据源不支持该方法");
+    }
 }

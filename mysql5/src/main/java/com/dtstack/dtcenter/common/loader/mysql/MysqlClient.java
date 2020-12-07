@@ -48,6 +48,12 @@ public class MysqlClient extends AbsRdbmsClient {
     // 限制条数语句
     private static final String LIMIT_SQL = " limit %s ";
 
+    // 创建数据库
+    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
+
+    // 根据schema获取表
+    private static final String SHOW_TABLES_BY_SCHEMA = "select table_name from information_schema.tables where table_schema='%s'";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new MysqlConnFactory();
@@ -162,6 +168,30 @@ public class MysqlClient extends AbsRdbmsClient {
         return CURRENT_DB;
     }
 
+    @Override
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空");
+        }
+        String createSchemaSql = String.format(CREATE_SCHEMA_SQL_TMPL, dbName);
+        return executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(createSchemaSql).build());
+    }
+
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空");
+        }
+        return checkSqlFirstResult(source, dbName, getShowDbSql());
+    }
+
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) throws Exception {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空");
+        }
+        return checkSqlFirstResult(source, tableName, String.format(SHOW_TABLES_BY_SCHEMA, dbName));
+    }
     /**
      * 获取指定schema下的表，如果没有填schema，默认使用当前schema。支持正则匹配查询、条数限制
      * @param sourceDTO 数据源信息

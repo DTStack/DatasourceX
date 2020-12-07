@@ -305,4 +305,19 @@ public class DtKuduClient<T> implements IClient<T> {
     public String getCurrentDatabase(ISourceDTO sourceO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
+
+    @Override
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
+        throw new DtLoaderException("kudu数据源不支持该方法");
+    }
+
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception {
+        throw new DtLoaderException("kudu数据源不支持该方法");
+    }
+
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) throws Exception {
+        throw new DtLoaderException("kudu数据源不支持该方法");
+    }
 }

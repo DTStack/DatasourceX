@@ -64,6 +64,10 @@ public class GreenplumClient extends AbsRdbmsClient {
 
     private static final String DATABASE_QUERY = "select nspname from pg_namespace";
 
+    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema %s";
+
+    private static final String SHOW_TABLES_BY_SCHEMA = "select table_name from information_schema.tables WHERE table_schema = '%s'";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new GreenplumFactory();
@@ -166,6 +170,54 @@ public class GreenplumClient extends AbsRdbmsClient {
     @Override
     public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
+    }
+
+    /**
+     * 此处方法为创建schema
+     *
+     * @param source 数据源信息
+     * @param dbName schema名称
+     * @param comment 注释
+     * @return 创建结果
+     */
+    @Override
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("schema名称不能为空");
+        }
+        String createSchemaSql = String.format(CREATE_SCHEMA_SQL_TMPL, dbName);
+        return executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(createSchemaSql).build());
+    }
+
+    /**
+     * 此处方法为判断schema是否存在
+     *
+     * @param source 数据源信息
+     * @param dbName schema 名称
+     * @return 是否存在结果
+     */
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("schema名称不能为空");
+        }
+        return checkSqlFirstResult(source, dbName, DATABASE_QUERY);
+    }
+
+    /**
+     * 此处方法为判断指定schema 是否有该表
+     *
+     * @param source 数据源信息
+     * @param tableName 表名
+     * @param dbName schema名
+     * @return 判断结果
+     */
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) throws Exception {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("schema名称不能为空");
+        }
+        return checkSqlFirstResult(source, tableName, String.format(SHOW_TABLES_BY_SCHEMA, dbName));
     }
 
     @Override
