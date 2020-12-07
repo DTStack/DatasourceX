@@ -124,4 +124,9 @@ public class MongoDBClient<T> implements IClient<T> {
     public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) throws Exception {
         throw new DtLoaderException("mongodb数据源不支持该方法");
     }
+
+    @Override
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        throw new DtLoaderException("mongodb数据源不支持该方法");
+    }
 }

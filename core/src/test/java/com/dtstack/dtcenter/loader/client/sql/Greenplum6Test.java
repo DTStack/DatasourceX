@@ -156,6 +156,6 @@ public class Greenplum6Test {
     @Test
     public void isTableInDb() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
-        assert !client.isTableExistsInDatabase(source, "test_1", "wangchuan_dev_test");
+        assert client.isTableExistsInDatabase(source, "nanqi", "public");
     }
 }

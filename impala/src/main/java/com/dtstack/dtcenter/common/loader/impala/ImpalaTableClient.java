@@ -1,9 +1,7 @@
 package com.dtstack.dtcenter.common.loader.impala;
 
-import com.dtstack.dtcenter.loader.client.ClientCache;
-import com.dtstack.dtcenter.loader.client.IClient;
-import com.dtstack.dtcenter.loader.client.ITable;
-import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.common.loader.rdbms.AbsTableClient;
+import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
@@ -20,7 +18,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -32,11 +29,17 @@ import java.util.StringJoiner;
  * company: www.dtstack.com
  */
 @Slf4j
-public class ImpalaTableClient implements ITable {
+public class ImpalaTableClient extends AbsTableClient {
 
-    private static final IClient IMPALA_Client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
+    @Override
+    protected ConnFactory getConnFactory() {
+        return new ImpalaConnFactory();
+    }
 
-    private static final String SHOW_PARTITIONS_SQL = "show partitions %s";
+    @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.IMPALA;
+    }
 
     @Override
     public List<String> showPartitions(ISourceDTO source, String tableName) throws Exception {
@@ -48,7 +51,7 @@ public class ImpalaTableClient implements ITable {
         Statement statement = null;
         ResultSet resultSet = null;
         try {
-            con = IMPALA_Client.getCon(source);
+            con = getCon(source);
             Set<String> res = new HashSet<>();
             try {
                 statement = con.createStatement();
@@ -89,39 +92,4 @@ public class ImpalaTableClient implements ITable {
         }
     }
 
-
-    @Override
-    public Boolean dropTable(ISourceDTO source, String tableName) throws Exception {
-        log.info("impala删除表，表名：{}", tableName);
-        if (StringUtils.isBlank(tableName)) {
-            throw new DtLoaderException("删除表不能为空！");
-        }
-        String dropTableSql = String.format("drop table if exists `%s`", tableName);
-        return IMPALA_Client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(dropTableSql).build());
-    }
-
-    @Override
-    public Boolean renameTable(ISourceDTO source, String oldTableName, String newTableName) throws Exception {
-        log.info("impala重命名表，旧表名：{}，新表名：{}", oldTableName, newTableName);
-        if (StringUtils.isBlank(oldTableName) || StringUtils.isBlank(newTableName)) {
-            throw new DtLoaderException("表名不能为空！");
-        }
-        String renameTableSql = String.format("alter table %s rename to %s", oldTableName, newTableName);
-        return IMPALA_Client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(renameTableSql).build());
-    }
-
-    @Override
-    public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) throws Exception {
-        log.info("impala更改表参数，表名：{}，参数：{}", tableName, params);
-        if (StringUtils.isBlank(tableName)) {
-            throw new DtLoaderException("表名不能为空！");
-        }
-        if (params == null || params.isEmpty()) {
-            throw new DtLoaderException("表参数不能为空！");
-        }
-        List<String> tableProperties = Lists.newArrayList();
-        params.forEach((key, val) -> tableProperties.add(String.format("'%s'='%s'", key, val)));
-        String alterTableParamsSql = String.format("alter table %s set tblproperties (%s)", tableName, StringUtils.join(tableProperties, "."));
-        return IMPALA_Client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(alterTableParamsSql).build());
-    }
 }

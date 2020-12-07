@@ -13,6 +13,7 @@ import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
@@ -51,8 +52,8 @@ public class MysqlClient extends AbsRdbmsClient {
     // 创建数据库
     private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
 
-    // 根据schema获取表
-    private static final String SHOW_TABLES_BY_SCHEMA = "select table_name from information_schema.tables where table_schema='%s'";
+    // 判断table是否在schema中
+    private static final String TABLE_IS_IN_SCHEMA = "select table_name from information_schema.tables where table_schema='%s' and table_name = '%s'";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -190,8 +191,9 @@ public class MysqlClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(dbName)) {
             throw new DtLoaderException("数据库名称不能为空");
         }
-        return checkSqlFirstResult(source, tableName, String.format(SHOW_TABLES_BY_SCHEMA, dbName));
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_IS_IN_SCHEMA, dbName, tableName)).build()));
     }
+
     /**
      * 获取指定schema下的表，如果没有填schema，默认使用当前schema。支持正则匹配查询、条数限制
      * @param sourceDTO 数据源信息

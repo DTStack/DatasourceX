@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.common.loader.libra;
+package com.dtstack.dtcenter.common.loader.oracle;
 
 import com.dtstack.dtcenter.common.loader.rdbms.AbsTableClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
@@ -12,34 +12,34 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Libra表操作相关接口
+ * oracle表操作相关接口
  *
  * @author ：wangchuan
  * date：Created in 10:57 上午 2020/12/3
  * company: www.dtstack.com
  */
 @Slf4j
-public class LibraTableClient extends AbsTableClient {
+public class OracleTableClient extends AbsTableClient {
 
 
     @Override
     protected ConnFactory getConnFactory() {
-        return new LibraConnFactory();
+        return new OracleConnFactory();
     }
 
     @Override
     protected DataSourceType getSourceType() {
-        return DataSourceType.LIBRA;
+        return DataSourceType.Oracle;
     }
 
     @Override
     public List<String> showPartitions(ISourceDTO source, String tableName) throws Exception {
-        throw new DtLoaderException("Libra不支持获取分区操作！");
+        throw new DtLoaderException("该数据源不支持获取分区操作！");
     }
 
     @Override
     public Boolean dropTable(ISourceDTO source, String tableName) throws Exception {
-        log.info("libra删除表，表名：{}", tableName);
+        log.info("删除表，表名：{}", tableName);
         if (StringUtils.isBlank(tableName)) {
             throw new DtLoaderException("表名不能为空！");
         }
@@ -57,11 +57,11 @@ public class LibraTableClient extends AbsTableClient {
     @Override
     public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) throws Exception {
         String comment = params.get("comment");
-        log.info("libra更改表注释，comment：{}！", comment);
+        log.info("更改表注释，comment：{}！", comment);
         if (StringUtils.isEmpty(comment)) {
             return true;
         }
-        String alterTableParamsSql = String.format("COMMENT ON TABLE %s IS '%s'", tableName, comment);
+        String alterTableParamsSql = String.format("comment on table %s is '%s'", tableName, comment);
         return executeSqlWithoutResultSet(source, alterTableParamsSql);
     }
 }

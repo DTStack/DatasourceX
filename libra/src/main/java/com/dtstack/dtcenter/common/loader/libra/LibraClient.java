@@ -8,6 +8,7 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.LibraSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
@@ -29,11 +30,11 @@ public class LibraClient extends AbsRdbmsClient {
     // 创建schema
     private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
 
-    // 获取所有schema
-    private static final String SHOW_DATABASE = "select nspname from pg_namespace";
+    // 判断schema是否存在
+    private static final String DATABASE_IS_EXISTS = "select nspname from pg_namespace where nspname = %s";
 
-    // 根据schema 获取表名
-    private static final String SHOW_TABLES_BY_SCHEMA = "select table_name from information_schema.tables WHERE table_schema = '%s'";
+    // 判断schema是否在
+    private static final String TABLES_IS_IN_SCHEMA = "select table_name from information_schema.tables WHERE table_schema = '%s' and table_name = '%s'";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -106,7 +107,7 @@ public class LibraClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(dbName)) {
             throw new DtLoaderException("schema名称不能为空");
         }
-        return checkSqlFirstResult(source, dbName, SHOW_DATABASE);
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(DATABASE_IS_EXISTS, dbName)).build()));
     }
 
     /**
@@ -122,6 +123,6 @@ public class LibraClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(dbName)) {
             throw new DtLoaderException("schema名称不能为空");
         }
-        return checkSqlFirstResult(source, tableName, String.format(SHOW_TABLES_BY_SCHEMA, dbName));
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLES_IS_IN_SCHEMA, dbName, tableName)).build()));
     }
 }

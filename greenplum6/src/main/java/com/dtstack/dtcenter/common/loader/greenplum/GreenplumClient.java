@@ -11,6 +11,7 @@ import com.dtstack.dtcenter.loader.dto.source.Greenplum6SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
@@ -66,7 +67,7 @@ public class GreenplumClient extends AbsRdbmsClient {
 
     private static final String CREATE_SCHEMA_SQL_TMPL = "create schema %s";
 
-    private static final String SHOW_TABLES_BY_SCHEMA = "select table_name from information_schema.tables WHERE table_schema = '%s'";
+    private static final String TABLES_IS_IN_SCHEMA = "select table_name from information_schema.tables WHERE table_schema = '%s' and table_name = '%s'";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -217,7 +218,7 @@ public class GreenplumClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(dbName)) {
             throw new DtLoaderException("schema名称不能为空");
         }
-        return checkSqlFirstResult(source, tableName, String.format(SHOW_TABLES_BY_SCHEMA, dbName));
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLES_IS_IN_SCHEMA, dbName, tableName)).build()));
     }
 
     @Override

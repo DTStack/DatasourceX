@@ -28,7 +28,7 @@ public class SparkTableTest {
             .url("jdbc:hive2://172.16.8.107:10000/dev")
             .schema("default")
             .defaultFS("hdfs://ns1")
-            .username("admin")
+            .username("root")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
                     "    \"dfs.namenode.rpc-address.ns1.nn2\": \"kudu2:9000\",\n" +
@@ -43,6 +43,7 @@ public class SparkTableTest {
      */
     @BeforeClass
     public static void setUp () throws Exception {
+        System.setProperty("HADOOP_USER_NAME", "root");
         IClient client = ClientCache.getClient(DataSourceType.Spark.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan_partitions_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);

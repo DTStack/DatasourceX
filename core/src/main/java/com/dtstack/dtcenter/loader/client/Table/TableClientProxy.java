@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,24 @@ public class TableClientProxy implements ITable {
 
     public TableClientProxy(ITable table) {
         this.targetClient = table;
+    }
+
+    @Override
+    public Connection getCon(ISourceDTO source) throws Exception {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getCon(source),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public List<Map<String, Object>> executeQuery(ISourceDTO source, String sql) throws Exception {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeQuery(source, sql),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public Boolean executeSqlWithoutResultSet(ISourceDTO source, String sql) throws Exception {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeSqlWithoutResultSet(source, sql),
+                targetClient.getClass().getClassLoader());
     }
 
     @Override
