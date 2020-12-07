@@ -216,14 +216,14 @@ public class SparkTextDownload implements IDownloader {
 
     @Override
     public List<String> readNext(){
-        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
+        return TimeoutExecutor.execAsync(() -> KerberosUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
                         throw new DtLoaderException("读取文件异常", e);
                     }
-                });
+                }));
     }
 
     public List<String> readNextWithKerberos(){
@@ -251,14 +251,14 @@ public class SparkTextDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
+        return TimeoutExecutor.execAsync(() -> KerberosUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return recordReader == null || !nextRecord();
                     } catch (Exception e){
                         throw new DtLoaderException("下载文件异常", e);
                     }
-                });
+                }));
     }
 
     @Override
