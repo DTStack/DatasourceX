@@ -1,17 +1,15 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.client.AbsClientCache;
+import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
-import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,8 +20,6 @@ import java.util.Map;
  * company: www.dtstack.com
  */
 public class KerberosSparkTest {
-
-    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     private static SparkSourceDTO source = SparkSourceDTO.builder()
             .url("jdbc:hive2://eng-cdh3:10000/default;principal=hive/eng-cdh3@DTSTACK.COM")
@@ -45,14 +41,14 @@ public class KerberosSparkTest {
     }
 
     @Test
-    public void testConn() {
-        IClient client = clientCache.getClient(DataSourceType.Spark.getPluginName());
+    public void testConn() throws Exception{
+        IClient client = ClientCache.getClient(DataSourceType.Spark.getVal());
         System.out.println(client.testCon(source));
     }
 
     @Test
     public void getDownload() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Spark.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Spark.getVal());
         IDownloader downloader = client.getDownloader(source, SqlQueryDTO.builder().tableName("test_result").build());
         System.out.println(downloader.getMetaInfo());
         while (!downloader.reachedEnd()) {

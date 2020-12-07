@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hive1;
 
-import com.dtstack.dtcenter.common.thread.RdosThreadFactory;
+import com.dtstack.dtcenter.common.loader.common.DtClassThreadFactory;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,7 +23,7 @@ import java.util.concurrent.TimeoutException;
 public class TimeoutExecutor {
 
     // 异步方法执行线程池
-    private static final ThreadPoolExecutor EXEC_TIMEOUT_POOL = new ThreadPoolExecutor(10, 10, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<>(1000), new RdosThreadFactory("ExecTimeoutTask"));
+    private static final ThreadPoolExecutor EXEC_TIMEOUT_POOL = new ThreadPoolExecutor(10, 10, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<>(1000), new DtClassThreadFactory("ExecTimeoutTask"));
 
     // 方法执行超时时间
     private final static int EXEC_TIMEOUT = 2 * 60;

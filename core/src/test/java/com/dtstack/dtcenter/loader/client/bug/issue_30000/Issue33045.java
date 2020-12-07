@@ -1,13 +1,12 @@
 package com.dtstack.dtcenter.loader.client.bug.issue_30000;
 
 import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.client.AbsClientCache;
+import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
-import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,10 +23,6 @@ import org.junit.Test;
  * company: www.dtstack.com
  */
 public class Issue33045 {
-
-    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
-
-    private static final AbsClientCache hdfsClientCache = ClientType.HDFS_CLIENT.getClientCache();
 
     private static final String localKerberosPath = Issue33097.class.getResource("/bug/issue_33045").getPath();
 
@@ -64,9 +59,9 @@ public class Issue33045 {
     @BeforeClass
     public static void setUp () throws Exception {
         System.setProperty("HADOOP_USER_NAME", "root");
-        IHdfsFile hdfsClient = hdfsClientCache.getHdfs(DataSourceType.HDFS.getPluginName());
+        IHdfsFile hdfsClient = ClientCache.getHdfs(DataSourceType.HDFS.getVal());
         hdfsClient.checkAndDelete(hdfsSourceDTO, "/tmp/bug_33045");
-        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists bug_33045").build();
         client.executeSqlWithoutResultSet(hiveSourceDTO, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create external table bug_33045 (id int, name string) stored as parquet location '/tmp/bug_33045/'").build();
@@ -79,7 +74,7 @@ public class Issue33045 {
 
     @Test
     public void test_for_issue() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
         IDownloader download = client.getDownloader(hiveSourceDTO, SqlQueryDTO.builder().tableName("bug_33045").build());
         while (!download.reachedEnd()) {
             System.out.println("---------------------------------");
