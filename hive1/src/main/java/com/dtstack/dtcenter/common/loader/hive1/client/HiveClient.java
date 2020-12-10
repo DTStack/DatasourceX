@@ -353,8 +353,7 @@ public class HiveClient extends AbsRdbmsClient {
                 }
             }
         }
-        return "select * from " + sqlQueryDTO.getTableName()
-                +partSql.toString() + " limit " + sqlQueryDTO.getPreviewNum();
+        return "select * from " + sqlQueryDTO.getTableName() + partSql.toString();
     }
 
     @Override

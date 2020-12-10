@@ -127,7 +127,7 @@ public class SqlServerClient extends AbsRdbmsClient {
 
     @Override
     protected String dealSql(ISourceDTO iSourceDTO, SqlQueryDTO sqlQueryDTO) {
-        return "select top "+sqlQueryDTO.getPreviewNum()+" * from "+transferTableName(sqlQueryDTO.getTableName());
+        return "select * from " + transferTableName(sqlQueryDTO.getTableName());
     }
 
     @Override

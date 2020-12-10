@@ -260,6 +260,7 @@ public class OracleClient extends AbsRdbmsClient {
      * @param queryDTO 查询条件
      * @return 对应的sql语句
      */
+    @Override
     protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         // 构造表名模糊查询和条数限制sql
         String tableConstr = buildSearchSql(TABLE_SEARCH_SQL, queryDTO.getTableNamePattern(), queryDTO.getLimit());

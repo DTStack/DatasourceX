@@ -233,8 +233,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
     @Override
     protected String dealSql(ISourceDTO iSourceDTO, SqlQueryDTO sqlQueryDTO){
         PostgresqlSourceDTO postgresqlSourceDTO = (PostgresqlSourceDTO)iSourceDTO;
-        return "select * from " + transferSchemaAndTableName(postgresqlSourceDTO.getSchema(), sqlQueryDTO.getTableName())
-                + " limit " + sqlQueryDTO.getPreviewNum();
+        return "select * from " + transferSchemaAndTableName(postgresqlSourceDTO.getSchema(), sqlQueryDTO.getTableName());
     }
 
     @Override
