@@ -36,7 +36,7 @@ public class S3Client implements IClient {
         AmazonS3Client amazonS3Client = null;
         try {
             amazonS3Client = S3Utils.getClient(source, null);
-            amazonS3Client.getServiceName();
+            amazonS3Client.listBuckets();
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
         }finally {
