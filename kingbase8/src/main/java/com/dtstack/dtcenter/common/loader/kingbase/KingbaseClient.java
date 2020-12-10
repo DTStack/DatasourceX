@@ -241,8 +241,7 @@ public class KingbaseClient extends AbsRdbmsClient {
     @Override
     protected String dealSql(ISourceDTO sourceDTO, SqlQueryDTO sqlQueryDTO){
         KingbaseSourceDTO kingbaseSourceDTO = (KingbaseSourceDTO) sourceDTO;
-        return "select * from " + transferSchemaAndTableName(kingbaseSourceDTO.getSchema(), sqlQueryDTO.getTableName())
-                + " limit " + sqlQueryDTO.getPreviewNum();
+        return "select * from " + transferSchemaAndTableName(kingbaseSourceDTO.getSchema(), sqlQueryDTO.getTableName());
     }
 
     @Override

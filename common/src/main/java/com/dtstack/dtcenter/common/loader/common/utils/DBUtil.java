@@ -32,11 +32,31 @@ public class DBUtil {
      * @return
      */
     public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Boolean closeConn) {
+        return executeQuery(conn, sql, null, null, closeConn);
+    }
+
+    /**
+     * 根据 SQL 查询
+     *
+     * @param conn
+     * @param sql
+     * @param limit
+     * @param queryTimeout
+     * @param closeConn
+     * @return
+     */
+    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, Integer queryTimeout, Boolean closeConn) {
         List<Map<String, Object>> result = Lists.newArrayList();
         ResultSet res = null;
         Statement statement = null;
         try {
             statement = conn.createStatement();
+            if (queryTimeout != null) {
+                statement.setQueryTimeout(queryTimeout);
+            }
+            if (limit != null) {
+                statement.setMaxRows(limit);
+            }
             res = statement.executeQuery(sql);
             int columns = res.getMetaData().getColumnCount();
             List<String> columnName = Lists.newArrayList();
@@ -68,6 +88,21 @@ public class DBUtil {
      * @return
      */
     public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Boolean closeConn, List<Object> preFields, Integer queryTimeout) {
+        return executeQuery(conn, sql, null, closeConn, preFields, queryTimeout);
+    }
+
+    /**
+     * 根据 SQL 查询 - 预编译查询
+     *
+     * @param conn
+     * @param sql
+     * @param limit
+     * @param closeConn
+     * @param preFields
+     * @param queryTimeout
+     * @return
+     */
+    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, Boolean closeConn, List<Object> preFields, Integer queryTimeout) {
         List<Map<String, Object>> result = Lists.newArrayList();
         ResultSet res = null;
         PreparedStatement statement = null;
@@ -76,6 +111,9 @@ public class DBUtil {
             //设置查询超时时间
             if (queryTimeout != null) {
                 statement.setQueryTimeout(queryTimeout);
+            }
+            if (limit != null) {
+                statement.setMaxRows(limit);
             }
             //todo 支持预编译sql
             if (preFields != null && !preFields.isEmpty()) {

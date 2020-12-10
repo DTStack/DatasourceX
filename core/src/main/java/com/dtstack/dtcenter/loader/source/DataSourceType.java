@@ -55,8 +55,8 @@ public enum DataSourceType {
     Kylin(23, 86, "Kylin", "kylin"),
 
     // NoSQL
-    HBASE(8, 100, "HBase1.x", "hbase"),
-    HBASE2(39, 101, "HBase2.x", "hbase"),
+    HBASE(8, 100, "HBase", "hbase"),
+    HBASE2(39, 101, "HBase", "hbase"),
     Phoenix(30, 102, "Phoenix4.x", "phoenix"),
     PHOENIX5(38, 103, "Phoenix5.x", "phoenix5"),
     ES(11, 104, "ElasticSearch5.x", "es"),
@@ -74,8 +74,9 @@ public enum DataSourceType {
     KAFKA_09(18, 124, "Kafka_0.9", "kafka"),
     EMQ(34, 125, "EMQ", "emq"),
     WEB_SOCKET(42, 126, "WebSocket", "websocket"),
-    BEATS(16, 127, "Beats", "null"),
-    Spark(1002, 128, "Spark", "spark"),
+    VERTICA(43, 127, "Vertica", "vertica"),
+    BEATS(16, 128, "Beats", "null"),
+    Spark(1002, 129, "Spark", "spark"),
     ;
 
     DataSourceType(int val, int order, String name, String pluginName) {
