@@ -280,25 +280,25 @@ public class HiveClient extends AbsRdbmsClient {
         String fieldDelimiter = "\001";
         String storageMode = null;
         for (Map<String, Object> map : list) {
-            String colName = (String) map.get("col_name");
-            Object dataType = map.get("data_type");
+            String colName = MapUtils.getString(map, "col_name");
+            String dataType = MapUtils.getString(map, "data_type");
             if (colName.contains("Location")) {
-                tableLocation = (String) dataType;
+                tableLocation = dataType;
                 continue;
             }
 
             if (colName.contains("InputFormat")) {
-                storageMode = (String) dataType;
+                storageMode = dataType;
                 continue;
             }
 
             if (colName.contains("field.delim")) {
-                fieldDelimiter = (String) dataType;
+                fieldDelimiter = dataType;
                 break;
             }
 
-            if (Objects.nonNull(dataType) && ((String) dataType).contains("field.delim")) {
-                fieldDelimiter = (String) map.get("comment");
+            if (Objects.nonNull(dataType) && dataType.contains("field.delim")) {
+                fieldDelimiter = MapUtils.getString(map, "comment");
                 break;
             }
         }
