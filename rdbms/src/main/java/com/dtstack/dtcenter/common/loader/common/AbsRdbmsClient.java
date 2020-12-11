@@ -158,7 +158,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         if (rdbmsSourceDTO.getConnection() == null) {
             rdbmsSourceDTO.setConnection(getCon(iSource));
             if (CacheConnectionHelper.isStart()) {
-                return ConnectionClearStatus.CLEAR.getValue();
+                return ConnectionClearStatus.NORMAL.getValue();
             }
             return ConnectionClearStatus.CLOSE.getValue();
         }
