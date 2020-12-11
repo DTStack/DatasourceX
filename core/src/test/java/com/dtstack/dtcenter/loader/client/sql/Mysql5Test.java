@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.cache.connection.CacheConnectionHelper;
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -17,6 +18,8 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @company: www.dtstack.com
@@ -93,6 +96,27 @@ public class Mysql5Test {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).preFields(preFields).queryTimeout(1).build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList);
+    }
+
+    @Test
+    public void executeQueryCache() throws Exception {
+        String sessionKey = UUID.randomUUID().toString();
+        // 开启缓存
+        CacheConnectionHelper.startCacheConnection(sessionKey);
+        // 关闭线程池
+        source.setPoolConfig(null);
+        IClient client = clientCache.getClient(DataSourceType.MySQL.getPluginName());
+        String sql = "select * from rdos_dict;";
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).queryTimeout(10).build();
+        client.executeQuery(source, queryDTO);
+        String con1JdbcConn = source.getConnection().toString();
+        client.executeQuery(source, queryDTO);
+        String con2JdbcConn = source.getConnection().toString();
+        // 清除缓存
+        CacheConnectionHelper.closeCacheConnection(sessionKey);
+        client.executeQuery(source, queryDTO);
+        String con3JdbcConn = CacheConnectionHelper.getConnection(sessionKey, DataSourceType.MySQL.getVal()).toString();
+        assert con1JdbcConn.equals(con2JdbcConn) && Objects.isNull(con3JdbcConn);
     }
 
     @Test
