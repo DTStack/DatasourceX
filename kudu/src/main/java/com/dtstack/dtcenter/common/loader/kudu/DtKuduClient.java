@@ -122,9 +122,6 @@ public class DtKuduClient extends AbsRdbmsClient {
             throw new DtCenterDefException("集群地址不能为空");
         }
         List<String> hosts = Arrays.stream(kuduSourceDTO.getUrl().split(",")).collect(Collectors.toList());
-        String principalFile = (String) kuduSourceDTO.getKerberosConfig().get("principalFile");
-        String principal = (String) kuduSourceDTO.getKerberosConfig().get("principal");
-        log.info("getKuduClient principal {},principalFile:{}", principal, principalFile);
         return  KerberosUtil.loginWithUGI(kuduSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<KuduClient>) () -> {
                     try {
