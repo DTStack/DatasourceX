@@ -38,6 +38,9 @@ public class MysqlClient extends AbsRdbmsClient {
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select database()";
 
+    // 模糊查询数据库
+    private static final String SHOW_DB_LIKE = "show databases like '%s'";
+
     private static final String DONT_EXIST = "doesn't exist";
 
     // 获取指定数据库下的表
@@ -183,7 +186,7 @@ public class MysqlClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(dbName)) {
             throw new DtLoaderException("数据库名称不能为空");
         }
-        return checkSqlFirstResult(source, dbName, getShowDbSql());
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(SHOW_DB_LIKE, dbName)).build()));
     }
 
     @Override

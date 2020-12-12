@@ -61,6 +61,12 @@ public class SparkClient extends AbsRdbmsClient {
     // 查询指定schema下的表
     private static final String TABLE_BY_SCHEMA = "show tables in %s";
 
+    // 模糊查询查询指定schema下的表
+    private static final String TABLE_BY_SCHEMA_LIKE = "show tables in %s like '%s'";
+
+    // 模糊查询database
+    private static final String SHOW_DB_LIKE = "show databases like '%s'";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new SparkConnFactory();
@@ -457,7 +463,7 @@ public class SparkClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(dbName)) {
             throw new DtLoaderException("数据库名称不能为空！");
         }
-        return checkSqlFirstResult(source, dbName, getShowDbSql());
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(SHOW_DB_LIKE, dbName)).build()));
     }
 
     @Override
@@ -465,14 +471,6 @@ public class SparkClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(dbName)) {
             throw new DtLoaderException("数据库名称不能为空！");
         }
-        List<Map<String, Object>> results = executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_BY_SCHEMA, dbName)).build());
-        if (CollectionUtils.isNotEmpty(results)) {
-            for (Map<String, Object> result : results) {
-                if (tableName.equalsIgnoreCase(MapUtils.getString(result, "tableName"))) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_BY_SCHEMA_LIKE, dbName, tableName)).build()));
     }
 }

@@ -135,7 +135,7 @@ public class Greenplum6Test {
     /**
      * 创建库测试
      */
-    @Test
+    //@Test
     public void createDb() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
         assert client.createDatabase(source, "wangchuan_dev_test", "测试注释");
@@ -147,7 +147,16 @@ public class Greenplum6Test {
     @Test
     public void isDbExists() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
-        assert client.isDatabaseExists(source, "wangchuan_dev_test");
+        assert client.isDatabaseExists(source, "public");
+    }
+
+    /**
+     * 判断db是否存在
+     */
+    @Test
+    public void isDbNotExists() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
+        assert !client.isDatabaseExists(source, "asfasf");
     }
 
     /**
@@ -157,5 +166,14 @@ public class Greenplum6Test {
     public void isTableInDb() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
         assert client.isTableExistsInDatabase(source, "nanqi", "public");
+    }
+
+    /**
+     * 判断表是否在db中
+     */
+    @Test
+    public void isTableNotInDb() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
+        assert !client.isTableExistsInDatabase(source, "wangchuan_111", "public");
     }
 }

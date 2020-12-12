@@ -39,7 +39,7 @@ public class SparkTest {
                     "}")
             .build();
 
-    //@BeforeClass
+    @BeforeClass
     public static void beforeClass() throws Exception {
         System.setProperty("HADOOP_USER_NAME", "root");
         IClient client = ClientCache.getClient(DataSourceType.Spark.getVal());

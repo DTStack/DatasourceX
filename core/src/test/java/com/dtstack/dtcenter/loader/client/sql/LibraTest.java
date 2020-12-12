@@ -42,6 +42,16 @@ public class LibraTest {
     }
 
     /**
+     * 判断db是否存在
+     */
+    @Test
+    public void isDbNotExists() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.LIBRA.getVal());
+        assert !client.isDatabaseExists(source, "wangchuan_dev_test_123");
+    }
+
+
+    /**
      * 判断表是否在db中
      */
     @Test

@@ -67,6 +67,9 @@ public class GreenplumClient extends AbsRdbmsClient {
 
     private static final String CREATE_SCHEMA_SQL_TMPL = "create schema %s";
 
+    // 判断db是否存在
+    private static final String DATABASE_IS_EXISTS = "select nspname from pg_namespace where nspname = '%s'";
+
     private static final String TABLES_IS_IN_SCHEMA = "select table_name from information_schema.tables WHERE table_schema = '%s' and table_name = '%s'";
 
     @Override
@@ -202,7 +205,7 @@ public class GreenplumClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(dbName)) {
             throw new DtLoaderException("schema名称不能为空");
         }
-        return checkSqlFirstResult(source, dbName, DATABASE_QUERY);
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(DATABASE_IS_EXISTS, dbName)).build()));
     }
 
     /**
