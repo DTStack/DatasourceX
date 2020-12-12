@@ -153,7 +153,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         if (rdbmsSourceDTO.getConnection() == null) {
             rdbmsSourceDTO.setConnection(getCon(iSource));
             if (CacheConnectionHelper.isStart()) {
-                return ConnectionClearStatus.CLEAR.getValue();
+                return ConnectionClearStatus.NORMAL.getValue();
             }
             return ConnectionClearStatus.CLOSE.getValue();
         }
@@ -571,5 +571,48 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      */
     protected String getCurrentDbSql() {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
+    }
+
+    @Override
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
+        throw new DtLoaderException("该数据源暂时不支持该方法!");
+    }
+
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception {
+        throw new DtLoaderException("该数据源暂时不支持该方法!");
+    }
+
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) throws Exception {
+        throw new DtLoaderException("该数据源暂时不支持该方法!");
+    }
+
+    /**
+     * 检查checkParam是否在checkQuerySql执行结果中
+     *
+     * @param source 数据源信息
+     * @param checkParam 检查的名称
+     * @param checkQuerySql 检查执行的sql
+     * @return 检查结果
+     */
+    protected boolean checkSqlFirstResult(ISourceDTO source, String checkParam, String checkQuerySql) throws Exception {
+        Integer clearStatus = beforeQuery(source, SqlQueryDTO.builder().build(), false);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = rdbmsSourceDTO.getConnection().createStatement();
+            resultSet = statement.executeQuery(checkQuerySql);
+            while (resultSet.next()) {
+                String database = resultSet.getString(1);
+                if (database.equalsIgnoreCase(checkParam)) {
+                    return true;
+                }
+            }
+        } finally {
+            DBUtil.closeDBResources(resultSet, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        return false;
     }
 }

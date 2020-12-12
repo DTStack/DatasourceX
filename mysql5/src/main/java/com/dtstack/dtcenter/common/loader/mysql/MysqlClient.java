@@ -13,6 +13,7 @@ import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
@@ -47,6 +48,12 @@ public class MysqlClient extends AbsRdbmsClient {
 
     // 限制条数语句
     private static final String LIMIT_SQL = " limit %s ";
+
+    // 创建数据库
+    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
+
+    // 判断table是否在schema中
+    private static final String TABLE_IS_IN_SCHEMA = "select table_name from information_schema.tables where table_schema='%s' and table_name = '%s'";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -160,6 +167,31 @@ public class MysqlClient extends AbsRdbmsClient {
     @Override
     protected String getCurrentDbSql() {
         return CURRENT_DB;
+    }
+
+    @Override
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空");
+        }
+        String createSchemaSql = String.format(CREATE_SCHEMA_SQL_TMPL, dbName);
+        return executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(createSchemaSql).build());
+    }
+
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空");
+        }
+        return checkSqlFirstResult(source, dbName, getShowDbSql());
+    }
+
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) throws Exception {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空");
+        }
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_IS_IN_SCHEMA, dbName, tableName)).build()));
     }
 
     /**
