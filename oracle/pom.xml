@@ -42,6 +42,19 @@
             <artifactId>ojdbc8</artifactId>
             <version>12.2.0.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.oracle.database.xml</groupId>
+            <artifactId>xdb</artifactId>
+            <version>19.7.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.oracle.database.xml</groupId>
+            <artifactId>xmlparserv2</artifactId>
+            <version>19.7.0.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
