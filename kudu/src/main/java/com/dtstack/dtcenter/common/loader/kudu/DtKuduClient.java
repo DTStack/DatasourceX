@@ -78,12 +78,14 @@ public class DtKuduClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         if (queryDTO == null || StringUtils.isBlank(queryDTO.getTableName())) {
             throw new DtLoaderException("表名称不能为空");
         }
         try (KuduClient client = getConnection(iSource);) {
             return getTableColumns(client, queryDTO.getTableName());
+        } catch (Exception e) {
+            throw new DtLoaderException("kudu客户端获取失败！", e);
         }
     }
 
@@ -236,7 +238,7 @@ public class DtKuduClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
         return getColumnMetaData(source, queryDTO);
     }
 
@@ -257,7 +259,7 @@ public class DtKuduClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
@@ -302,7 +304,7 @@ public class DtKuduClient<T> implements IClient<T> {
     }
 
     @Override
-    public String getCurrentDatabase(ISourceDTO sourceO) throws Exception {
+    public String getCurrentDatabase(ISourceDTO sourceO) {
         throw new DtLoaderException("Not Support");
     }
 }

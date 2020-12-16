@@ -74,7 +74,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @throws Exception
      */
     @Override
-    public Connection getCon(ISourceDTO iSource) throws Exception {
+    public Connection getCon(ISourceDTO iSource) {
         log.info("-------getting connection....-----");
         if (!CacheConnectionHelper.isStart()) {
             try {
@@ -100,17 +100,21 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
-    public Boolean testCon(ISourceDTO iSource) throws Exception {
+    public Boolean testCon(ISourceDTO iSource) {
         return connFactory.testConn(iSource);
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, true);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
         // 如果当前 connection 已关闭，直接返回空列表
-        if (rdbmsSourceDTO.getConnection().isClosed()) {
-            return Lists.newArrayList();
+        try {
+            if (rdbmsSourceDTO.getConnection().isClosed()) {
+                return Lists.newArrayList();
+            }
+        } catch (Exception e) {
+            throw new DtLoaderException("connection调用isClosed方法异常！", e);
         }
         if (queryDTO.getPreFields() != null || queryDTO.getQueryTimeout()!= null) {
             return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
@@ -121,12 +125,16 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, true);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
-        // 如果当前 connection 已关闭，直接返回空列表
-        if (rdbmsSourceDTO.getConnection().isClosed()) {
-            return false;
+        try {
+            // 如果当前 connection 已关闭，直接返回空列表
+            if (rdbmsSourceDTO.getConnection().isClosed()) {
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new DtLoaderException("connection调用isClosed方法异常！", e);
         }
 
         DBUtil.executeSqlWithoutResultSet(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
@@ -142,7 +150,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @return 是否需要自动关闭连接
      * @throws Exception
      */
-    protected Integer beforeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO, boolean query) throws Exception {
+    protected Integer beforeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO, boolean query) {
         // 查询 SQL 不能为空
         if (query && StringUtils.isBlank(queryDTO.getSql())) {
             throw new DtLoaderException("查询 SQL 不能为空");
@@ -168,7 +176,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @return
      * @throws Exception
      */
-    protected Integer beforeColumnQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    protected Integer beforeColumnQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         // 查询表不能为空
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         if (queryDTO == null || StringUtils.isBlank(queryDTO.getTableName())) {
@@ -181,7 +189,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
         ResultSet rs = null;
@@ -216,7 +224,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @throws Exception
      */
     @Override
-    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(source, queryDTO, false);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
         // 获取根据schema获取表的sql
@@ -240,7 +248,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
 
@@ -262,13 +270,15 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
             }
 
             return columnClassNameList;
+        } catch (Exception e){
+            throw new DtLoaderException("", e);
         } finally {
             DBUtil.closeDBResources(rs, stmt, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
         }
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, true);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
         Statement statement = null;
@@ -310,7 +320,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
         Statement statement = null;
@@ -365,12 +375,12 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         return getColumnMetaData(iSource, queryDTO);
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         return "";
     }
 
@@ -382,7 +392,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @throws Exception
      */
     @Override
-    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
         List<List<Object>> previewList = new ArrayList<>();
@@ -461,7 +471,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         return rsMetaData.getColumnTypeName(los + 1);
     }
 
-    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         return null;
     }
 
@@ -481,7 +491,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception{
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO){
         Integer clearStatus = beforeQuery(source, queryDTO, false);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
 
@@ -505,7 +515,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
-    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(source, queryDTO, false);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
 
@@ -537,12 +547,12 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         return Collections.emptyList();
     }
 
     @Override
-    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
         return new Table();
     }
 
@@ -555,7 +565,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
-    public String getCurrentDatabase(ISourceDTO source) throws Exception {
+    public String getCurrentDatabase(ISourceDTO source) {
         // 获取根据schema获取表的sql
         String sql = getCurrentDbSql();
         List<Map<String, Object>> result = executeQuery(source, SqlQueryDTO.builder().sql(sql).build());

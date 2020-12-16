@@ -57,7 +57,7 @@ public class VerticaClient extends AbsRdbmsClient {
     private static final String TABLE_QUERY = "SELECT * FROM %s";
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         VerticaSourceDTO verticaSourceDTO = (VerticaSourceDTO) iSource;
         List<String> tableList = new ArrayList<>();
@@ -79,7 +79,7 @@ public class VerticaClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableListBySchema(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableListBySchema(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         if (StringUtils.isBlank(queryDTO.getSchema())) {
             return getTableList(iSource, queryDTO);
         }
@@ -90,7 +90,7 @@ public class VerticaClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         VerticaSourceDTO verticaSourceDTO = (VerticaSourceDTO) iSource;
 
@@ -129,7 +129,7 @@ public class VerticaClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 

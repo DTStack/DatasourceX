@@ -47,7 +47,7 @@ public class ImpalaClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
         //impala db写在jdbc连接中无效，必须手动切换库
@@ -74,7 +74,7 @@ public class ImpalaClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
 
@@ -145,7 +145,7 @@ public class ImpalaClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
 
@@ -196,14 +196,14 @@ public class ImpalaClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) {
         List<String> databases = super.getAllDatabases(source, queryDTO);
         databases.remove(0);
         return databases;
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         List<ColumnMetaDTO> columnMetaDTOS = getColumnMetaData(source,queryDTO);
         List<ColumnMetaDTO> partitionColumnMeta = new ArrayList<>();
         columnMetaDTOS.forEach(columnMetaDTO -> {
@@ -215,7 +215,7 @@ public class ImpalaClient extends AbsRdbmsClient {
     }
 
     @Override
-    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
         Table tableInfo = new Table();
         tableInfo.setName(queryDTO.getTableName());
         tableInfo.setComment(getTableMetaComment(source, queryDTO));

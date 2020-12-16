@@ -20,25 +20,25 @@ public class KerberosProxy implements IKerberos {
     }
 
     @Override
-    public Map<String, Object> parseKerberosFromUpload(String zipLocation, String localKerberosPath) throws Exception {
+    public Map<String, Object> parseKerberosFromUpload(String zipLocation, String localKerberosPath) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.parseKerberosFromUpload(zipLocation, localKerberosPath),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath) throws Exception {
+    public Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.prepareKerberosForConnect(conf, localKerberosPath),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public String getPrincipals(String url) throws Exception {
+    public String getPrincipals(String url) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPrincipals(url),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<String> getPrincipals(Map<String, Object> kerberosConfig) throws Exception {
+    public List<String> getPrincipals(Map<String, Object> kerberosConfig) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPrincipals(kerberosConfig),
                 targetClient.getClass().getClassLoader());
     }

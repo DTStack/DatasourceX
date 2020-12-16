@@ -16,7 +16,7 @@ import java.util.Map;
 @Slf4j
 public class KerberosClient extends AbsKerberosClient {
     @Override
-    public Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath) throws Exception {
+    public Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath)  {
         super.prepareKerberosForConnect(conf, localKerberosPath);
         // 因为 HBASE 需要两张 Principal 所以这边做一下处理
         if (!conf.containsKey(HadoopConfTool.PRINCIPAL)) {

@@ -90,7 +90,7 @@ public class EsClient<T> implements IClient<T> {
     public static final ThreadLocal<Boolean> IS_OPEN_POOL = new ThreadLocal<>();
 
     @Override
-    public Boolean testCon(ISourceDTO iSource) throws Exception {
+    public Boolean testCon(ISourceDTO iSource) {
         ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return false;
@@ -112,7 +112,7 @@ public class EsClient<T> implements IClient<T> {
      * @throws Exception
      */
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return new ArrayList<>();
@@ -231,7 +231,7 @@ public class EsClient<T> implements IClient<T> {
      * @throws Exception
      */
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return new ArrayList<>();
@@ -413,12 +413,12 @@ public class EsClient<T> implements IClient<T> {
 
     /******************** 未支持的方法 **********************/
     @Override
-    public Connection getCon(ISourceDTO iSource) throws Exception {
+    public Connection getCon(ISourceDTO iSource) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<String> getTableListBySchema(ISourceDTO iSource, SqlQueryDTO sqlQueryDTO) throws Exception {
+    public List<String> getTableListBySchema(ISourceDTO iSource, SqlQueryDTO sqlQueryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
@@ -444,7 +444,7 @@ public class EsClient<T> implements IClient<T> {
      * @throws Exception
      */
     @Override
-    public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
         Boolean result = false;
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
@@ -529,47 +529,47 @@ public class EsClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public String getCurrentDatabase(ISourceDTO source) throws Exception {
+    public String getCurrentDatabase(ISourceDTO source) {
         throw new DtLoaderException("Not Support");
     }
 }

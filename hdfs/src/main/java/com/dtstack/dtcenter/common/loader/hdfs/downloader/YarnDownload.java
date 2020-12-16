@@ -179,17 +179,17 @@ public class YarnDownload implements IDownloader {
     }
 
     @Override
-    public List<String> getMetaInfo() throws Exception {
+    public List<String> getMetaInfo() {
         throw new DtLoaderException("not support getMetaInfo of App log download");
     }
 
     @Override
-    public Object readNext() throws Exception {
+    public Object readNext() {
         return currLineValue;
     }
 
     @Override
-    public boolean reachedEnd() throws Exception {
+    public boolean reachedEnd() {
         return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
@@ -382,7 +382,7 @@ public class YarnDownload implements IDownloader {
     }
 
     @Override
-    public List<String> getContainers() throws Exception {
+    public List<String> getContainers() {
         return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {

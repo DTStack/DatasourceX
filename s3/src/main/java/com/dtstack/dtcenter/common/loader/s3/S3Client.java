@@ -78,7 +78,7 @@ public class S3Client implements IClient {
     }
 
     @Override
-    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
         return getTableList(source, queryDTO);
     }
 
@@ -138,7 +138,7 @@ public class S3Client implements IClient {
     }
 
     @Override
-    public String getCurrentDatabase(ISourceDTO source) throws Exception {
+    public String getCurrentDatabase(ISourceDTO source) {
         throw new DtLoaderException("Not Support");
     }
 }

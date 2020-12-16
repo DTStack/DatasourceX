@@ -177,7 +177,7 @@ public class CacheConnectionHelper {
     }
 
     @Nullable
-    public static Connection getConnection(Integer sourceType, Callback<Connection> callback) throws SQLException {
+    public static Connection getConnection(Integer sourceType, Callback<Connection> callback) {
         if (StringUtils.isBlank(getSessionKey())) {
             return null;
         }
@@ -185,7 +185,7 @@ public class CacheConnectionHelper {
         return getConnection(getSessionKey(), sourceType, callback);
     }
 
-    public static Connection getConnection(String sessionKey, Integer sourceType, Callback<Connection> callback) throws SQLException {
+    public static Connection getConnection(String sessionKey, Integer sourceType, Callback<Connection> callback) {
         Connection connection = getConnection(sessionKey, sourceType);
 
         // 如果在当前所有的缓存池中存在，则直接获取
@@ -206,7 +206,7 @@ public class CacheConnectionHelper {
      * @return
      * @throws SQLException
      */
-    private static Connection setConnection(String sessionKey, Integer sourceType, Connection connection) throws SQLException {
+    private static Connection setConnection(String sessionKey, Integer sourceType, Connection connection) {
         DataSourceConnection sourceConnection = HashCacheConnectionKey.getSourceConnection(sessionKey);
         if (sourceConnection == null) {
             return connection;

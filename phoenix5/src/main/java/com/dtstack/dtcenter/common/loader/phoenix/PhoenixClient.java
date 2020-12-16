@@ -57,7 +57,7 @@ public class PhoenixClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Phoenix5SourceDTO phoenixSourceDTO = (Phoenix5SourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(phoenixSourceDTO, queryDTO);
 
@@ -88,7 +88,7 @@ public class PhoenixClient extends AbsRdbmsClient {
 
 
     @Override
-    public List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(source, queryDTO, false);
         Phoenix5SourceDTO rdbmsSourceDTO = (Phoenix5SourceDTO) source;
         ResultSet rs = null;

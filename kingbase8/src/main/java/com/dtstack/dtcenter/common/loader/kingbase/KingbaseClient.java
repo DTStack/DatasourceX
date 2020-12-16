@@ -71,7 +71,7 @@ public class KingbaseClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) {
         KingbaseSourceDTO kingbaseSourceDTO = (KingbaseSourceDTO) source;
         Integer clearStatus = beforeQuery(kingbaseSourceDTO, queryDTO, false);
         Statement statement = null;
@@ -101,7 +101,7 @@ public class KingbaseClient extends AbsRdbmsClient {
      * @throws Exception
      */
     @Override
-    public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) {
         KingbaseSourceDTO kingbaseSourceDTO = (KingbaseSourceDTO) source;
         Integer clearStatus = beforeColumnQuery(kingbaseSourceDTO, queryDTO);
         Statement statement = null;
@@ -159,7 +159,7 @@ public class KingbaseClient extends AbsRdbmsClient {
      * @throws Exception
      */
     @Override
-    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(sourceDTO, queryDTO);
         Statement statement = null;
         ResultSet rs = null;
@@ -183,7 +183,7 @@ public class KingbaseClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(source, queryDTO);
         KingbaseSourceDTO kingbaseSourceDTO = (KingbaseSourceDTO) source;
         Statement statement = null;
@@ -245,12 +245,12 @@ public class KingbaseClient extends AbsRdbmsClient {
     }
 
     @Override
-    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 

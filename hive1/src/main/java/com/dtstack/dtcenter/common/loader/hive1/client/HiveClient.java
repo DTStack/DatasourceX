@@ -68,7 +68,7 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         Hive1SourceDTO hive1SourceDTO = (Hive1SourceDTO) iSource;
         // 获取表信息需要通过show tables 语句
@@ -95,7 +95,7 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         Hive1SourceDTO hive1SourceDTO = (Hive1SourceDTO) iSource;
 
@@ -169,7 +169,7 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         Hive1SourceDTO hive1SourceDTO = (Hive1SourceDTO) iSource;
 
@@ -225,7 +225,7 @@ public class HiveClient extends AbsRdbmsClient {
         }
     }
 
-    private Boolean testConnection(ISourceDTO iSource) throws Exception {
+    private Boolean testConnection(ISourceDTO iSource) {
         // 先校验数据源连接性
         Boolean testCon = super.testCon(iSource);
         if (!testCon) {
@@ -241,7 +241,7 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public IDownloader getDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public IDownloader getDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Hive1SourceDTO hive1SourceDTO= (Hive1SourceDTO) iSource;
         List<Map<String, Object>> list = executeQuery(hive1SourceDTO, SqlQueryDTO.builder().sql("desc formatted " + queryDTO.getTableName()).build());
         //获取表路径、字段分隔符、存储方式
@@ -357,7 +357,7 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         List<ColumnMetaDTO> columnMetaDTOS = getColumnMetaData(source,queryDTO);
         List<ColumnMetaDTO> partitionColumnMeta = new ArrayList<>();
         columnMetaDTOS.forEach(columnMetaDTO -> {
@@ -369,7 +369,7 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
         Table tableInfo = new Table();
         tableInfo.setName(queryDTO.getTableName());
         tableInfo.setComment(getTableMetaComment(source, queryDTO));

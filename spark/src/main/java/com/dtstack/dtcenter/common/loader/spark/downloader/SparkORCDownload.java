@@ -104,7 +104,7 @@ public class SparkORCDownload implements IDownloader {
     }
 
     @Override
-    public List<String> readNext() throws Exception {
+    public List<String> readNext() {
         return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
@@ -172,7 +172,7 @@ public class SparkORCDownload implements IDownloader {
     }
 
     @Override
-    public boolean reachedEnd() throws IOException {
+    public boolean reachedEnd() {
         return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {

@@ -31,7 +31,7 @@ public class GbaseClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         GBaseSourceDTO gBaseSourceDTO = (GBaseSourceDTO) iSource;
         Statement statement = null;

@@ -29,19 +29,19 @@ public class DownloaderProxy implements IDownloader {
     }
 
     @Override
-    public List<String> getMetaInfo() throws Exception {
+    public List<String> getMetaInfo() {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.getMetaInfo(),
                 targetDownloader.getClass().getClassLoader());
     }
 
     @Override
-    public Object readNext() throws Exception {
+    public Object readNext() {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.readNext(),
                 targetDownloader.getClass().getClassLoader());
     }
 
     @Override
-    public boolean reachedEnd() throws Exception {
+    public boolean reachedEnd() {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.reachedEnd(),
                 targetDownloader.getClass().getClassLoader());
     }
@@ -53,13 +53,13 @@ public class DownloaderProxy implements IDownloader {
     }
 
     @Override
-    public String getFileName() throws Exception {
+    public String getFileName() {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.getFileName(),
                 targetDownloader.getClass().getClassLoader());
     }
 
     @Override
-    public List<String> getContainers() throws Exception {
+    public List<String> getContainers() {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetDownloader.getContainers(),
                 targetDownloader.getClass().getClassLoader());
     }
