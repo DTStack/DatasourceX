@@ -202,7 +202,7 @@ public class HdfsFileClient implements IHdfsFile {
         try {
             return HdfsOperator.copyFile(fs, src, dist, isOverwrite);
         } catch (IOException e) {
-            throw new DtLoaderException("hdfs内复制文件异常", e);
+            throw new DtLoaderException(String.format("hdfs内复制文件异常 : %s" + e.getMessage()), e);
         }
     }
 
@@ -213,7 +213,7 @@ public class HdfsFileClient implements IHdfsFile {
         try {
             return HdfsOperator.listAllFilePath(fs, remotePath);
         } catch (IOException e) {
-            throw new DtLoaderException("获取目标路径下所有文件异常!", e);
+            throw new DtLoaderException(String.format("获取目标路径下所有文件异常 : %s" + e.getMessage()), e);
         }
     }
 
@@ -246,7 +246,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return createDownloader(hdfsSourceDTO, tableLocation, columnNames, fieldDelimiter, fileFormat, hdfsSourceDTO.getKerberosConfig());
                     } catch (Exception e) {
-                        throw new DtLoaderException("创建下载器异常", e);
+                        throw new DtLoaderException(String.format("创建下载器异常 : %s", e.getMessage()), e);
                     }
                 }
         );
@@ -290,7 +290,7 @@ public class HdfsFileClient implements IHdfsFile {
         try {
             return getColumnListOnFileFormat(hdfsSourceDTO, queryDTO, fileFormat);
         } catch (IOException e) {
-            throw new DtLoaderException("获取列信息失败！", e);
+            throw new DtLoaderException(String.format("获取列信息失败 : %s", e.getMessage()), e);
         }
     }
 
@@ -302,7 +302,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return writeByPosWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
                     } catch (Exception e) {
-                        throw new DtLoaderException("获取hdfs文件字段信息异常", e);
+                        throw new DtLoaderException(String.format("获取hdfs文件字段信息异常 : %s", e.getMessage()), e);
                     }
                 }
         );
@@ -316,7 +316,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return writeByNameWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
                     } catch (Exception e) {
-                        throw new DtLoaderException("获取hdfs文件字段信息异常", e);
+                        throw new DtLoaderException(String.format("获取hdfs文件字段信息异常 : %s", e.getMessage()), e);
                     }
                 }
         );
@@ -433,7 +433,7 @@ public class HdfsFileClient implements IHdfsFile {
         try {
             fileStatuses = HdfsOperator.listFiles(fs, remotePath, isIterate);
         } catch (IOException e) {
-            throw new DtLoaderException("获取目标路径下文件失败!", e);
+            throw new DtLoaderException(String.format("获取目标路径下文件失败 : %s", e.getMessage()), e);
         }
         for (org.apache.hadoop.fs.FileStatus fileStatus : fileStatuses) {
             FileStatus fileStatusTemp = FileStatus.builder()

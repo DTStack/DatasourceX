@@ -110,7 +110,7 @@ public class HdfsOperator {
         try {
             return fs.getFileStatus(new Path(location));
         } catch (IOException e) {
-            throw new DtLoaderException("获取 hdfs 文件状态", e);
+            throw new DtLoaderException(String.format("获取 hdfs 文件状态异常 : %s", e.getMessage()), e);
         }
     }
 
@@ -127,7 +127,7 @@ public class HdfsOperator {
         try {
             fs.copyToLocalFile(false, new Path(remotePath), new Path(localFilePath));
         } catch (Exception e) {
-            throw new DtLoaderException("复制HDFS文件到本地异常", e);
+            throw new DtLoaderException(String.format("复制HDFS文件到本地异常 : %s", e.getMessage()), e);
         }
         return true;
     }
@@ -146,7 +146,7 @@ public class HdfsOperator {
         try {
             fs.copyFromLocalFile(true, overwrite, new Path(localDir), new Path(remotePath));
         } catch (IOException e) {
-            throw new DtLoaderException("从本地复制文件到 HDFS时异常", e);
+            throw new DtLoaderException(String.format("从本地复制文件到 HDFS时异常 : %s", e.getMessage()), e);
         }
         return true;
     }
@@ -169,7 +169,7 @@ public class HdfsOperator {
             }
             fs.copyFromLocalFile(resP, destP);
         } catch (Exception e) {
-            throw new DtLoaderException("上传本地文件 到 HDFS 异常");
+            throw new DtLoaderException(String.format("上传本地文件 到 HDFS 异常 : %s", e.getMessage()), e);
         }
     }
 
@@ -188,7 +188,7 @@ public class HdfsOperator {
             FSDataOutputStream os = fs.create(destP);
             IOUtils.copyBytes(is, os, 4096, true);
         } catch (Exception e) {
-            throw new DtLoaderException("上传字节流到 HDFS 异常", e);
+            throw new DtLoaderException(String.format("上传字节流到 HDFS 异常 : %s", e.getMessage()), e);
         }
         return true;
     }
@@ -242,7 +242,7 @@ public class HdfsOperator {
             }
             return fs.mkdirs(new Path(remotePath), new FsPermission(permission));
         } catch (Exception e) {
-            throw new DtLoaderException("创建hdfs目录异常！", e);
+            throw new DtLoaderException(String.format("创建hdfs目录异常 : %s", e.getMessage()), e);
         }
     }
 
@@ -260,7 +260,7 @@ public class HdfsOperator {
         try {
             return fs.exists(path) && fs.isDirectory(path);
         } catch (IOException e) {
-            throw new DtLoaderException("校验hdfs文件异常！", e);
+            throw new DtLoaderException(String.format("校验hdfs文件异常 : %s", e.getMessage()), e);
         }
     }
 
@@ -278,7 +278,7 @@ public class HdfsOperator {
         try {
             return fs.exists(path) || fs.isFile(path);
         } catch (IOException e) {
-            throw new DtLoaderException("校验hdfs文件是否存在异常！", e);
+            throw new DtLoaderException(String.format("校验hdfs文件是否存在异常 : %s", e.getMessage()), e);
         }
     }
 
@@ -374,7 +374,7 @@ public class HdfsOperator {
         try {
             fs.setPermission(new Path(remotePath), new FsPermission(mode));
         } catch (IOException e) {
-            throw new DtLoaderException("设置 HDFS 文件权限失败", e);
+            throw new DtLoaderException(String.format("设置 HDFS 文件权限失败 : %s", e.getMessage()), e);
         }
         return true;
     }
@@ -401,7 +401,7 @@ public class HdfsOperator {
                     Trash.moveToAppropriateTrash(fs, path, fs.getConf());
                 }
             } catch (Exception e) {
-                throw new DtLoaderException("判断文件是否存在时异常", e);
+                throw new DtLoaderException(String.format("判断文件是否存在时异常", e.getMessage()), e);
             }
         }
         return true;
@@ -423,7 +423,7 @@ public class HdfsOperator {
                 return Trash.moveToAppropriateTrash(fs, deletePath, fs.getConf());
             }
         } catch (Exception e) {
-            throw new DtLoaderException("校验或删除文件时异常！", e);
+            throw new DtLoaderException(String.format("校验或删除文件时异常 : %s", e.getMessage()), e);
         }
         return true;
     }
@@ -465,7 +465,7 @@ public class HdfsOperator {
         try {
             return fs.rename(new Path(src), new Path(dist));
         } catch (IOException e) {
-            throw new DtLoaderException("重命名hdfs文件异常！", e);
+            throw new DtLoaderException(String.format("重命名hdfs文件异常 : %s", e.getMessage()), e);
         }
     }
 

@@ -114,7 +114,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                 return Lists.newArrayList();
             }
         } catch (Exception e) {
-            throw new DtLoaderException("connection调用isClosed方法异常！", e);
+            throw new DtLoaderException(String.format("connection调用isClosed方法异常 : %s", e.getMessage()), e);
         }
         if (queryDTO.getPreFields() != null || queryDTO.getQueryTimeout()!= null) {
             return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
@@ -134,7 +134,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                 return false;
             }
         } catch (SQLException e) {
-            throw new DtLoaderException("connection调用isClosed方法异常！", e);
+            throw new DtLoaderException(String.format("connection调用isClosed方法异常 : %s", e.getMessage()), e);
         }
 
         DBUtil.executeSqlWithoutResultSet(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
