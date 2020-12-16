@@ -101,7 +101,7 @@ public class SqlServerDownloader implements IDownloader {
     }
 
     @Override
-    public List<String> getMetaInfo() throws Exception {
+    public List<String> getMetaInfo() {
         if (CollectionUtils.isNotEmpty(columnNames)) {
             return columnNames.stream().map(Column::getName).collect(Collectors.toList());
         }
@@ -109,7 +109,7 @@ public class SqlServerDownloader implements IDownloader {
     }
 
     @Override
-    public List<List<String>> readNext() throws Exception {
+    public List<List<String>> readNext() {
         //分页查询，一次一百条
         //todo 没找到适合的分页
         String limitSQL = String.format("select top %s * from (%s) as t where t.%s not in (select top %s m.%s from " +
@@ -134,7 +134,7 @@ public class SqlServerDownloader implements IDownloader {
     }
 
     @Override
-    public boolean reachedEnd() throws Exception {
+    public boolean reachedEnd() {
         return pageAll < pageNum;
     }
 

@@ -44,7 +44,7 @@ import java.util.Objects;
 public class HbaseClientSpecial implements IHbase {
 
     @Override
-    public Boolean isDbExists(ISourceDTO source, String namespace) throws Exception {
+    public Boolean isDbExists(ISourceDTO source, String namespace) {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
         Connection connection = null;
         Admin admin = null;
@@ -68,12 +68,12 @@ public class HbaseClientSpecial implements IHbase {
     }
 
     @Override
-    public Boolean createHbaseTable(ISourceDTO source, String tbName, String[] colFamily) throws Exception {
+    public Boolean createHbaseTable(ISourceDTO source, String tbName, String[] colFamily) {
         return createHbaseTable(source, null, tbName, colFamily);
     }
 
     @Override
-    public Boolean createHbaseTable(ISourceDTO source, String namespace, String tbName, String[] colFamily) throws Exception {
+    public Boolean createHbaseTable(ISourceDTO source, String namespace, String tbName, String[] colFamily) {
         if (StringUtils.isNotBlank(namespace) && !tbName.contains(":")) {
             tbName = String.format("%s:%s", namespace, tbName);
         }
@@ -108,7 +108,7 @@ public class HbaseClientSpecial implements IHbase {
     }
 
     @Override
-    public List<String> scanByRegex(ISourceDTO source, String tbName, String regex) throws Exception {
+    public List<String> scanByRegex(ISourceDTO source, String tbName, String regex) {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
         Connection connection = null;
         Table table = null;
@@ -137,7 +137,7 @@ public class HbaseClientSpecial implements IHbase {
     }
 
     @Override
-    public Boolean deleteByRowKey(ISourceDTO source, String tbName, String family, String qualifier, List<String> rowKeys) throws Exception {
+    public Boolean deleteByRowKey(ISourceDTO source, String tbName, String family, String qualifier, List<String> rowKeys) {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
         Connection connection = null;
         Table table = null;
@@ -166,7 +166,7 @@ public class HbaseClientSpecial implements IHbase {
     }
 
     @Override
-    public Boolean putRow(ISourceDTO source, String tableName, String rowKey, String family, String qualifier, String data) throws Exception {
+    public Boolean putRow(ISourceDTO source, String tableName, String rowKey, String family, String qualifier, String data) {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
         Connection connection = null;
         Table table = null;
@@ -189,7 +189,7 @@ public class HbaseClientSpecial implements IHbase {
     }
 
     @Override
-    public String getRow(ISourceDTO source, String tableName, String rowKey, String family, String qualifier) throws Exception {
+    public String getRow(ISourceDTO source, String tableName, String rowKey, String family, String qualifier) {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
         Connection connection = null;
         Table table = null;

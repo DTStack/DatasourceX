@@ -100,7 +100,7 @@ public class OracleDownloader implements IDownloader {
     }
 
     @Override
-    public List<String> getMetaInfo() throws Exception {
+    public List<String> getMetaInfo() {
         if (CollectionUtils.isNotEmpty(columnNames)) {
             return columnNames.stream().map(Column::getName).collect(Collectors.toList());
         }
@@ -108,7 +108,7 @@ public class OracleDownloader implements IDownloader {
     }
 
     @Override
-    public List<List<String>> readNext() throws Exception {
+    public List<List<String>> readNext() {
         //分页查询，一次一百条
         String limitSQL = String.format("SELECT * FROM (SELECT a.*, ROWNUM rn FROM (SELECT * FROM (%s)) a WHERE " +
                 "ROWNUM <= %s) WHERE rn > %s", sql, pageSize * pageNum, pageSize * (pageNum - 1));
@@ -131,7 +131,7 @@ public class OracleDownloader implements IDownloader {
     }
 
     @Override
-    public boolean reachedEnd() throws Exception {
+    public boolean reachedEnd() {
         return pageAll < pageNum;
     }
 

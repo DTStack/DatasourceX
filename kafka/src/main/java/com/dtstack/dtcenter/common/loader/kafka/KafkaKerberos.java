@@ -23,7 +23,7 @@ import java.util.Map;
 @Slf4j
 public class KafkaKerberos extends AbsKerberosClient {
     @Override
-    protected void dealFile(List<File> unzipFileList, String localKerberosPath, Map<String, Object> confMap) throws IOException {
+    protected void dealFile(List<File> unzipFileList, String localKerberosPath, Map<String, Object> confMap)  {
         // 设置 keytab
         String finalPath = KerberosConfigUtil.dealFilePath(unzipFileList, localKerberosPath, DtClassConsistent.PublicConsistent.KEYTAB_SUFFIX);
         log.info("DealKeytab path -- key : {}, value : {}", HadoopConfTool.PRINCIPAL_FILE, finalPath);

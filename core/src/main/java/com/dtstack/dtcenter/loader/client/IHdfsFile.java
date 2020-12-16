@@ -24,7 +24,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    FileStatus getStatus(ISourceDTO source, String location) throws Exception;
+    FileStatus getStatus(ISourceDTO source, String location);
 
     /**
      * 日志下载器
@@ -34,7 +34,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    IDownloader getLogDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception;
+    IDownloader getLogDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO);
 
     /**
      * 文件下载器
@@ -44,7 +44,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    IDownloader getFileDownloader(ISourceDTO iSource, String path) throws Exception;
+    IDownloader getFileDownloader(ISourceDTO iSource, String path);
 
     /**
      * 从 HDFS 上下载文件或文件夹到本地
@@ -55,7 +55,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    boolean downloadFileFromHdfs(ISourceDTO source, String remotePath, String localDir) throws Exception;
+    boolean downloadFileFromHdfs(ISourceDTO source, String remotePath, String localDir);
 
     /**
      * 上传文件到 HDFS
@@ -66,7 +66,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    boolean uploadLocalFileToHdfs(ISourceDTO source, String localFilePath, String remotePath) throws Exception;
+    boolean uploadLocalFileToHdfs(ISourceDTO source, String localFilePath, String remotePath);
 
     /**
      * 上传字节流到 HDFS
@@ -77,7 +77,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    boolean uploadInputStreamToHdfs(ISourceDTO source, byte[] bytes, String remotePath) throws Exception;
+    boolean uploadInputStreamToHdfs(ISourceDTO source, byte[] bytes, String remotePath);
 
     /**
      * 创建 HDFS 路径
@@ -88,7 +88,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    boolean createDir(ISourceDTO source, String remotePath, Short permission) throws Exception;
+    boolean createDir(ISourceDTO source, String remotePath, Short permission);
 
     /**
      * 路径文件是否存在
@@ -98,7 +98,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    boolean isFileExist(ISourceDTO source, String remotePath) throws Exception;
+    boolean isFileExist(ISourceDTO source, String remotePath);
 
     /**
      * 文件检测并删除
@@ -108,7 +108,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    boolean checkAndDelete(ISourceDTO source, String remotePath) throws Exception;
+    boolean checkAndDelete(ISourceDTO source, String remotePath);
 
     /**
      * 获取路径文件大小
@@ -118,7 +118,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    long getDirSize(ISourceDTO source, String remotePath) throws Exception;
+    long getDirSize(ISourceDTO source, String remotePath);
 
     /**
      * 删除文件
@@ -128,7 +128,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    boolean deleteFiles(ISourceDTO source, List<String> fileNames) throws Exception;
+    boolean deleteFiles(ISourceDTO source, List<String> fileNames);
 
     /**
      * 路径目录是否存在
@@ -138,7 +138,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    boolean isDirExist(ISourceDTO source, String remotePath) throws Exception;
+    boolean isDirExist(ISourceDTO source, String remotePath);
 
     /**
      * 设置路径权限
@@ -149,7 +149,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    boolean setPermission(ISourceDTO source, String remotePath, String mode) throws Exception;
+    boolean setPermission(ISourceDTO source, String remotePath, String mode);
 
     /**
      * 重命名
@@ -160,7 +160,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    boolean rename(ISourceDTO source, String src, String dist) throws Exception;
+    boolean rename(ISourceDTO source, String src, String dist);
 
     /**
      * 复制文件
@@ -172,7 +172,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    boolean copyFile(ISourceDTO source, String src, String dist, boolean isOverwrite) throws Exception;
+    boolean copyFile(ISourceDTO source, String src, String dist, boolean isOverwrite);
 
     /**
      * 获取目录下所有文件
@@ -182,7 +182,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    List<String> listAllFilePath(ISourceDTO source, String remotePath) throws Exception;
+    List<String> listAllFilePath(ISourceDTO source, String remotePath);
 
     /**
      * 获取目录下所有文件的属性集
@@ -193,7 +193,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    List<FileStatus> listAllFiles(ISourceDTO source, String remotePath, boolean isIterate) throws Exception;
+    List<FileStatus> listAllFiles(ISourceDTO source, String remotePath, boolean isIterate);
 
     /**
      * 从hdfs copy文件到本地
@@ -204,7 +204,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    boolean copyToLocal(ISourceDTO source, String srcPath, String dstPath) throws Exception;
+    boolean copyToLocal(ISourceDTO source, String srcPath, String dstPath);
 
     /**
      * 从本地copy到hdfs
@@ -216,7 +216,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    boolean copyFromLocal(ISourceDTO source, String srcPath, String dstPath, boolean overwrite) throws Exception;
+    boolean copyFromLocal(ISourceDTO source, String srcPath, String dstPath, boolean overwrite);
 
     /**
      * 根据文件格式获取对应的downlaoder
@@ -228,7 +228,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat) throws Exception;
+    IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat);
 
     /**
      * 获取hdfs上存储文件的字段信息
@@ -239,7 +239,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    List<ColumnMetaDTO> getColumnList(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) throws Exception;
+    List<ColumnMetaDTO> getColumnList(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat);
 
     /**
      * 按位置写入
@@ -249,7 +249,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception;
+    int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO);
 
     /**
      * 从文件中读取行,根据提供的分隔符号分割,再根据提供的hdfs分隔符合并,写入hdfs
@@ -260,6 +260,6 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception;
+    int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO);
 
 }

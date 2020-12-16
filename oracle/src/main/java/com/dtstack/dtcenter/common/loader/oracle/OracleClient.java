@@ -82,7 +82,7 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) iSource;
         Integer clearStatus = beforeQuery(oracleSourceDTO, queryDTO, false);
 
@@ -106,7 +106,7 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(oracleSourceDTO, queryDTO);
 
@@ -136,7 +136,7 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(oracleSourceDTO, queryDTO);
         Statement statement = null;
@@ -183,7 +183,7 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(sourceDTO, queryDTO);
         Statement statement = null;
         ResultSet rs = null;
@@ -297,7 +297,7 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) source;
         String createTableSql = String.format(TABLE_CREATE_SQL,queryDTO.getTableName(),oracleSourceDTO.getSchema());
         queryDTO.setSql(createTableSql);
@@ -305,7 +305,7 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 

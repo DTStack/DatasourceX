@@ -24,7 +24,7 @@ public interface IDownloader {
      * @return
      * @throws Exception
      */
-    List<String> getMetaInfo() throws Exception;
+    List<String> getMetaInfo();
 
     /**
      * 读取下一行
@@ -32,7 +32,7 @@ public interface IDownloader {
      * @return
      * @throws Exception
      */
-    Object readNext() throws Exception;
+    Object readNext();
 
     /**
      * 是否末行
@@ -40,7 +40,7 @@ public interface IDownloader {
      * @return
      * @throws Exception
      */
-    boolean reachedEnd() throws Exception;
+    boolean reachedEnd();
 
     /**
      * 是否关闭
@@ -56,7 +56,7 @@ public interface IDownloader {
      * @return
      * @throws Exception
      */
-    String getFileName() throws Exception;
+    String getFileName();
 
     /**
      * 获取容器
@@ -64,5 +64,5 @@ public interface IDownloader {
      * @return
      * @throws Exception
      */
-    List<String> getContainers() throws Exception;
+    List<String> getContainers();
 }

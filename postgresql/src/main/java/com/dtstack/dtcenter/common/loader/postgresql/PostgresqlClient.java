@@ -60,7 +60,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         PostgresqlSourceDTO postgresqlSourceDTO = (PostgresqlSourceDTO) iSource;
         Integer clearStatus = beforeQuery(postgresqlSourceDTO, queryDTO, false);
         Statement statement = null;
@@ -88,7 +88,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         PostgresqlSourceDTO postgresqlSourceDTO = (PostgresqlSourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(postgresqlSourceDTO, queryDTO);
 
@@ -135,7 +135,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(source, queryDTO);
         PostgresqlSourceDTO postgresqlSourceDTO = (PostgresqlSourceDTO) source;
         Statement statement = null;
@@ -185,12 +185,12 @@ public class PostgresqlClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 

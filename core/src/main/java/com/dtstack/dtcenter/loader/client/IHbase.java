@@ -20,7 +20,7 @@ public interface IHbase {
      * @param namespace hbase namespace
      * @return 是否存在
      */
-    Boolean isDbExists(ISourceDTO source, String namespace) throws Exception;
+    Boolean isDbExists(ISourceDTO source, String namespace);
 
     /**
      * hbase创建表
@@ -30,7 +30,7 @@ public interface IHbase {
      * @param colFamily 列族列表
      * @return 创建结果
      */
-    Boolean createHbaseTable(ISourceDTO source, String tableName, String[] colFamily) throws Exception;
+    Boolean createHbaseTable(ISourceDTO source, String tableName, String[] colFamily);
 
     /**
      * hbase创建表，指定namespace
@@ -41,7 +41,7 @@ public interface IHbase {
      * @param colFamily 列族列表
      * @return 创建结果
      */
-    Boolean createHbaseTable(ISourceDTO source, String namespace, String tableName, String[] colFamily) throws Exception;
+    Boolean createHbaseTable(ISourceDTO source, String namespace, String tableName, String[] colFamily);
 
     /**
      * hbase 根据正则查询匹配的数据，返回rowkey集合
@@ -52,7 +52,7 @@ public interface IHbase {
      *
      * @return 查询结果
      */
-    List<String> scanByRegex(ISourceDTO source, String tableName, String regex) throws Exception;
+    List<String> scanByRegex(ISourceDTO source, String tableName, String regex);
 
     /**
      * hbase 根据rowKey删除数据
@@ -62,7 +62,7 @@ public interface IHbase {
      *
      * @return 删除状态
      */
-    Boolean deleteByRowKey (ISourceDTO source, String tableName, String family, String qualifier, List<String> rowKeys) throws Exception;
+    Boolean deleteByRowKey (ISourceDTO source, String tableName, String family, String qualifier, List<String> rowKeys);
 
     /**
      * hbase向指定的rowKey插入数据
@@ -75,7 +75,7 @@ public interface IHbase {
      * @param data 数据
      * @return 数据插入状态
      */
-    Boolean putRow(ISourceDTO source, String tableName, String rowKey, String family, String qualifier, String data) throws Exception;
+    Boolean putRow(ISourceDTO source, String tableName, String rowKey, String family, String qualifier, String data);
 
     /**
      * hbase根据rowKey获取数据
@@ -85,6 +85,6 @@ public interface IHbase {
      * @param rowKey hbase rowkey
      * @return 查询结果
      */
-    String getRow(ISourceDTO source, String tableName, String rowKey, String family, String qualifier) throws Exception;
+    String getRow(ISourceDTO source, String tableName, String rowKey, String family, String qualifier);
 
 }

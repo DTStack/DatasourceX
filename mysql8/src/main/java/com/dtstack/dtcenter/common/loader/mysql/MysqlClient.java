@@ -59,7 +59,7 @@ public class MysqlClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Mysql8SourceDTO mysql8SourceDTO = (Mysql8SourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(mysql8SourceDTO, queryDTO);
         Statement statement = null;
@@ -93,7 +93,7 @@ public class MysqlClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(sourceDTO, queryDTO);
         Statement statement = null;
         ResultSet rs = null;

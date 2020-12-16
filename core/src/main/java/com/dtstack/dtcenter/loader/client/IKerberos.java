@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public interface IKerberos {
      * @return
      * @throws Exception
      */
-    Map<String, Object> parseKerberosFromUpload(String zipLocation, String localKerberosPath) throws Exception;
+    Map<String, Object> parseKerberosFromUpload(String zipLocation, String localKerberosPath) throws IOException;
 
     /**
      * 连接 Kerberos 前的准备工作
@@ -32,7 +33,7 @@ public interface IKerberos {
      * @return
      * @throws Exception
      */
-    Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath) throws Exception;
+    Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath);
 
     /**
      * 从 JDBC URL 中获取 Principal
@@ -41,7 +42,7 @@ public interface IKerberos {
      * @return
      * @throws Exception
      */
-    String getPrincipals(String url) throws Exception;
+    String getPrincipals(String url);
 
     /**
      * 从 Kerberos 配置文件中获取 Principal
@@ -50,5 +51,5 @@ public interface IKerberos {
      * @return
      * @throws Exception
      */
-    List<String> getPrincipals(Map<String, Object> kerberosConfig) throws Exception;
+    List<String> getPrincipals(Map<String, Object> kerberosConfig);
 }

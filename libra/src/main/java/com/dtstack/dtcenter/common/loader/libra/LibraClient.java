@@ -37,7 +37,7 @@ public class LibraClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         LibraSourceDTO libraSourceDTO = (LibraSourceDTO) iSource;
         Integer clearStatus = beforeQuery(libraSourceDTO, queryDTO, false);
         if (queryDTO == null || StringUtils.isBlank(libraSourceDTO.getSchema())) {

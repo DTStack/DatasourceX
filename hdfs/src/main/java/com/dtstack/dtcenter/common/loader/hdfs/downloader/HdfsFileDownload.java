@@ -212,7 +212,7 @@ public class HdfsFileDownload implements IDownloader {
     }
 
     @Override
-    public List<String> getMetaInfo() throws Exception {
+    public List<String> getMetaInfo() {
         return null;
     }
 
@@ -245,7 +245,7 @@ public class HdfsFileDownload implements IDownloader {
     }
 
     @Override
-    public boolean reachedEnd() throws IOException {
+    public boolean reachedEnd() {
         return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) () -> {
                     try {
@@ -270,7 +270,7 @@ public class HdfsFileDownload implements IDownloader {
     }
 
     @Override
-    public List<String> getContainers() throws Exception {
+    public List<String> getContainers() {
         return null;
     }
 

@@ -36,7 +36,7 @@ public class KerberosConfigUtil {
      * @param oppositeLocation
      * @param confMap
      */
-    public static void dealKeytab(List<File> fileList, String oppositeLocation, Map<String, Object> confMap) throws IOException {
+    public static void dealKeytab(List<File> fileList, String oppositeLocation, Map<String, Object> confMap) {
         String finalPath = dealFilePath(fileList, oppositeLocation, DtClassConsistent.PublicConsistent.KEYTAB_SUFFIX);
         log.info("处理 Keytab 路径地址为绝对路径 -- key : {}, value : {}", HadoopConfTool.PRINCIPAL_FILE, finalPath);
         confMap.put(HadoopConfTool.PRINCIPAL_FILE, finalPath);
@@ -49,7 +49,7 @@ public class KerberosConfigUtil {
      * @param oppositeLocation
      * @param confMap
      */
-    public static void dealKrb5Conf(List<File> fileList, String oppositeLocation, Map<String, Object> confMap) throws IOException {
+    public static void dealKrb5Conf(List<File> fileList, String oppositeLocation, Map<String, Object> confMap) {
         String finalPath = dealFilePath(fileList, oppositeLocation, DtClassConsistent.PublicConsistent.KRB5CONF_FILE);
         log.info("处理 Krb5 路径地址为绝对路径 -- key : {}, value : {}", HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);
         confMap.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);
@@ -64,7 +64,7 @@ public class KerberosConfigUtil {
      * @return
      * @throws IOException
      */
-    public static String dealFilePath(List<File> fileList, String oppositeLocation, String fileNameEnd) throws IOException {
+    public static String dealFilePath(List<File> fileList, String oppositeLocation, String fileNameEnd) {
         Optional<File> krb5confOptional = fileList.stream().filter(file ->
                 file.getName().endsWith(fileNameEnd)).findFirst();
 
@@ -72,7 +72,12 @@ public class KerberosConfigUtil {
             throw new DtLoaderException(String.format("以%s结尾的文件不存在", fileNameEnd));
         }
 
-        String canonicalPath = krb5confOptional.get().getCanonicalPath();
+        String canonicalPath;
+        try {
+            canonicalPath = krb5confOptional.get().getCanonicalPath();
+        } catch (IOException e) {
+            throw new DtLoaderException("krb5文件无效");
+        }
         return StringUtils.replace(canonicalPath, oppositeLocation, "");
     }
 
