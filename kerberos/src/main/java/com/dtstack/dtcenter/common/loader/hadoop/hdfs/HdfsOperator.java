@@ -401,7 +401,7 @@ public class HdfsOperator {
                     Trash.moveToAppropriateTrash(fs, path, fs.getConf());
                 }
             } catch (Exception e) {
-                throw new DtLoaderException(String.format("判断文件是否存在时异常", e.getMessage()), e);
+                throw new DtLoaderException(String.format("判断文件是否存在时异常 : %s", e.getMessage()), e);
             }
         }
         return true;
