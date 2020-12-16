@@ -320,7 +320,7 @@ public class OdpsClient<T> implements IClient<T> {
                 result.add(row);
             }
         } catch (Exception e) {
-            throw new DtLoaderException("SQL 执行异常", e);
+            throw new DtLoaderException(String.format("SQL 执行异常 : %s", e.getMessage()), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -365,7 +365,7 @@ public class OdpsClient<T> implements IClient<T> {
             Instance instance = runOdpsTask(odps, queryDTO);
             isSuccessful = instance.isSuccessful();
         } catch (Exception e) {
-            throw new DtLoaderException("SQL 执行异常", e);
+            throw new DtLoaderException(String.format("SQL 执行异常 : %s", e.getMessage()), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }

@@ -85,7 +85,7 @@ public class DtKuduClient<T> implements IClient<T> {
         try (KuduClient client = getConnection(iSource);) {
             return getTableColumns(client, queryDTO.getTableName());
         } catch (Exception e) {
-            throw new DtLoaderException("kudu客户端获取失败！", e);
+            throw new DtLoaderException(String.format("kudu客户端获取失败 : %s", e.getMessage()), e);
         }
     }
 

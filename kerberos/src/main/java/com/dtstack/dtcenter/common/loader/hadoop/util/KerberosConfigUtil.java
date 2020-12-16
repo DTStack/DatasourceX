@@ -76,7 +76,7 @@ public class KerberosConfigUtil {
         try {
             canonicalPath = krb5confOptional.get().getCanonicalPath();
         } catch (IOException e) {
-            throw new DtLoaderException("krb5文件无效");
+            throw new DtLoaderException(String.format("krb5文件无效 : %s", e.getMessage()), e);
         }
         return StringUtils.replace(canonicalPath, oppositeLocation, "");
     }
