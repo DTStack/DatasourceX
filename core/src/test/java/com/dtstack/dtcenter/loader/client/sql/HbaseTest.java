@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.client.IHbase;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.comparator.BinaryComparator;
 import com.dtstack.dtcenter.loader.dto.filter.Filter;
@@ -11,6 +12,8 @@ import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.enums.CompareOp;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -86,4 +89,36 @@ public class HbaseTest {
         List<List<Object>> result = client.getPreview(source, SqlQueryDTO.builder().tableName("TEST").previewNum(1).build());
         System.out.println(result);
     }
+
+    /**
+     * 获取所有namespace
+     */
+    @Test
+    public void getAllNamespace() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
+        List<String> namespaces = client.getAllDatabases(source, SqlQueryDTO.builder().build());
+        System.out.println(namespaces);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(namespaces));
+    }
+
+    /**
+     * 获取指定namespace下的table
+     */
+    @Test
+    public void getTableByNamespace() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
+        List<String> tables = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("default").build());
+        System.out.println(tables);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tables));
+    }
+
+    /**
+     * 获取指定namespace下的table, namespace不存在测试
+     */
+    @Test(expected = DtLoaderException.class)
+    public void getTableByNamespaceNotExists() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
+        client.getTableListBySchema(source, SqlQueryDTO.builder().schema("xxx").build());
+    }
+
 }
