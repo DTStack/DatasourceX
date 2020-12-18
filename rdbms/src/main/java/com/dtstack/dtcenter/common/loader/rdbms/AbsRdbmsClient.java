@@ -412,7 +412,8 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                 //一个columnData存储一行数据信息
                 ArrayList<Object> columnData = Lists.newArrayList();
                 for (int i = 0; i < len; i++) {
-                    columnData.add(rs.getObject(i + 1));
+                    Object result = dealResult(rs.getObject(i + 1));
+                    columnData.add(result);
                 }
                 previewList.add(columnData);
             }
@@ -422,6 +423,15 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
             DBUtil.closeDBResources(rs, stmt, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return previewList;
+    }
+
+    /**
+     * 处理jdbc查询结果
+     * @param result 查询结果
+     * @return 处理后的结果
+     */
+    protected Object dealResult(Object result){
+        return result;
     }
 
     /**

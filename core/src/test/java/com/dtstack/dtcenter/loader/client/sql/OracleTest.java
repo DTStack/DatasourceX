@@ -69,6 +69,19 @@ public class OracleTest {
         System.out.println(mapList.size());
     }
 
+    /**
+     * oracle xmlType字段预览
+     * @throws Exception
+     */
+    @Test
+    public void xmlPreview() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        source.setSchema("JIANGBO");
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("XML_TEST").build();
+        List preview = client.getPreview(source, queryDTO);
+        System.out.println(preview);
+    }
+
     @Test
     public void executeQueryAlias() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
