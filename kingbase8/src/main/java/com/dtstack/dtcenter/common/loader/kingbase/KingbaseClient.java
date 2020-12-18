@@ -258,4 +258,9 @@ public class KingbaseClient extends AbsRdbmsClient {
     protected String getCurrentDbSql() {
         return CURRENT_DB;
     }
+
+    @Override
+    protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        return String.format(SCHEMA_TABLE_SQL, queryDTO.getSchema());
+    }
 }

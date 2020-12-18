@@ -27,14 +27,14 @@ import java.util.Map;
 @Slf4j
 public class Db2Test {
     private static Db2SourceDTO source = Db2SourceDTO.builder()
-            .url("jdbc:db2://172.16.10.168:50000/SAMPLE")
-            .username("DB2INST1")
-            .password("db2root-pwd")
-            .schema("SAMPLE")
-            .poolConfig(new PoolConfig())
+            .url("jdbc:db2://172.16.101.246:50002/DT_TEST")
+            .username("db2inst1")
+            .password("dtstack1")
+            //.schema("SAMPLE")
+            //.poolConfig(new PoolConfig())
             .build();
 
-    @BeforeClass
+    //@BeforeClass
     public static void beforeClass() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
         SqlQueryDTO queryDTO = null;
@@ -88,13 +88,14 @@ public class Db2Test {
     public void getTableList() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
         List<String> tableList = client.getTableList(source, null);
+        System.out.println(tableList);
     }
 
     @Test
     public void getTableListBySchema() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
-        List<String> tableList = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("TEST_WANGCHUAN").build());
-        System.out.println(tableList.size());
+        List<String> tableList = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("SHIHU").build());
+        System.out.println(tableList);
     }
 
     @Test
@@ -121,7 +122,9 @@ public class Db2Test {
     @Test
     public void preview() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
-        List preview = client.getPreview(source, SqlQueryDTO.builder().tableName("STAFF").build());
+        source.setSchema("SHIHU");
+        List preview = client.getPreview(source, SqlQueryDTO.builder().previewNum(2).tableName("TEST_SHIHU").build());
+        System.out.println(preview);
     }
 
     @Test
