@@ -15,6 +15,7 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
 import oracle.jdbc.OracleResultSetMetaData;
+import oracle.xdb.XMLType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.DatabaseMetaData;
@@ -249,6 +250,19 @@ public class OracleClient extends AbsRdbmsClient {
     protected String dealSql(ISourceDTO iSourceDTO, SqlQueryDTO sqlQueryDTO){
         OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) iSourceDTO;
         return "select * from " + transferSchemaAndTableName(oracleSourceDTO.getSchema(), sqlQueryDTO.getTableName()) + " where rownum <=" + sqlQueryDTO.getPreviewNum();
+    }
+
+    @Override
+    protected Object dealResult(Object result) {
+        if (result instanceof XMLType) {
+            XMLType xmlResult = (XMLType) result;
+            try {
+                result = xmlResult.getString();
+            } catch (Exception e) {
+                throw new DtLoaderException("oracle xml格式转string异常！");
+            }
+        }
+        return result;
     }
 
     /**
