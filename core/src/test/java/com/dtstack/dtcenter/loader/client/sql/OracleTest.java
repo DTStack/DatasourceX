@@ -75,7 +75,7 @@ public class OracleTest {
      */
     @Test
     public void xmlPreview() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
         source.setSchema("JIANGBO");
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("XML_TEST").build();
         List preview = client.getPreview(source, queryDTO);
