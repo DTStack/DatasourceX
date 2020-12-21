@@ -196,4 +196,37 @@ public interface IClient<T> {
      * @throws Exception
      */
     String getCurrentDatabase(ISourceDTO source);
+
+    /**
+     * 创建数据库
+     *
+     * @param source 数据源信息
+     * @param dbName 需要创建的数据库
+     * @param comment 库注释信息
+     * @return 创建结果
+     * @throws Exception
+     */
+    Boolean createDatabase(ISourceDTO source, String dbName, String comment);
+
+    /**
+     * 判断数据库是否存在
+     *
+     * @param source 数据源信息
+     * @param dbName 数据库名称
+     * @return 判断结果
+     * @throws Exception
+     */
+    Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception;
+
+    /**
+     * 判断该数据库中是否存在该表
+     *
+     * @param source 数据源信息
+     * @param tableName 表名
+     * @param dbName 库名
+     * @return 判断结果
+     * @throws Exception
+     */
+    Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName);
+
 }
