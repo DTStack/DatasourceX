@@ -454,7 +454,7 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception {
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
         if (StringUtils.isBlank(dbName)) {
             throw new DtLoaderException("数据库名称不能为空！");
         }
@@ -462,7 +462,7 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) throws Exception {
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
         if (StringUtils.isBlank(dbName)) {
             throw new DtLoaderException("数据库名称不能为空！");
         }

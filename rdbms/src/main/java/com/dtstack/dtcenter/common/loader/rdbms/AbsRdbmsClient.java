@@ -584,7 +584,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
-    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) {
         if (StringUtils.isBlank(dbName)) {
             throw new DtLoaderException("数据库名称不能为空");
         }
@@ -604,12 +604,12 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
 
     @Override
-    public Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception {
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) throws Exception {
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 }

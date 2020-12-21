@@ -137,19 +137,19 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     }
 
     @Override
-    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.createDatabase(source, dbName, comment),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception {
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.isDatabaseExists(source, dbName),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) throws Exception {
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.isTableExistsInDatabase(source, tableName, dbName),
                 targetClient.getClass().getClassLoader());
     }

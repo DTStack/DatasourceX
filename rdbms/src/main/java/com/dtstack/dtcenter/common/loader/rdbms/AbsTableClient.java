@@ -15,6 +15,7 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +59,7 @@ public abstract class AbsTableClient implements ITable {
      * @throws Exception 异常
      */
     @Override
-    public Connection getCon(ISourceDTO sourceDTO) throws Exception {
+    public Connection getCon(ISourceDTO sourceDTO) {
         log.info("-------getting connection....-----");
         if (!CacheConnectionHelper.isStart()) {
             try {
@@ -92,12 +93,16 @@ public abstract class AbsTableClient implements ITable {
      * @throws Exception 异常
      */
     @Override
-    public List<Map<String, Object>> executeQuery(ISourceDTO sourceDTO, String sql) throws Exception {
+    public List<Map<String, Object>> executeQuery(ISourceDTO sourceDTO, String sql) {
         Integer clearStatus = beforeQuery(sourceDTO, sql, true);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) sourceDTO;
         // 如果当前 connection 已关闭，直接返回空列表
-        if (rdbmsSourceDTO.getConnection().isClosed()) {
-            return Lists.newArrayList();
+        try {
+            if (rdbmsSourceDTO.getConnection().isClosed()) {
+                return Lists.newArrayList();
+            }
+        } catch (SQLException e) {
+            throw new DtLoaderException(String.format("检测连接是否关闭时异常:%s", e.getMessage()), e);
         }
         return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), sql,
                 ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
@@ -112,12 +117,16 @@ public abstract class AbsTableClient implements ITable {
      * @throws Exception 异常
      */
     @Override
-    public Boolean executeSqlWithoutResultSet(ISourceDTO sourceDTO, String sql) throws Exception {
+    public Boolean executeSqlWithoutResultSet(ISourceDTO sourceDTO, String sql) {
         Integer clearStatus = beforeQuery(sourceDTO, sql, true);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) sourceDTO;
         // 如果当前 connection 已关闭，直接返回空列表
-        if (rdbmsSourceDTO.getConnection().isClosed()) {
-            return false;
+        try {
+            if (rdbmsSourceDTO.getConnection().isClosed()) {
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new DtLoaderException(String.format("检测连接是否关闭时异常:%s", e.getMessage()), e);
         }
         DBUtil.executeSqlWithoutResultSet(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), sql,
                 ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
@@ -125,7 +134,7 @@ public abstract class AbsTableClient implements ITable {
     }
 
     @Override
-    public List<String> showPartitions(ISourceDTO source, String tableName) throws Exception {
+    public List<String> showPartitions(ISourceDTO source, String tableName) {
         log.info("获取表所有分区，表名：{}", tableName);
         if (StringUtils.isBlank(tableName)) {
             throw new DtLoaderException("表名不能为空！");
@@ -139,7 +148,7 @@ public abstract class AbsTableClient implements ITable {
     }
 
     @Override
-    public Boolean dropTable(ISourceDTO source, String tableName) throws Exception {
+    public Boolean dropTable(ISourceDTO source, String tableName) {
         log.info("删除表，表名：{}", tableName);
         if (StringUtils.isBlank(tableName)) {
             throw new DtLoaderException("表名不能为空！");
@@ -158,7 +167,7 @@ public abstract class AbsTableClient implements ITable {
     };
 
     @Override
-    public Boolean renameTable(ISourceDTO source, String oldTableName, String newTableName) throws Exception {
+    public Boolean renameTable(ISourceDTO source, String oldTableName, String newTableName) {
         log.info("重命名表，旧表名：{}，新表名：{}", oldTableName, newTableName);
         if (StringUtils.isBlank(oldTableName) || StringUtils.isBlank(newTableName)) {
             throw new DtLoaderException("表名不能为空！");
@@ -168,7 +177,7 @@ public abstract class AbsTableClient implements ITable {
     }
 
     @Override
-    public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) throws Exception {
+    public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) {
         log.info("更改表参数，表名：{}，参数：{}", tableName, params);
         if (StringUtils.isBlank(tableName)) {
             throw new DtLoaderException("表名不能为空！");
@@ -190,7 +199,7 @@ public abstract class AbsTableClient implements ITable {
      * @param query 是否是查询操作
      * @return 是否需要自动关闭连接
      */
-    protected Integer beforeQuery(ISourceDTO sourceDTO, String sql, boolean query) throws Exception {
+    protected Integer beforeQuery(ISourceDTO sourceDTO, String sql, boolean query) {
         // 如果是查询操作查询 SQL 不能为空
         if (query && StringUtils.isBlank(sql)) {
             throw new DtLoaderException("查询 SQL 不能为空");

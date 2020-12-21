@@ -111,17 +111,17 @@ public class RedisClient<T> implements IClient<T> {
     }
 
     @Override
-    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) {
         throw new DtLoaderException("redis数据源不支持该方法");
     }
 
     @Override
-    public Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception {
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
         throw new DtLoaderException("redis数据源不支持该方法");
     }
 
     @Override
-    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) throws Exception {
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
         throw new DtLoaderException("redis数据源不支持该方法");
     }
 }

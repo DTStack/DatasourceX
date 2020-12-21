@@ -33,7 +33,7 @@ public class MysqlTableClient extends AbsTableClient {
     }
 
     @Override
-    public List<String> showPartitions(ISourceDTO source, String tableName) throws Exception {
+    public List<String> showPartitions(ISourceDTO source, String tableName) {
         throw new DtLoaderException("该数据源不支持获取分区操作！");
     }
 
@@ -45,7 +45,7 @@ public class MysqlTableClient extends AbsTableClient {
      * @return 执行结果
      */
     @Override
-    public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) throws Exception {
+    public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) {
         String comment = params.get("comment");
         log.info("更改表注释，comment：{}！", comment);
         if (StringUtils.isEmpty(comment)) {

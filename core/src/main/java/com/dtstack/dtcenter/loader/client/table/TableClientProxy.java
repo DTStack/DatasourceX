@@ -24,43 +24,43 @@ public class TableClientProxy implements ITable {
     }
 
     @Override
-    public Connection getCon(ISourceDTO source) throws Exception {
+    public Connection getCon(ISourceDTO source) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getCon(source),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(ISourceDTO source, String sql) throws Exception {
+    public List<Map<String, Object>> executeQuery(ISourceDTO source, String sql) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeQuery(source, sql),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(ISourceDTO source, String sql) throws Exception {
+    public Boolean executeSqlWithoutResultSet(ISourceDTO source, String sql) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeSqlWithoutResultSet(source, sql),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<String> showPartitions(ISourceDTO source, String tableName) throws Exception {
+    public List<String> showPartitions(ISourceDTO source, String tableName) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.showPartitions(source, tableName),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public Boolean dropTable(ISourceDTO source, String tableName) throws Exception {
+    public Boolean dropTable(ISourceDTO source, String tableName) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.dropTable(source, tableName),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public Boolean renameTable(ISourceDTO source, String oldTableName, String newTableName) throws Exception {
+    public Boolean renameTable(ISourceDTO source, String oldTableName, String newTableName) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.renameTable(source, oldTableName, newTableName),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) throws Exception {
+    public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.alterTableParams(source, tableName, params),
                 targetClient.getClass().getClassLoader());
     }

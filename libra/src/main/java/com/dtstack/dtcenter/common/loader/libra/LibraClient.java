@@ -91,7 +91,7 @@ public class LibraClient extends AbsRdbmsClient {
      * @return 是否存在结果
      */
     @Override
-    public Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception {
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
         if (StringUtils.isBlank(dbName)) {
             throw new DtLoaderException("schema名称不能为空");
         }
@@ -107,7 +107,7 @@ public class LibraClient extends AbsRdbmsClient {
      * @return 判断结果
      */
     @Override
-    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) throws Exception {
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
         if (StringUtils.isBlank(dbName)) {
             throw new DtLoaderException("schema名称不能为空");
         }

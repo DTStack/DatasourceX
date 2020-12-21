@@ -32,7 +32,7 @@ public class GreenplumTableClient extends AbsTableClient {
     }
 
     @Override
-    public List<String> showPartitions(ISourceDTO source, String tableName) throws Exception {
+    public List<String> showPartitions(ISourceDTO source, String tableName) {
         throw new DtLoaderException("greenplum不支持获取分区操作！");
     }
 
@@ -42,7 +42,7 @@ public class GreenplumTableClient extends AbsTableClient {
     }
 
     @Override
-    public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) throws Exception {
+    public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) {
         throw new DtLoaderException("greenplum暂时不支持更改表参数操作！");
     }
 }

@@ -216,7 +216,7 @@ public interface IClient<T> {
      * @return 判断结果
      * @throws Exception
      */
-    Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception;
+    Boolean isDatabaseExists(ISourceDTO source, String dbName) ;
 
     /**
      * 判断该数据库中是否存在该表
