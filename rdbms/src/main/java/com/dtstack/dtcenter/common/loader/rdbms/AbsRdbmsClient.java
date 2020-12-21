@@ -575,8 +575,23 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     @Override
     public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
-        throw new DtLoaderException("该数据源暂时不支持该方法!");
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空");
+        }
+        String createSchemaSql = getCreateDatabaseSql(dbName, comment);
+        return executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(createSchemaSql).build());
     }
+
+    /**
+     * 获取创建库的sql，需要支持的数据源去实现该方法
+     * @param dbName 库名
+     * @param comment 注释
+     * @return sql
+     */
+    protected String getCreateDatabaseSql(String dbName, String comment) {
+        throw new DtLoaderException("该数据源暂时不支持该方法！");
+    };
+
 
     @Override
     public Boolean isDatabaseExists(ISourceDTO source, String dbName) throws Exception {

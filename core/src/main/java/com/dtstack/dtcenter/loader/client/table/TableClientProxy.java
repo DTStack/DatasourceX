@@ -1,9 +1,7 @@
-package com.dtstack.dtcenter.loader.client.Table;
+package com.dtstack.dtcenter.loader.client.table;
 
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
 import com.dtstack.dtcenter.loader.client.ITable;
-import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 
 import java.sql.Connection;

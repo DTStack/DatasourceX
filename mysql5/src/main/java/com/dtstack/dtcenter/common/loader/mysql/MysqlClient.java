@@ -173,12 +173,8 @@ public class MysqlClient extends AbsRdbmsClient {
     }
 
     @Override
-    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
-        if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("数据库名称不能为空");
-        }
-        String createSchemaSql = String.format(CREATE_SCHEMA_SQL_TMPL, dbName);
-        return executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(createSchemaSql).build());
+    protected String getCreateDatabaseSql(String dbName, String comment) {
+        return String.format(CREATE_SCHEMA_SQL_TMPL, dbName);
     }
 
     @Override

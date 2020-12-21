@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.loader.client.Table;
+package com.dtstack.dtcenter.loader.client.table;
 
 import com.dtstack.dtcenter.loader.ClassLoaderCallBack;
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;

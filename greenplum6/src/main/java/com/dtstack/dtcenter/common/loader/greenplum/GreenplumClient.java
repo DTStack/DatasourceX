@@ -176,21 +176,9 @@ public class GreenplumClient extends AbsRdbmsClient {
         throw new DtLoaderException("Not Support");
     }
 
-    /**
-     * 此处方法为创建schema
-     *
-     * @param source 数据源信息
-     * @param dbName schema名称
-     * @param comment 注释
-     * @return 创建结果
-     */
     @Override
-    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
-        if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("schema名称不能为空");
-        }
-        String createSchemaSql = String.format(CREATE_SCHEMA_SQL_TMPL, dbName);
-        return executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(createSchemaSql).build());
+    protected String getCreateDatabaseSql(String dbName, String comment) {
+        return String.format(CREATE_SCHEMA_SQL_TMPL, dbName);
     }
 
     /**

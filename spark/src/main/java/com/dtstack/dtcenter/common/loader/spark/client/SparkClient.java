@@ -55,8 +55,11 @@ public class SparkClient extends AbsRdbmsClient {
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select current_database()";
 
+    // 创建库指定注释
+    private static final String CREATE_DB_WITH_COMMENT = "create database if not exists %s comment '%s'";
+
     // 创建库
-    private static final String CREATE_DB_SQL_TMPL = "create database if not exists %s comment '%s'";
+    private static final String CREATE_DB = "create database if not exists %s";
 
     // 查询指定schema下的表
     private static final String TABLE_BY_SCHEMA = "show tables in %s";
@@ -450,12 +453,8 @@ public class SparkClient extends AbsRdbmsClient {
     }
 
     @Override
-    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
-        if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("数据库名称不能为空");
-        }
-        String createSchemaSql = String.format(CREATE_DB_SQL_TMPL, dbName, comment);
-        return executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(createSchemaSql).build());
+    protected String getCreateDatabaseSql(String dbName, String comment) {
+        return StringUtils.isBlank(comment) ? String.format(CREATE_DB, dbName) : String.format(CREATE_DB_WITH_COMMENT, dbName, comment);
     }
 
     @Override

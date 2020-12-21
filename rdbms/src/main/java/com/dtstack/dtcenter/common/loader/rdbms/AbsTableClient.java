@@ -144,9 +144,18 @@ public abstract class AbsTableClient implements ITable {
         if (StringUtils.isBlank(tableName)) {
             throw new DtLoaderException("表名不能为空！");
         }
-        String dropTableSql = String.format("drop table if exists `%s`", tableName);
+        String dropTableSql = getDropTableSql(tableName);
         return executeSqlWithoutResultSet(source, dropTableSql);
     }
+
+    /**
+     * 获取删除表的sql
+     * @param tableName 表名
+     * @return sql
+     */
+    protected String getDropTableSql(String tableName){
+        return String.format("drop table if exists `%s`", tableName);
+    };
 
     @Override
     public Boolean renameTable(ISourceDTO source, String oldTableName, String newTableName) throws Exception {

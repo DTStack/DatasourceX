@@ -58,8 +58,11 @@ public class HiveClient extends AbsRdbmsClient {
     // 测试连通性超时时间。单位：秒
     private final static int TEST_CONN_TIMEOUT = 30;
 
+    // 创建库指定注释
+    private static final String CREATE_DB_WITH_COMMENT = "create database if not exists %s comment '%s'";
+
     // 创建库
-    private static final String CREATE_DB_SQL_TMPL = "create database if not exists %s comment '%s'";
+    private static final String CREATE_DB = "create database if not exists %s";
 
     // 模糊查询查询指定schema下的表
     private static final String TABLE_BY_SCHEMA_LIKE = "show tables in %s like '%s'";
@@ -440,12 +443,8 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) throws Exception {
-        if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("数据库名称不能为空");
-        }
-        String createSchemaSql = String.format(CREATE_DB_SQL_TMPL, dbName, comment);
-        return executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(createSchemaSql).build());
+    protected String getCreateDatabaseSql(String dbName, String comment) {
+        return StringUtils.isBlank(comment) ? String.format(CREATE_DB, dbName) : String.format(CREATE_DB_WITH_COMMENT, dbName, comment);
     }
 
     @Override
