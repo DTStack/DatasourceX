@@ -5,7 +5,6 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
-import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;

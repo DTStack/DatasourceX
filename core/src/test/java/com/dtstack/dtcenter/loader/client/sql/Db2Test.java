@@ -1,7 +1,6 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -11,7 +10,6 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
