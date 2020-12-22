@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
  * @Description：Kafka 客户端 支持 Kafka 0.9、0.10、0.11、1.x版本
  */
 public class Kafka<T> implements IKafka<T> {
+
+
     @Override
     public Boolean testCon(ISourceDTO iSource) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
@@ -83,9 +85,14 @@ public class Kafka<T> implements IKafka<T> {
 
     @Override
     public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+        return getPreview(iSource, queryDTO, KakfaUtil.EARLIEST);
+    }
+
+    @Override
+    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO, String prevMode) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
         List<String> recordsFromKafka = KakfaUtil.getRecordsFromKafka(kafkaSourceDTO.getUrl(),
-                kafkaSourceDTO.getBrokerUrls(), queryDTO.getTableName(), null, kafkaSourceDTO.getKerberosConfig());
+                kafkaSourceDTO.getBrokerUrls(), queryDTO.getTableName(), prevMode, kafkaSourceDTO.getKerberosConfig());
         List<Object> records = new ArrayList<>(recordsFromKafka);
         List<List<Object>> result = new ArrayList<>();
         result.add(records);

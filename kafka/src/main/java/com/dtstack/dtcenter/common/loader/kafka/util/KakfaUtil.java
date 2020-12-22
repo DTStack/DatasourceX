@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class KakfaUtil {
 
-    private static final String EARLIEST = "earliest";
+    public static final String EARLIEST = "earliest";
     private static final int MAX_POOL_RECORDS = 5;
 
     public static boolean checkConnection(String zkUrls, String brokerUrls, Map<String, Object> kerberosConfig) {

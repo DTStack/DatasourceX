@@ -5,6 +5,7 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.IKafka;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.KafkaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
@@ -24,16 +25,16 @@ import java.util.List;
 @Slf4j
 public class KafkaTest {
     KafkaSourceDTO source = KafkaSourceDTO.builder()
-            .url("172.16.100.241:2181/kafka")
+            .url("172.16.100.112:2181/kafka")
             .build();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         createTopic();
     }
 
     @Test
-    public void testConForKafka() throws Exception {
+    public void testConForKafka() {
         IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
@@ -42,7 +43,7 @@ public class KafkaTest {
     }
 
     @Test
-    public void testConForClient() throws Exception {
+    public void testConForClient() {
         IClient client = ClientCache.getClient(DataSourceType.KAFKA_09.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
@@ -51,14 +52,14 @@ public class KafkaTest {
     }
 
     @Test
-    public void getAllBrokersAddress() throws Exception {
+    public void getAllBrokersAddress() {
         IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
         String brokersAddress = client.getAllBrokersAddress(source);
         assert (null != brokersAddress);
     }
 
     @Test
-    public void getTopicList() throws Exception {
+    public void getTopicList() {
         IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
         List<String> topicList = client.getTopicList(source);
         assert (topicList != null);
@@ -66,7 +67,7 @@ public class KafkaTest {
     }
 
     @Test
-    public void createTopic() throws Exception {
+    public void createTopic() {
         try {
             IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
             KafkaTopicDTO topicDTO = KafkaTopicDTO.builder().partitions(1).replicationFactor((short) 1).topicName(
@@ -80,7 +81,7 @@ public class KafkaTest {
     }
 
     @Test
-    public void getAllPartitions() throws Exception {
+    public void getAllPartitions() {
         // 测试的时候需要引进 kafka 包
         IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
         List<MetadataResponse.PartitionMetadata> allPartitions = client.getAllPartitions(source, "nanqi");
@@ -88,9 +89,25 @@ public class KafkaTest {
     }
 
     @Test
-    public void getOffset() throws Exception {
+    public void getOffset() {
         IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
         List<KafkaOffsetDTO> offset = client.getOffset(source, "nanqi");
         assert (offset != null);
+    }
+
+    @Test
+    public void testPollView(){
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+        List<List<Object>> results = client.getPreview(source,sqlQueryDTO);
+        System.out.println(results);
+    }
+
+    @Test
+    public void testPollViewLatest(){
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+        List<List<Object>> results = client.getPreview(source, sqlQueryDTO, "latest");
+        System.out.println(results);
     }
 }

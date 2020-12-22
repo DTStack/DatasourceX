@@ -76,9 +76,21 @@ public interface IKafka<T> {
      * 获取预览数据
      * @param source
      * @param queryDTO
+     * @deprecated since 1.4.0 in favor of
+     * {@link #getPreview(ISourceDTO source, SqlQueryDTO queryDTO, String prevMode)}
      * @return
      * @throws Exception
      */
+    @Deprecated
     List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO);
 
+    /**
+     * 获取预览数据
+     * @param source 数据源信息
+     * @param queryDTO 查询条件
+     * @param prevMode 预览模式
+     * @return
+     * @throws Exception
+     */
+    List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO, String prevMode);
 }
