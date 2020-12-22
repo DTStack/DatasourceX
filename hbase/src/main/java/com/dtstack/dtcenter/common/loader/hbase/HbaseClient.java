@@ -14,9 +14,12 @@ import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.NamespaceDescriptor;
+import org.apache.hadoop.hbase.NamespaceNotFoundException;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
@@ -280,6 +283,58 @@ public class HbaseClient<T> implements IClient<T> {
         return executeResult;
     }
 
+    @Override
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) {
+        HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
+        Connection connection = null;
+        Admin admin = null;
+        List<String> namespaces = Lists.newArrayList();
+        try {
+            //获取hbase连接
+            connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
+            admin = connection.getAdmin();
+            NamespaceDescriptor[] descriptors = admin.listNamespaceDescriptors();
+            for (NamespaceDescriptor descriptor : descriptors) {
+                namespaces.add(descriptor.getName());
+            }
+        } catch (Exception e) {
+            throw new DtLoaderException(String.format("获取namespace列表异常：%s", e.getMessage()), e);
+        } finally {
+            close(admin);
+            closeConnection(connection, hbaseSourceDTO);
+        }
+        return namespaces;
+    }
+
+    @Override
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
+        if (Objects.isNull(queryDTO) || StringUtils.isBlank(queryDTO.getSchema())) {
+            throw new DtLoaderException("namespace不能为空！");
+        }
+        HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
+        Connection connection = null;
+        Admin admin = null;
+        List<String> tables = Lists.newArrayList();
+        try {
+            //获取hbase连接
+            connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
+            admin = connection.getAdmin();
+            TableName[] tableNames = admin.listTableNamesByNamespace(queryDTO.getSchema());
+            for (TableName tableName : tableNames) {
+                tables.add(tableName.getNameAsString());
+            }
+        } catch (NamespaceNotFoundException noe) {
+            log.error("namespace [{}] not found!", queryDTO.getSchema());
+            throw new DtLoaderException(String.format("namespace不存在！：%s", noe.getMessage()), noe);
+        } catch (Exception e) {
+            throw new DtLoaderException(String.format("获取指定namespace下的表异常：%s", e.getMessage()), e);
+        } finally {
+            close(admin);
+            closeConnection(connection, hbaseSourceDTO);
+        }
+        return tables;
+    }
+
     public static void closeTable(Table table) {
         if(table != null) {
             try {
@@ -312,11 +367,6 @@ public class HbaseClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
     public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
@@ -343,11 +393,6 @@ public class HbaseClient<T> implements IClient<T> {
 
     @Override
     public IDownloader getDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getAllDatabases(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
