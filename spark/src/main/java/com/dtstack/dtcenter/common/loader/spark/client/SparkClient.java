@@ -21,6 +21,7 @@ import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -53,6 +54,21 @@ public class SparkClient extends AbsRdbmsClient {
 
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select current_database()";
+
+    // 创建库指定注释
+    private static final String CREATE_DB_WITH_COMMENT = "create database if not exists %s comment '%s'";
+
+    // 创建库
+    private static final String CREATE_DB = "create database if not exists %s";
+
+    // 查询指定schema下的表
+    private static final String TABLE_BY_SCHEMA = "show tables in %s";
+
+    // 模糊查询查询指定schema下的表
+    private static final String TABLE_BY_SCHEMA_LIKE = "show tables in %s like '%s'";
+
+    // 模糊查询database
+    private static final String SHOW_DB_LIKE = "show databases like '%s'";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -434,5 +450,26 @@ public class SparkClient extends AbsRdbmsClient {
     @Override
     protected String getCurrentDbSql() {
         return CURRENT_DB;
+    }
+
+    @Override
+    protected String getCreateDatabaseSql(String dbName, String comment) {
+        return StringUtils.isBlank(comment) ? String.format(CREATE_DB, dbName) : String.format(CREATE_DB_WITH_COMMENT, dbName, comment);
+    }
+
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空！");
+        }
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(SHOW_DB_LIKE, dbName)).build()));
+    }
+
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空！");
+        }
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_BY_SCHEMA_LIKE, dbName, tableName)).build()));
     }
 }

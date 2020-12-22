@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.client;
 
 import com.dtstack.dtcenter.loader.client.hbase.HbaseClientFactory;
+import com.dtstack.dtcenter.loader.client.table.TableClientFactory;
 import com.dtstack.dtcenter.loader.client.hdfs.HdfsFileClientFactory;
 import com.dtstack.dtcenter.loader.client.kerberos.KerberosClientFactory;
 import com.dtstack.dtcenter.loader.client.mq.KafkaClientFactory;

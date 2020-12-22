@@ -161,7 +161,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         if (rdbmsSourceDTO.getConnection() == null) {
             rdbmsSourceDTO.setConnection(getCon(iSource));
             if (CacheConnectionHelper.isStart()) {
-                return ConnectionClearStatus.CLEAR.getValue();
+                return ConnectionClearStatus.NORMAL.getValue();
             }
             return ConnectionClearStatus.CLOSE.getValue();
         }
@@ -580,6 +580,36 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @return 对应的sql
      */
     protected String getCurrentDbSql() {
+        throw new DtLoaderException("该数据源暂时不支持该方法!");
+    }
+
+    @Override
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空");
+        }
+        String createSchemaSql = getCreateDatabaseSql(dbName, comment);
+        return executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(createSchemaSql).build());
+    }
+
+    /**
+     * 获取创建库的sql，需要支持的数据源去实现该方法
+     * @param dbName 库名
+     * @param comment 注释
+     * @return sql
+     */
+    protected String getCreateDatabaseSql(String dbName, String comment) {
+        throw new DtLoaderException("该数据源暂时不支持该方法！");
+    };
+
+
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
+        throw new DtLoaderException("该数据源暂时不支持该方法!");
+    }
+
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 }

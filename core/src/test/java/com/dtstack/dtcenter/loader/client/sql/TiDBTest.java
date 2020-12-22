@@ -149,4 +149,40 @@ public class TiDBTest {
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
     }
+
+    /**
+     * 创建库测试
+     */
+    @Test
+    public void createDb() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
+        assert client.createDatabase(source, "wangchuan_dev_test", "测试注释");
+    }
+
+    /**
+     * 判断db是否存在
+     */
+    @Test
+    public void isDbExists() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
+        assert client.isDatabaseExists(source, "wangchuan_dev_test");
+    }
+
+    /**
+     * 表在db中
+     */
+    @Test
+    public void tableInDb() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
+        assert client.isTableExistsInDatabase(source, "test", "wangchuan_dev_test");
+    }
+
+    /**
+     * 表不在db中
+     */
+    @Test
+    public void tableNotInDb() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
+        assert !client.isTableExistsInDatabase(source, "test_1", "wangchuan_dev_test");
+    }
 }

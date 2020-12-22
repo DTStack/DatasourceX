@@ -204,4 +204,32 @@ public class SparkTest {
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
     }
+
+    /**
+     * 创建库测试
+     */
+    @Test
+    public void createDb() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.Spark.getVal());
+        assert client.createDatabase(source, "wangchuan_dev_test", "测试注释");
+    }
+
+    /**
+     * 判断db是否存在
+     */
+    @Test
+    public void isDbExists() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.Spark.getVal());
+        assert client.isDatabaseExists(source, "wangchuan_dev_test");
+    }
+
+    /**
+     * 判断表是否在db中
+     */
+    @Test
+    public void isTableInDb() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.Spark.getVal());
+        assert !client.isTableExistsInDatabase(source, "test_1", "wangchuan_dev_test");
+    }
+
 }

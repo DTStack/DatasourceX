@@ -21,7 +21,7 @@ public interface ITable {
      * @return 连接
      * @throws Exception 异常
      */
-    Connection getCon(ISourceDTO source) throws Exception;
+    Connection getCon(ISourceDTO source);
 
     /**
      * 执行sql查询
@@ -31,7 +31,7 @@ public interface ITable {
      * @return 查询结果
      * @throws Exception 异常
      */
-    List<Map<String, Object>> executeQuery(ISourceDTO source, String sql) throws Exception;
+    List<Map<String, Object>> executeQuery(ISourceDTO source, String sql);
 
     /**
      * 执行sql，不需要结果
@@ -41,7 +41,7 @@ public interface ITable {
      * @return 执行成功与否
      * @throws Exception 异常
      */
-    Boolean executeSqlWithoutResultSet(ISourceDTO source, String sql) throws Exception;
+    Boolean executeSqlWithoutResultSet(ISourceDTO source, String sql);
 
     /**
      * 获取所有分区，格式同sql返回值，不错额外处理，如：pt1=name1/pt2=name2/pt3=name3
@@ -49,7 +49,7 @@ public interface ITable {
      *
      * @return 所有分区
      */
-    List<String> showPartitions (ISourceDTO source, String tableName) throws Exception;
+    List<String> showPartitions (ISourceDTO source, String tableName);
 
     /**
      * 删除表，成功返回true，失败返回false
@@ -58,7 +58,7 @@ public interface ITable {
      * @param tableName
      * @return 删除结果
      */
-    Boolean dropTable(ISourceDTO source, String tableName) throws Exception;
+    Boolean dropTable(ISourceDTO source, String tableName);
 
     /**
      * 重命名表，成功返回true，失败返回false
@@ -68,7 +68,7 @@ public interface ITable {
      * @param newTableName 新表名
      * @return 重命名结果
      */
-    Boolean renameTable(ISourceDTO source, String oldTableName, String newTableName) throws Exception;
+    Boolean renameTable(ISourceDTO source, String oldTableName, String newTableName);
 
     /**
      * 修改表参数
@@ -78,5 +78,5 @@ public interface ITable {
      * @param params 修改的参数，map集合
      * @return 修改结果
      */
-    Boolean alterTableParams (ISourceDTO source, String tableName, Map<String, String> params) throws Exception;
+    Boolean alterTableParams (ISourceDTO source, String tableName, Map<String, String> params);
 }
