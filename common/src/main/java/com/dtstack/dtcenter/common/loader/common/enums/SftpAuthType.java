@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.loader.enums;
+package com.dtstack.dtcenter.common.loader.common.enums;
 
 /**
  * @company: www.dtstack.com

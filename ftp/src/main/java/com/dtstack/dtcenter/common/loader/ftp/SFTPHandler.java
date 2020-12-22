@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.common.loader.ftp;
 
-import com.dtstack.dtcenter.loader.enums.SftpAuthType;
+import com.dtstack.dtcenter.common.loader.common.enums.SftpAuthType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
