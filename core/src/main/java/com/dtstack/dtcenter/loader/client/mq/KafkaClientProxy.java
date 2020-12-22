@@ -66,4 +66,10 @@ public class KafkaClientProxy<T> implements IKafka<T> {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPreview(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
+
+    @Override
+    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO, String prevMode) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPreview(source, queryDTO, prevMode),
+                targetClient.getClass().getClassLoader());
+    }
 }
