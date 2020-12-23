@@ -26,7 +26,7 @@ public class ImpalaTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     ImpalaSourceDTO source = ImpalaSourceDTO.builder()
-            .url("jdbc:impala://172.16.100.242:21050/default;AuthMech=3")
+            .url("jdbc:impala://172.16.100.132:21050/hzfhnanqi_pri;AuthMech=3")
             .username("hxb")
             .password("admin123")
             .poolConfig(new PoolConfig())
