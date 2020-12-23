@@ -24,6 +24,27 @@ import java.util.List;
  * @Description：Phoenix 客户端
  */
 public class PhoenixClient extends AbsRdbmsClient {
+
+    /**
+     * 展示指定 SCHEMA 的表
+     */
+    private static final String SHOW_TABLES_SCHEMA = "SELECT TABLE_NAME FROM SYSTEM.CATALOG WHERE TABLE_TYPE = 'u'AND TABLE_SCHEM = '%s'";
+
+    /**
+     * 展示指定 没有schema（默认schema）下的表：default下的表schema为null
+     */
+    private static final String SHOW_TABLES_IN_DEFAULT = "SELECT DISTINCT TABLE_NAME FROM SYSTEM.CATALOG WHERE TABLE_TYPE = 'u' AND TABLE_SCHEM IS NULL";
+
+    /**
+     * 获取所有的schema
+     */
+    private static final String SHOW_SCHEMA = "SELECT DISTINCT TABLE_SCHEM FROM SYSTEM.CATALOG WHERE TABLE_TYPE = 'u' AND TABLE_SCHEM IS NOT NULL";
+
+    /**
+     * 默认schema
+     */
+    private static final String DEFAULT_SCHEMA = "default";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new PhoenixConnFactory();
@@ -119,4 +140,25 @@ public class PhoenixClient extends AbsRdbmsClient {
         return tableList;
     }
 
+    @Override
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
+        if (StringUtils.isBlank(queryDTO.getSchema())) {
+            return getTableList(source, queryDTO);
+        }
+        return super.getTableListBySchema(source, queryDTO);
+    }
+
+    @Override
+    protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        // 对默认schema特殊处理
+        if (DEFAULT_SCHEMA.equalsIgnoreCase(queryDTO.getSchema())){
+            return SHOW_TABLES_IN_DEFAULT;
+        }
+        return String.format(SHOW_TABLES_SCHEMA, queryDTO.getSchema());
+    }
+
+    @Override
+    protected String getShowDbSql() {
+        return SHOW_SCHEMA;
+    }
 }
