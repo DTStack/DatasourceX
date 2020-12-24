@@ -55,6 +55,7 @@ public interface DtClassConsistent {
         public static final String PRIMARY_KEY = "primary_key";
         public static final String REMARKS = "REMARKS";
 
+        @Deprecated
         public static final String USE_DB = "use `%s`";
     }
 
@@ -62,14 +63,19 @@ public interface DtClassConsistent {
         /**
          * JDBC 正则
          */
+        @Deprecated
         public static Pattern JDBC_PATTERN = Pattern.compile("(?i)jdbc:[a-zA-Z0-9\\.]+://(?<host>[0-9a-zA-Z\\.-]+):(?<port>\\d+)/(?<db>[0-9a-zA-Z_%\\.]+)(?<param>[\\?;#].*)*");
+
         /**
          * HIVE_JDBC_URL 正则解析
          */
+        @Deprecated
         public static final Pattern HIVE_JDBC_PATTERN = Pattern.compile("(?i)jdbc:hive2://(?<url>[0-9a-zA-Z,\\:\\-\\.]+)(/(?<db>[0-9a-z_%]+)*(?<param>[\\?;#].*)*)*");
 
+        @Deprecated
         public static final Pattern IMPALA_JDBC_PATTERN = Pattern.compile("(?i)jdbc:impala://[0-9a-zA-Z\\-\\.]+:[\\d]+/(?<db>[0-9a-zA-Z_%\\-]+);.*");
 
+        @Deprecated
         public static final Pattern GREENPLUM_JDBC_PATTERN = Pattern.compile("(?i)jdbc:pivotal:greenplum://[0-9a-zA-Z\\-\\.]+:[\\d]+;DatabaseName=(?<db>[0-9a-zA-Z\\-]+);.*");
     }
 
