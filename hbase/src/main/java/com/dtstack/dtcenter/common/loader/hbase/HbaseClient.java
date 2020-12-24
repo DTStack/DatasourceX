@@ -5,6 +5,7 @@ import com.dtstack.dtcenter.common.loader.common.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.filter.RowFilter;
+import com.dtstack.dtcenter.loader.dto.filter.TimestampFilter;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.enums.CompareOp;
@@ -28,6 +29,7 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.PageFilter;
+import org.apache.hadoop.hbase.io.TimeRange;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.Closeable;
@@ -152,6 +154,7 @@ public class HbaseClient extends AbsRdbmsClient {
             table = connection.getTable(tableName);
             List<Filter> filterList = Lists.newArrayList();
             Scan scan = new Scan();
+
             if (columns != null) {
                 for (String column : columns) {
                     String[] familyAndQualifier = column.split(":");
@@ -167,6 +170,12 @@ public class HbaseClient extends AbsRdbmsClient {
                     if (getAccurateQuery(table, results, filter)) {
                         isAccurateQuery = true;
                         break;
+                    }
+                    // 针对时间戳过滤器进行封装
+                    if (filter instanceof TimestampFilter) {
+                        TimestampFilter timestampFilter = (TimestampFilter) filter;
+                        fillTimestampFilter(scan, timestampFilter);
+                        continue;
                     }
                     //将core包下的filter转换成hbase包下的filter
                     Filter transFilter = FilterType.get(filter);
@@ -212,6 +221,37 @@ public class HbaseClient extends AbsRdbmsClient {
         }
 
         return executeResult;
+    }
+
+    /**
+     * 填充hbase自定义查询时间戳过滤参数
+     * @param scan scan对象
+     * @param timestampFilter 时间戳过滤器
+     */
+    private void fillTimestampFilter(Scan scan, TimestampFilter timestampFilter) throws IOException {
+        CompareOp compareOp = timestampFilter.getCompareOp();
+        Long comparator = timestampFilter.getComparator();
+        if (Objects.isNull(comparator)) {
+            return;
+        }
+        switch (compareOp) {
+            case LESS:
+                scan.setTimeRange(TimeRange.INITIAL_MIN_TIMESTAMP, comparator);
+                break;
+            case EQUAL:
+                scan.setTimeStamp(comparator);
+                break;
+            case GREATER:
+                scan.setTimeRange(comparator, TimeRange.INITIAL_MAX_TIMESTAMP);
+                break;
+            case LESS_OR_EQUAL:
+                scan.setTimeRange(TimeRange.INITIAL_MIN_TIMESTAMP, comparator + 1);
+                break;
+            case GREATER_OR_EQUAL:
+                scan.setTimeRange(comparator - 1, TimeRange.INITIAL_MAX_TIMESTAMP);
+                break;
+            default:
+        }
     }
 
     private static boolean getAccurateQuery(Table table, List<Result> results, com.dtstack.dtcenter.loader.dto.filter.Filter filter) throws IOException {
