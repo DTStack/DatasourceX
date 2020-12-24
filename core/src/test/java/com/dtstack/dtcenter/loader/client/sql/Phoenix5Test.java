@@ -23,8 +23,10 @@ import java.util.Map;
 @Ignore
 public class Phoenix5Test {
     Phoenix5SourceDTO source = Phoenix5SourceDTO.builder()
-            .url("jdbc:phoenix:flinkx1,flinkx2,flinkx3:2181")
-            //.schema("")
+            .url("jdbc:phoenix:172.16.100.174,172.16.100.220,172.16.100.181:2181")
+            //.schema("default")
+            .username("root")
+            .password("flink123")
             .build();
 
 
@@ -49,9 +51,9 @@ public class Phoenix5Test {
     @Test
     public void executeQuery() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from DBAML.ODL_TRADER_PF limit 2000").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("SELECT * FROM TEST.TEST").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
-        System.out.println(mapList.size());
+        System.out.println(mapList);
     }
 
     @Test
@@ -91,5 +93,19 @@ public class Phoenix5Test {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("\"DBAML\".\"ODL_TRADER_PF\"").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(metaComment);
+    }
+
+    @Test
+    public void getAllSchema() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
+        List allSchema = client.getAllDatabases(source, SqlQueryDTO.builder().build());
+        System.out.println(allSchema);
+    }
+
+    @Test
+    public void getTablesBySchema() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
+        List tables = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("TEST").build());
+        System.out.println(tables);
     }
 }

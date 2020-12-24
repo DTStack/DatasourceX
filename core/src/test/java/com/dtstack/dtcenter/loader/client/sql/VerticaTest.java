@@ -95,4 +95,28 @@ public class VerticaTest {
         List preview = client.getPreview(verticaSourceDTO, queryDTO);
         System.out.println(preview);
     }
+
+    /**
+     * 获取所有schema测试
+     * @throws Exception
+     */
+    @Test
+    public void getAllDb() throws Exception{
+        IClient client = ClientCache.getClient(DataSourceType.VERTICA.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        List dbs = client.getAllDatabases(verticaSourceDTO, queryDTO);
+        System.out.println(dbs);
+    }
+
+    /**
+     * 获取指定schema下的table
+     * @throws Exception
+     */
+    @Test
+    public void getTableBySchema() throws Exception{
+        IClient client = ClientCache.getClient(DataSourceType.VERTICA.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("test").build();
+        List tables = client.getTableListBySchema(verticaSourceDTO, queryDTO);
+        System.out.println(tables);
+    }
 }
