@@ -78,9 +78,6 @@ public class HiveClient extends AbsRdbmsClient {
         List<String> tableList = new ArrayList<>();
         try {
             statement = hiveSourceDTO.getConnection().createStatement();
-            if (StringUtils.isNotEmpty(hiveSourceDTO.getSchema())) {
-                statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, hiveSourceDTO.getSchema()));
-            }
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
@@ -103,9 +100,6 @@ public class HiveClient extends AbsRdbmsClient {
         ResultSet resultSet = null;
         try {
             statement = hiveSourceDTO.getConnection().createStatement();
-            if (StringUtils.isNotEmpty(hiveSourceDTO.getSchema())) {
-                statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, hiveSourceDTO.getSchema()));
-            }
             resultSet = statement.executeQuery(String.format(DtClassConsistent.HadoopConfConsistent.DESCRIBE_EXTENDED
                     , queryDTO.getTableName()));
             while (resultSet.next()) {
@@ -140,9 +134,6 @@ public class HiveClient extends AbsRdbmsClient {
 
         try {
             stmt = hiveSourceDTO.getConnection().createStatement();
-            if (StringUtils.isNotEmpty(hiveSourceDTO.getSchema())) {
-                stmt.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, hiveSourceDTO.getSchema()));
-            }
             resultSet = stmt.executeQuery("desc extended " + queryDTO.getTableName());
             while (resultSet.next()) {
                 String dataType = resultSet.getString(DtClassConsistent.PublicConsistent.DATA_TYPE);

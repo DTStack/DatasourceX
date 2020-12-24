@@ -1,7 +1,5 @@
 package com.dtstack.dtcenter.common.loader.hive;
 
-import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
-import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
@@ -9,12 +7,10 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.regex.Matcher;
 
 /**
  * @company: www.dtstack.com
@@ -38,7 +34,8 @@ public class HiveConnFactory extends ConnFactory {
                 (PrivilegedAction<Connection>) () -> {
                     try {
                         DriverManager.setLoginTimeout(30);
-                        return DriverManager.getConnection(hiveSourceDTO.getUrl(), hiveSourceDTO.getUsername(),
+                        String urlWithoutSchema = HiveDriverUtil.removeSchema(hiveSourceDTO.getUrl());
+                        return DriverManager.getConnection(urlWithoutSchema, hiveSourceDTO.getUsername(),
                                 hiveSourceDTO.getPassword());
                     } catch (Exception e) {
                         throw new DtLoaderException("getHiveConnection error : " + e.getMessage(), e);
@@ -46,16 +43,6 @@ public class HiveConnFactory extends ConnFactory {
                 }
         );
 
-        Matcher matcher = DtClassConsistent.PatternConsistent.HIVE_JDBC_PATTERN.matcher(hiveSourceDTO.getUrl());
-        String db = null;
-        if (!matcher.find()) {
-            db = matcher.group(DtClassConsistent.PublicConsistent.DB_KEY);
-        }
-        db = StringUtils.isBlank(hiveSourceDTO.getSchema()) ? db : hiveSourceDTO.getSchema();
-        if (StringUtils.isNotEmpty(db)) {
-            DBUtil.executeSqlWithoutResultSet(connection, String.format(DtClassConsistent.PublicConsistent.USE_DB,
-                    db), false);
-        }
-        return connection;
+        return HiveDriverUtil.setSchema(connection, hiveSourceDTO.getUrl(), hiveSourceDTO.getSchema());
     }
 }

@@ -40,7 +40,8 @@ public class HiveConnFactory extends ConnFactory {
                 (PrivilegedAction<Connection>) () -> {
                     try {
                         DriverManager.setLoginTimeout(30);
-                        return DriverManager.getConnection(hive1SourceDTO.getUrl(), hive1SourceDTO.getUsername(),
+                        String urlWithoutSchema = HiveDriverUtil.removeSchema(hive1SourceDTO.getUrl());
+                        return DriverManager.getConnection(urlWithoutSchema, hive1SourceDTO.getUsername(),
                                 hive1SourceDTO.getPassword());
                     } catch (SQLException e) {
                         throw new DtLoaderException("getHiveConnection error : " + e.getMessage(), e);
@@ -48,16 +49,6 @@ public class HiveConnFactory extends ConnFactory {
                 }
         );
 
-        Matcher matcher = DtClassConsistent.PatternConsistent.HIVE_JDBC_PATTERN.matcher(hive1SourceDTO.getUrl());
-        String db = null;
-        if (!matcher.find()) {
-            db = matcher.group(DtClassConsistent.PublicConsistent.DB_KEY);
-        }
-        db = StringUtils.isBlank(hive1SourceDTO.getSchema()) ? db : hive1SourceDTO.getSchema();
-        if (StringUtils.isNotEmpty(db)) {
-            DBUtil.executeSqlWithoutResultSet(connection, String.format(DtClassConsistent.PublicConsistent.USE_DB,
-                    db), false);
-        }
-        return connection;
+        return HiveDriverUtil.setSchema(connection, hive1SourceDTO.getUrl(), hive1SourceDTO.getSchema());
     }
 }

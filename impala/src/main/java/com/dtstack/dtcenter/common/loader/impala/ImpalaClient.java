@@ -50,9 +50,6 @@ public class ImpalaClient extends AbsRdbmsClient {
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
-        //impala db写在jdbc连接中无效，必须手动切换库
-        String db = queryDTO == null || StringUtils.isBlank(impalaSourceDTO.getSchema()) ?
-                getImpalaDbFromJdbc(impalaSourceDTO.getUrl()) : impalaSourceDTO.getSchema();
         // 获取表信息需要通过show tables 语句
         String sql = "show tables";
         Statement statement = null;
@@ -153,10 +150,6 @@ public class ImpalaClient extends AbsRdbmsClient {
         ResultSet resultSet = null;
         try {
             statement = impalaSourceDTO.getConnection().createStatement();
-            if (StringUtils.isNotEmpty(impalaSourceDTO.getSchema())) {
-                statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB,
-                        impalaSourceDTO.getSchema()));
-            }
             resultSet = statement.executeQuery(String.format(DtClassConsistent.HadoopConfConsistent.DESCRIBE_EXTENDED
                     , queryDTO.getTableName()));
             while (resultSet.next()) {
@@ -181,18 +174,6 @@ public class ImpalaClient extends AbsRdbmsClient {
         metaDTO.setComment(resultSet.getString(DtClassConsistent.PublicConsistent.COMMENT));
         metaDTO.setPart(Boolean.TRUE.equals(part));
         return metaDTO;
-    }
-
-    private static String getImpalaDbFromJdbc(String jdbcUrl) {
-        if (StringUtils.isEmpty(jdbcUrl)) {
-            return null;
-        }
-        Matcher matcher = DtClassConsistent.PatternConsistent.IMPALA_JDBC_PATTERN.matcher(jdbcUrl);
-        String db = "";
-        if (matcher.matches()) {
-            db = matcher.group(1);
-        }
-        return db;
     }
 
     @Override

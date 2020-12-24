@@ -40,26 +40,7 @@ public class ImpalaConnFactory extends ConnFactory {
                     }
                 }
         );
-        String db = StringUtils.isBlank(impalaSourceDTO.getSchema()) ? getImpalaSchema(impalaSourceDTO.getUrl()) : impalaSourceDTO.getSchema();
-        if (StringUtils.isNotBlank(db)) {
-            DBUtil.executeSqlWithoutResultSet(connection, String.format(DtClassConsistent.PublicConsistent.USE_DB, db),
-                    false);
-        }
-        return connection;
-    }
 
-    /**
-     * 获取 Impala schema
-     *
-     * @param jdbcUrl
-     * @return
-     */
-    private String getImpalaSchema(String jdbcUrl) {
-        Matcher matcher = DtClassConsistent.PatternConsistent.IMPALA_JDBC_PATTERN.matcher(jdbcUrl);
-        String db = "";
-        if (matcher.matches()) {
-            db = matcher.group(1);
-        }
-        return db;
+        return ImpalaDriverUtil.setSchema(connection, impalaSourceDTO.getSchema());
     }
 }

@@ -18,7 +18,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 
 /**
  * @company: www.dtstack.com
@@ -107,19 +106,6 @@ public class GreenplumClient extends AbsRdbmsClient {
         }
         return "";
     }
-
-    private static String getGreenplumDbFromJdbc(String jdbcUrl) {
-        if (StringUtils.isEmpty(jdbcUrl)) {
-            return null;
-        }
-        Matcher matcher = DtClassConsistent.PatternConsistent.GREENPLUM_JDBC_PATTERN.matcher(jdbcUrl);
-        String db = "";
-        if (matcher.matches()) {
-            db = matcher.group(1);
-        }
-        return db;
-    }
-
 
     @Override
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
