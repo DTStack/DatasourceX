@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.loader.dto.filter;
 
-import com.dtstack.dtcenter.loader.dto.comparator.ByteArrayComparable;
 import com.dtstack.dtcenter.loader.enums.CompareOp;
 import com.dtstack.dtcenter.loader.enums.HbaseFilterType;
 
