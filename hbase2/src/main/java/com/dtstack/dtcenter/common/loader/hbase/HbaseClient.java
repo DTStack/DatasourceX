@@ -172,7 +172,7 @@ public class HbaseClient extends AbsRdbmsClient {
                         break;
                     }
                     // 针对时间戳过滤器进行封装
-                    if (filter instanceof TimestampFilter) {
+                    if ("TimestampFilter".equals(filter.getClass().getSimpleName()) && filter instanceof TimestampFilter) {
                         TimestampFilter timestampFilter = (TimestampFilter) filter;
                         fillTimestampFilter(scan, timestampFilter);
                         continue;
@@ -240,13 +240,13 @@ public class HbaseClient extends AbsRdbmsClient {
                 scan.setTimeStamp(comparator);
                 break;
             case GREATER:
-                scan.setTimeRange(comparator, TimeRange.INITIAL_MAX_TIMESTAMP);
+                scan.setTimeRange(comparator + 1, TimeRange.INITIAL_MAX_TIMESTAMP);
                 break;
             case LESS_OR_EQUAL:
                 scan.setTimeRange(TimeRange.INITIAL_MIN_TIMESTAMP, comparator + 1);
                 break;
             case GREATER_OR_EQUAL:
-                scan.setTimeRange(comparator - 1, TimeRange.INITIAL_MAX_TIMESTAMP);
+                scan.setTimeRange(comparator, TimeRange.INITIAL_MAX_TIMESTAMP);
                 break;
             default:
         }
