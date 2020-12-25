@@ -1,5 +1,7 @@
 package com.dtstack.dtcenter.common.loader.oracle;
 
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+
 import java.sql.Types;
 
 /**
@@ -50,7 +52,7 @@ public class OracleDbAdapter {
                 return JavaType.TYPE_FLOAT.getFlinkSqlType();
 
             default:
-                return null;
+                throw new DtLoaderException("oracle不支持该字段类型的采集！");
         }
     }
 

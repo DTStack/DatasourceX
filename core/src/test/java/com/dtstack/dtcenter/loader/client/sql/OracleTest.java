@@ -25,16 +25,16 @@ import java.util.Map;
  */
 public class OracleTest {
     private static OracleSourceDTO source = OracleSourceDTO.builder()
-            .url("jdbc:oracle:thin:@172.16.8.193:1521:xe")
-            .username("kminer")
-            .password("kminerpass")
+            .url("jdbc:oracle:thin:@172.16.10.251:1521:helowin")
+            .username("tudou")
+            .password("abc123")
             //.schema("KMINER")
             //.poolConfig(new PoolConfig())
             .build();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        /*IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table \"nanqi\"").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table \"nanqi\" (id int, name VARCHAR2(50))").build();
@@ -42,7 +42,7 @@ public class OracleTest {
         queryDTO = SqlQueryDTO.builder().sql("comment on table \"nanqi\" is 'table comment'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into \"nanqi\" values (1, 'nanqi')").build();
-        client.executeSqlWithoutResultSet(source, queryDTO);*/
+        client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
@@ -170,6 +170,13 @@ public class OracleTest {
         IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
         List data = client.getFlinkColumnMetaData(source, SqlQueryDTO.builder().tableName("nanqi").build());
         System.out.println(data);
+    }
+
+    @Test
+    public void getFlinkColumnMetaDataNotSupport() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        source.setSchema("SYSMAN");
+        client.getFlinkColumnMetaData(source, SqlQueryDTO.builder().tableName("MGMT_BSLN_METRICS").build());
     }
 
     @Test
