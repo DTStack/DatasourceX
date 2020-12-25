@@ -70,6 +70,7 @@ public class KakfaUtil {
      * @return jaas文件绝对路径
      */
     private static String writeKafkaJaas(Map<String, Object> kerberosConfig) {
+        log.info("初始化 Kafka JAAS 文件, kerberosConfig : {}", kerberosConfig);
         if (MapUtils.isEmpty(kerberosConfig)){
             return null;
         }
@@ -79,7 +80,9 @@ public class KakfaUtil {
             System.setProperty(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, MapUtils.getString(kerberosConfig, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF));
         }
 
-        String keytabConf = kerberosConfig.getOrDefault(HadoopConfTool.PRINCIPAL_FILE, "").toString();
+        String keytabConf = MapUtils.getString(kerberosConfig, HadoopConfTool.PRINCIPAL_FILE);
+        // 兼容历史数据
+        keytabConf = StringUtils.isBlank(keytabConf) ? MapUtils.getString(kerberosConfig, HadoopConfTool.KAFKA_KERBEROS_KEYTAB) : keytabConf;
         try {
             File file = new File(keytabConf);
             File jaas = new File(file.getParent() + File.separator + "kafka_jaas.conf");
@@ -88,6 +91,8 @@ public class KakfaUtil {
             }
 
             String principal = MapUtils.getString(kerberosConfig, HadoopConfTool.PRINCIPAL);
+            // 历史数据兼容
+            principal = StringUtils.isBlank(principal) ? MapUtils.getString(kerberosConfig, "kafka.kerberos.principal") : principal;
             FileUtils.write(jaas, String.format(KafkaConsistent.KAFKA_JAAS_CONTENT, keytabConf, principal));
             String kafkaLoginConf = jaas.getAbsolutePath();
             log.info("Init Kafka Kerberos:login-conf:{}\n --sasl.kerberos.service.name:{}", keytabConf, principal);
@@ -364,12 +369,13 @@ public class KakfaUtil {
         }
 
         javax.security.auth.login.Configuration.setConfiguration(null);
-        String kafkaKbrServiceName = MapUtils.getString(kerberosConfig, HadoopConfTool.PRINCIPAL);
-        if (StringUtils.isBlank(kafkaKbrServiceName)) {
+        // 历史数据兼容
+        if (MapUtils.isEmpty(kerberosConfig)) {
             //不满足kerberos条件 直接返回
             return props;
         }
         // 只需要认证的用户名
+        String kafkaKbrServiceName = MapUtils.getString(kerberosConfig, HadoopConfTool.KAFKA_KERBEROS_SERVICE_NAME);
         kafkaKbrServiceName = kafkaKbrServiceName.split("/")[0];
         String kafkaLoginConf = writeKafkaJaas(kerberosConfig);
         // kerberos 相关设置
