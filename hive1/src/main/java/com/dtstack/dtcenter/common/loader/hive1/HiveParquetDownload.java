@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hive1;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.hadoop.GroupTypeIgnoreCase;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.google.common.collect.Lists;
@@ -190,29 +191,25 @@ public class HiveParquetDownload implements IDownloader {
                             line.add(null);
                         }
                     } else if (index < columnNames.size()) {
-                        line.add(getFieldByIndex(index));
+                        Integer fieldIndex = isFieldExists(columnNames.get(index));
+                        if (fieldIndex != -1) {
+                            line.add(getFieldByIndex(fieldIndex));
+                        }else {
+                            line.add(null);
+                        }
                     } else {
-            // 每次重新构建columnIndex，对于parquet来说，如果对应schema下没有该列，
-            // currentLine.getType().getFields()返回值的size可能会不同，导致数组越界异常!
-            // bug 连接：http://redmine.prod.dtstack.cn/issues/33045
-            columnIndex = new ArrayList<>();
-            for (String columnName : columnNames) {
-                GroupTypeIgnoreCase groupType = new GroupTypeIgnoreCase(currentLine.getType());
-                columnIndex.add(groupType.containsField(columnName) ?
-                        groupType.getFieldIndex(columnName) : -1);
-            }
-
-            if (CollectionUtils.isNotEmpty(columnIndex)){
-                line = new ArrayList<>();
-                for (Integer index : columnIndex) {
-                    if(index == -1){
                         line.add(null);
                     }
                 }
                 // needIndex为空表示获取所有字段
             } else {
                 for (int index = 0; index < columnNames.size(); index++) {
-                    line.add(getFieldByIndex(index));
+                    Integer fieldIndex = isFieldExists(columnNames.get(index));
+                    if (fieldIndex != -1) {
+                        line.add(getFieldByIndex(fieldIndex));
+                    }else {
+                        line.add(null);
+                    }
                 }
                 if(CollectionUtils.isNotEmpty(partitionColumns)){
                     line.addAll(currentPartData);
@@ -220,6 +217,23 @@ public class HiveParquetDownload implements IDownloader {
             }
         }
         return line;
+    }
+
+    /**
+     * 判断字段是否存在，存在则返回字段索引
+     * 每行数据重新判断，对于parquet来说，如果对应schema下没有该列，
+     * currentLine.getType().getFields()返回值的size可能会不同，导致数组越界异常!
+     * bug 连接：http://redmine.prod.dtstack.cn/issues/33045
+     *
+     * @param columnName 字段名
+     * @return 字段索引
+     */
+    private Integer isFieldExists (String columnName) {
+        GroupTypeIgnoreCase groupType = new GroupTypeIgnoreCase(currentLine.getType());
+        if (!groupType.containsField(columnName)) {
+            return -1;
+        }
+        return groupType.getFieldIndex(columnName);
     }
 
     // 获取指定index下的字段值

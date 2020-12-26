@@ -34,14 +34,14 @@ public class HiveTest {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     private static HiveSourceDTO source = HiveSourceDTO.builder()
-            .url("jdbc:hive2://172.16.8.107:10000/dev")
+            .url("jdbc:hive2://kudu1:10000/dev")
             .schema("dev")
             .defaultFS("hdfs://ns1")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.100.219:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"kudu1:9000\",\n" +
                     "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.100.204:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"kudu2:9000\",\n" +
                     "    \"dfs.nameservices\": \"ns1\"\n" +
                     "}")
             .username("admin")
@@ -161,7 +161,7 @@ public class HiveTest {
     @Test
     public void parquetDownloadWithColumn () throws Exception {
         IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
-        List<String> columns = Lists.newArrayList("name", "day", "month", "id", "year");
+        List<String> columns = Lists.newArrayList("day", "month", "id", "year");
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_parquet").columns(columns).build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         System.out.println(columns);
