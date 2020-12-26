@@ -1,11 +1,14 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+
+import java.sql.Connection;
 
 /**
  * @company: www.dtstack.com
@@ -54,4 +57,14 @@ public class MongoSourceDTO  implements ISourceDTO {
      * 连接池配置信息，如果传入则认为开启连接池
      */
     private PoolConfig poolConfig;
+
+    @Override
+    public Connection getConnection() {
+        throw new DtLoaderException("不支持该方法");
+    }
+
+    @Override
+    public void setConnection(Connection connection) {
+        throw new DtLoaderException("不支持该方法");
+    }
 }

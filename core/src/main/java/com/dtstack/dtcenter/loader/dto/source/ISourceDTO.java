@@ -1,5 +1,7 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
+import java.sql.Connection;
+
 /**
  * @company: www.dtstack.com
  * @Author ：Nanqi
@@ -28,4 +30,15 @@ public interface ISourceDTO {
      */
     Integer getSourceType();
 
+    /**
+     * 获取连接信息
+     */
+    Connection getConnection();
+
+    /**
+     * 设置 Connection 信息
+     *
+     * @param connection
+     */
+    void setConnection(Connection connection);
 }

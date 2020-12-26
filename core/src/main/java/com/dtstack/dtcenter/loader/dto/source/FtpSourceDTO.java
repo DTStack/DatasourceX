@@ -1,10 +1,13 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+
+import java.sql.Connection;
 
 /**
  * @company: www.dtstack.com
@@ -69,4 +72,14 @@ public class FtpSourceDTO implements ISourceDTO {
      * 连接模式
      */
     private String connectMode;
+
+    @Override
+    public Connection getConnection() {
+        throw new DtLoaderException("不支持该方法");
+    }
+
+    @Override
+    public void setConnection(Connection connection) {
+        throw new DtLoaderException("不支持该方法");
+    }
 }
