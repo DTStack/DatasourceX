@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.comparator.BinaryComparator;
 import com.dtstack.dtcenter.loader.dto.filter.Filter;
+import com.dtstack.dtcenter.loader.dto.filter.PageFilter;
 import com.dtstack.dtcenter.loader.dto.filter.RowFilter;
 import com.dtstack.dtcenter.loader.dto.filter.SingleColumnValueFilter;
 import com.dtstack.dtcenter.loader.dto.filter.TimestampFilter;
@@ -21,6 +22,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @company: www.dtstack.com
@@ -95,7 +97,7 @@ public class HbaseTest {
 
     @Test
     public void timestampFilterTest_less_or_equal() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.HBASE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
         PageFilter pageFilter = new PageFilter(1);
         TimestampFilter timestampFilter = new TimestampFilter(CompareOp.LESS_OR_EQUAL, 1602506453868L);
         List<Filter> filters = Lists.newArrayList(timestampFilter, pageFilter);
@@ -105,7 +107,7 @@ public class HbaseTest {
 
     @Test
     public void timestampFilter_less() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.HBASE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
         PageFilter pageFilter = new PageFilter(1);
         TimestampFilter timestampFilter = new TimestampFilter(CompareOp.LESS, 1602506453868L);
         List<Filter> filters = Lists.newArrayList(timestampFilter, pageFilter);
@@ -115,7 +117,7 @@ public class HbaseTest {
 
     @Test
     public void timestampFilter_equal() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.HBASE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
         PageFilter pageFilter = new PageFilter(1);
         TimestampFilter timestampFilter = new TimestampFilter(CompareOp.EQUAL, 1602506453868L);
         List<Filter> filters = Lists.newArrayList(timestampFilter, pageFilter);
@@ -125,7 +127,7 @@ public class HbaseTest {
 
     @Test
     public void timestampFilterTest_granter() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.HBASE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
         PageFilter pageFilter = new PageFilter(100);
         TimestampFilter timestampFilter = new TimestampFilter(CompareOp.GREATER, 1602506453868L);
         List<Filter> filters = Lists.newArrayList(timestampFilter, pageFilter);
@@ -136,7 +138,7 @@ public class HbaseTest {
 
     @Test
     public void timestampFilterTest_granter_or_equal() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.HBASE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
         PageFilter pageFilter = new PageFilter(100);
         TimestampFilter timestampFilter = new TimestampFilter(CompareOp.GREATER_OR_EQUAL, 1602506453868L);
         List<Filter> filters = Lists.newArrayList(timestampFilter, pageFilter);
@@ -147,7 +149,7 @@ public class HbaseTest {
 
     @Test
     public void timestampAndRowKeyFilterTest_granter_or_equal() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.HBASE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
         PageFilter pageFilter = new PageFilter(100);
         RowFilter rowFilter = new RowFilter(CompareOp.LESS, new BinaryComparator("auto9".getBytes()));
         TimestampFilter timestampFilter = new TimestampFilter(CompareOp.GREATER_OR_EQUAL, 1602506453868L);
