@@ -204,6 +204,11 @@ public class PostgresqlClient extends AbsRdbmsClient {
         return DATABASE_QUERY;
     }
 
+    @Override
+    protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        return String.format(SHOW_TABLE_BY_SCHEMA_SQL, queryDTO.getSchema());
+    }
+
     /**
      * 处理Postgresql schema和tableName，适配schema和tableName中有.的情况
      * @param schema

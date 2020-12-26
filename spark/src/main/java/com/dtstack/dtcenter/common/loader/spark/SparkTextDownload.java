@@ -87,7 +87,10 @@ public class SparkTextDownload implements IDownloader {
     @Override
     public boolean configure() throws IOException {
 
-        paths = getAllPartitionPath(tableLocation);
+        conf = new JobConf(configuration);
+        paths = Lists.newArrayList();
+        // 递归获取表路径下所有文件
+        getAllPartitionPath(tableLocation, paths);
         if(paths.size() == 0){
             throw new RuntimeException("非法路径:" + tableLocation);
         }
@@ -98,29 +101,27 @@ public class SparkTextDownload implements IDownloader {
         return true;
     }
 
-    private List<String> getAllPartitionPath(String tableLocation) throws IOException {
-
+    /**
+     * 递归获取文件夹下所有文件，排除隐藏文件和无关文件
+     *
+     * @param tableLocation hdfs文件路径
+     * @param pathList 所有文件集合
+     */
+    private void getAllPartitionPath(String tableLocation, List<String> pathList) throws IOException {
         Path inputPath = new Path(tableLocation);
-        conf = new JobConf(configuration);
         FileSystem fs =  FileSystem.get(conf);
-
-        List<String> pathList = Lists.newArrayList();
-        //剔除隐藏系统文件
-        FileStatus[] fsStatus = fs.listStatus(inputPath, path -> !path.getName().startsWith(".") && !IMPALA_INSERT_STAGING.equals(path.getName()));
-
+        //剔除隐藏系统文件和无关文件
+        FileStatus[] fsStatus = fs.listStatus(inputPath, path -> !path.getName().startsWith(".") && !path.getName().startsWith("_SUCCESS") && !path.getName().startsWith("_common_metadata"));
         if(fsStatus == null || fsStatus.length == 0){
             pathList.add(tableLocation);
-            return pathList;
+            return;
         }
-
-        if(fsStatus[0].isDirectory()){
-            for(FileStatus status : fsStatus){
-                pathList.addAll(getAllPartitionPath(status.getPath().toString()));
+        for (FileStatus status : fsStatus) {
+            if (status.isFile()) {
+                pathList.add(status.getPath().toString());
+            }else {
+                getAllPartitionPath(status.getPath().toString(), pathList);
             }
-            return pathList;
-        }else{
-            pathList.add(tableLocation);
-            return pathList;
         }
     }
 
@@ -131,7 +132,6 @@ public class SparkTextDownload implements IDownloader {
         }
 
         Path inputPath = new Path(currFile);
-        conf = new JobConf(configuration);
         inputFormat = new TextInputFormat();
 
         FileInputFormat.setInputPaths(conf, inputPath);
@@ -220,14 +220,14 @@ public class SparkTextDownload implements IDownloader {
 
     @Override
     public List<String> readNext(){
-        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
+        return TimeoutExecutor.execAsync(() -> KerberosUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
                         throw new DtLoaderException("读取文件异常", e);
                     }
-                });
+                }));
     }
 
     public List<String> readNextWithKerberos(){
@@ -255,14 +255,14 @@ public class SparkTextDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws IOException {
-        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
+        return TimeoutExecutor.execAsync(() -> KerberosUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return recordReader == null || !nextRecord();
                     } catch (Exception e){
                         throw new DtLoaderException("下载文件异常", e);
                     }
-                });
+                }));
     }
 
     @Override

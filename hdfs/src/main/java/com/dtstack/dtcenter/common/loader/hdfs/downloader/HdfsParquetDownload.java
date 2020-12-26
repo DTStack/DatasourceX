@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.hdfs.downloader;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.GroupTypeIgnoreCase;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
+import com.dtstack.dtcenter.common.loader.hdfs.TimeoutExecutor;
 import com.dtstack.dtcenter.common.loader.hdfs.util.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -141,14 +142,14 @@ public class HdfsParquetDownload implements IDownloader {
 
     @Override
     public List<String> readNext() throws Exception {
-        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
+        return TimeoutExecutor.execAsync(() -> KerberosUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
                         throw new DtCenterDefException("读取文件异常", e);
                     }
-                });
+                }));
     }
 
     private List<String> readNextWithKerberos(){
@@ -157,13 +158,14 @@ public class HdfsParquetDownload implements IDownloader {
         List<String> line = null;
         if (currentLine != null){
             line = new ArrayList<>();
-            if (columnIndex == null){
-                columnIndex = new ArrayList<>();
-                for (String columnName : columnNames) {
-                    GroupTypeIgnoreCase groupType = new GroupTypeIgnoreCase(currentLine.getType());
-                    columnIndex.add(groupType.containsField(columnName) ?
-                            groupType.getFieldIndex(columnName) : -1);
-                }
+            // 每次重新构建columnIndex，对于parquet来说，如果对应schema下没有该列，
+            // currentLine.getType().getFields()返回值的size可能会不同，导致数组越界异常!
+            // bug 连接：http://redmine.prod.dtstack.cn/issues/33045
+            columnIndex = new ArrayList<>();
+            for (String columnName : columnNames) {
+                GroupTypeIgnoreCase groupType = new GroupTypeIgnoreCase(currentLine.getType());
+                columnIndex.add(groupType.containsField(columnName) ?
+                        groupType.getFieldIndex(columnName) : -1);
             }
 
             if (CollectionUtils.isNotEmpty(columnIndex)){

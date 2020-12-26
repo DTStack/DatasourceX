@@ -13,7 +13,9 @@ public enum HbaseFilterType {
 
     SINGLE_COLUMN_VALUE_FILTER(2),
 
-    ROW_FILTER(3);
+    ROW_FILTER(3),
+
+    TIMESTAMP_FILTER(4);
 
     private Integer val;
 

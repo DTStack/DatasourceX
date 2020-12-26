@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hive;
 
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
+import com.dtstack.dtcenter.common.hadoop.HadoopConf;
 import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
 import com.dtstack.dtcenter.common.thread.RdosThreadFactory;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -26,6 +27,9 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class KerberosUtil {
+    private static final String SECURITY_TO_LOCAL = "hadoop.security.auth_to_local";
+    private static final String SECURITY_TO_LOCAL_DEFAULT = "RULE:[1:$1] RULE:[2:$1]";
+
     private static ConcurrentHashMap<String, UGICacheData> UGI_INFO = new ConcurrentHashMap<>();
 
     private static final ScheduledExecutorService scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1,
@@ -67,9 +71,12 @@ public class KerberosUtil {
         // 非 Kerberos 认证，需要重新刷 UGI 信息
         if (MapUtils.isEmpty(confMap)) {
             try {
-                Config.refresh();
-                UserGroupInformation.setConfiguration(new Configuration());
-                return UserGroupInformation.getCurrentUser();
+                UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
+                if (UserGroupInformation.isSecurityEnabled() || !UserGroupInformation.AuthenticationMethod.SIMPLE.equals(currentUser.getAuthenticationMethod())) {
+                    Config.refresh();
+                    UserGroupInformation.setConfiguration(HadoopConf.getDefaultConfig());
+                }
+                return currentUser;
             } catch (Exception e) {
                 throw new DtLoaderException("simple login failed", e);
             }
@@ -95,6 +102,11 @@ public class KerberosUtil {
         // 处理 yarn.resourcemanager.principal，变与参数下载
         if (!confMap.containsKey("yarn.resourcemanager.principal")){
             confMap.put("yarn.resourcemanager.principal", principal);
+        }
+
+        // 处理 Default 角色
+        if (MapUtils.getString(confMap, SECURITY_TO_LOCAL) == null || "DEFAULT".equals(MapUtils.getString(confMap, SECURITY_TO_LOCAL))) {
+            confMap.put(SECURITY_TO_LOCAL, SECURITY_TO_LOCAL_DEFAULT);
         }
 
         // 判断缓存UGI，如果存在则直接使用

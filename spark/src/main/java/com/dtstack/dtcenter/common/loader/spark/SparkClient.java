@@ -76,9 +76,6 @@ public class SparkClient extends AbsRdbmsClient {
         List<String> tableList = new ArrayList<>();
         try {
             statement = sparkSourceDTO.getConnection().createStatement();
-            if (StringUtils.isNotEmpty(sparkSourceDTO.getSchema())) {
-                statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, sparkSourceDTO.getSchema()));
-            }
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
@@ -101,9 +98,6 @@ public class SparkClient extends AbsRdbmsClient {
         ResultSet resultSet = null;
         try {
             statement = sparkSourceDTO.getConnection().createStatement();
-            if (StringUtils.isNotEmpty(sparkSourceDTO.getSchema())) {
-                statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, sparkSourceDTO.getSchema()));
-            }
             resultSet = statement.executeQuery(String.format(DtClassConsistent.HadoopConfConsistent.DESCRIBE_EXTENDED
                     , queryDTO.getTableName()));
             while (resultSet.next()) {
@@ -140,9 +134,6 @@ public class SparkClient extends AbsRdbmsClient {
 
         try {
             stmt = sparkSourceDTO.getConnection().createStatement();
-            if (StringUtils.isNotEmpty(sparkSourceDTO.getSchema())) {
-                stmt.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, sparkSourceDTO.getSchema()));
-            }
             resultSet = stmt.executeQuery("desc extended " + queryDTO.getTableName());
             while (resultSet.next()) {
                 String dataType = resultSet.getString(DtClassConsistent.PublicConsistent.DATA_TYPE);
@@ -285,19 +276,25 @@ public class SparkClient extends AbsRdbmsClient {
         String fieldDelimiter = "\001";
         String storageMode = null;
         for (Map<String, Object> map : list) {
-            String col_name = (String) map.get("col_name");
-            if (col_name.contains("Location")) {
-                tableLocation = (String) map.get("data_type");
+            String colName = MapUtils.getString(map, "col_name");
+            String dataType = MapUtils.getString(map, "data_type");
+            if (colName.contains("Location")) {
+                tableLocation = dataType;
                 continue;
             }
 
-            if (col_name.contains("InputFormat")) {
-                storageMode = (String) map.get("data_type");
+            if (colName.contains("InputFormat")) {
+                storageMode = dataType;
                 continue;
             }
 
-            if (col_name.contains("field.delim")) {
-                fieldDelimiter = (String) map.get("data_type");
+            if (colName.contains("field.delim")) {
+                fieldDelimiter = dataType;
+                break;
+            }
+
+            if (Objects.nonNull(dataType) && dataType.contains("field.delim")) {
+                fieldDelimiter = MapUtils.getString(map, "comment");
                 break;
             }
         }

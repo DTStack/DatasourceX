@@ -66,6 +66,16 @@ public interface IClient<T> {
     List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
     /**
+     * 根据schema/db获取表
+     *
+     * @param source
+     * @param queryDTO
+     * @return
+     * @throws Exception
+     */
+    List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+
+    /**
      * 返回字段 Java 类的标准名称
      * 字段名若不填则默认全部
      *

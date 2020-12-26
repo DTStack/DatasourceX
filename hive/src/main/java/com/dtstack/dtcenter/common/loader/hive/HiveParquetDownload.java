@@ -99,10 +99,10 @@ public class HiveParquetDownload implements IDownloader {
     @Override
     public boolean configure() throws Exception {
 
-
         jobConf = new JobConf(conf);
-
-        paths = getAllPartitionPath(tableLocation);
+        paths = Lists.newArrayList();
+        // 递归获取表路径下所有文件
+        getAllPartitionPath(tableLocation, paths);
         if(paths.size() == 0){
             throw new RuntimeException("非法路径:" + tableLocation);
         }
@@ -161,14 +161,14 @@ public class HiveParquetDownload implements IDownloader {
 
     @Override
     public List<String> readNext() throws Exception {
-        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
+        return TimeoutExecutor.execAsync(() -> KerberosUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
                         throw new DtCenterDefException("读取文件异常", e);
                     }
-                });
+                }));
     }
 
     public List<String> readNextWithKerberos() throws Exception {
@@ -177,6 +177,20 @@ public class HiveParquetDownload implements IDownloader {
         List<String> line = null;
         if (currentLine != null){
             line = new ArrayList<>();
+            // 每次重新构建columnIndex，对于parquet来说，如果对应schema下没有该列，
+            // currentLine.getType().getFields()返回值的size可能会不同，导致数组越界异常!
+            // bug 连接：http://redmine.prod.dtstack.cn/issues/33045
+            columnIndex = new ArrayList<>();
+            for (String columnName : columnNames) {
+                GroupTypeIgnoreCase groupType = new GroupTypeIgnoreCase(currentLine.getType());
+                columnIndex.add(groupType.containsField(columnName) ?
+                        groupType.getFieldIndex(columnName) : -1);
+            }
+
+            if (CollectionUtils.isNotEmpty(columnIndex)){
+                line = new ArrayList<>();
+                for (Integer index : columnIndex) {
+                    if(index == -1){
             // needIndex不为空表示获取指定字段
             if (CollectionUtils.isNotEmpty(needIndex)) {
                 for (Integer index : needIndex) {
@@ -281,14 +295,14 @@ public class HiveParquetDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() throws Exception {
-        return KerberosUtil.loginWithUGI(kerberosConfig).doAs(
+        return TimeoutExecutor.execAsync(() -> KerberosUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {
                         return !nextRecord();
                     } catch (Exception e){
                         throw new DtCenterDefException("下载文件异常", e);
                     }
-                });
+                }));
 
     }
 
@@ -306,27 +320,27 @@ public class HiveParquetDownload implements IDownloader {
         return null;
     }
 
-    private List<String> getAllPartitionPath(String tableLocation) throws IOException {
+    /**
+     * 递归获取文件夹下所有文件，排除隐藏文件和无关文件
+     *
+     * @param tableLocation hdfs文件路径
+     * @param pathList 所有文件集合
+     */
+    private void getAllPartitionPath(String tableLocation, List<String> pathList) throws IOException {
         Path inputPath = new Path(tableLocation);
         FileSystem fs =  FileSystem.get(jobConf);
-
-        List<String> pathList = Lists.newArrayList();
-        //剔除隐藏系统文件
-        FileStatus[] fsStatus = fs.listStatus(inputPath, path -> !path.getName().startsWith("."));
-
+        //剔除隐藏系统文件和无关文件
+        FileStatus[] fsStatus = fs.listStatus(inputPath, path -> !path.getName().startsWith(".") && !path.getName().startsWith("_SUCCESS") && !path.getName().startsWith("_common_metadata"));
         if(fsStatus == null || fsStatus.length == 0){
             pathList.add(tableLocation);
-            return pathList;
+            return;
         }
-
-        if(fsStatus[0].isDirectory()){
-            for(FileStatus status : fsStatus){
-                pathList.addAll(getAllPartitionPath(status.getPath().toString()));
+        for (FileStatus status : fsStatus) {
+            if (status.isFile()) {
+                pathList.add(status.getPath().toString());
+            }else {
+                getAllPartitionPath(status.getPath().toString(), pathList);
             }
-            return pathList;
-        }else{
-            pathList.add(tableLocation);
-            return pathList;
         }
     }
 

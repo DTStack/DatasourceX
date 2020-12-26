@@ -35,7 +35,7 @@ public class S3Client implements IClient {
         AmazonS3Client amazonS3Client = null;
         try {
             amazonS3Client = S3Utils.getClient(source, null);
-            amazonS3Client.getServiceName();
+            amazonS3Client.listBuckets();
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
         }finally {
@@ -128,6 +128,11 @@ public class S3Client implements IClient {
 
     @Override
     public String getCurrentDatabase(ISourceDTO source) throws Exception {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         throw new DtLoaderException("Not Support");
     }
 }

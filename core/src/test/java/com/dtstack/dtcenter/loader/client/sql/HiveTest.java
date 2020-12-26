@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
+import com.dtstack.dtcenter.common.thread.RdosThreadFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.AbsClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -20,6 +21,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @company: www.dtstack.com
@@ -36,9 +39,9 @@ public class HiveTest {
             .defaultFS("hdfs://ns1")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.8.107:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.100.219:9000\",\n" +
                     "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.8.108:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.100.204:9000\",\n" +
                     "    \"dfs.nameservices\": \"ns1\"\n" +
                     "}")
             .username("admin")
@@ -331,6 +334,28 @@ public class HiveTest {
             SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from test_wangccc").build();
             List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
             System.out.println(mapList);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    @Test
+    public void executeQueryForThreadTest() throws Exception {
+        try {
+            IClient client = clientCache.getClient(DataSourceType.HIVE.getPluginName());
+            SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi1030").build();
+            List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
+            ExecutorService threadPool = Executors.newFixedThreadPool(6, new RdosThreadFactory("test_nanqi"));
+            for (int i = 0; i < 20000000; i++) {
+                threadPool.submit(() -> {
+                    try {
+                        client.executeQuery(source, queryDTO);
+                    } catch (Exception e) {
+
+                    }
+                });
+            }
+            Thread.sleep(1000000L);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

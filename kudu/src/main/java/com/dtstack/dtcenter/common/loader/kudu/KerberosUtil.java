@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.kudu;
 
 import com.dtstack.dtcenter.common.hadoop.DtKerberosUtils;
+import com.dtstack.dtcenter.common.hadoop.HadoopConf;
 import com.dtstack.dtcenter.common.hadoop.HadoopConfTool;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,9 @@ import java.util.Map;
  */
 @Slf4j
 public class KerberosUtil {
+    private static final String SECURITY_TO_LOCAL = "hadoop.security.auth_to_local";
+    private static final String SECURITY_TO_LOCAL_DEFAULT = "RULE:[1:$1] RULE:[2:$1]";
+
     public static synchronized UserGroupInformation loginWithUGI(Map<String, Object> confMap) {
         return loginWithUGI(confMap, "principal", "principalFile", "java.security.krb5.conf");
     }
@@ -28,9 +32,12 @@ public class KerberosUtil {
         // 非 Kerberos 认证，需要重新刷 UGI 信息
         if (MapUtils.isEmpty(confMap)) {
             try {
-                Config.refresh();
-                UserGroupInformation.setConfiguration(new Configuration());
-                return UserGroupInformation.getCurrentUser();
+                UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
+                if (UserGroupInformation.isSecurityEnabled() || !UserGroupInformation.AuthenticationMethod.SIMPLE.equals(currentUser.getAuthenticationMethod())) {
+                    Config.refresh();
+                    UserGroupInformation.setConfiguration(HadoopConf.getDefaultConfig());
+                }
+                return currentUser;
             } catch (Exception e) {
                 throw new DtLoaderException("simple login failed", e);
             }
@@ -51,6 +58,11 @@ public class KerberosUtil {
         // 校验 Principal 和 Keytab 文件
         if (StringUtils.isEmpty(principal) || StringUtils.isEmpty(keytab)) {
             throw new DtLoaderException("Kerberos Login fail, principal or keytab is null");
+        }
+
+        // 处理 Default 角色
+        if (MapUtils.getString(confMap, SECURITY_TO_LOCAL) == null || "DEFAULT".equals(MapUtils.getString(confMap, SECURITY_TO_LOCAL))) {
+            confMap.put(SECURITY_TO_LOCAL, SECURITY_TO_LOCAL_DEFAULT);
         }
 
         try {
