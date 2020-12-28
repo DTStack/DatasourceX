@@ -99,6 +99,6 @@ public class HiveDriverUtil {
         }
 
         String urlWithoutPrefix = url.substring(JDBC_PREFIX_LENGTH);
-        return JDBC_PREFIX + urlWithoutPrefix.replaceFirst("/" + schema, "");
+        return JDBC_PREFIX + urlWithoutPrefix.replaceFirst("/" + schema, "/");
     }
 }
