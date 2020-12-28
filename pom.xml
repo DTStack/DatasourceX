@@ -47,6 +47,7 @@
         <module>s3</module>
         <module>websocket</module>
         <module>vertica</module>
+        <module>socket</module>
     </modules>
     <packaging>pom</packaging>
 
