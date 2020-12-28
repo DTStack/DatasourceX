@@ -6,9 +6,11 @@ import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.downloader.DownloaderProxy;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.FileStatus;
+import com.dtstack.dtcenter.loader.dto.HDFSContentSummary;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.enums.FileFormat;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -111,6 +113,16 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
+    public boolean delete(ISourceDTO source, String remotePath, boolean recursive) throws Exception {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.delete(source, remotePath, recursive),
+                    targetClient.getClass().getClassLoader());
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public long getDirSize(ISourceDTO source, String remotePath) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getDirSize(source, remotePath),
@@ -164,6 +176,26 @@ public class HdfsFileProxy implements IHdfsFile {
     public boolean copyFile(ISourceDTO source, String src, String dist, boolean isOverwrite) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.copyFile(source, src, dist, isOverwrite),
+                    targetClient.getClass().getClassLoader());
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public boolean copyDirector(ISourceDTO source, String src, String dist) throws Exception {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.copyDirector(source, src, dist),
+                    targetClient.getClass().getClassLoader());
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public boolean fileMerge(ISourceDTO source, String src, String mergePath, FileFormat fileFormat, Long maxCombinedFileSize, Long needCombineFileSizeLimit) throws Exception {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.fileMerge(source, src, mergePath, fileFormat, maxCombinedFileSize, needCombineFileSizeLimit),
                     targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
@@ -244,6 +276,26 @@ public class HdfsFileProxy implements IHdfsFile {
     public int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.writeByName(source, hdfsWriterDTO),
+                    targetClient.getClass().getClassLoader());
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<HDFSContentSummary> getContentSummary(ISourceDTO source, List<String> hdfsDirPaths) throws Exception {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getContentSummary(source, hdfsDirPaths),
+                    targetClient.getClass().getClassLoader());
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public HDFSContentSummary getContentSummary(ISourceDTO source, String hdfsDirPath) throws Exception {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getContentSummary(source, hdfsDirPath),
                     targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
