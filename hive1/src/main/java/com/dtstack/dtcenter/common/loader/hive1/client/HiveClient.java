@@ -91,9 +91,6 @@ public class HiveClient extends AbsRdbmsClient {
         List<String> tableList = new ArrayList<>();
         try {
             statement = hive1SourceDTO.getConnection().createStatement();
-            if (StringUtils.isNotEmpty(hive1SourceDTO.getSchema())) {
-                statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, hive1SourceDTO.getSchema()));
-            }
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
@@ -118,9 +115,6 @@ public class HiveClient extends AbsRdbmsClient {
 
         try {
             stmt = hive1SourceDTO.getConnection().createStatement();
-            if (StringUtils.isNotEmpty(hive1SourceDTO.getSchema())) {
-                stmt.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, hive1SourceDTO.getSchema()));
-            }
             resultSet = stmt.executeQuery("desc extended " + queryDTO.getTableName());
             while (resultSet.next()) {
                 String dataType = resultSet.getString(DtClassConsistent.PublicConsistent.DATA_TYPE);
@@ -190,9 +184,6 @@ public class HiveClient extends AbsRdbmsClient {
         ResultSet resultSet = null;
         try {
             statement = hive1SourceDTO.getConnection().createStatement();
-            if (StringUtils.isNotEmpty(hive1SourceDTO.getSchema())) {
-                statement.execute(String.format(DtClassConsistent.PublicConsistent.USE_DB, hive1SourceDTO.getSchema()));
-            }
             resultSet = statement.executeQuery(String.format(DtClassConsistent.HadoopConfConsistent.DESCRIBE_EXTENDED
                     , queryDTO.getTableName()));
             while (resultSet.next()) {
@@ -262,19 +253,25 @@ public class HiveClient extends AbsRdbmsClient {
         String fieldDelimiter = "\001";
         String storageMode = null;
         for (Map<String, Object> map : list) {
-            String colName = (String) map.get("col_name");
+            String colName = MapUtils.getString(map, "col_name");
+            String dataType = MapUtils.getString(map, "data_type");
             if (colName.contains("Location")) {
-                tableLocation = (String) map.get("data_type");
+                tableLocation = dataType;
                 continue;
             }
 
             if (colName.contains("InputFormat")) {
-                storageMode = (String) map.get("data_type");
+                storageMode = dataType;
                 continue;
             }
 
             if (colName.contains("field.delim")) {
-                fieldDelimiter = (String) map.get("data_type");
+                fieldDelimiter = dataType;
+                break;
+            }
+
+            if (Objects.nonNull(dataType) && dataType.contains("field.delim")) {
+                fieldDelimiter = MapUtils.getString(map, "comment");
                 break;
             }
         }

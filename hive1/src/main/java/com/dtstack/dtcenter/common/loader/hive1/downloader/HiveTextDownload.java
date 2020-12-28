@@ -85,6 +85,7 @@ public class HiveTextDownload implements IDownloader {
     @Override
     public boolean configure() throws IOException {
 
+        conf = new JobConf(configuration);
         paths = Lists.newArrayList();
         // 递归获取表路径下所有文件
         getAllPartitionPath(tableLocation, paths);
@@ -129,7 +130,6 @@ public class HiveTextDownload implements IDownloader {
         }
 
         Path inputPath = new Path(currFile);
-        conf = new JobConf(configuration);
         inputFormat = new TextInputFormat();
 
         FileInputFormat.setInputPaths(conf, inputPath);

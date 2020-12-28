@@ -1,7 +1,5 @@
 package com.dtstack.dtcenter.common.loader.impala;
 
-import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
-import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -9,11 +7,9 @@ import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 import java.security.PrivilegedAction;
 import java.sql.Connection;
-import java.util.regex.Matcher;
 
 /**
  * @company: www.dtstack.com
@@ -40,26 +36,7 @@ public class ImpalaConnFactory extends ConnFactory {
                     }
                 }
         );
-        String db = StringUtils.isBlank(impalaSourceDTO.getSchema()) ? getImpalaSchema(impalaSourceDTO.getUrl()) : impalaSourceDTO.getSchema();
-        if (StringUtils.isNotBlank(db)) {
-            DBUtil.executeSqlWithoutResultSet(connection, String.format(DtClassConsistent.PublicConsistent.USE_DB, db),
-                    false);
-        }
-        return connection;
-    }
 
-    /**
-     * 获取 Impala schema
-     *
-     * @param jdbcUrl
-     * @return
-     */
-    private String getImpalaSchema(String jdbcUrl) {
-        Matcher matcher = DtClassConsistent.PatternConsistent.IMPALA_JDBC_PATTERN.matcher(jdbcUrl);
-        String db = "";
-        if (matcher.matches()) {
-            db = matcher.group(1);
-        }
-        return db;
+        return ImpalaDriverUtil.setSchema(connection, impalaSourceDTO.getSchema());
     }
 }

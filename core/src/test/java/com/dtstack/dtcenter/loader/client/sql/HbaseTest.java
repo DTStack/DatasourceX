@@ -6,17 +6,23 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.comparator.BinaryComparator;
 import com.dtstack.dtcenter.loader.dto.filter.Filter;
+import com.dtstack.dtcenter.loader.dto.filter.PageFilter;
 import com.dtstack.dtcenter.loader.dto.filter.RowFilter;
+import com.dtstack.dtcenter.loader.dto.filter.SingleColumnValueFilter;
+import com.dtstack.dtcenter.loader.dto.filter.TimestampFilter;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.enums.CompareOp;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
+import com.google.common.collect.Lists;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @company: www.dtstack.com
@@ -87,6 +93,69 @@ public class HbaseTest {
         IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
         List<List<Object>> result = client.getPreview(source, SqlQueryDTO.builder().tableName("TEST").previewNum(1).build());
         System.out.println(result);
+    }
+
+    @Test
+    public void timestampFilterTest_less_or_equal() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
+        PageFilter pageFilter = new PageFilter(1);
+        TimestampFilter timestampFilter = new TimestampFilter(CompareOp.LESS_OR_EQUAL, 1602506453868L);
+        List<Filter> filters = Lists.newArrayList(timestampFilter, pageFilter);
+        List<Map<String, Object>> result = client.executeQuery(source, SqlQueryDTO.builder().tableName("jmt_test_1602506450578").hbaseFilter(filters).build());
+        Assert.assertTrue(((Long) result.get(0).get("timestamp")) <= 1602506453868L);
+    }
+
+    @Test
+    public void timestampFilter_less() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
+        PageFilter pageFilter = new PageFilter(1);
+        TimestampFilter timestampFilter = new TimestampFilter(CompareOp.LESS, 1602506453868L);
+        List<Filter> filters = Lists.newArrayList(timestampFilter, pageFilter);
+        List<Map<String, Object>> result = client.executeQuery(source, SqlQueryDTO.builder().tableName("jmt_test_1602506450578").hbaseFilter(filters).build());
+        Assert.assertTrue(((Long) result.get(0).get("timestamp")) < 1602506453868L);
+    }
+
+    @Test
+    public void timestampFilter_equal() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
+        PageFilter pageFilter = new PageFilter(1);
+        TimestampFilter timestampFilter = new TimestampFilter(CompareOp.EQUAL, 1602506453868L);
+        List<Filter> filters = Lists.newArrayList(timestampFilter, pageFilter);
+        List<Map<String, Object>> result = client.executeQuery(source, SqlQueryDTO.builder().tableName("jmt_test_1602506450578").hbaseFilter(filters).build());
+        Assert.assertEquals(1602506453868L, result.get(0).get("timestamp"));
+    }
+
+    @Test
+    public void timestampFilterTest_granter() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
+        PageFilter pageFilter = new PageFilter(100);
+        TimestampFilter timestampFilter = new TimestampFilter(CompareOp.GREATER, 1602506453868L);
+        List<Filter> filters = Lists.newArrayList(timestampFilter, pageFilter);
+        List<Map<String, Object>> result = client.executeQuery(source, SqlQueryDTO.builder().tableName("jmt_test_1602506450578").hbaseFilter(filters).build());
+        System.out.println(result);
+        Assert.assertTrue(((Long) result.get(0).get("timestamp")) > 1602506453868L);
+    }
+
+    @Test
+    public void timestampFilterTest_granter_or_equal() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
+        PageFilter pageFilter = new PageFilter(100);
+        TimestampFilter timestampFilter = new TimestampFilter(CompareOp.GREATER_OR_EQUAL, 1602506453868L);
+        List<Filter> filters = Lists.newArrayList(timestampFilter, pageFilter);
+        List<Map<String, Object>> result = client.executeQuery(source, SqlQueryDTO.builder().tableName("jmt_test_1602506450578").hbaseFilter(filters).build());
+        System.out.println(result);
+        Assert.assertTrue(((Long) result.get(0).get("timestamp")) >= 1602506453868L);
+    }
+
+    @Test
+    public void timestampAndRowKeyFilterTest_granter_or_equal() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
+        PageFilter pageFilter = new PageFilter(100);
+        RowFilter rowFilter = new RowFilter(CompareOp.LESS, new BinaryComparator("auto9".getBytes()));
+        TimestampFilter timestampFilter = new TimestampFilter(CompareOp.GREATER_OR_EQUAL, 1602506453868L);
+        List<Filter> filters = Lists.newArrayList(timestampFilter, pageFilter, rowFilter);
+        List<Map<String, Object>> result = client.executeQuery(source, SqlQueryDTO.builder().tableName("jmt_test_1602506450578").hbaseFilter(filters).build());
+        Assert.assertTrue(((Long) result.get(0).get("timestamp")) >= 1602506453868L);
     }
 
     /**
