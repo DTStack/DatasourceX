@@ -47,6 +47,12 @@
             <artifactId>mssql-jdbc</artifactId>
             <version>7.2.2.jre8</version>
         </dependency>
+
+        <dependency>
+            <groupId>net.sourceforge.jtds</groupId>
+            <artifactId>jtds</artifactId>
+            <version>1.2.4</version>
+        </dependency>
     </dependencies>
 
     <build>
