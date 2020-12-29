@@ -1,7 +1,5 @@
 package com.dtstack.dtcenter.loader.enums;
 
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-
 /**
  *
  * hdfsWriter支持的格式

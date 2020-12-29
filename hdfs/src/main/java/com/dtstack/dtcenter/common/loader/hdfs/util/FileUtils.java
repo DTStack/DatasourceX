@@ -17,6 +17,7 @@
  */
 package com.dtstack.dtcenter.common.loader.hdfs.util;
 
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -35,13 +36,13 @@ public class FileUtils {
             //判断是不是文件夹
             if (fs.isDirectory(sourcePath)) {
                 if (!FileUtil.copy(fs, sourcePath, fs, backupPath, false, configuration)) {
-                    throw new RuntimeException("copy " + sourcePath.toString() + " to " + backupPath.toString() + " failed");
+                    throw new DtLoaderException("copy " + sourcePath.toString() + " to " + backupPath.toString() + " failed");
                 }
             } else {
-                throw new RuntimeException(sourcePath.toString() + "is not a directory");
+                throw new DtLoaderException(sourcePath.toString() + "is not a directory");
             }
         } else {
-            throw new RuntimeException(sourcePath.toString() + " is not exists");
+            throw new DtLoaderException(sourcePath.toString() + " is not exists");
         }
     }
 
@@ -50,14 +51,14 @@ public class FileUtils {
         if (isExists(fs, sourcePath)) {
             if (fs.isFile(sourcePath)) {
                 if (!FileUtil.copy(fs, sourcePath, fs, backupPath, false, configuration)) {
-                    throw new RuntimeException("copy " + sourcePath.toString() + " to " + backupPath.toString() + " failed");
+                    throw new DtLoaderException("copy " + sourcePath.toString() + " to " + backupPath.toString() + " failed");
                 }
             } else {
-                throw new RuntimeException(sourcePath.toString() + "is not a file");
+                throw new DtLoaderException(sourcePath.toString() + "is not a file");
             }
 
         } else {
-            throw new RuntimeException(sourcePath.toString() + " is not exists");
+            throw new DtLoaderException(sourcePath.toString() + " is not exists");
         }
     }
 
