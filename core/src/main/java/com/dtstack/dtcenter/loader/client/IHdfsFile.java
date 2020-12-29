@@ -3,9 +3,11 @@ package com.dtstack.dtcenter.loader.client;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.FileStatus;
+import com.dtstack.dtcenter.loader.dto.HDFSContentSummary;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.enums.FileFormat;
 
 import java.util.List;
 
@@ -97,6 +99,17 @@ public interface IHdfsFile {
     boolean checkAndDelete(ISourceDTO source, String remotePath) throws Exception;
 
     /**
+     * 直接删除目标路径文件
+     *
+     * @param source 数据源信息
+     * @param remotePath 目标路径
+     * @param recursive 是否递归删除
+     * @return 删除结果
+     * @throws Exception
+     */
+    boolean delete(ISourceDTO source, String remotePath, boolean recursive) throws Exception;
+
+    /**
      * 获取路径文件大小
      *
      * @return
@@ -154,6 +167,29 @@ public interface IHdfsFile {
      * @throws Exception
      */
     boolean copyFile(ISourceDTO source, String src, String dist, boolean isOverwrite) throws Exception;
+
+    /**
+     * 复制文件夹
+     *
+     * @param source 数据源信息
+     * @param src 原路径
+     * @param dist 目标路径
+     * @throws Exception
+     */
+    boolean copyDirector(ISourceDTO source, String src, String dist) throws Exception;
+
+    /**
+     * 合并小文件
+     *
+     * @param source 数据源信息
+     * @param src 合并路径
+     * @param mergePath 目标路径
+     * @param fileFormat 文件类型 ： text、orc、parquet {@link com.dtstack.dtcenter.loader.enums.FileFormat}
+     * @param maxCombinedFileSize 合并后的文件大小
+     * @param needCombineFileSizeLimit 小文件的最大值，超过此阈值的小文件不会合并
+     * @throws Exception
+     */
+    boolean fileMerge(ISourceDTO source, String src, String mergePath, FileFormat fileFormat, Long maxCombinedFileSize, Long needCombineFileSizeLimit) throws Exception;
 
     /**
      * 获取目录下所有文件
@@ -232,5 +268,24 @@ public interface IHdfsFile {
      * @throws Exception
      */
     int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception;
+
+    /**
+     * 批量统计文件夹内容摘要，包括文件的数量，文件夹的数量，文件变动时间，以及这个文件夹的占用存储等内容
+     *
+     * @param source 数据源信息
+     * @param hdfsDirPaths hdfs上文件路径集合
+     * @return 文件摘要信息
+     */
+    List<HDFSContentSummary> getContentSummary (ISourceDTO source, List<String> hdfsDirPaths) throws Exception;
+
+    /**
+     * 统计文件夹内容摘要，包括文件的数量，文件夹的数量，文件变动时间，以及这个文件夹的占用存储等内容
+     *
+     * @param source 数据源信息
+     * @param hdfsDirPath hdfs上文件路径
+     * @return 文件摘要信息
+     */
+    HDFSContentSummary getContentSummary (ISourceDTO source, String hdfsDirPath) throws Exception;
+
 
 }
