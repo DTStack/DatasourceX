@@ -60,7 +60,7 @@ public class ParquetCombineServer extends CombineServer {
                     currentCount++;
                     if (currentCount >= rowCountSplit) {
                         currentCount = 0L;
-                        writer.close();
+                        cleanSource(writer);
                         writer = null;
                     }
 
@@ -105,11 +105,11 @@ public class ParquetCombineServer extends CombineServer {
     public MessageType getParquetSchema(FileStatus fileStatus) throws IOException {
         ParquetMetadata metaData;
         Path file = fileStatus.getPath();
-
-        ParquetFileReader parquetFileReader = ParquetFileReader.open(configuration, file);
-
-        metaData = parquetFileReader.getFooter();
-        MessageType schema = metaData.getFileMetaData().getSchema();
+        MessageType schema;
+        try (ParquetFileReader parquetFileReader = ParquetFileReader.open(configuration, file)){
+            metaData = parquetFileReader.getFooter();
+            schema = metaData.getFileMetaData().getSchema();
+        }
         return schema;
 
     }

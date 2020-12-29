@@ -102,7 +102,7 @@ public class OrcCombineServer extends CombineServer {
         Reader reader = getReader(fileStatus);
         long rowSize = rowSize(fileStatus);
         BigDecimal sourceSize = new BigDecimal(fileStatus.getLen() + "")
-                .divide(new BigDecimal(ECompressType.getByTypeAndFileType(reader.getCompressionKind().name(), "orc")
+                .divide(BigDecimal.valueOf(ECompressType.getByTypeAndFileType(reader.getCompressionKind().name(), "orc")
                         .getDeviation()), 4, RoundingMode.HALF_UP);
         BigDecimal divide = new BigDecimal(rowSize + "").divide(sourceSize, 4, ROUND_HALF_UP);
 
