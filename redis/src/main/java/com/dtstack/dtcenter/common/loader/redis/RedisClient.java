@@ -24,6 +24,11 @@ public class RedisClient<T> implements IClient<T> {
         return RedisUtils.checkConnection(iSource);
     }
 
+    @Override
+    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
+        return RedisUtils.getPreview(source, queryDTO);
+    }
+
     /********************************* 非关系型数据库无需实现的方法 ******************************************/
     @Override
     public Connection getCon(ISourceDTO iSource) {
@@ -72,11 +77,6 @@ public class RedisClient<T> implements IClient<T> {
 
     @Override
     public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
