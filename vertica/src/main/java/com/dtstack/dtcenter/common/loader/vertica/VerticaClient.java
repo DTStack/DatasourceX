@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.common.loader.vertica;
 
-import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
@@ -34,12 +33,12 @@ public class VerticaClient extends AbsRdbmsClient {
     /**
      * 展示特定 SCHEMA 的表
      */
-    private static final String SHOW_TABLES_SCHEMA = "select table_name AS table_name, table_schema AS schema_name from tables where table_schema = '%s'";
+    private static final String SHOW_TABLES_SCHEMA = "select table_name from tables where table_schema = '%s'";
 
     /**
      * 查找 schema
      */
-    private static final String SHOW_SCHEMA = "select * from schemata where is_system_schema = false";
+    private static final String SHOW_SCHEMA = "select schema_name from schemata where is_system_schema = false";
 
     /**
      * 查找表注释
@@ -57,7 +56,7 @@ public class VerticaClient extends AbsRdbmsClient {
     private static final String TABLE_QUERY = "SELECT * FROM %s";
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         VerticaSourceDTO verticaSourceDTO = (VerticaSourceDTO) iSource;
         List<String> tableList = new ArrayList<>();
@@ -79,18 +78,15 @@ public class VerticaClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableListBySchema(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableListBySchema(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         if (StringUtils.isBlank(queryDTO.getSchema())) {
             return getTableList(iSource, queryDTO);
         }
-        SqlQueryDTO sqlQueryDTO = JSONObject.parseObject(JSONObject.toJSONString(queryDTO), SqlQueryDTO.class);
-        String table = getTableFromTable(queryDTO.getTableName());
-        sqlQueryDTO.setTableName(transferSchemaAndTableName(queryDTO.getSchema(), table));
-        return getTableList(iSource, queryDTO);
+        return super.getTableListBySchema(iSource, queryDTO);
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         VerticaSourceDTO verticaSourceDTO = (VerticaSourceDTO) iSource;
 
@@ -129,7 +125,7 @@ public class VerticaClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 

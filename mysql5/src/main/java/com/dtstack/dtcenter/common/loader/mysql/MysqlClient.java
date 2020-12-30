@@ -13,6 +13,7 @@ import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
@@ -37,6 +38,9 @@ public class MysqlClient extends AbsRdbmsClient {
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select database()";
 
+    // 模糊查询数据库
+    private static final String SHOW_DB_LIKE = "show databases like '%s'";
+
     private static final String DONT_EXIST = "doesn't exist";
 
     // 获取指定数据库下的表
@@ -47,6 +51,12 @@ public class MysqlClient extends AbsRdbmsClient {
 
     // 限制条数语句
     private static final String LIMIT_SQL = " limit %s ";
+
+    // 创建数据库
+    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
+
+    // 判断table是否在schema中
+    private static final String TABLE_IS_IN_SCHEMA = "select table_name from information_schema.tables where table_schema='%s' and table_name = '%s'";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -89,7 +99,7 @@ public class MysqlClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Mysql5SourceDTO mysql5SourceDTO = (Mysql5SourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(mysql5SourceDTO, queryDTO);
         Statement statement = null;
@@ -123,12 +133,12 @@ public class MysqlClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(sourceDTO, queryDTO);
         Statement statement = null;
         ResultSet rs = null;
@@ -160,6 +170,27 @@ public class MysqlClient extends AbsRdbmsClient {
     @Override
     protected String getCurrentDbSql() {
         return CURRENT_DB;
+    }
+
+    @Override
+    protected String getCreateDatabaseSql(String dbName, String comment) {
+        return String.format(CREATE_SCHEMA_SQL_TMPL, dbName);
+    }
+
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空");
+        }
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(SHOW_DB_LIKE, dbName)).build()));
+    }
+
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空");
+        }
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_IS_IN_SCHEMA, dbName, tableName)).build()));
     }
 
     /**

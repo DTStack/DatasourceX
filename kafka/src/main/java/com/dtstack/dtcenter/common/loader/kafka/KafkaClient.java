@@ -49,7 +49,7 @@ public class KafkaClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
@@ -109,7 +109,22 @@ public class KafkaClient<T> implements IClient<T> {
     }
 
     @Override
-    public String getCurrentDatabase(ISourceDTO source) throws Exception {
+    public String getCurrentDatabase(ISourceDTO source) {
         throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) {
+        throw new DtLoaderException("kafka数据源不支持该方法");
+    }
+
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
+        throw new DtLoaderException("kafka数据源不支持该方法");
+    }
+
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
+        throw new DtLoaderException("kafka数据源不支持该方法");
     }
 }

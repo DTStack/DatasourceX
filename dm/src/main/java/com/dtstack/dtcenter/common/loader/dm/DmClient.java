@@ -44,7 +44,7 @@ public class DmClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
 
         DmSourceDTO dmSourceDTO = (DmSourceDTO) iSource;
@@ -77,14 +77,14 @@ public class DmClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         DmSourceDTO dmSourceDTO = (DmSourceDTO) source;
         queryDTO.setSql(String.format(CREATE_TABLE_SQL,queryDTO.getTableName(),dmSourceDTO.getSchema()));
         return super.getCreateTableSql(source,queryDTO);
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 

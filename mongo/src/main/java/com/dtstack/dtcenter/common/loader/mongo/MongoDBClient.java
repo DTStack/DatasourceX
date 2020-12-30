@@ -106,12 +106,27 @@ public class MongoDBClient<T> implements IClient<T> {
     }
 
     @Override
-    public String getCurrentDatabase(ISourceDTO source) throws Exception {
+    public String getCurrentDatabase(ISourceDTO source) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) {
+        throw new DtLoaderException("mongodb数据源不支持该方法");
+    }
+
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
+        throw new DtLoaderException("mongodb数据源不支持该方法");
+    }
+
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
+        throw new DtLoaderException("mongodb数据源不支持该方法");
+    }
+
+    @Override
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException("mongodb数据源不支持该方法");
     }
 }

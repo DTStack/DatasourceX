@@ -43,6 +43,9 @@ public class MysqlClient extends AbsRdbmsClient {
     // 限制条数语句
     private static final String LIMIT_SQL = " limit %s ";
 
+    // 创建数据库
+    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new MysqlConnFactory();
@@ -59,7 +62,7 @@ public class MysqlClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Mysql8SourceDTO mysql8SourceDTO = (Mysql8SourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(mysql8SourceDTO, queryDTO);
         Statement statement = null;
@@ -93,7 +96,7 @@ public class MysqlClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(sourceDTO, queryDTO);
         Statement statement = null;
         ResultSet rs = null;
@@ -125,6 +128,11 @@ public class MysqlClient extends AbsRdbmsClient {
     @Override
     protected String getCurrentDbSql() {
         return CURRENT_DB;
+    }
+
+    @Override
+    protected String getCreateDatabaseSql(String dbName, String comment) {
+        return String.format(CREATE_SCHEMA_SQL_TMPL, dbName);
     }
 
     /**

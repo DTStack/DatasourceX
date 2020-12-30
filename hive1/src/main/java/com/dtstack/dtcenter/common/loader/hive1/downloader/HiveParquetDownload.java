@@ -150,7 +150,7 @@ public class HiveParquetDownload implements IDownloader {
     }
 
     @Override
-    public List<String> getMetaInfo() throws Exception {
+    public List<String> getMetaInfo() {
         List<String> metaInfo = new ArrayList<>(columnNames);
         if(CollectionUtils.isNotEmpty(partitionColumns)){
             metaInfo.addAll(partitionColumns);
@@ -159,7 +159,7 @@ public class HiveParquetDownload implements IDownloader {
     }
 
     @Override
-    public List<String> readNext() throws Exception {
+    public List<String> readNext() {
         return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<List<String>>) ()->{
                     try {
@@ -273,7 +273,7 @@ public class HiveParquetDownload implements IDownloader {
     }
 
     @Override
-    public boolean reachedEnd() throws Exception {
+    public boolean reachedEnd() {
         return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
                     try {

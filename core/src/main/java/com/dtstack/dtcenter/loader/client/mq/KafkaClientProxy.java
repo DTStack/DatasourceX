@@ -26,44 +26,50 @@ public class KafkaClientProxy<T> implements IKafka<T> {
     }
 
     @Override
-    public Boolean testCon(ISourceDTO source) throws Exception {
+    public Boolean testCon(ISourceDTO source) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.testCon(source),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public String getAllBrokersAddress(ISourceDTO source) throws Exception {
+    public String getAllBrokersAddress(ISourceDTO source) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getAllBrokersAddress(source),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<String> getTopicList(ISourceDTO source) throws Exception {
+    public List<String> getTopicList(ISourceDTO source) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTopicList(source),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public Boolean createTopic(ISourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception {
+    public Boolean createTopic(ISourceDTO source, KafkaTopicDTO kafkaTopic) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.createTopic(source, kafkaTopic),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<T> getAllPartitions(ISourceDTO source, String topic) throws Exception {
+    public List<T> getAllPartitions(ISourceDTO source, String topic) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getAllPartitions(source, topic),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<KafkaOffsetDTO> getOffset(ISourceDTO source, String topic) throws Exception {
+    public List<KafkaOffsetDTO> getOffset(ISourceDTO source, String topic) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getOffset(source, topic),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPreview(source, queryDTO),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO, String prevMode) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPreview(source, queryDTO, prevMode),
                 targetClient.getClass().getClassLoader());
     }
 }

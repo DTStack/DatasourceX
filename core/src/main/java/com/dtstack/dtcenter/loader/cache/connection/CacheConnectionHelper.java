@@ -18,8 +18,10 @@ import java.util.Random;
  * 1. 先使用 start 开启缓存连接池配置，如果有要求多次请求复用，请传入唯一 sessionKey
  * 2. 使用完请使用 stop 关闭缓存，如果使用了 start 则必须使用 stop 关闭线程池，否则会存储到缓存池中，轮询超时销毁
  * 3. 如果 VertX 等服务有线程池的情况，需要再请求技术之后，不管有没有 stop 都需要一次 removeCacheConnection()
+ * 4. 等待真实使用场景
  */
 @Slf4j
+@Deprecated
 public class CacheConnectionHelper {
     private static Random random = new Random();
 
@@ -177,7 +179,7 @@ public class CacheConnectionHelper {
     }
 
     @Nullable
-    public static Connection getConnection(Integer sourceType, Callback<Connection> callback) throws SQLException {
+    public static Connection getConnection(Integer sourceType, Callback<Connection> callback) {
         if (StringUtils.isBlank(getSessionKey())) {
             return null;
         }
@@ -185,7 +187,7 @@ public class CacheConnectionHelper {
         return getConnection(getSessionKey(), sourceType, callback);
     }
 
-    public static Connection getConnection(String sessionKey, Integer sourceType, Callback<Connection> callback) throws SQLException {
+    public static Connection getConnection(String sessionKey, Integer sourceType, Callback<Connection> callback) {
         Connection connection = getConnection(sessionKey, sourceType);
 
         // 如果在当前所有的缓存池中存在，则直接获取
@@ -206,7 +208,7 @@ public class CacheConnectionHelper {
      * @return
      * @throws SQLException
      */
-    private static Connection setConnection(String sessionKey, Integer sourceType, Connection connection) throws SQLException {
+    private static Connection setConnection(String sessionKey, Integer sourceType, Connection connection) {
         DataSourceConnection sourceConnection = HashCacheConnectionKey.getSourceConnection(sessionKey);
         if (sourceConnection == null) {
             return connection;

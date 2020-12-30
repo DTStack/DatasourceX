@@ -40,7 +40,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public IDownloader getLogDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public IDownloader getLogDownloader(ISourceDTO source, SqlQueryDTO queryDTO) {
         try {
             //这里返回给上层的是downLoader代理类
             return ClassLoaderCallBackMethod.callbackAndReset(() -> new DownloaderProxy(targetClient.getLogDownloader(source, queryDTO)),
@@ -51,7 +51,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public IDownloader getFileDownloader(ISourceDTO source, String path) throws Exception {
+    public IDownloader getFileDownloader(ISourceDTO source, String path) {
         try {
             //这里返回给上层的是downLoader代理类
             return ClassLoaderCallBackMethod.callbackAndReset(() -> new DownloaderProxy(targetClient.getFileDownloader(source, path)),
@@ -62,7 +62,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean downloadFileFromHdfs(ISourceDTO source, String remotePath, String localDir) throws Exception {
+    public boolean downloadFileFromHdfs(ISourceDTO source, String remotePath, String localDir) {
         try {
            return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.downloadFileFromHdfs(source, remotePath, localDir),
                     targetClient.getClass().getClassLoader());
@@ -72,7 +72,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean uploadLocalFileToHdfs(ISourceDTO source, String localFilePath, String remotePath) throws Exception {
+    public boolean uploadLocalFileToHdfs(ISourceDTO source, String localFilePath, String remotePath) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.uploadLocalFileToHdfs(source, localFilePath, remotePath),
                     targetClient.getClass().getClassLoader());
@@ -82,7 +82,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean uploadInputStreamToHdfs(ISourceDTO source, byte[] bytes, String remotePath) throws Exception {
+    public boolean uploadInputStreamToHdfs(ISourceDTO source, byte[] bytes, String remotePath) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.uploadInputStreamToHdfs(source, bytes, remotePath),
                     targetClient.getClass().getClassLoader());
@@ -92,7 +92,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean createDir(ISourceDTO source, String remotePath, Short permission) throws Exception {
+    public boolean createDir(ISourceDTO source, String remotePath, Short permission) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.createDir(source, remotePath, permission),
                     targetClient.getClass().getClassLoader());
@@ -102,7 +102,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean isFileExist(ISourceDTO source, String remotePath) throws Exception {
+    public boolean isFileExist(ISourceDTO source, String remotePath) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.isFileExist(source, remotePath),
                     targetClient.getClass().getClassLoader());
@@ -112,7 +112,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean checkAndDelete(ISourceDTO source, String remotePath) throws Exception {
+    public boolean checkAndDelete(ISourceDTO source, String remotePath) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.checkAndDelete(source, remotePath),
                     targetClient.getClass().getClassLoader());
@@ -122,7 +122,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public long getDirSize(ISourceDTO source, String remotePath) throws Exception {
+    public long getDirSize(ISourceDTO source, String remotePath) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getDirSize(source, remotePath),
                     targetClient.getClass().getClassLoader());
@@ -132,7 +132,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean deleteFiles(ISourceDTO source, List<String> fileNames) throws Exception {
+    public boolean deleteFiles(ISourceDTO source, List<String> fileNames) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.deleteFiles(source, fileNames),
                     targetClient.getClass().getClassLoader());
@@ -142,7 +142,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean isDirExist(ISourceDTO source, String remotePath) throws Exception {
+    public boolean isDirExist(ISourceDTO source, String remotePath) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.isDirExist(source, remotePath),
                     targetClient.getClass().getClassLoader());
@@ -152,7 +152,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean setPermission(ISourceDTO source, String remotePath, String mode) throws Exception {
+    public boolean setPermission(ISourceDTO source, String remotePath, String mode) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.setPermission(source, remotePath, mode),
                     targetClient.getClass().getClassLoader());
@@ -162,7 +162,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean rename(ISourceDTO source, String src, String dist) throws Exception {
+    public boolean rename(ISourceDTO source, String src, String dist) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.rename(source, src, dist),
                     targetClient.getClass().getClassLoader());
@@ -172,7 +172,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean copyFile(ISourceDTO source, String src, String dist, boolean isOverwrite) throws Exception {
+    public boolean copyFile(ISourceDTO source, String src, String dist, boolean isOverwrite) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.copyFile(source, src, dist, isOverwrite),
                     targetClient.getClass().getClassLoader());
@@ -182,7 +182,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public List<String> listAllFilePath(ISourceDTO source, String remotePath) throws Exception {
+    public List<String> listAllFilePath(ISourceDTO source, String remotePath) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.listAllFilePath(source, remotePath),
                     targetClient.getClass().getClassLoader());
@@ -192,7 +192,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public List<FileStatus> listAllFiles(ISourceDTO source, String remotePath, boolean isIterate) throws Exception {
+    public List<FileStatus> listAllFiles(ISourceDTO source, String remotePath, boolean isIterate) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.listAllFiles(source, remotePath, isIterate),
                     targetClient.getClass().getClassLoader());
@@ -202,7 +202,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean copyToLocal(ISourceDTO source, String srcPath, String dstPath) throws Exception {
+    public boolean copyToLocal(ISourceDTO source, String srcPath, String dstPath) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.copyToLocal(source, srcPath, dstPath),
                     targetClient.getClass().getClassLoader());
@@ -212,7 +212,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean copyFromLocal(ISourceDTO source, String srcPath, String dstPath, boolean overwrite) throws Exception {
+    public boolean copyFromLocal(ISourceDTO source, String srcPath, String dstPath, boolean overwrite) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.copyFromLocal(source, srcPath, dstPath, overwrite),
                     targetClient.getClass().getClassLoader());
@@ -222,7 +222,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat) throws Exception {
+    public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> new DownloaderProxy(targetClient.getDownloaderByFormat(source, tableLocation, columnNames, fieldDelimiter, fileFormat)),
                     targetClient.getClass().getClassLoader());
@@ -232,7 +232,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnList(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) throws Exception {
+    public List<ColumnMetaDTO> getColumnList(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnList(source, queryDTO, fileFormat),
                     targetClient.getClass().getClassLoader());
@@ -242,7 +242,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception {
+    public int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.writeByPos(source, hdfsWriterDTO),
                     targetClient.getClass().getClassLoader());
@@ -252,7 +252,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception {
+    public int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.writeByName(source, hdfsWriterDTO),
                     targetClient.getClass().getClassLoader());

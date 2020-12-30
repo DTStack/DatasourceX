@@ -35,7 +35,7 @@ public class SocketClient implements IClient {
     private static final String SOCKET_URL = "%s?%s";
 
     @Override
-    public Boolean testCon(ISourceDTO source) throws Exception {
+    public Boolean testCon(ISourceDTO source) {
         WebSocketSourceDTO socketSourceDTO = (WebSocketSourceDTO) source;
         String authParamStr = null;
         if (MapUtils.isNotEmpty(socketSourceDTO.getAuthParams())) {
@@ -84,87 +84,102 @@ public class SocketClient implements IClient {
     }
 
     @Override
-    public Connection getCon(ISourceDTO source) throws Exception {
+    public Connection getCon(ISourceDTO source) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public List<String> getColumnClassInfo(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getColumnClassInfo(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 
     @Override
-    public String getCurrentDatabase(ISourceDTO source) throws Exception {
+    public String getCurrentDatabase(ISourceDTO source) {
+        throw new DtLoaderException("该数据源暂时不支持该方法!");
+    }
+
+    @Override
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) {
+        throw new DtLoaderException("该数据源暂时不支持该方法!");
+    }
+
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
+        throw new DtLoaderException("该数据源暂时不支持该方法!");
+    }
+
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
         throw new DtLoaderException("该数据源暂时不支持该方法!");
     }
 }

@@ -201,7 +201,7 @@ public class HdfsTextDownload implements IDownloader {
     }
 
     @Override
-    public List<String> getMetaInfo() throws Exception {
+    public List<String> getMetaInfo(){
         List<String> metaInfo = new ArrayList<>(columnNames);
         if(CollectionUtils.isNotEmpty(partitionColumns)){
             metaInfo.addAll(partitionColumns);
@@ -244,7 +244,7 @@ public class HdfsTextDownload implements IDownloader {
     }
 
     @Override
-    public boolean reachedEnd() throws IOException {
+    public boolean reachedEnd() {
         return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Boolean>) ()->{
             try {

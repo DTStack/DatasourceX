@@ -24,7 +24,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    Connection getCon(ISourceDTO source) throws Exception;
+    Connection getCon(ISourceDTO source);
 
     /**
      * 校验 连接
@@ -33,7 +33,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    Boolean testCon(ISourceDTO source) throws Exception;
+    Boolean testCon(ISourceDTO source);
 
     /**
      * 执行查询
@@ -43,7 +43,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 执行查询，无需结果集
@@ -53,7 +53,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 返回所有的表字段名称
@@ -64,7 +64,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 根据schema/db获取表
@@ -74,7 +74,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 返回字段 Java 类的标准名称
@@ -85,7 +85,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<String> getColumnClassInfo(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    List<String> getColumnClassInfo(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取表字段属性
@@ -96,7 +96,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<ColumnMetaDTO> getColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    List<ColumnMetaDTO> getColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 根据自定义sql获取表字段属性
@@ -106,7 +106,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取flinkSql字段名称
@@ -116,7 +116,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取表注释
@@ -126,7 +126,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取预览数据
@@ -136,7 +136,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取对应的downloader
@@ -156,7 +156,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取建表语句
@@ -166,7 +166,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取分区字段
@@ -176,7 +176,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取表信息
@@ -186,7 +186,7 @@ public interface IClient<T> {
      * @return
      * @throws Exception
      */
-    Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    Table getTable(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取当前使用的数据库
@@ -195,5 +195,38 @@ public interface IClient<T> {
      * @return 当前使用的数据库
      * @throws Exception
      */
-    String getCurrentDatabase(ISourceDTO source) throws Exception;
+    String getCurrentDatabase(ISourceDTO source);
+
+    /**
+     * 创建数据库
+     *
+     * @param source 数据源信息
+     * @param dbName 需要创建的数据库
+     * @param comment 库注释信息
+     * @return 创建结果
+     * @throws Exception
+     */
+    Boolean createDatabase(ISourceDTO source, String dbName, String comment);
+
+    /**
+     * 判断数据库是否存在
+     *
+     * @param source 数据源信息
+     * @param dbName 数据库名称
+     * @return 判断结果
+     * @throws Exception
+     */
+    Boolean isDatabaseExists(ISourceDTO source, String dbName) ;
+
+    /**
+     * 判断该数据库中是否存在该表
+     *
+     * @param source 数据源信息
+     * @param tableName 表名
+     * @param dbName 库名
+     * @return 判断结果
+     * @throws Exception
+     */
+    Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName);
+
 }

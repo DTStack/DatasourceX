@@ -1,10 +1,13 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+
+import java.sql.Connection;
 
 /**
  * @company: www.dtstack.com
@@ -37,4 +40,14 @@ public class S3SourceDTO implements ISourceDTO {
      * 域名信息
      */
     private String hostname;
+
+    @Override
+    public Connection getConnection() {
+        throw new DtLoaderException("不支持该方法");
+    }
+
+    @Override
+    public void setConnection(Connection connection) {
+        throw new DtLoaderException("不支持该方法");
+    }
 }

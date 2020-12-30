@@ -65,7 +65,7 @@ public class SqlServerClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         SqlserverSourceDTO sqlserverSourceDTO = (SqlserverSourceDTO) iSource;
         Integer clearStatus = beforeQuery(sqlserverSourceDTO, queryDTO, false);
 
@@ -89,7 +89,7 @@ public class SqlServerClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         SqlserverSourceDTO sqlserverSourceDTO = (SqlserverSourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(sqlserverSourceDTO, queryDTO);
 
@@ -154,17 +154,17 @@ public class SqlServerClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(sourceDTO, queryDTO);
         Statement statement = null;
         ResultSet rs = null;

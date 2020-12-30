@@ -45,7 +45,7 @@ public class KylinClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
         ResultSet rs = null;

@@ -74,9 +74,10 @@ public enum DataSourceType {
     KAFKA_09(18, 124, "Kafka_0.9", "kafka"),
     EMQ(34, 125, "EMQ", "emq"),
     WEB_SOCKET(42, 126, "WebSocket", "websocket"),
-    VERTICA(43, 127, "Vertica", "vertica"),
-    BEATS(16, 128, "Beats", "null"),
-    Spark(1002, 129, "Spark", "spark"),
+    SOCKET(44, 127, "Socket", "socket"),
+    VERTICA(43, 128, "Vertica", "vertica"),
+    BEATS(16, 129, "Beats", "null"),
+    Spark(1002, 130, "Spark", "spark"),
     ;
 
     DataSourceType(int val, int order, String name, String pluginName) {

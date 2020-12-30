@@ -21,6 +21,7 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -57,6 +58,18 @@ public class HiveClient extends AbsRdbmsClient {
     // 测试连通性超时时间。单位：秒
     private final static int TEST_CONN_TIMEOUT = 30;
 
+    // 创建库指定注释
+    private static final String CREATE_DB_WITH_COMMENT = "create database if not exists %s comment '%s'";
+
+    // 创建库
+    private static final String CREATE_DB = "create database if not exists %s";
+
+    // 模糊查询查询指定schema下的表
+    private static final String TABLE_BY_SCHEMA_LIKE = "show tables in %s like '%s'";
+
+    // 模糊查询database
+    private static final String SHOW_DB_LIKE = "show databases like '%s'";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new HiveConnFactory();
@@ -68,7 +81,7 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         Hive1SourceDTO hive1SourceDTO = (Hive1SourceDTO) iSource;
         // 获取表信息需要通过show tables 语句
@@ -92,7 +105,7 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         Hive1SourceDTO hive1SourceDTO = (Hive1SourceDTO) iSource;
 
@@ -163,7 +176,7 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         Hive1SourceDTO hive1SourceDTO = (Hive1SourceDTO) iSource;
 
@@ -216,7 +229,7 @@ public class HiveClient extends AbsRdbmsClient {
         }
     }
 
-    private Boolean testConnection(ISourceDTO iSource) throws Exception {
+    private Boolean testConnection(ISourceDTO iSource) {
         // 先校验数据源连接性
         Boolean testCon = super.testCon(iSource);
         if (!testCon) {
@@ -232,7 +245,7 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public IDownloader getDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public IDownloader getDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Hive1SourceDTO hive1SourceDTO= (Hive1SourceDTO) iSource;
         List<Map<String, Object>> list = executeQuery(hive1SourceDTO, SqlQueryDTO.builder().sql("desc formatted " + queryDTO.getTableName()).build());
         //获取表路径、字段分隔符、存储方式
@@ -354,7 +367,7 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         List<ColumnMetaDTO> columnMetaDTOS = getColumnMetaData(source,queryDTO);
         List<ColumnMetaDTO> partitionColumnMeta = new ArrayList<>();
         columnMetaDTOS.forEach(columnMetaDTO -> {
@@ -366,7 +379,7 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
-    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
         Table tableInfo = new Table();
         tableInfo.setName(queryDTO.getTableName());
         tableInfo.setComment(getTableMetaComment(source, queryDTO));
@@ -424,5 +437,26 @@ public class HiveClient extends AbsRdbmsClient {
     @Override
     protected String getCurrentDbSql() {
         return CURRENT_DB;
+    }
+
+    @Override
+    protected String getCreateDatabaseSql(String dbName, String comment) {
+        return StringUtils.isBlank(comment) ? String.format(CREATE_DB, dbName) : String.format(CREATE_DB_WITH_COMMENT, dbName, comment);
+    }
+
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空！");
+        }
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(SHOW_DB_LIKE, dbName)).build()));
+    }
+
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("数据库名称不能为空！");
+        }
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_BY_SCHEMA_LIKE, dbName, tableName)).build()));
     }
 }

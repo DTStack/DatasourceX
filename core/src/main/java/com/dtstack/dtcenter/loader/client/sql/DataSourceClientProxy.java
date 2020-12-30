@@ -29,111 +29,128 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     }
 
     @Override
-    public Connection getCon(ISourceDTO source) throws Exception {
+    public Connection getCon(ISourceDTO source) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getCon(source),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public Boolean testCon(ISourceDTO source) throws Exception {
+    public Boolean testCon(ISourceDTO source) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.testCon(source),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeQuery(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeSqlWithoutResultSet(source,
                 queryDTO), targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableList(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableListBySchema(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<String> getColumnClassInfo(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getColumnClassInfo(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnClassInfo(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnMetaData(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getColumnMetaDataWithSql(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getFlinkColumnMetaData(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableMetaComment(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPreview(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> new DownloaderProxy(targetClient.getDownloader(source, queryDTO)),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getAllDatabases(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getCreateTableSql(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPartitionColumn(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTable(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
 
     @Override
-    public String getCurrentDatabase(ISourceDTO source) throws Exception {
+    public String getCurrentDatabase(ISourceDTO source) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getCurrentDatabase(source),
                 targetClient.getClass().getClassLoader());
     }
 
+    @Override
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.createDatabase(source, dbName, comment),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.isDatabaseExists(source, dbName),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.isTableExistsInDatabase(source, tableName, dbName),
+                targetClient.getClass().getClassLoader());
+    }
 }

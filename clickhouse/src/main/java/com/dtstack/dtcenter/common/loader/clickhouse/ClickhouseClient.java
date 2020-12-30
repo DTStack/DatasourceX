@@ -45,7 +45,7 @@ public class ClickhouseClient extends AbsRdbmsClient {
     private static final String DONT_EXIST = "doesn't exist";
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         ClickHouseSourceDTO clickHouseSourceDTO = (ClickHouseSourceDTO) iSource;
 
@@ -70,7 +70,7 @@ public class ClickhouseClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(source, queryDTO, false);
         ClickHouseSourceDTO clickHouseSourceDTO = (ClickHouseSourceDTO) source;
         String sql = String.format(PARTITION_COLUMN_SQL,clickHouseSourceDTO.getSchema(),queryDTO.getTableName());
@@ -97,7 +97,7 @@ public class ClickhouseClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(source, queryDTO);
         ClickHouseSourceDTO postgresqlSourceDTO = (ClickHouseSourceDTO) source;
         Statement statement = null;

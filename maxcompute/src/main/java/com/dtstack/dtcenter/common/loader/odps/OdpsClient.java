@@ -194,7 +194,7 @@ public class OdpsClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeQuery(odpsSourceDTO, queryDTO, true);
         List<ColumnMetaDTO> columnList = new ArrayList<>();
@@ -222,7 +222,7 @@ public class OdpsClient<T> implements IClient<T> {
                 columnMetaDTO.setPart(true);
                 columnList.add(columnMetaDTO);
             });
-        } catch (OdpsException e) {
+        } catch (Exception e) {
             throw new DtLoaderException("SQL 执行异常", e);
         } finally {
             closeResource(odps, odpsSourceDTO);
@@ -231,7 +231,7 @@ public class OdpsClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         Integer clearStatus = beforeColumnQuery(odpsSourceDTO, queryDTO);
         List<String> columnClassInfo = Lists.newArrayList();
@@ -245,7 +245,7 @@ public class OdpsClient<T> implements IClient<T> {
             for (Column recordColumn : tableSchema.getColumns()) {
                 columnClassInfo.add(recordColumn.getTypeInfo().getTypeName());
             }
-        } catch (OdpsException e) {
+        } catch (Exception e) {
             throw new DtLoaderException("SQL 执行异常", e);
         } finally {
             closeResource(odps, odpsSourceDTO);
@@ -300,7 +300,7 @@ public class OdpsClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         beforeQuery(odpsSourceDTO, queryDTO, true);
         List<Map<String, Object>> result = Lists.newArrayList();
@@ -319,8 +319,8 @@ public class OdpsClient<T> implements IClient<T> {
                 }
                 result.add(row);
             }
-        } catch (OdpsException e) {
-            throw new DtLoaderException("SQL 执行异常", e);
+        } catch (Exception e) {
+            throw new DtLoaderException(String.format("SQL 执行异常 : %s", e.getMessage()), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -365,7 +365,7 @@ public class OdpsClient<T> implements IClient<T> {
             Instance instance = runOdpsTask(odps, queryDTO);
             isSuccessful = instance.isSuccessful();
         } catch (Exception e) {
-            throw new DtLoaderException("SQL 执行异常", e);
+            throw new DtLoaderException(String.format("SQL 执行异常 : %s", e.getMessage()), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -451,7 +451,7 @@ public class OdpsClient<T> implements IClient<T> {
     }
 
     @Override
-    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
@@ -476,7 +476,22 @@ public class OdpsClient<T> implements IClient<T> {
     }
 
     @Override
-    public String getCurrentDatabase(ISourceDTO source) throws Exception {
+    public String getCurrentDatabase(ISourceDTO source) {
         throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) {
+        throw new DtLoaderException("maxcompute数据源不支持该方法");
+    }
+
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
+        throw new DtLoaderException("maxcompute数据源不支持该方法");
+    }
+
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
+        throw new DtLoaderException("maxcompute数据源不支持该方法");
     }
 }

@@ -46,7 +46,7 @@ public class HdfsFileClient implements IHdfsFile {
     private static final String PATH_DELIMITER = "/";
 
     @Override
-    public FileStatus getStatus(ISourceDTO iSource, String location) throws Exception {
+    public FileStatus getStatus(ISourceDTO iSource, String location) {
         org.apache.hadoop.fs.FileStatus hadoopFileStatus = getHadoopStatus(iSource, location);
 
         return FileStatus.builder()
@@ -63,7 +63,7 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     @Override
-    public IDownloader getLogDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public IDownloader getLogDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
         return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
@@ -86,7 +86,7 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     @Override
-    public IDownloader getFileDownloader(ISourceDTO iSource, String path) throws Exception {
+    public IDownloader getFileDownloader(ISourceDTO iSource, String path) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
         return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
@@ -109,7 +109,7 @@ public class HdfsFileClient implements IHdfsFile {
      * @return
      * @throws Exception
      */
-    private org.apache.hadoop.fs.FileStatus getHadoopStatus(ISourceDTO source, String location) throws Exception {
+    private org.apache.hadoop.fs.FileStatus getHadoopStatus(ISourceDTO source, String location) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
 
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
@@ -117,7 +117,7 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     @Override
-    public boolean downloadFileFromHdfs(ISourceDTO source, String remotePath, String localDir) throws Exception {
+    public boolean downloadFileFromHdfs(ISourceDTO source, String remotePath, String localDir) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         HdfsOperator.copyToLocal(fs, remotePath, localDir);
@@ -125,7 +125,7 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     @Override
-    public boolean uploadLocalFileToHdfs(ISourceDTO source, String localFilePath, String remotePath) throws Exception {
+    public boolean uploadLocalFileToHdfs(ISourceDTO source, String localFilePath, String remotePath) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         HdfsOperator.uploadLocalFileToHdfs(fs, localFilePath, remotePath);
@@ -133,112 +133,120 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     @Override
-    public boolean uploadInputStreamToHdfs(ISourceDTO source, byte[] bytes, String remotePath) throws Exception {
+    public boolean uploadInputStreamToHdfs(ISourceDTO source, byte[] bytes, String remotePath) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         return HdfsOperator.uploadInputStreamToHdfs(fs, bytes, remotePath);
     }
 
     @Override
-    public boolean createDir(ISourceDTO source, String remotePath, Short permission) throws Exception {
+    public boolean createDir(ISourceDTO source, String remotePath, Short permission) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         return HdfsOperator.createDir(fs, remotePath, permission);
     }
 
     @Override
-    public boolean isFileExist(ISourceDTO source, String remotePath) throws Exception {
+    public boolean isFileExist(ISourceDTO source, String remotePath) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         return HdfsOperator.isFileExist(fs, remotePath);
     }
 
     @Override
-    public boolean checkAndDelete(ISourceDTO source, String remotePath) throws Exception {
+    public boolean checkAndDelete(ISourceDTO source, String remotePath) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         return HdfsOperator.checkAndDelete(fs, remotePath);
     }
 
     @Override
-    public long getDirSize(ISourceDTO source, String remotePath) throws Exception {
+    public long getDirSize(ISourceDTO source, String remotePath) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         return HdfsOperator.getDirSize(fs, remotePath);
     }
 
     @Override
-    public boolean deleteFiles(ISourceDTO source, List<String> fileNames) throws Exception {
+    public boolean deleteFiles(ISourceDTO source, List<String> fileNames) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         return HdfsOperator.deleteFiles(fs, fileNames);
     }
 
     @Override
-    public boolean isDirExist(ISourceDTO source, String remotePath) throws Exception {
+    public boolean isDirExist(ISourceDTO source, String remotePath) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         return HdfsOperator.isDirExist(fs, remotePath);
     }
 
     @Override
-    public boolean setPermission(ISourceDTO source, String remotePath, String mode) throws Exception {
+    public boolean setPermission(ISourceDTO source, String remotePath, String mode) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         return HdfsOperator.setPermission(fs, remotePath, mode);
     }
 
     @Override
-    public boolean rename(ISourceDTO source, String src, String dist) throws Exception {
+    public boolean rename(ISourceDTO source, String src, String dist) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         return HdfsOperator.rename(fs, src, dist);
     }
 
     @Override
-    public boolean copyFile(ISourceDTO source, String src, String dist, boolean isOverwrite) throws Exception {
+    public boolean copyFile(ISourceDTO source, String src, String dist, boolean isOverwrite) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
-        return HdfsOperator.copyFile(fs, src, dist, isOverwrite);
+        try {
+            return HdfsOperator.copyFile(fs, src, dist, isOverwrite);
+        } catch (IOException e) {
+            throw new DtLoaderException(String.format("hdfs内复制文件异常 : %s" + e.getMessage()), e);
+        }
     }
 
     @Override
-    public List<String> listAllFilePath(ISourceDTO source, String remotePath) throws Exception {
+    public List<String> listAllFilePath(ISourceDTO source, String remotePath) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
-        return HdfsOperator.listAllFilePath(fs, remotePath);
+        try {
+            return HdfsOperator.listAllFilePath(fs, remotePath);
+        } catch (IOException e) {
+            throw new DtLoaderException(String.format("获取目标路径下所有文件异常 : %s" + e.getMessage()), e);
+        }
     }
 
     @Override
-    public List<FileStatus> listAllFiles(ISourceDTO source, String remotePath, boolean isIterate) throws Exception {
+    public List<FileStatus> listAllFiles(ISourceDTO source, String remotePath, boolean isIterate) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         return listFiles(fs, remotePath, isIterate);
     }
 
     @Override
-    public boolean copyToLocal(ISourceDTO source, String srcPath, String dstPath) throws Exception {
+    public boolean copyToLocal(ISourceDTO source, String srcPath, String dstPath) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         return HdfsOperator.copyToLocal(fs, srcPath, dstPath);
     }
 
     @Override
-    public boolean copyFromLocal(ISourceDTO source, String srcPath, String dstPath, boolean overwrite) throws Exception {
+    public boolean copyFromLocal(ISourceDTO source, String srcPath, String dstPath, boolean overwrite) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         return HdfsOperator.copyFromLocal(fs, srcPath, dstPath, overwrite);
     }
 
     @Override
-    public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat) throws Exception {
+    public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
                         return createDownloader(hdfsSourceDTO, tableLocation, columnNames, fieldDelimiter, fileFormat, hdfsSourceDTO.getKerberosConfig());
                     } catch (Exception e) {
-                        throw new DtLoaderException("创建下载器异常", e);
+                        throw new DtLoaderException(String.format("创建下载器异常 : %s", e.getMessage()), e);
                     }
                 }
         );
@@ -277,35 +285,38 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     @Override
-    public List<ColumnMetaDTO> getColumnList(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) throws
-            Exception {
+    public List<ColumnMetaDTO> getColumnList(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
-        return getColumnListOnFileFormat(hdfsSourceDTO, queryDTO, fileFormat);
+        try {
+            return getColumnListOnFileFormat(hdfsSourceDTO, queryDTO, fileFormat);
+        } catch (IOException e) {
+            throw new DtLoaderException(String.format("获取列信息失败 : %s", e.getMessage()), e);
+        }
     }
 
     @Override
-    public int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception {
+    public int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Integer>) () -> {
                     try {
                         return writeByPosWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
                     } catch (Exception e) {
-                        throw new DtLoaderException("获取hdfs文件字段信息异常", e);
+                        throw new DtLoaderException(String.format("获取hdfs文件字段信息异常 : %s", e.getMessage()), e);
                     }
                 }
         );
     }
 
     @Override
-    public int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception {
+    public int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Integer>) () -> {
                     try {
                         return writeByNameWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
                     } catch (Exception e) {
-                        throw new DtLoaderException("获取hdfs文件字段信息异常", e);
+                        throw new DtLoaderException(String.format("获取hdfs文件字段信息异常 : %s", e.getMessage()), e);
                     }
                 }
         );
@@ -416,9 +427,14 @@ public class HdfsFileClient implements IHdfsFile {
         return path;
     }
 
-    private List<FileStatus> listFiles(FileSystem fs, String remotePath, boolean isIterate) throws IOException {
+    private List<FileStatus> listFiles(FileSystem fs, String remotePath, boolean isIterate) {
         List<FileStatus> fileStatusList = new ArrayList<>();
-        List<org.apache.hadoop.fs.FileStatus> fileStatuses = HdfsOperator.listFiles(fs, remotePath, isIterate);
+        List<org.apache.hadoop.fs.FileStatus> fileStatuses;
+        try {
+            fileStatuses = HdfsOperator.listFiles(fs, remotePath, isIterate);
+        } catch (IOException e) {
+            throw new DtLoaderException(String.format("获取目标路径下文件失败 : %s", e.getMessage()), e);
+        }
         for (org.apache.hadoop.fs.FileStatus fileStatus : fileStatuses) {
             FileStatus fileStatusTemp = FileStatus.builder()
                     .length(fileStatus.getLen())

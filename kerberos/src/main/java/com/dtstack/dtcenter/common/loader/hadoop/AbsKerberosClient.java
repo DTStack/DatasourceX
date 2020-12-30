@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class AbsKerberosClient implements IKerberos {
 
     @Override
-    public Map<String, Object> parseKerberosFromUpload(String zipLocation, String localKerberosPath) throws Exception {
+    public Map<String, Object> parseKerberosFromUpload(String zipLocation, String localKerberosPath) {
         // 返回的配置信息
         Map<String, Object> confMap = new HashMap<>();
 
@@ -55,13 +55,13 @@ public class AbsKerberosClient implements IKerberos {
      * @param confMap
      * @throws IOException
      */
-    protected void dealFile(List<File> unzipFileList, String localKerberosPath, Map<String, Object> confMap) throws IOException {
+    protected void dealFile(List<File> unzipFileList, String localKerberosPath, Map<String, Object> confMap) {
         KerberosConfigUtil.dealKeytab(unzipFileList, localKerberosPath, confMap);
         KerberosConfigUtil.dealKrb5Conf(unzipFileList, localKerberosPath, confMap);
     }
 
     @Override
-    public Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath) throws Exception {
+    public Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath) {
         // 替换相对路径
         KerberosConfigUtil.changeRelativePathToAbsolutePath(conf, localKerberosPath, HadoopConfTool.PRINCIPAL_FILE);
         KerberosConfigUtil.changeRelativePathToAbsolutePath(conf, localKerberosPath, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);

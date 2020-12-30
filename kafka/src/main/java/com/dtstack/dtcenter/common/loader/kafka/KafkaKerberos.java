@@ -10,7 +10,6 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +22,7 @@ import java.util.Map;
 @Slf4j
 public class KafkaKerberos extends AbsKerberosClient {
     @Override
-    protected void dealFile(List<File> unzipFileList, String localKerberosPath, Map<String, Object> confMap) throws IOException {
+    protected void dealFile(List<File> unzipFileList, String localKerberosPath, Map<String, Object> confMap)  {
         // 设置 keytab
         String finalPath = KerberosConfigUtil.dealFilePath(unzipFileList, localKerberosPath, DtClassConsistent.PublicConsistent.KEYTAB_SUFFIX);
         log.info("DealKeytab path -- key : {}, value : {}", HadoopConfTool.PRINCIPAL_FILE, finalPath);

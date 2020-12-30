@@ -22,7 +22,7 @@ public interface IKafka<T> {
      * @return
      * @throws Exception
      */
-    Boolean testCon(ISourceDTO source) throws Exception;
+    Boolean testCon(ISourceDTO source);
 
     /**
      * 获取所有 Brokers 的地址
@@ -31,7 +31,7 @@ public interface IKafka<T> {
      * @return
      * @throws Exception
      */
-    String getAllBrokersAddress(ISourceDTO source) throws Exception;
+    String getAllBrokersAddress(ISourceDTO source);
 
     /**
      * 获取 所有 Topic 信息
@@ -40,7 +40,7 @@ public interface IKafka<T> {
      * @return
      * @throws Exception
      */
-    List<String> getTopicList(ISourceDTO source) throws Exception;
+    List<String> getTopicList(ISourceDTO source);
 
     /**
      * 创建 Topic
@@ -50,7 +50,7 @@ public interface IKafka<T> {
      * @return
      * @throws Exception
      */
-    Boolean createTopic(ISourceDTO source, KafkaTopicDTO kafkaTopic) throws Exception;
+    Boolean createTopic(ISourceDTO source, KafkaTopicDTO kafkaTopic);
 
     /**
      * 获取特定 Topic 分区信息
@@ -60,7 +60,7 @@ public interface IKafka<T> {
      * @return
      * @throws Exception
      */
-    List<T> getAllPartitions(ISourceDTO source, String topic) throws Exception;
+    List<T> getAllPartitions(ISourceDTO source, String topic);
 
     /**
      * 获取特定 Topic 所有分区的偏移量
@@ -70,15 +70,27 @@ public interface IKafka<T> {
      * @return
      * @throws Exception
      */
-    List<KafkaOffsetDTO> getOffset(ISourceDTO source, String topic) throws Exception;
+    List<KafkaOffsetDTO> getOffset(ISourceDTO source, String topic);
 
     /**
      * 获取预览数据
      * @param source
      * @param queryDTO
+     * @deprecated since 1.4.0 in favor of
+     * {@link #getPreview(ISourceDTO source, SqlQueryDTO queryDTO, String prevMode)}
      * @return
      * @throws Exception
      */
-    List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    @Deprecated
+    List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO);
 
+    /**
+     * 获取预览数据
+     * @param source 数据源信息
+     * @param queryDTO 查询条件
+     * @param prevMode 预览模式
+     * @return
+     * @throws Exception
+     */
+    List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO, String prevMode);
 }

@@ -10,6 +10,7 @@ import com.dtstack.dtcenter.loader.dto.source.Greenplum6SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
@@ -62,6 +63,13 @@ public class GreenplumClient extends AbsRdbmsClient {
 
     private static final String DATABASE_QUERY = "select nspname from pg_namespace";
 
+    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema %s";
+
+    // 判断db是否存在
+    private static final String DATABASE_IS_EXISTS = "select nspname from pg_namespace where nspname = '%s'";
+
+    private static final String TABLES_IS_IN_SCHEMA = "select table_name from information_schema.tables WHERE table_schema = '%s' and table_name = '%s'";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new GreenplumFactory();
@@ -73,7 +81,7 @@ public class GreenplumClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         Greenplum6SourceDTO greenplum6SourceDTO = (Greenplum6SourceDTO) iSource;
 
@@ -107,7 +115,7 @@ public class GreenplumClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         Greenplum6SourceDTO greenplum6SourceDTO = (Greenplum6SourceDTO) iSource;
 
@@ -144,13 +152,49 @@ public class GreenplumClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
     }
 
     @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    protected String getCreateDatabaseSql(String dbName, String comment) {
+        return String.format(CREATE_SCHEMA_SQL_TMPL, dbName);
+    }
+
+    /**
+     * 此处方法为判断schema是否存在
+     *
+     * @param source 数据源信息
+     * @param dbName schema 名称
+     * @return 是否存在结果
+     */
+    @Override
+    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("schema名称不能为空");
+        }
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(DATABASE_IS_EXISTS, dbName)).build()));
+    }
+
+    /**
+     * 此处方法为判断指定schema 是否有该表
+     *
+     * @param source 数据源信息
+     * @param tableName 表名
+     * @param dbName schema名
+     * @return 判断结果
+     */
+    @Override
+    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
+        if (StringUtils.isBlank(dbName)) {
+            throw new DtLoaderException("schema名称不能为空");
+        }
+        return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLES_IS_IN_SCHEMA, dbName, tableName)).build()));
     }
 
     @Override
