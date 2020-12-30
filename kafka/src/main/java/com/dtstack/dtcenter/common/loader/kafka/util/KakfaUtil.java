@@ -24,6 +24,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.requests.MetadataResponse;
 import org.apache.kafka.common.security.JaasUtils;
 import scala.collection.JavaConversions;
+import sun.security.krb5.Config;
 
 import java.io.File;
 import java.io.IOException;
@@ -368,16 +369,24 @@ public class KakfaUtil {
             return props;
         }
 
-        javax.security.auth.login.Configuration.setConfiguration(null);
         // 历史数据兼容
         if (MapUtils.isEmpty(kerberosConfig)) {
             //不满足kerberos条件 直接返回
             return props;
         }
+
         // 只需要认证的用户名
         String kafkaKbrServiceName = MapUtils.getString(kerberosConfig, HadoopConfTool.KAFKA_KERBEROS_SERVICE_NAME);
         kafkaKbrServiceName = kafkaKbrServiceName.split("/")[0];
         String kafkaLoginConf = writeKafkaJaas(kerberosConfig);
+
+        // 刷新kerberos认证信息，在设置完java.security.krb5.conf后进行，否则会使用上次的krb5文件进行 refresh 导致认证失败
+        try {
+            Config.refresh();
+            javax.security.auth.login.Configuration.setConfiguration(null);
+        } catch (Exception e) {
+            log.error("kafka kerberos认证信息刷新失败！");
+        }
         // kerberos 相关设置
         props.put("security.protocol", "SASL_PLAINTEXT");
         props.put("sasl.mechanism", "GSSAPI");
