@@ -159,7 +159,7 @@ public class Hbase2Test {
     @Test
     public void preview() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.HBASE2.getVal());
-        List<List<Object>> result = client.getPreview(source, SqlQueryDTO.builder().tableName("wangchuan_test").previewNum(2).build());
+        List<List<Object>> result = client.getPreview(source, SqlQueryDTO.builder().tableName("log1").previewNum(2).build());
         System.out.println(result);
     }
 }
