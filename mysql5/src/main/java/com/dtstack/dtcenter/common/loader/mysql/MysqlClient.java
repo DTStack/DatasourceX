@@ -44,7 +44,7 @@ public class MysqlClient extends AbsRdbmsClient {
     private static final String DONT_EXIST = "doesn't exist";
 
     // 获取指定数据库下的表
-    private static final String SHOW_TABLE_BY_SCHEMA_SQL = "select table_name from information_schema.tables where table_schema='%s' and table_type='base table' %s";
+    private static final String SHOW_TABLE_BY_SCHEMA_SQL = "select table_name from information_schema.tables where table_schema='%s' and table_type='BASE TABLE' %s";
 
     // 表名正则匹配模糊查询
     private static final String SEARCH_SQL = " AND table_name REGEXP '%s' ";
