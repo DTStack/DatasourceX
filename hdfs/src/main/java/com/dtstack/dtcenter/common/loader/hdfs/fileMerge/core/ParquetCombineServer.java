@@ -1,38 +1,47 @@
 package com.dtstack.dtcenter.common.loader.hdfs.fileMerge.core;
 
-import com.dtstack.dtcenter.common.loader.hdfs.util.FileUtils;
+import com.dtstack.dtcenter.common.loader.hdfs.fileMerge.ECompressType;
+import com.dtstack.dtcenter.common.loader.hdfs.fileMerge.meta.ParquetMetaData;
+import com.dtstack.dtcenter.common.loader.hdfs.util.FileSystemUtils;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.parquet.column.ParquetProperties;
 import org.apache.parquet.example.data.Group;
+import org.apache.parquet.format.CompressionCodec;
 import org.apache.parquet.hadoop.Footer;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetReader;
 import org.apache.parquet.hadoop.ParquetWriter;
+import org.apache.parquet.hadoop.example.ExampleParquetWriter;
 import org.apache.parquet.hadoop.example.GroupReadSupport;
 import org.apache.parquet.hadoop.example.GroupWriteSupport;
 import org.apache.parquet.hadoop.metadata.BlockMetaData;
+import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
+import org.apache.parquet.hadoop.util.HadoopInputFile;
 import org.apache.parquet.schema.MessageType;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.math.BigDecimal.ROUND_HALF_UP;
 
 @Slf4j
 public class ParquetCombineServer extends CombineServer {
 
-    long rowCountSplit;
-
     private int index;
 
     private String mergedFileName;
+
+    private ParquetMetaData metadata;
 
     public ParquetCombineServer() {
     }
@@ -41,33 +50,31 @@ public class ParquetCombineServer extends CombineServer {
     protected void doCombine(ArrayList<FileStatus> combineFiles, Path mergedTempPath) throws IOException {
         init(combineFiles);
 
-        GroupWriteSupport groupWriteSupport = new GroupWriteSupport();
-        GroupWriteSupport.setSchema(getParquetSchema(combineFiles.get(0)), configuration);
-
-        List<Path> paths = FileUtils.getPaths(combineFiles);
-
+        List<Path> paths = combineFiles.stream().map(FileStatus::getPath).collect(Collectors.toList());
 
         ParquetWriter<Group> writer = null;
 
         long currentCount = 0L;
         try {
             for (Path path : paths) {
+                log.info("start read {}",path);
                 GroupReadSupport readSupport = new GroupReadSupport();
                 ParquetReader.Builder<Group> builder = ParquetReader.builder(readSupport, path).withConf(configuration);
                 ParquetReader<Group> reader = builder.build();
                 Group line;
                 while ((line = reader.read()) != null) {
-                    currentCount++;
-                    if (currentCount >= rowCountSplit) {
-                        currentCount = 0L;
-                        cleanSource(writer);
-                        writer = null;
+                    if (writer == null) {
+                        writer = getWriter(index++, mergedFileName);
                     }
 
-                    if (writer == null) {
-                        writer = getWriter(index++, groupWriteSupport, mergedFileName);
-                    }
+                    currentCount++;
                     writer.write(line);
+
+                    if (currentCount >= metadata.getLimitSize()) {
+                        currentCount = 0L;
+                        writer.close();
+                        writer = null;
+                    }
                 }
             }
         } catch (Exception e) {
@@ -82,65 +89,48 @@ public class ParquetCombineServer extends CombineServer {
         return FileFormat.PARQUET.name();
     }
 
-    /**
-     * 获取文件的数据行数
-     *
-     * @param fileStatus
-     * @return
-     * @throws IOException
-     */
-    @Override
-    public long rowSize(FileStatus fileStatus) throws IOException {
-        List<Footer> footers = ParquetFileReader.readFooters(configuration, fileStatus, false);
-        List<BlockMetaData> blocks = footers.get(0).getParquetMetadata().getBlocks();
-        return blocks.get(0).getRowCount();
-    }
-
-    /**
-     * 获取schema信息
-     *
-     * @return
-     * @throws IOException
-     */
-    public MessageType getParquetSchema(FileStatus fileStatus) throws IOException {
-        ParquetMetadata metaData;
-        Path file = fileStatus.getPath();
-        MessageType schema;
-        try (ParquetFileReader parquetFileReader = ParquetFileReader.open(configuration, file)){
-            metaData = parquetFileReader.getFooter();
-            schema = metaData.getFileMetaData().getSchema();
-        }
-        return schema;
-
-    }
 
     /**
      * 初始化
      * 文件写入数量阈值 rowCountSplit
      * 合并文件名字前缀
-     *
-     * @param combineFiles
-     * @throws IOException
      */
     private void init(ArrayList<FileStatus> combineFiles) throws IOException {
 
-        FileStatus fileStatus = combineFiles.get(0);
-        long rowSize = rowSize(fileStatus);
-        BigDecimal totalSize = new BigDecimal(fileStatus.getLen() + "");
-        //1比特对应多少行数据 从而计算出合并后文件对应多少条数据
-        BigDecimal divide = new BigDecimal(rowSize + "").divide(totalSize, 4, ROUND_HALF_UP);
+        FileStatus fileStatus = combineFiles.stream()
+                .sorted(Comparator.comparing(FileStatus::getLen).reversed())
+                .collect(Collectors.toList()).get(0);
 
         this.index = 0;
-        this.rowCountSplit = new BigDecimal(maxCombinedFileSize + "").multiply(divide).longValue();
         this.mergedFileName = System.currentTimeMillis() + "";
-
+        this.metadata = getFileMetaData(fileStatus);
     }
 
 
-    private ParquetWriter getWriter(int id, GroupWriteSupport groupWriteSupport, String mergedFileName) throws IOException {
+    private ParquetWriter<Group> getWriter(int id, String mergedFileName) throws IOException {
         String combineFileName = mergedTempPath.toString() + File.separator
                 + mergedFileName + id + "." + getFileSuffix();
-        return new ParquetWriter<Group>(new Path(combineFileName), configuration, groupWriteSupport);
+
+        if (metadata.isCompressed()) {
+            combineFileName += metadata.geteCompressType().getSuffix();
+        }
+
+        ExampleParquetWriter.Builder builder = ExampleParquetWriter
+                .builder(new Path(combineFileName))
+                .withWriteMode(org.apache.parquet.hadoop.ParquetFileWriter.Mode.CREATE)
+                .withWriterVersion(ParquetProperties.WriterVersion.PARQUET_1_0)
+                .withRowGroupSize(org.apache.parquet.hadoop.ParquetWriter.DEFAULT_BLOCK_SIZE)
+                .withConf(configuration)
+                .withType(metadata.getSchema());
+
+        if (metadata.isCompressed()) {
+            builder.withCompressionCodec(CompressionCodecName.fromConf(metadata.geteCompressType().getType()));
+        } else {
+            builder.withCompressionCodec(CompressionCodecName.UNCOMPRESSED);
+        }
+
+        log.info("switch writer,the new path is {}", combineFileName);
+        return builder.build();
     }
 
     private void cleanSource(ParquetWriter<Group> writer) {
@@ -153,4 +143,39 @@ public class ParquetCombineServer extends CombineServer {
         }
     }
 
+    protected ParquetMetaData getFileMetaData(FileStatus fileStatus) throws IOException {
+        ParquetMetaData metaData = new ParquetMetaData();
+
+        ParquetFileReader parquetFileReader = ParquetFileReader.open(configuration, fileStatus.getPath());
+
+        BlockMetaData blockMetaData = parquetFileReader.getFooter().getBlocks().get(0);
+        CompressionCodec compressionCodec = CompressionCodec.valueOf(blockMetaData.getColumns().get(0).getCodec().toString());
+
+        //小文件的数据大小
+        long compressedSize = blockMetaData.getCompressedSize();
+        //小文件的行数
+        long rowSize = blockMetaData.getRowCount();
+        BigDecimal limitRows = new BigDecimal(rowSize + "").divide(new BigDecimal(compressedSize + ""), 8, ROUND_HALF_UP);
+
+        metaData.setSchema(parquetFileReader.getFileMetaData().getSchema());
+        metaData.seteCompressType(ECompressType.getByTypeAndFileType(compressionCodec.name(), "parquet"));
+        metaData.setCompressed(metaData.geteCompressType() != null && !compressionCodec.equals(CompressionCodec.UNCOMPRESSED));
+        metaData.setLimitSize(new BigDecimal(maxCombinedFileSize + "").multiply(limitRows).longValue());
+
+        log.info("FileMeatData info   {}", metaData);
+        return metaData;
+
+    }
+
+    @Override
+    public String toString() {
+        return "ParquetCombineServer{" +
+                ", metadata=" + metadata +
+                ", sourcePath=" + sourcePath +
+                ", mergedTempPath=" + mergedTempPath +
+                ", configuration=" + FileSystemUtils.printConfiguration(configuration) +
+                ", needCombineFileSizeLimit=" + needCombineFileSizeLimit +
+                ", maxCombinedFileSize=" + maxCombinedFileSize +
+                '}';
+    }
 }

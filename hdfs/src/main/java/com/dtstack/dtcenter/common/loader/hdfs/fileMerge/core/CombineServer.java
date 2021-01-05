@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hdfs.fileMerge.core;
 
-import com.dtstack.dtcenter.common.loader.hdfs.util.FileUtils;
+import com.dtstack.dtcenter.common.loader.hdfs.util.FileSystemUtils;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
@@ -61,12 +61,12 @@ public abstract class CombineServer {
 
         //源目录下假如存在文件夹 直接移动到 mergedTempPath目录下
         for (FileStatus director : directors) {
-            FileUtils.backupDirector(director.getPath(), new Path(mergedTempPath.toUri().getPath() + File.separator + director.getPath().getName()), fs, configuration);
+            FileSystemUtils.backupDirector(director.getPath(), new Path(mergedTempPath.toUri().getPath() + File.separator + director.getPath().getName()), fs, configuration);
         }
 
         //源目录下超过阈值的大文件直接进行复制 不需要合并
         for (FileStatus copyFile : copyFiles) {
-            FileUtils.backupFile(copyFile.getPath(), mergedTempPath, fs, configuration);
+            FileSystemUtils.backupFile(copyFile.getPath(), mergedTempPath, fs, configuration);
         }
 
         //小文件合并
@@ -83,11 +83,6 @@ public abstract class CombineServer {
      * 获取对应文件类型的后缀名
      */
     protected abstract String getFileSuffix();
-
-    /**
-     * 获取文件的数据行数
-     */
-    protected abstract long rowSize(FileStatus fileStatus) throws IOException;
 
     private void splitFile(Path sourcePath, ArrayList<FileStatus> directors, ArrayList<FileStatus> copyFiles, ArrayList<FileStatus> combineFiles) {
 
@@ -141,4 +136,14 @@ public abstract class CombineServer {
     }
 
 
+    @Override
+    public String toString() {
+        return "CombineServer{" +
+                "sourcePath=" + sourcePath +
+                ", mergedTempPath=" + mergedTempPath +
+                ", configuration=" + FileSystemUtils.printConfiguration(configuration) +
+                ", needCombineFileSizeLimit=" + needCombineFileSizeLimit +
+                ", maxCombinedFileSize=" + maxCombinedFileSize +
+                '}';
+    }
 }
