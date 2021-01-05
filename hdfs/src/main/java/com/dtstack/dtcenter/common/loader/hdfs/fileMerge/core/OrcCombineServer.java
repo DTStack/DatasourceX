@@ -1,12 +1,15 @@
 package com.dtstack.dtcenter.common.loader.hdfs.fileMerge.core;
 
 import com.dtstack.dtcenter.common.loader.hdfs.fileMerge.ECompressType;
+import com.dtstack.dtcenter.common.loader.hdfs.fileMerge.meta.OrcMetaData;
+import com.dtstack.dtcenter.common.loader.hdfs.util.FileSystemUtils;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.orc.CompressionKind;
 import org.apache.orc.OrcFile;
 import org.apache.orc.Reader;
 import org.apache.orc.RecordReader;
@@ -16,21 +19,22 @@ import org.apache.orc.Writer;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 import static java.math.BigDecimal.ROUND_HALF_UP;
 
 @Slf4j
 public class OrcCombineServer extends CombineServer {
 
-    //每个合并的新文件可以写的最多数据行数阈值，到达阈值后就进行切割
-    private long rowCountSplit;
-
     //文件编号
     private int index;
 
     private String mergedFileName;
+
+    //orc文件的元信息
+    private OrcMetaData metaData;
 
     public OrcCombineServer() {
     }
@@ -44,6 +48,7 @@ public class OrcCombineServer extends CombineServer {
 
         try {
             for (FileStatus fileStatus : combineFiles) {
+                log.info("start read {}",fileStatus.getPath());
                 Reader reader = getReader(fileStatus);
 
                 RecordReader rows = reader.rows();
@@ -52,7 +57,7 @@ public class OrcCombineServer extends CombineServer {
 
                 while (rows.nextBatch(batch)) {
                     if (writer == null) {
-                        writer = getWriter(index++, schema, mergedFileName);
+                        writer = getWriter(index++, mergedFileName);
                     }
                     currentCount += batch.size;
                     if (batch.size != 0) {
@@ -60,7 +65,7 @@ public class OrcCombineServer extends CombineServer {
                         batch.reset();
                     }
                     //如果达到了写入数量阈值 此文件就不会再进行写入
-                    if (currentCount >= rowCountSplit) {
+                    if (currentCount >= metaData.getLimitSize()) {
                         currentCount = 0L;
                         writer.close();
                         writer = null;
@@ -81,13 +86,6 @@ public class OrcCombineServer extends CombineServer {
         return FileFormat.ORC.name();
     }
 
-
-    @Override
-    public long rowSize(FileStatus fileStatus) throws IOException {
-        return getReader(fileStatus).getNumberOfRows();
-
-    }
-
     /**
      * 初始化
      * 文件写入数量阈值 rowCountSplit
@@ -98,30 +96,46 @@ public class OrcCombineServer extends CombineServer {
      */
     private void init(ArrayList<FileStatus> combineFiles) throws IOException {
 
-        FileStatus fileStatus = combineFiles.get(0);
-        Reader reader = getReader(fileStatus);
-        long rowSize = rowSize(fileStatus);
-        BigDecimal sourceSize = new BigDecimal(fileStatus.getLen() + "")
-                .divide(BigDecimal.valueOf(ECompressType.getByTypeAndFileType(reader.getCompressionKind().name(), "orc")
-                        .getDeviation()), 4, RoundingMode.HALF_UP);
-        BigDecimal divide = new BigDecimal(rowSize + "").divide(sourceSize, 4, ROUND_HALF_UP);
-
+        FileStatus fileStatus = combineFiles.stream()
+                .sorted(Comparator.comparing(FileStatus::getLen).reversed())
+                .collect(Collectors.toList()).get(0);
 
         this.index = 0;
-        this.rowCountSplit = new BigDecimal(maxCombinedFileSize + "").multiply(divide).longValue();
         this.mergedFileName = System.currentTimeMillis() + "";
+
+        metaData = getFileMetaData(fileStatus);
     }
 
 
-    private Writer getWriter(int index, TypeDescription typeDescription, String radonPath) throws IOException {
+    private Writer getWriter(int index, String radonPath) throws IOException {
 
         String combineFileName = mergedTempPath.toString() + File.separator
                 + radonPath + index + "." + getFileSuffix();
-        return OrcFile.createWriter(new Path(combineFileName),
-                OrcFile.writerOptions(configuration)
-                        //Writer 操作单元，stripe 内容先写入内存，内存满了之后Flush到磁盘
-                        .stripeSize(64L * 1024 * 1024)
-                        .setSchema(typeDescription));
+
+        if (metaData.isCompressed()) {
+            combineFileName += metaData.geteCompressType().getSuffix();
+        }
+
+        try {
+            OrcFile.WriterOptions writerOptions = OrcFile.writerOptions(configuration)
+                    .fileSystem(fs)
+                    //Writer 操作单元，stripe 内容先写入内存，内存满了之后Flush到磁盘
+                    .stripeSize(64L * 1024 * 1024)
+                    .setSchema(metaData.getSchema());
+
+            //设置压缩格式
+            if (metaData.isCompressed()) {
+                writerOptions.compress(CompressionKind.valueOf(metaData.geteCompressType().getType()));
+            } else {
+                writerOptions.compress(CompressionKind.NONE);
+            }
+
+            log.info("switch writer,the new path is {},compress is {}", combineFileName, writerOptions.getCompress());
+            return OrcFile.createWriter(new Path(combineFileName), writerOptions);
+
+        } catch (IOException e) {
+            throw new DtLoaderException("switch writer failed", e);
+        }
     }
 
 
@@ -138,6 +152,34 @@ public class OrcCombineServer extends CombineServer {
                 log.warn("close inputStream and outStream failed" + e.getMessage());
             }
         }
+    }
+
+    protected OrcMetaData getFileMetaData(FileStatus fileStatus) throws IOException {
+        OrcMetaData orcMetaData = new OrcMetaData();
+        Reader reader = getReader(fileStatus);
+        CompressionKind compressionKind = reader.getCompressionKind();
+        orcMetaData.setSchema(reader.getSchema());
+        orcMetaData.seteCompressType(ECompressType.getByTypeAndFileType(compressionKind.name(), "orc"));
+        orcMetaData.setCompressed(orcMetaData.geteCompressType() != null && !compressionKind.equals(CompressionKind.NONE));
+
+        long rowSize = reader.getNumberOfRows();
+        BigDecimal divide = new BigDecimal(rowSize + "").divide(new BigDecimal(fileStatus.getLen() + ""), 8, ROUND_HALF_UP);
+        orcMetaData.setLimitSize(new BigDecimal(maxCombinedFileSize + "").multiply(divide).longValue());
+
+        log.info("FileMeatData info {}", orcMetaData);
+        return orcMetaData;
+    }
+
+    @Override
+    public String toString() {
+        return "OrcCombineServer{" +
+                ", metaData=" + metaData +
+                ", sourcePath=" + sourcePath +
+                ", mergedTempPath=" + mergedTempPath +
+                ", configuration=" + FileSystemUtils.printConfiguration(configuration) +
+                ", needCombineFileSizeLimit=" + needCombineFileSizeLimit +
+                ", maxCombinedFileSize=" + maxCombinedFileSize +
+                '}';
     }
 
 }

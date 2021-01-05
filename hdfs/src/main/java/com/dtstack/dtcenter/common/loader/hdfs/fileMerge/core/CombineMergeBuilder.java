@@ -28,7 +28,7 @@ public class CombineMergeBuilder {
      * 需要合并的文件的阈值
      * 只有低于此大小的文件才会被合并
      */
-    private Long needCombineFileSizeLimit = 110 * 1024 * 1024L;
+    private Long needCombineFileSizeLimit = 50 * 1024 * 1024L;
 
     /**
      * 文件类型
@@ -44,7 +44,7 @@ public class CombineMergeBuilder {
     /**
      * 合并后的文件的最大值
      */
-    private long maxCombinedFileSize = 120 * 1024 * 1024L;
+    private long maxCombinedFileSize = 125 * 1024 * 1024L;
 
 
     public CombineMergeBuilder() {
@@ -92,7 +92,7 @@ public class CombineMergeBuilder {
         combine.setMaxCombinedFileSize(maxCombinedFileSize);
         combine.setFs(FileSystem.get(configuration));
 
-        log.info("merge params ,sourcePath-> {},mergedPath->{},needCombineFileSizeLimit->{},maxCombinedFileSize->{}", sourcePath, mergedPath, needCombineFileSizeLimit, maxCombinedFileSize);
+        log.info("combine info {}",combine);
         return combine;
     }
 

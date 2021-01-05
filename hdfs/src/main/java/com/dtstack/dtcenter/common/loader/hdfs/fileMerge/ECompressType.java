@@ -9,37 +9,49 @@ import org.apache.commons.lang.StringUtils;
  */
 public enum ECompressType {
 
+
     /**
      * text file
      */
-    TEXT_GZIP("GZIP", "text", ".gz", 0.331F),
-    TEXT_BZIP2("BZIP2", "text", ".bz2", 0.259F),
-    TEXT_NONE("NONE", "text", "", 0.637F),
+    TEXT_NONE("NONE", "text", "", 1.0F),
+    TEXT_GZIP("GZIP", "text", ".gz", 0.7091F),
+    TEXT_BZIP2("BZIP2", "text", ".bz2", 0.6666F),
 
     /**
      * orc file
      */
+    ORC_NONE("NONE", "orc", "", 1.0F),
     ORC_SNAPPY("SNAPPY", "orc", ".snappy", 0.233F),
     ORC_GZIP("GZIP", "orc", ".gz", 1.0F),
     ORC_BZIP("BZIP", "orc", ".bz", 1.0F),
     ORC_LZ4("LZ4", "orc", ".lz4", 1.0F),
-    ORC_NONE("NONE", "orc", "", 0.233F),
+    ORC_ZLIB("ZLIB", "orc", ".zltb", 1.0F),
+    LZO("LZO", "orc", ".lzo", 1.0F),
+    ZSTD("ZSTD", "orc", ".zstd", 1.0F),
+
 
     /**
      * parquet file
      */
+    PARQUET_UNCOMPRESSED("UNCOMPRESSED", "parquet", "", 1.0F),
     PARQUET_SNAPPY("SNAPPY", "parquet", ".snappy", 0.274F),
     PARQUET_GZIP("GZIP", "parquet", ".gz", 1.0F),
     PARQUET_LZO("LZO", "parquet", ".lzo", 1.0F),
-    PARQUET_NONE("NONE", "parquet", "", 1.0F);
+    PARQUET_BROTLI("BROTLI", "parquet", ".brotli", 1.0F),
+    PARQUET_LZ4("LZ4", "parquet", ".lz4", 1.0F),
+    PARQUET_ZSTD("ZSTD", "parquet", ".zstd", 1.0F);
 
-    private String type;
+    //压缩类型
+    private final String type;
 
-    private String fileType;
+    //文件类型
+    private final String fileType;
 
-    private String suffix;
+    //后缀名
+    private final String suffix;
 
-    private float deviation;
+    //压缩比 压缩后文件大小/压缩前文件大小 目前仅tetx格式是测试过的
+    private final float deviation;
 
     ECompressType(String type, String fileType, String suffix, float deviation) {
         this.type = type;
@@ -49,8 +61,8 @@ public enum ECompressType {
     }
 
     public static ECompressType getByTypeAndFileType(String type, String fileType) {
-        if (StringUtils.isEmpty(type)) {
-            return ORC_NONE;
+        if (StringUtils.isBlank(type)) {
+            return null;
         }
 
         for (ECompressType value : ECompressType.values()) {
@@ -58,7 +70,7 @@ public enum ECompressType {
                 return value;
             }
         }
-        return ORC_NONE;
+        return null;
     }
 
     public String getType() {
