@@ -124,7 +124,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean delete(ISourceDTO source, String remotePath, boolean recursive) throws Exception {
+    public boolean delete(ISourceDTO source, String remotePath, boolean recursive) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.delete(source, remotePath, recursive),
                     targetClient.getClass().getClassLoader());
@@ -194,7 +194,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean copyDirector(ISourceDTO source, String src, String dist) throws Exception {
+    public boolean copyDirector(ISourceDTO source, String src, String dist) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.copyDirector(source, src, dist),
                     targetClient.getClass().getClassLoader());
@@ -204,7 +204,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public boolean fileMerge(ISourceDTO source, String src, String mergePath, FileFormat fileFormat, Long maxCombinedFileSize, Long needCombineFileSizeLimit) throws Exception {
+    public boolean fileMerge(ISourceDTO source, String src, String mergePath, FileFormat fileFormat, Long maxCombinedFileSize, Long needCombineFileSizeLimit) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.fileMerge(source, src, mergePath, fileFormat, maxCombinedFileSize, needCombineFileSizeLimit),
                     targetClient.getClass().getClassLoader());
@@ -294,7 +294,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public List<HDFSContentSummary> getContentSummary(ISourceDTO source, List<String> hdfsDirPaths) throws Exception {
+    public List<HDFSContentSummary> getContentSummary(ISourceDTO source, List<String> hdfsDirPaths) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getContentSummary(source, hdfsDirPaths),
                     targetClient.getClass().getClassLoader());
@@ -304,7 +304,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public HDFSContentSummary getContentSummary(ISourceDTO source, String hdfsDirPath) throws Exception {
+    public HDFSContentSummary getContentSummary(ISourceDTO source, String hdfsDirPath) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getContentSummary(source, hdfsDirPath),
                     targetClient.getClass().getClassLoader());

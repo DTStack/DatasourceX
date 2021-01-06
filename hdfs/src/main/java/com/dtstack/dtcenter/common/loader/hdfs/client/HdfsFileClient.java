@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hdfs.client;
 
+import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsFileDownload;
@@ -168,12 +169,12 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     @Override
-    public boolean delete(ISourceDTO source, String remotePath, boolean recursive) throws Exception {
+    public boolean delete(ISourceDTO source, String remotePath, boolean recursive) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
-        return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Boolean>) () -> {
                     try {
-                        Configuration conf = getHadoopConf(hdfsSourceDTO);
+                        Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
                         FileSystem fs = FileSystem.get(conf);
                         return fs.delete(new Path(remotePath), recursive);
                     } catch (Exception e) {
@@ -184,14 +185,14 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     @Override
-    public boolean copyDirector(ISourceDTO source, String src, String dist) throws Exception {
+    public boolean copyDirector(ISourceDTO source, String src, String dist) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
-        return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Boolean>) () -> {
                     try {
                         Path srcPath = new Path(src);
                         Path distPath = new Path(dist);
-                        Configuration conf = getHadoopConf(hdfsSourceDTO);
+                        Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
                         FileSystem fs = FileSystem.get(conf);
                         if (fs.exists(srcPath)) {
                             //判断是不是文件夹
@@ -214,12 +215,12 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     @Override
-    public boolean fileMerge(ISourceDTO source, String src, String mergePath, FileFormat fileFormat, Long maxCombinedFileSize, Long needCombineFileSizeLimit) throws Exception {
+    public boolean fileMerge(ISourceDTO source, String src, String mergePath, FileFormat fileFormat, Long maxCombinedFileSize, Long needCombineFileSizeLimit) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
-        return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Boolean>) () -> {
                     try {
-                        Configuration conf = getHadoopConf(hdfsSourceDTO);
+                        Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
                         CombineServer build = new CombineMergeBuilder()
                                 .sourcePath(src)
                                 .mergedPath(mergePath)
@@ -400,22 +401,22 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     @Override
-    public HDFSContentSummary getContentSummary(ISourceDTO source, String HDFSDirPath) throws Exception {
+    public HDFSContentSummary getContentSummary(ISourceDTO source, String HDFSDirPath) {
         return getContentSummary(source, Lists.newArrayList(HDFSDirPath)).get(0);
     }
 
     @Override
-    public List<HDFSContentSummary> getContentSummary(ISourceDTO source, List<String> HDFSDirPaths) throws Exception {
+    public List<HDFSContentSummary> getContentSummary(ISourceDTO source, List<String> HDFSDirPaths){
         if (CollectionUtils.isEmpty(HDFSDirPaths)) {
             throw new DtLoaderException("hdfs路径不能为空！");
         }
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         List<HDFSContentSummary> HDFSContentSummaries = Lists.newArrayList();
         // kerberos认证
-        return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<List<HDFSContentSummary>>) () -> {
                     try {
-                        Configuration conf = getHadoopConf(hdfsSourceDTO);
+                        Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
                         FileSystem fs = FileSystem.get(conf);
                         for (String HDFSDirPath : HDFSDirPaths) {
                             org.apache.hadoop.fs.FileStatus fileStatus = fs.getFileStatus(new Path(HDFSDirPath));
