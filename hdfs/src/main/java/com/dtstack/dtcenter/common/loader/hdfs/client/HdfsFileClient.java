@@ -7,6 +7,8 @@ import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsORCDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsParquetDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsTextDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.YarnDownload;
+import com.dtstack.dtcenter.common.loader.hdfs.fileMerge.core.CombineMergeBuilder;
+import com.dtstack.dtcenter.common.loader.hdfs.fileMerge.core.CombineServer;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsOrcWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsParquetWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsTextWriter;
@@ -16,15 +18,21 @@ import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.FileStatus;
+import com.dtstack.dtcenter.loader.dto.HDFSContentSummary;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
@@ -217,6 +225,76 @@ public class HdfsFileClient implements IHdfsFile {
                         return HdfsOperator.checkAndDele(conf, remotePath);
                     } catch (Exception e) {
                         throw new DtCenterDefException("文件检测异常", e);
+                    }
+                }
+        );
+    }
+
+    @Override
+    public boolean delete(ISourceDTO source, String remotePath, boolean recursive) throws Exception {
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        Configuration conf = getHadoopConf(hdfsSourceDTO);
+                        FileSystem fs = FileSystem.get(conf);
+                        return fs.delete(new Path(remotePath), recursive);
+                    } catch (Exception e) {
+                        throw new DtLoaderException("目标路径删除异常", e);
+                    }
+                }
+        );
+    }
+
+    @Override
+    public boolean copyDirector(ISourceDTO source, String src, String dist) throws Exception {
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        Path srcPath = new Path(src);
+                        Path distPath = new Path(dist);
+                        Configuration conf = getHadoopConf(hdfsSourceDTO);
+                        FileSystem fs = FileSystem.get(conf);
+                        if (fs.exists(srcPath)) {
+                            //判断是不是文件夹
+                            if (fs.isDirectory(srcPath)) {
+                                if (!FileUtil.copy(fs, srcPath, fs, distPath, false, conf)) {
+                                    throw new DtLoaderException("copy " + src + " to " + dist + " failed");
+                                }
+                            } else {
+                                throw new DtLoaderException(src + "is not a directory");
+                            }
+                        } else {
+                            throw new DtLoaderException(src + " is not exists");
+                        }
+                        return true;
+                    } catch (Exception e) {
+                        throw new DtLoaderException("目标路径删除异常", e);
+                    }
+                }
+        );
+    }
+
+    @Override
+    public boolean fileMerge(ISourceDTO source, String src, String mergePath, FileFormat fileFormat, Long maxCombinedFileSize, Long needCombineFileSizeLimit) throws Exception {
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        Configuration conf = getHadoopConf(hdfsSourceDTO);
+                        CombineServer build = new CombineMergeBuilder()
+                                .sourcePath(src)
+                                .mergedPath(mergePath)
+                                .fileType(fileFormat)
+                                .maxCombinedFileSize(maxCombinedFileSize)
+                                .needCombineFileSizeLimit(needCombineFileSizeLimit)
+                                .configuration(conf)
+                                .build();
+                        build.combine();
+                        return true;
+                    } catch (Exception e) {
+                        throw new DtLoaderException(String.format("文件合并异常：%s", e.getMessage()), e);
                     }
                 }
         );
@@ -462,6 +540,42 @@ public class HdfsFileClient implements IHdfsFile {
                         return writeByNameWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
                     } catch (Exception e) {
                         throw new DtCenterDefException("获取hdfs文件字段信息异常", e);
+                    }
+                }
+        );
+    }
+
+    @Override
+    public HDFSContentSummary getContentSummary(ISourceDTO source, String HDFSDirPath) throws Exception {
+        return getContentSummary(source, Lists.newArrayList(HDFSDirPath)).get(0);
+    }
+
+    @Override
+    public List<HDFSContentSummary> getContentSummary(ISourceDTO source, List<String> HDFSDirPaths) throws Exception {
+        if (CollectionUtils.isEmpty(HDFSDirPaths)) {
+            throw new DtLoaderException("hdfs路径不能为空！");
+        }
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        List<HDFSContentSummary> HDFSContentSummaries = Lists.newArrayList();
+        // kerberos认证
+        return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<List<HDFSContentSummary>>) () -> {
+                    try {
+                        Configuration conf = getHadoopConf(hdfsSourceDTO);
+                        FileSystem fs = FileSystem.get(conf);
+                        for (String HDFSDirPath : HDFSDirPaths) {
+                            org.apache.hadoop.fs.FileStatus fileStatus = fs.getFileStatus(new Path(HDFSDirPath));
+                            ContentSummary contentSummary = fs.getContentSummary(new Path(HDFSDirPath));
+                            HDFSContentSummary hdfsContentSummary = HDFSContentSummary.builder()
+                                    .directoryCount(contentSummary.getDirectoryCount())
+                                    .fileCount(contentSummary.getFileCount())
+                                    .ModifyTime(fileStatus.getModificationTime())
+                                    .spaceConsumed(contentSummary.getLength()).build();
+                            HDFSContentSummaries.add(hdfsContentSummary);
+                        }
+                        return HDFSContentSummaries;
+                    } catch (Exception e) {
+                        throw new DtLoaderException("获取HDFS文件摘要失败！", e);
                     }
                 }
         );
