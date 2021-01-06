@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.common.loader.hdfs.util.FileSystemUtils;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -58,6 +59,11 @@ public abstract class CombineServer {
         ArrayList<FileStatus> combineFiles = new ArrayList<>(1024);
         //对文件夹副本下的文件/文件夹进行数据划分
         splitFile(sourcePath, directors, copyFiles, combineFiles);
+
+        if (CollectionUtils.isEmpty(combineFiles)) {
+            log.info("源目录下没有需要合并的小文件");
+            return;
+        }
 
         //源目录下假如存在文件夹 直接移动到 mergedTempPath目录下
         for (FileStatus director : directors) {
