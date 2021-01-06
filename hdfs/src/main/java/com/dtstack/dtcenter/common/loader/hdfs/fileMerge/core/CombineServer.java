@@ -60,11 +60,6 @@ public abstract class CombineServer {
         //对文件夹副本下的文件/文件夹进行数据划分
         splitFile(sourcePath, directors, copyFiles, combineFiles);
 
-        if (CollectionUtils.isEmpty(combineFiles)) {
-            log.info("源目录下没有需要合并的小文件");
-            return;
-        }
-
         //源目录下假如存在文件夹 直接移动到 mergedTempPath目录下
         for (FileStatus director : directors) {
             FileSystemUtils.backupDirector(director.getPath(), new Path(mergedTempPath.toUri().getPath() + File.separator + director.getPath().getName()), fs, configuration);
@@ -73,6 +68,11 @@ public abstract class CombineServer {
         //源目录下超过阈值的大文件直接进行复制 不需要合并
         for (FileStatus copyFile : copyFiles) {
             FileSystemUtils.backupFile(copyFile.getPath(), mergedTempPath, fs, configuration);
+        }
+
+        if (CollectionUtils.isEmpty(combineFiles)) {
+            log.info("源目录下没有需要合并的小文件");
+            return;
         }
 
         //小文件合并
