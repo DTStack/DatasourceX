@@ -29,7 +29,7 @@ public class PoolConfig implements Serializable {
     private Long connectionTimeout = SECONDS.toMillis(30);
 
     /**
-     * 控制允许连接在池中闲置的最长时间
+     * 控制允许连接在池中闲置的最长时间（毫秒）
      * 此设置仅适用于 minimumIdle 设置为小于 maximumPoolSize 的情况
      */
     @Builder.Default
