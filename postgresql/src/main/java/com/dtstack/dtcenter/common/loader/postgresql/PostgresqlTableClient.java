@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Greenplum表操作相关接口
+ * postgresql表操作相关接口
  *
  * @author ：wangchuan
  * date：Created in 10:57 上午 2020/12/3
@@ -32,7 +32,7 @@ public class PostgresqlTableClient extends AbsTableClient {
 
     @Override
     protected DataSourceType getSourceType() {
-        return DataSourceType.GREENPLUM6;
+        return DataSourceType.PostgreSQL;
     }
 
     @Override
