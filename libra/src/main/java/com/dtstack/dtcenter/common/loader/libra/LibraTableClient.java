@@ -21,6 +21,9 @@ import java.util.Map;
 @Slf4j
 public class LibraTableClient extends AbsTableClient {
 
+    // 获取表占用存储sql
+    private static final String TABLE_SIZE_SQL = "SELECT pg_total_relation_size('\"' || table_schema || '\".\"' || table_name || '\"') AS table_size " +
+            "FROM information_schema.tables where table_schema = '%s' and table_name = '%s'";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -58,5 +61,13 @@ public class LibraTableClient extends AbsTableClient {
         }
         String alterTableParamsSql = String.format("COMMENT ON TABLE %s IS '%s'", tableName, comment);
         return executeSqlWithoutResultSet(source, alterTableParamsSql);
+    }
+
+    @Override
+    protected String getTableSizeSql(String schema, String tableName) {
+        if (StringUtils.isBlank(schema)) {
+            throw new DtLoaderException("schema不能为空");
+        }
+        return String.format(TABLE_SIZE_SQL, schema, tableName);
     }
 }

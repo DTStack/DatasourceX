@@ -34,4 +34,16 @@ public class GreenplumTableTest {
         Boolean renameCheck2 = client.renameTable(source, "wangchuan_test3", "wangchuan_test2");
         Assert.assertTrue(renameCheck2);
     }
+
+    /**
+     * 获取表大小
+     */
+    @Test
+    public void getTableSize () throws Exception {
+        ITable tableClient = ClientCache.getTable(DataSourceType.GREENPLUM6.getVal());
+        Long tableSize = tableClient.getTableSize(source, "public", "wangchuan_123");
+        System.out.println(tableSize);
+        Assert.assertTrue(tableSize != null && tableSize > 0);
+    }
+
 }

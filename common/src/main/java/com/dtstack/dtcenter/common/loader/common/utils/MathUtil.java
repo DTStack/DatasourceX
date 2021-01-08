@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.common.utils;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * @company: www.dtstack.com
@@ -24,6 +25,8 @@ public class MathUtil {
             return Long.valueOf(obj.toString());
         }else if(obj instanceof BigDecimal){
             return ((BigDecimal)obj).longValue();
+        }else if(obj instanceof BigInteger){
+            return ((BigInteger)obj).longValue();
         }
 
         throw new DtLoaderException("not support type of " + obj.getClass() + " convert to Long." );

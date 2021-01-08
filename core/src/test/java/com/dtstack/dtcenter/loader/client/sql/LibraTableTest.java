@@ -23,9 +23,9 @@ import java.util.Map;
 public class LibraTableTest {
 
     private static LibraSourceDTO source = LibraSourceDTO.builder()
-            .url("jdbc:postgresql://172.16.8.193:5432/database")
-            .username("root")
-            .password("postgresql")
+            .url("jdbc:postgresql://kudu5:54321/database?currentSchema=public")
+            .username("postgres")
+            .password("password")
             .build();
 
     /**
@@ -41,6 +41,10 @@ public class LibraTableTest {
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan_test2").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_test2 (id int)").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_test5 (id int)").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into wangchuan_test5 values (1),(2),(1),(2),(1),(2),(1),(2),(1),(2),(1),(2)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -76,5 +80,16 @@ public class LibraTableTest {
         params.put("comment", "test");
         Boolean alterParamCheck = client.alterTableParams(source, "wangchuan_test2", params);
         Assert.assertTrue(alterParamCheck);
+    }
+
+    /**
+     * 重命名表
+     */
+    @Test
+    public void getTableSize () throws Exception {
+        ITable tableClient = ClientCache.getTable(DataSourceType.LIBRA.getVal());
+        Long tableSize = tableClient.getTableSize(source, "public", "wangchuan_test5");
+        System.out.println(tableSize);
+        Assert.assertTrue(tableSize != null && tableSize > 0);
     }
 }

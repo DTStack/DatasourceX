@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.common.loader.mysql;
+package com.dtstack.dtcenter.common.loader.postgresql;
 
 import com.dtstack.dtcenter.common.loader.rdbms.AbsTableClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
@@ -12,49 +12,42 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * mysql表操作相关接口
+ * postgresql表操作相关接口
  *
  * @author ：wangchuan
  * date：Created in 10:57 上午 2020/12/3
  * company: www.dtstack.com
  */
 @Slf4j
-public class MysqlTableClient extends AbsTableClient {
+public class PostgresqlTableClient extends AbsTableClient {
 
     // 获取表占用存储sql
-    private static final String TABLE_SIZE_SQL = "select (data_length + index_length) as table_size from information_schema.tables where TABLE_SCHEMA = '%s' and TABLE_NAME = '%s'";
+    private static final String TABLE_SIZE_SQL = "SELECT pg_total_relation_size('\"' || table_schema || '\".\"' || table_name || '\"') AS table_size " +
+            "FROM information_schema.tables where table_schema = '%s' and table_name = '%s'";
 
     @Override
     protected ConnFactory getConnFactory() {
-        return new MysqlConnFactory();
+        return new PostgresqlConnFactory();
     }
 
     @Override
     protected DataSourceType getSourceType() {
-        return DataSourceType.MySQL;
+        return DataSourceType.PostgreSQL;
     }
 
     @Override
     public List<String> showPartitions(ISourceDTO source, String tableName) {
-        throw new DtLoaderException("该数据源不支持获取分区操作！");
+        throw new DtLoaderException("postgresql不支持获取分区操作！");
     }
 
-    /**
-     * 更改表相关参数，暂时只支持更改表注释
-     * @param source 数据源信息
-     * @param tableName 表名
-     * @param params 修改的参数，map集合
-     * @return 执行结果
-     */
+    @Override
+    protected String getDropTableSql(String tableName) {
+        return String.format("drop table if exists %s", tableName);
+    }
+
     @Override
     public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) {
-        String comment = params.get("comment");
-        log.info("更改表注释，comment：{}！", comment);
-        if (StringUtils.isEmpty(comment)) {
-            return true;
-        }
-        String alterTableParamsSql = String.format("alter table %s comment '%s'", tableName, comment);
-        return executeSqlWithoutResultSet(source, alterTableParamsSql);
+        throw new DtLoaderException("postgresql暂时不支持更改表参数操作！");
     }
 
     @Override

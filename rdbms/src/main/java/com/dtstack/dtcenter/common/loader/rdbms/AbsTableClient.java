@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.rdbms;
 
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.MathUtil;
 import com.dtstack.dtcenter.loader.cache.connection.CacheConnectionHelper;
 import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -189,6 +190,33 @@ public abstract class AbsTableClient implements ITable {
         params.forEach((key, val) -> tableProperties.add(String.format("'%s'='%s'", key, val)));
         String alterTableParamsSql = String.format("alter table %s set tblproperties (%s)", tableName, StringUtils.join(tableProperties, "."));
         return executeSqlWithoutResultSet(source, alterTableParamsSql);
+    }
+
+    @Override
+    public Long getTableSize(ISourceDTO source, String schema, String tableName) {
+        log.info("获取表占用存储，schema：{}，表名：{}", schema, tableName);
+        if (StringUtils.isBlank(tableName)) {
+            throw new DtLoaderException("表名不能为空！");
+        }
+        String tableSizeSql = getTableSizeSql(schema, tableName);
+        log.info("获取占用存储的sql：{}", tableSizeSql);
+        List<Map<String, Object>> result = executeQuery(source, tableSizeSql);
+        if (CollectionUtils.isEmpty(result) || MapUtils.isEmpty(result.get(0))) {
+            log.info("获取到的表存储信息为空，schema：{}，表名：{}", schema, tableName);
+            throw new DtLoaderException("获取表占用存储信息异常");
+        }
+        Object tableSize = result.get(0).values().stream().findFirst().orElseThrow(() -> new DtLoaderException("获取表占用存储信息异常"));
+        return MathUtil.getLongVal(tableSize);
+    }
+
+    /**
+     * 获取表占用存储的sql
+     * @param schema schema信息
+     * @param tableName 表名
+     * @return 占用存储sql
+     */
+    protected String getTableSizeSql(String schema, String tableName) {
+       throw new DtLoaderException("该数据源暂时不支持获取表占用存储");
     }
 
     /**

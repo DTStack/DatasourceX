@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,10 @@ import java.util.Map;
  */
 @Slf4j
 public class GreenplumTableClient extends AbsTableClient {
+
+    // 获取表占用存储sql
+    private static final String TABLE_SIZE_SQL = "SELECT pg_total_relation_size('\"' || table_schema || '\".\"' || table_name || '\"') AS table_size " +
+            "FROM information_schema.tables where table_schema = '%s' and table_name = '%s'";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -43,5 +48,13 @@ public class GreenplumTableClient extends AbsTableClient {
     @Override
     public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) {
         throw new DtLoaderException("greenplum暂时不支持更改表参数操作！");
+    }
+
+    @Override
+    protected String getTableSizeSql(String schema, String tableName) {
+        if (StringUtils.isBlank(schema)) {
+            throw new DtLoaderException("schema不能为空");
+        }
+        return String.format(TABLE_SIZE_SQL, schema, tableName);
     }
 }
