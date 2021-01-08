@@ -21,6 +21,10 @@ import java.util.Map;
 @Slf4j
 public class OracleTableClient extends AbsTableClient {
 
+    // 获取表占用存储sql
+    private static final String TABLE_SIZE_SQL = "select bytes AS table_size from user_segments where segment_name='%s' ";
+
+    private static final String ADD_SCHEMA = " and TABLESPACE_NAME = upper('%s')";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -58,5 +62,14 @@ public class OracleTableClient extends AbsTableClient {
         }
         String alterTableParamsSql = String.format("comment on table %s is '%s'", tableName, comment);
         return executeSqlWithoutResultSet(source, alterTableParamsSql);
+    }
+
+    @Override
+    protected String getTableSizeSql(String schema, String tableName) {
+        if (StringUtils.isBlank(schema)) {
+            return String.format(TABLE_SIZE_SQL, tableName);
+        }
+
+        return String.format(TABLE_SIZE_SQL, schema) + ADD_SCHEMA;
     }
 }

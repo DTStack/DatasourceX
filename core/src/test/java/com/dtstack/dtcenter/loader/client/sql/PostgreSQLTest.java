@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
@@ -11,7 +12,6 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -32,7 +32,7 @@ public class PostgreSQLTest {
             .poolConfig(new PoolConfig())
             .build();
 
-    @BeforeClass
+    //@BeforeClass
     public static void beforeClass() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists \"public\".nanqi").build();
@@ -215,5 +215,13 @@ public class PostgreSQLTest {
         IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
+    }
+
+    @Test
+    public void getTableSize () throws Exception {
+        ITable tableClient = ClientCache.getTable(DataSourceType.PostgreSQL.getVal());
+        Long tableSize = tableClient.getTableSize(source, "pg_catalog", "pg_depend");
+        System.out.println(tableSize);
+        Assert.assertTrue(tableSize != null && tableSize > 0);
     }
 }
