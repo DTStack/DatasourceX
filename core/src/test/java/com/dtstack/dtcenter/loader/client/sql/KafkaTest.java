@@ -4,13 +4,16 @@ import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.IKafka;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
+import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.KafkaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.kafka.common.requests.MetadataResponse;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -109,5 +112,13 @@ public class KafkaTest {
         SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<List<Object>> results = client.getPreview(source, sqlQueryDTO, "latest");
         System.out.println(results);
+    }
+
+    @Test
+    public void testTopicPartitions() {
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
+        List<KafkaPartitionDTO> partitionDTOS = client.getTopicPartitions(source, "partiton_test");
+        Assert.assertTrue(CollectionUtils.isNotEmpty(partitionDTOS));
+        System.out.println(partitionDTOS);
     }
 }
