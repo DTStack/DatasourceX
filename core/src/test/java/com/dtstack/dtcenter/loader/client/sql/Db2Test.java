@@ -27,10 +27,9 @@ public class Db2Test {
     private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     Db2SourceDTO source = Db2SourceDTO.builder()
-            .url("jdbc:db2://172.16.10.251:50000/mqTest")
-            .username("DB2INST1")
-            .password("abc123")
-            .schema("mqTest")
+            .url("jdbc:db2://172.16.101.246:50002/DT_TEST")
+            .username("db2inst1")
+            .password("dtstack1")
             .poolConfig(new PoolConfig())
             .build();
 
@@ -127,7 +126,7 @@ public class Db2Test {
     @Test
     public void preview() throws Exception {
         IClient client = clientCache.getClient(DataSourceType.DB2.getPluginName());
-        List preview = client.getPreview(source, SqlQueryDTO.builder().tableName("WANGCHUAN01").build());
+        List preview = client.getPreview(source, SqlQueryDTO.builder().tableName("JMT_TEST_1609227267782").previewNum(10).build());
         System.out.println(preview);
     }
 
