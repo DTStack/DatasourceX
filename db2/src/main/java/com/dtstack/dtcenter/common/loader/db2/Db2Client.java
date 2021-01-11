@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Db2SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
@@ -124,8 +125,14 @@ public class Db2Client extends AbsRdbmsClient {
         return String.format(TABLE_BY_SCHEMA, queryDTO.getSchema());
     }
 
+    @Override
+    protected String dealSql(RdbmsSourceDTO rdbmsSourceDTO, SqlQueryDTO sqlQueryDTO) {
+        String schema = StringUtils.isNotBlank(sqlQueryDTO.getSchema()) ? sqlQueryDTO.getSchema() : rdbmsSourceDTO.getSchema();
+        return "select * from " + transferSchemaAndTableName(schema, sqlQueryDTO.getTableName()) + String.format(" fetch first %s rows only ", sqlQueryDTO.getPreviewNum());
+    }
+
     /**
-     * 处理Oracle schema和tableName，适配schema和tableName中有.的情况
+     * 处理db2 schema和tableName，适配schema和tableName中有.的情况
      * @param schema
      * @param tableName
      * @return
