@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.kafka.util;
 import com.dtstack.dtcenter.common.loader.common.utils.TelUtil;
 import com.dtstack.dtcenter.common.loader.kafka.KafkaConsistent;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
+import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.google.common.collect.Lists;
@@ -19,6 +20,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.Node;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.requests.MetadataResponse;
@@ -33,6 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -449,5 +452,59 @@ public class KakfaUtil {
             destroyProperty();
         }
         return result;
+    }
+
+    public static List<KafkaPartitionDTO> getPartitions (String brokerUrls, String topic, Map<String, Object> kerberosConfig) {
+        Properties defaultKafkaConfig = initProperties(brokerUrls, kerberosConfig);
+        List<KafkaPartitionDTO> partitionDTOS = Lists.newArrayList();
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(defaultKafkaConfig)) {
+            // PartitionInfo没有实现序列化接口，不能使用 fastJson 进行拷贝
+            List<PartitionInfo> partitions = consumer.partitionsFor(topic);
+            if (CollectionUtils.isEmpty(partitions)) {
+                return partitionDTOS;
+            }
+            for (PartitionInfo partition : partitions) {
+                // 所有副本
+                List<KafkaPartitionDTO.Node> replicas = Lists.newArrayList();
+                for (Node node : partition.replicas()) {
+                    replicas.add(buildKafkaPartitionNode(node));
+                }
+                // 在isr队列中的副本
+                List<KafkaPartitionDTO.Node> inSyncReplicas = Lists.newArrayList();
+                for (Node node : partition.inSyncReplicas()) {
+                    inSyncReplicas.add(buildKafkaPartitionNode(node));
+                }
+                KafkaPartitionDTO kafkaPartitionDTO = KafkaPartitionDTO.builder()
+                        .topic(partition.topic())
+                        .partition(partition.partition())
+                        .leader(buildKafkaPartitionNode(partition.leader()))
+                        .replicas(replicas.toArray(new KafkaPartitionDTO.Node[]{}))
+                        .inSyncReplicas(inSyncReplicas.toArray(new KafkaPartitionDTO.Node[]{}))
+                        .build();
+                partitionDTOS.add(kafkaPartitionDTO);
+            }
+            return partitionDTOS;
+        } catch (Exception e) {
+            log.error("获取topic：{} 分区信息异常", topic);
+            throw new DtLoaderException(String.format("获取topic：%s 分区信息异常：%s", topic, e.getMessage()), e);
+        }
+    }
+
+    /**
+     * 构建kafka node
+     * @param node kafka副本信息
+     * @return common-loader中定义的kafka副本信息
+     */
+    private static KafkaPartitionDTO.Node buildKafkaPartitionNode(Node node) {
+        if (Objects.isNull(node)) {
+            return KafkaPartitionDTO.Node.builder().build();
+        }
+        return KafkaPartitionDTO.Node.builder()
+                .host(node.host())
+                .id(node.id())
+                .idString(node.idString())
+                .port(node.port())
+                .rack(node.rack())
+                .build();
     }
 }
