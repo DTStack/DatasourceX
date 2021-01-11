@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -24,6 +25,9 @@ public class GreenplumTableClient extends AbsTableClient {
     // 获取表占用存储sql
     private static final String TABLE_SIZE_SQL = "SELECT pg_total_relation_size('\"' || table_schema || '\".\"' || table_name || '\"') AS table_size " +
             "FROM information_schema.tables where table_schema = '%s' and table_name = '%s'";
+
+    // 判断表是不是视图表sql
+    private static final String TABLE_IS_VIEW_SQL = "select viewname from pg_views where (schemaname ='public' or schemaname = '%s') and viewname = '%s'";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -56,5 +60,13 @@ public class GreenplumTableClient extends AbsTableClient {
             throw new DtLoaderException("schema不能为空");
         }
         return String.format(TABLE_SIZE_SQL, schema, tableName);
+    }
+
+    @Override
+    public Boolean isView(ISourceDTO source, String schema, String tableName) {
+        checkParamAndSetSchema(source, schema, tableName);
+        schema = StringUtils.isNotBlank(schema) ? schema : "public";
+        String sql = String.format(TABLE_IS_VIEW_SQL, schema, tableName);
+        return CollectionUtils.isNotEmpty(executeQuery(source, sql));
     }
 }

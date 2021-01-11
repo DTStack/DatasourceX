@@ -209,6 +209,27 @@ public abstract class AbsTableClient implements ITable {
         return MathUtil.getLongVal(tableSize);
     }
 
+    @Override
+    public Boolean isView(ISourceDTO source, String schema, String tableName) {
+        throw new DtLoaderException("该数据源暂时不支持该方法");
+    }
+
+    /**
+     * 检查参数并设置schema
+     * @param source 数据源信息
+     * @param schema  schema名称
+     * @param tableName 表名
+     */
+    protected void checkParamAndSetSchema (ISourceDTO source, String schema, String tableName) {
+        if (StringUtils.isBlank(tableName)) {
+            throw new DtLoaderException("表名不能为空");
+        }
+        if (StringUtils.isNotBlank(schema)) {
+            RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+            rdbmsSourceDTO.setSchema(schema);
+        }
+    }
+
     /**
      * 获取表占用存储的sql
      * @param schema schema信息

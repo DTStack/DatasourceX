@@ -89,4 +89,12 @@ public interface ITable {
      */
     Long getTableSize (ISourceDTO source, String schema, String tableName);
 
+    /**
+     * 判断表是否是分区表
+     * @param source 数据源信息
+     * @param schema schema名称
+     * @param tableName 表名
+     * @return 是否是分区表
+     */
+    Boolean isView (ISourceDTO source, String schema, String tableName);
 }
