@@ -4,14 +4,23 @@ package com.dtstack.dtcenter.loader.kerberos;
  * @company: www.dtstack.com
  * @Author ：Nanqi
  * @Date ：Created in 20:57 2020/8/27
- * @Description：Hadoop 配置中心 11 月份删除与 getPrincipal 一起
+ * @Description：Hadoop
  */
-@Deprecated
 public class HadoopConfTool {
     /**
      * Hadoop 开启 Kerberos 是否需要二次认证
      */
     public static final String HADOOP_SECURITY_AUTHORIZATION = "hadoop.security.authorization";
+
+    /**
+     * HBASE 开启 Kerberos 参数
+     */
+    public static final String HBASE_SECURITY_AUTHORIZATION = "hbase.security.authentication";
+
+    /**
+     * pheonix kerberos 参数
+     */
+    public static final String PHOENIX_QUERYSERVER_KERBEROS_PRINCIPAL = "phoenix.queryserver.kerberos.principal";
 
     /**
      * krb5 系统属性键
