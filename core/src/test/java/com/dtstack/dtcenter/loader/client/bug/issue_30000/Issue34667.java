@@ -26,11 +26,43 @@ public class Issue34667 {
             .defaultFS("hdfs://krbt1:8020")
             .build();
 
+    /**
+     * zip中有文件夹测试
+     */
     @Test
     public void test_for_issue () throws Exception{
         String localKerberosPath = Issue34667.class.getResource("/bug/issue_34667/").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HIVE.getVal());
         Map<String, Object> kerberosMap = kerberos.parseKerberosFromUpload(localKerberosPath + "kerberos_dir.zip", localKerberosPath);
+        kerberos.prepareKerberosForConnect(kerberosMap, localKerberosPath);
+        source.setKerberosConfig(kerberosMap);
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+        Assert.assertTrue(client.testCon(source));
+    }
+
+    /**
+     * zip包中无文件夹测试
+     */
+    @Test
+    public void test_for_issue2 () throws Exception{
+        String localKerberosPath = Issue34667.class.getResource("/bug/issue_34667/").getPath();
+        IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HIVE.getVal());
+        Map<String, Object> kerberosMap = kerberos.parseKerberosFromUpload(localKerberosPath + "kerberos_nodir.zip", localKerberosPath);
+        kerberos.prepareKerberosForConnect(kerberosMap, localKerberosPath);
+        source.setKerberosConfig(kerberosMap);
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+        Assert.assertTrue(client.testCon(source));
+    }
+
+    /**
+     * 绝对路径测试
+     */
+    @Test
+    public void test_for_issue3 () throws Exception{
+        String localKerberosPath = Issue34667.class.getResource("/bug/issue_34667/").getPath();
+        IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HIVE.getVal());
+        Map<String, Object> kerberosMap = kerberos.parseKerberosFromUpload(localKerberosPath + "kerberos_dir.zip", localKerberosPath);
+        kerberos.prepareKerberosForConnect(kerberosMap, localKerberosPath);
         kerberos.prepareKerberosForConnect(kerberosMap, localKerberosPath);
         source.setKerberosConfig(kerberosMap);
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
