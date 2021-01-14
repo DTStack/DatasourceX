@@ -84,7 +84,6 @@ public class ElasticSearchPoolFactory implements PooledObjectFactory<RestHighLev
             try {
                 client.close();
             } catch (Exception e) {
-                log.error("close client error", e);
                 throw new DtLoaderException("close client error", e);
             }
         }

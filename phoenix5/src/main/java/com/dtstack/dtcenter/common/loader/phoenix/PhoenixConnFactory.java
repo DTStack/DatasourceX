@@ -65,13 +65,10 @@ public class PhoenixConnFactory extends ConnFactory {
                 throw new DtLoaderException("获取phoenix5连接失败！");
             }
         } catch (InterruptedException e) {
-            log.error("获取连接线程中断！url=" + phoenix5SourceDTO.getUrl(), e);
             throw new DtLoaderException("获取phoenix5过程中线程中中断！", e);
         } catch (ExecutionException e) {
-            log.error("获取连接出错！url=" + phoenix5SourceDTO.getUrl(), e);
             throw new DtLoaderException("获取phoenix5连接出错！", e);
         } catch (TimeoutException e) {
-            log.error("获取连接超时！url=" + phoenix5SourceDTO.getUrl(), e);
             throw new DtLoaderException("获取phoenix5连接超时！", e);
         } finally {
             if (Objects.nonNull(future)) {

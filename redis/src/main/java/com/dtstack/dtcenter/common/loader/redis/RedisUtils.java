@@ -275,7 +275,6 @@ public class RedisUtils {
                 }
             }
         } catch (Exception e) {
-            log.error("redis closeable close error", e);
             throw new DtLoaderException("redis close resource error", e);
         }
     }

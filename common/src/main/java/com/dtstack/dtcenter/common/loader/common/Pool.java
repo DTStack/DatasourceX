@@ -30,7 +30,6 @@ public class Pool<T> implements Cloneable {
             try {
                 closeInternalPool();
             } catch (Exception e) {
-                log.error("init pool error", e);
                 throw new DtLoaderException("init pool error", e);
             }
         }
@@ -42,7 +41,6 @@ public class Pool<T> implements Cloneable {
         try {
             internalPool.close();
         } catch (Exception e) {
-            log.error("Could not destroy the pool", e);
             throw new DtLoaderException("Could not destroy the pool", e);
         }
     }
@@ -55,7 +53,6 @@ public class Pool<T> implements Cloneable {
         try {
             return internalPool.borrowObject();
         } catch (Exception e) {
-            log.error("Could not get a resource from the pool", e);
             throw new DtLoaderException("Could not get a resource from the pool", e);
         }
     }
@@ -77,7 +74,6 @@ public class Pool<T> implements Cloneable {
         try {
             internalPool.returnObject(resource);
         } catch (Exception e) {
-            log.error("Could not return the resource to the pool", e);
             throw new DtLoaderException("Could not return the resource to the pool", e);
         }
     }
@@ -96,7 +92,6 @@ public class Pool<T> implements Cloneable {
         try {
             internalPool.invalidateObject(resource);
         } catch (Exception e) {
-            log.error("Could not return the resource to the pool", e);
             throw new DtLoaderException("Could not return the resource to the pool", e);
         }
     }
@@ -161,7 +156,6 @@ public class Pool<T> implements Cloneable {
                 this.internalPool.addObject();
             }
         } catch (Exception e) {
-            log.error("Error trying to add idle objects", e);
             throw new DtLoaderException("Error trying to add idle objects", e);
         }
     }

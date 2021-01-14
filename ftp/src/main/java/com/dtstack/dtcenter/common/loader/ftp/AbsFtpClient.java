@@ -53,7 +53,6 @@ public abstract class AbsFtpClient<T> implements IClient<T> {
                             put(SFTPHandler.KEY_RSA, Optional.ofNullable(ftpSourceDTO.getPath()).orElse(""));
                         }});
             } catch (JSchException e) {
-                log.error("与ftp服务器建立连接失败,请检查用户名和密码是否正确: host = {}, port : {}, username = {}, rsaPath = {}", ftpSourceDTO.getUrl(), ftpSourceDTO.getHostPort(), ftpSourceDTO.getUsername(), ftpSourceDTO.getPath());
                 throw new DtLoaderException("与ftp服务器建立连接失败,请检查用户名和密码是否正确");
             } finally {
                 if (instance != null) {
@@ -79,7 +78,6 @@ public abstract class AbsFtpClient<T> implements IClient<T> {
                 int reply = ftpClient.getReplyCode();
                 if (!FTPReply.isPositiveCompletion(reply)) {
                     ftpClient.disconnect();
-                    log.error("与ftp服务器建立连接失败,请检查用户名和密码是否正确: host = {}, port : {}, username = {}", ftpSourceDTO.getUrl(), ftpSourceDTO.getHostPort(), ftpSourceDTO.getUsername());
                     throw new DtLoaderException("与ftp服务器建立连接失败,请检查用户名和密码是否正确");
                 }
 
@@ -87,7 +85,6 @@ public abstract class AbsFtpClient<T> implements IClient<T> {
                     ftpClient.disconnect();
                 }
             } catch (Exception e) {
-                log.error("与ftp服务器建立连接失败,请检查用户名和密码是否正确: host = {}, port : {}, username = {}", ftpSourceDTO.getUrl(), ftpSourceDTO.getHostPort(), ftpSourceDTO.getUsername());
                 throw new DtLoaderException("与ftp服务器建立连接失败,请检查用户名和密码是否正确");
             }
         }

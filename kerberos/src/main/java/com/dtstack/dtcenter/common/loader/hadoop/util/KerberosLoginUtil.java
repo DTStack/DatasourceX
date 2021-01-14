@@ -146,7 +146,6 @@ public class KerberosLoginUtil {
             log.info("login kerberos success, currentUser={}", UserGroupInformation.getCurrentUser());
             return ugi;
         } catch (Exception var6) {
-            log.error("login kerberos failed, config:{}", confMap, var6);
             throw new DtLoaderException("login kerberos failed", var6);
         }
     }

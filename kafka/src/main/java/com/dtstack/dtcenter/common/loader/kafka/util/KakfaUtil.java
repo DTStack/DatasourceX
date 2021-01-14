@@ -238,7 +238,6 @@ public class KakfaUtil {
             List<MetadataResponse.PartitionMetadata> partitionMetadata = topicMetadata.partitionMetadata();
             return partitionMetadata;
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
             throw new DtLoaderException(e.getMessage());
         } finally {
             if (zkUtils != null) {
@@ -485,7 +484,6 @@ public class KakfaUtil {
             }
             return partitionDTOS;
         } catch (Exception e) {
-            log.error("获取topic：{} 分区信息异常", topic);
             throw new DtLoaderException(String.format("获取topic：%s 分区信息异常：%s", topic, e.getMessage()), e);
         }
     }
