@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -23,6 +24,10 @@ import java.util.Map;
  */
 @Slf4j
 public class DBUtil {
+
+    // 默认最大查询条数
+    private static final Integer MAX_QUERY_ROW = 5000;
+
     /**
      * 根据 SQL 查询
      *
@@ -54,23 +59,26 @@ public class DBUtil {
             if (queryTimeout != null) {
                 statement.setQueryTimeout(queryTimeout);
             }
-            if (limit != null) {
-                statement.setMaxRows(limit);
-            }
-            res = statement.executeQuery(sql);
-            int columns = res.getMetaData().getColumnCount();
-            List<String> columnName = Lists.newArrayList();
-            for (int i = 0; i < columns; i++) {
-                columnName.add(res.getMetaData().getColumnLabel(i + 1));
+            // 设置返回最大条数
+            statement.setMaxRows(Objects.isNull(limit) ? MAX_QUERY_ROW : limit);
+
+            if (statement.execute(sql)) {
+                res = statement.getResultSet();
+                int columns = res.getMetaData().getColumnCount();
+                List<String> columnName = Lists.newArrayList();
+                for (int i = 0; i < columns; i++) {
+                    columnName.add(res.getMetaData().getColumnLabel(i + 1));
+                }
+
+                while (res.next()) {
+                    Map<String, Object> row = Maps.newLinkedHashMap();
+                    for (int i = 0; i < columns; i++) {
+                        row.put(columnName.get(i), res.getObject(i + 1));
+                    }
+                    result.add(row);
+                }
             }
 
-            while (res.next()) {
-                Map<String, Object> row = Maps.newLinkedHashMap();
-                for (int i = 0; i < columns; i++) {
-                    row.put(columnName.get(i), res.getObject(i + 1));
-                }
-                result.add(row);
-            }
         } catch (Exception e) {
             throw new DtLoaderException("SQL 执行异常", e);
         } finally {
@@ -112,9 +120,9 @@ public class DBUtil {
             if (queryTimeout != null) {
                 statement.setQueryTimeout(queryTimeout);
             }
-            if (limit != null) {
-                statement.setMaxRows(limit);
-            }
+            // 设置返回最大条数
+            statement.setMaxRows(Objects.isNull(limit) ? MAX_QUERY_ROW : limit);
+
             //todo 支持预编译sql
             if (preFields != null && !preFields.isEmpty()) {
                 for (int i = 0; i < preFields.size(); i++) {

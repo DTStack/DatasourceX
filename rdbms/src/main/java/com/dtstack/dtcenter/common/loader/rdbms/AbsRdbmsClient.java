@@ -116,11 +116,12 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("connection调用isClosed方法异常 : %s", e.getMessage()), e);
         }
-        if (queryDTO.getPreFields() != null || queryDTO.getQueryTimeout()!= null) {
+        if (queryDTO.getPreFields() != null) {
             return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
                     ConnectionClearStatus.CLOSE.getValue().equals(clearStatus), queryDTO.getPreFields(), queryDTO.getQueryTimeout());
         }
-        return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
+
+        return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(), queryDTO.getLimit(), queryDTO.getQueryTimeout(),
                 ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
     }
 

@@ -44,6 +44,10 @@ public class OracleTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into \"nanqi\" values (1, 'nanqi')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into \"nanqi\" values (2, 'nanqi')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into \"nanqi\" values (3, 'nanqi')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
@@ -68,6 +72,19 @@ public class OracleTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from \"nanqi\"").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
+    }
+
+    /**
+     * 返回条数限制测试
+     */
+    @Test
+    public void executeQueryMaxRow() {
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        String sql = "select * from \"nanqi\"";
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).limit(2).build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        System.out.println(result);
+        Assert.assertEquals(2, result.size());
     }
 
     /**
