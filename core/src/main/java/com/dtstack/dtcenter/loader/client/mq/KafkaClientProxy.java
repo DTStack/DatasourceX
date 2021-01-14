@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.loader.client.mq;
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
 import com.dtstack.dtcenter.loader.client.IKafka;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
+import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -70,6 +71,12 @@ public class KafkaClientProxy<T> implements IKafka<T> {
     @Override
     public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO, String prevMode) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getPreview(source, queryDTO, prevMode),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public List<KafkaPartitionDTO> getTopicPartitions(ISourceDTO source, String topic) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTopicPartitions(source, topic),
                 targetClient.getClass().getClassLoader());
     }
 }

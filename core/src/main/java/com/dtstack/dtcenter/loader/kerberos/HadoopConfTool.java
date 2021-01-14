@@ -4,8 +4,9 @@ package com.dtstack.dtcenter.loader.kerberos;
  * @company: www.dtstack.com
  * @Author ：Nanqi
  * @Date ：Created in 20:57 2020/8/27
- * @Description：Hadoop 配置中心
+ * @Description：Hadoop 配置中心 后期删除
  */
+@Deprecated
 public class HadoopConfTool {
     /**
      * Hadoop 开启 Kerberos 是否需要二次认证

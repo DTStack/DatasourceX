@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.client;
 
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
+import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -93,4 +94,13 @@ public interface IKafka<T> {
      * @throws Exception
      */
     List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO, String prevMode);
+
+    /**
+     * 获取kafka指定topic下的分区信息
+     *
+     * @param source 数据源信息
+     * @param topic topic名称
+     * @return 分区数量
+     */
+    List<KafkaPartitionDTO> getTopicPartitions (ISourceDTO source, String topic);
 }

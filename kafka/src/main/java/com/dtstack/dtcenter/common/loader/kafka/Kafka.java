@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.kafka;
 
 import com.dtstack.dtcenter.common.loader.kafka.util.KakfaUtil;
 import com.dtstack.dtcenter.loader.client.IKafka;
+import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -97,5 +98,12 @@ public class Kafka<T> implements IKafka<T> {
         List<List<Object>> result = new ArrayList<>();
         result.add(records);
         return result;
+    }
+
+    @Override
+    public List<KafkaPartitionDTO> getTopicPartitions(ISourceDTO source, String topic) {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
+        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
+        return KakfaUtil.getPartitions(brokerUrl, topic, kafkaSourceDTO.getKerberosConfig());
     }
 }

@@ -79,4 +79,14 @@ public interface ITable {
      * @return 修改结果
      */
     Boolean alterTableParams (ISourceDTO source, String tableName, Map<String, String> params);
+
+    /**
+     * 获取表占用存储
+     * @param source 数据源信息
+     * @param schema schema信息
+     * @param tableName 表名
+     * @return 占用存储
+     */
+    Long getTableSize (ISourceDTO source, String schema, String tableName);
+
 }

@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
@@ -292,5 +293,13 @@ public class OracleTest {
         Assert.assertTrue(CollectionUtils.isEmpty(list));
         long newDate = System.currentTimeMillis();
         System.out.println("------用时：" + (newDate - oldDate) / 1000 + "s");
+    }
+
+    @Test
+    public void getTableSize () throws Exception {
+        ITable tableClient = ClientCache.getTable(DataSourceType.Oracle.getVal());
+        Long tableSize = tableClient.getTableSize(source, null, "nanqi");
+        System.out.println(tableSize);
+        Assert.assertTrue(tableSize != null && tableSize > 0);
     }
 }
