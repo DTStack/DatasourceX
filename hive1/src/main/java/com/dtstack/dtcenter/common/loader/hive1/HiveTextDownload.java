@@ -52,6 +52,9 @@ public class HiveTextDownload implements IDownloader {
     private Configuration configuration;
     private List<String> columnNames;
 
+    // 需要查询的字段索引
+    private List<Integer> needIndex;
+
     private List<String> paths;
     private String currFile;
     private int currFileIndex = 0;
@@ -71,7 +74,7 @@ public class HiveTextDownload implements IDownloader {
     private List<String> currentPartData;
 
     public HiveTextDownload(Configuration configuration, String tableLocation, List<String> columnNames, String fieldDelimiter,
-                            List<String> partitionColumns, Map<String, String> filterPartition, Map<String, Object> kerberosConfig){
+                            List<String> partitionColumns, Map<String, String> filterPartition, List<Integer> needIndex, Map<String, Object> kerberosConfig){
         this.tableLocation = tableLocation;
         this.columnNames = columnNames;
         this.fieldDelimiter = fieldDelimiter;
@@ -79,6 +82,7 @@ public class HiveTextDownload implements IDownloader {
         this.configuration = configuration;
         this.filterPartition = filterPartition;
         this.kerberosConfig = kerberosConfig;
+        this.needIndex = needIndex;
     }
 
     @Override
@@ -232,21 +236,21 @@ public class HiveTextDownload implements IDownloader {
         String line = value.toString();
         value.clear();
         String[] fields = line.split(fieldDelimiter);
-
-        List<String> row = new ArrayList<>();
-
-        for (int i = 0; i < columnNames.size(); i++) {
-            if(i > fields.length - 1){
-                row.add("");
-            } else {
-                row.add(fields[i]);
-            }
-        }
-
+        List<String> row = Lists.newArrayList(fields);
         if(CollectionUtils.isNotEmpty(partitionColumns)){
             row.addAll(currentPartData);
         }
-
+        if (CollectionUtils.isNotEmpty(needIndex)) {
+            List<String> rowNew = Lists.newArrayList();
+            for (Integer index : needIndex) {
+                if (index > row.size() -1) {
+                    rowNew.add("");
+                } else {
+                    rowNew.add(row.get(index));
+                }
+            }
+            return rowNew;
+        }
         return row;
     }
 
