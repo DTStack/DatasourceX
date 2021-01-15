@@ -55,7 +55,7 @@ public class HiveTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table nanqi1 (id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi1 values (1, 'nanqi')").build();
+        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi1 values (1, 'nanqi'),(2, 'nanqi'),(3, 'nanqi')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan01").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -71,6 +71,35 @@ public class HiveTest {
         Connection con = client.getCon(source);
         con.createStatement().close();
         con.close();
+    }
+
+    /**
+     * 返回条数限制测试
+     */
+    @Test
+    public void executeQueryMaxRow() {
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+        String sql = "select * from nanqi1";
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).limit(2).build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        System.out.println(result);
+        Assert.assertEquals(2, result.size());
+    }
+
+    /**
+     * 执行插入sql测试
+     */
+    @Test
+    public void executeQueryInsert() {
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+        String sql1 = "insert into nanqi values (7, 'nanqi')";
+        SqlQueryDTO queryDTO1 = SqlQueryDTO.builder().sql(sql1).build();
+        List<Map<String, Object>> result1 = client.executeQuery(source, queryDTO1);
+        Assert.assertTrue(CollectionUtils.isEmpty(result1));
+        String sql2 = "select * from nanqi where id = 7";
+        SqlQueryDTO queryDTO2 = SqlQueryDTO.builder().sql(sql2).build();
+        List<Map<String, Object>> result2 = client.executeQuery(source, queryDTO2);
+        Assert.assertTrue((Integer) result2.get(0).get("id") == 7);
     }
 
     @Test

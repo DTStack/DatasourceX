@@ -32,9 +32,9 @@ import java.util.Map;
  */
 public class HbaseTest {
     HbaseSourceDTO source = HbaseSourceDTO.builder()
-            .url("172.16.8.107,172.16.8.108,172.16.8.109:2181")
-            .path("/hbase")
-            .poolConfig(new PoolConfig())
+            .url("172.16.100.175:2181,172.16.101.196:2181,172.16.101.227:2181")
+            .path("/hbase2")
+            //.poolConfig(new PoolConfig())
             .build();
 
     @Test
@@ -91,7 +91,7 @@ public class HbaseTest {
     @Test
     public void preview() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.HBASE.getVal());
-        List<List<Object>> result = client.getPreview(source, SqlQueryDTO.builder().tableName("TEST").previewNum(1).build());
+        List<List<Object>> result = client.getPreview(source, SqlQueryDTO.builder().tableName("yl_assets_test:yl_create_table_test1").previewNum(100).build());
         System.out.println(result);
     }
 

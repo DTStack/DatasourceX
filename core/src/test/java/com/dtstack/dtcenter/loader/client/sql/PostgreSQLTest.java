@@ -12,6 +12,7 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -32,14 +33,14 @@ public class PostgreSQLTest {
             .poolConfig(new PoolConfig())
             .build();
 
-    //@BeforeClass
+    @BeforeClass
     public static void beforeClass() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists \"public\".nanqi").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table \"public\".nanqi (id int, name text)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into \"public\".nanqi values (1, 'nanqi')").build();
+        queryDTO = SqlQueryDTO.builder().sql("insert into \"public\".nanqi values (1, 'nanqi'),(2, 'nanqi'),(3, 'nanqi'),(4, 'nanqi')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -65,6 +66,35 @@ public class PostgreSQLTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select 1111").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
+    }
+
+    /**
+     * 返回条数限制测试
+     */
+    @Test
+    public void executeQueryMaxRow() {
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
+        String sql = "select * from nanqi";
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).limit(2).build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        System.out.println(result);
+        Assert.assertEquals(2, result.size());
+    }
+
+    /**
+     * 执行插入sql测试
+     */
+    @Test
+    public void executeQueryInsert() {
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
+        String sql1 = "insert into nanqi values (7, 'nanqi')";
+        SqlQueryDTO queryDTO1 = SqlQueryDTO.builder().sql(sql1).build();
+        List<Map<String, Object>> result1 = client.executeQuery(source, queryDTO1);
+        Assert.assertTrue(CollectionUtils.isEmpty(result1));
+        String sql2 = "select * from nanqi where id = 7";
+        SqlQueryDTO queryDTO2 = SqlQueryDTO.builder().sql(sql2).build();
+        List<Map<String, Object>> result2 = client.executeQuery(source, queryDTO2);
+        Assert.assertTrue((Integer) result2.get(0).get("id") == 7);
     }
 
     @Test
