@@ -202,7 +202,6 @@ public abstract class AbsTableClient implements ITable {
         log.info("获取占用存储的sql：{}", tableSizeSql);
         List<Map<String, Object>> result = executeQuery(source, tableSizeSql);
         if (CollectionUtils.isEmpty(result) || MapUtils.isEmpty(result.get(0))) {
-            log.info("获取到的表存储信息为空，schema：{}，表名：{}", schema, tableName);
             throw new DtLoaderException("获取表占用存储信息异常");
         }
         Object tableSize = result.get(0).values().stream().findFirst().orElseThrow(() -> new DtLoaderException("获取表占用存储信息异常"));

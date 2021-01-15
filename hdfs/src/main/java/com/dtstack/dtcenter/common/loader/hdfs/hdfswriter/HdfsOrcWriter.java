@@ -105,7 +105,6 @@ public class HdfsOrcWriter {
                 writeLineNum++;
             }
         } catch (Exception e) {
-            logger.error("{}", "第" + (currLineNum - (topLineIsTitle ? 1 : 0)) + "行数据异常,请检查", e);
             throw new DtLoaderException("第" + (currLineNum - (topLineIsTitle ? 1 : 0)) + "行数据异常,请检查");
         } finally {
             try {
@@ -218,7 +217,6 @@ public class HdfsOrcWriter {
                 writeLineNum++;
             }
         } catch (Exception e) {
-            logger.error("{}", "第" + (currLineNum - (hdfsWriterDTO.getTopLineIsTitle() ? 1 : 0)) + "行数据异常,请检查", e);
             throw new DtLoaderException("第" + currLineNum + "行数据异常,请检查");
         } finally {
             try {

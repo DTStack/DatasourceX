@@ -173,7 +173,6 @@ public class YarnDownload implements IDownloader {
         }
         if (thr) {
             // 文件大小为0的时候不允许下载，需要重新调用configure接口
-            log.error("path:{} size = 0", tableLocation);
             throw new DtLoaderException("path：" + tableLocation + " size = 0 ");
         }
     }

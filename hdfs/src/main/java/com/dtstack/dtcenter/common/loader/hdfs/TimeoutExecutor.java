@@ -55,10 +55,8 @@ public class TimeoutExecutor {
             future = EXEC_TIMEOUT_POOL.submit(exec);
             result = future.get(timeout, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            log.error("方法执行超时！", e);
             throw new DtLoaderException("方法执行超时！", e);
         } catch (Exception e) {
-            log.error("方法执行失败！", e);
             throw new DtLoaderException("方法执行失败", e);
         } finally {
             if (Objects.nonNull(future)) {

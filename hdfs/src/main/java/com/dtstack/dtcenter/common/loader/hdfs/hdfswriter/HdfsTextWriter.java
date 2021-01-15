@@ -91,7 +91,6 @@ public class HdfsTextWriter {
                 writeLineNum++;
             }
         } catch (final Exception e) {
-            logger.error("", e);
             throw new DtLoaderException("第" + currLineNum + "行数据异常,请检查, 数据导入失败");
         } finally {
             stream.close();
@@ -198,7 +197,6 @@ public class HdfsTextWriter {
                 writeLineNum++;
             }
         } catch (final Exception e) {
-            logger.error("", e);
             throw new DtLoaderException("(第" + currLineNum + "行数据异常,请检查。数据导入失败)");
         } finally {
             stream.close();

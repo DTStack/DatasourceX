@@ -160,7 +160,6 @@ public class HdfsParquetWriter {
                 writeLineNum++;
             }
         } catch (Exception e) {
-            logger.error("", e);
             throw new DtLoaderException("第" + currLineNum + "行数据异常:" + e.getMessage());
         } finally {
             closeResource(writer, inputStreamReader, reader);
@@ -290,7 +289,6 @@ public class HdfsParquetWriter {
                 writeLineNum++;
             }
         } catch (Exception e) {
-            logger.error("", e);
             throw new DtLoaderException("第" + currLineNum + "行数据异常:" + e.getMessage());
         } finally {
             closeResource(writer, inputStreamReader, reader);
