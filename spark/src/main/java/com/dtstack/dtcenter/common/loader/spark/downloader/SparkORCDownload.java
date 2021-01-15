@@ -25,6 +25,7 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -61,12 +62,16 @@ public class SparkORCDownload implements IDownloader {
 
     private Map<String, Object> kerberosConfig;
 
-    public SparkORCDownload(Configuration configuration, String tableLocation, List<String> columnNames, List<String> partitionColumns, Map<String, Object> kerberosConfig){
+    // 需要查询字段的索引
+    private List<Integer> needIndex;
+
+    public SparkORCDownload(Configuration configuration, String tableLocation, List<String> columnNames, List<String> partitionColumns, List<Integer> needIndex, Map<String, Object> kerberosConfig){
         this.tableLocation = tableLocation;
         this.columnNames = columnNames;
         this.partitionColumns = partitionColumns;
         this.configuration = configuration;
         this.kerberosConfig = kerberosConfig;
+        this.needIndex = needIndex;
     }
 
     @Override
@@ -118,25 +123,54 @@ public class SparkORCDownload implements IDownloader {
     public List<String> readNextWithKerberos() throws Exception {
         List<String> row = new ArrayList<>();
 
-        int fieldsSize = fields.size();
-        for(int i=0; i<fieldsSize; i++){
-            StructField field = fields.get(i);
-            Object data = inspector.getStructFieldData(value, field);
-            if(data == null){
-                data = "";
-            }
-
-            row.add(data.toString());
-        }
-
+        // 分区字段的值
+        List<String> partitions = Lists.newArrayList();
         if(CollectionUtils.isNotEmpty(partitionColumns)){
             String path = ((OrcSplit)currentSplit).getPath().toString();
             List<String> partData = HdfsOperator.parsePartitionDataFromUrl(path,partitionColumns);
-            row.addAll(partData);
+            partitions.addAll(partData);
+        }
+
+        // needIndex不为空表示获取指定字段
+        if (CollectionUtils.isNotEmpty(needIndex)) {
+            for (Integer index : needIndex) {
+                // 表示该字段为分区字段
+                if (index > columnNames.size() - 1 && CollectionUtils.isNotEmpty(partitions)) {
+                    // 分区字段的索引
+                    int partIndex = index - columnNames.size();
+                    if (partIndex < partitions.size()) {
+                        row.add(partitions.get(partIndex));
+                    } else {
+                        row.add(null);
+                    }
+                } else if (index < columnNames.size()) {
+                    row.add(getFieldByIndex(index));
+                } else {
+                    row.add(null);
+                }
+            }
+            // needIndex为空表示获取所有字段
+        } else {
+            for (int index = 0; index < columnNames.size(); index++) {
+                row.add(getFieldByIndex(index));
+            }
+            if (CollectionUtils.isNotEmpty(partitionColumns)) {
+                row.addAll(partitions);
+            }
         }
 
         readerCount++;
         return row;
+    }
+
+    // 根据index获取字段值
+    private String getFieldByIndex(Integer index) {
+        if (index > fields.size() -1) {
+            return null;
+        }
+        StructField field = fields.get(index);
+        Object data = inspector.getStructFieldData(value, field);
+        return Objects.isNull(data) ? null : data.toString();
     }
 
     private boolean initRecordReader() throws IOException {
