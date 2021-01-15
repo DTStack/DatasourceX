@@ -10,6 +10,7 @@ import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -124,6 +125,13 @@ public class HiveTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList);
+    }
+
+    @Test
+    public void getTableBySchema () {
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+        List listBySchema = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("wangchuan_dev_test").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(listBySchema));
     }
 
     @Test
