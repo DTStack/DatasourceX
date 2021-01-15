@@ -221,10 +221,8 @@ public class SparkClient extends AbsRdbmsClient {
             // 如果在设定超时(以秒为单位)之内，还没得到连通性测试结果，则认为连通性测试连接超时，不继续阻塞
             return future.get(TEST_CONN_TIMEOUT, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            log.error("测试连通性超时！", e);
             throw new DtLoaderException("测试连通性超时！", e);
         } catch (Exception e){
-            log.error("测试连通性出错！", e);
             throw new DtLoaderException("测试连通性出错！", e);
         } finally {
             if (Objects.nonNull(future)) {

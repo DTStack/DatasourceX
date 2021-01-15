@@ -142,7 +142,6 @@ public class HbaseClientSpecial implements IHbase {
         Connection connection = null;
         Table table = null;
         if (CollectionUtils.isEmpty(rowKeys)) {
-            log.info("需要删除的rowKey为空！");
             throw new DtLoaderException("需要删除的rowKey不能为空！");
         }
         try {
@@ -242,7 +241,6 @@ public class HbaseClientSpecial implements IHbase {
                 }
             }
         } catch (Exception e) {
-            log.error("hbase closeable close error", e);
             throw new DtLoaderException("hbase can not close table error", e);
         }
     }

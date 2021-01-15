@@ -134,7 +134,6 @@ public class EsClient<T> implements IClient<T> {
             MappingMetaData data = res.mappings().get(index);
             typeList.add(data.type());
         } catch (NullPointerException e) {
-            log.error("index不存在", e);
             throw new DtLoaderException("index不存在");
         } catch (Exception e) {
             log.error("获取type异常", e);
@@ -298,7 +297,6 @@ public class EsClient<T> implements IClient<T> {
             String result = EntityUtils.toString(response.getEntity());
             resultJsonObject = JSONObject.parseObject(result);
         } catch (IOException e) {
-            log.error(e.getMessage(), e);
             throw new DtLoaderException(e.getMessage(), e);
         } finally {
             closeResource(lowLevelClient, client, esSourceDTO);
@@ -506,7 +504,6 @@ public class EsClient<T> implements IClient<T> {
                 result = true;
             }
         } catch (IOException e) {
-            log.error("sql 执行失败 ", e);
             throw new DtLoaderException(e.getMessage(), e);
         } finally {
             closeResource(lowLevelClient, client, esSourceDTO);

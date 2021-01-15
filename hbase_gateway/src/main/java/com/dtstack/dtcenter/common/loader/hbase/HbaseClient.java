@@ -188,7 +188,6 @@ public class HbaseClient<T> implements IClient<T> {
             }
 
         } catch (Exception e){
-            log.error("执行hbase自定义失败", e);
             throw new DtLoaderException("执行hbase自定义失败", e);
         } finally {
             if (hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
@@ -290,7 +289,6 @@ public class HbaseClient<T> implements IClient<T> {
                 results.add(r);
             }
         } catch (Exception e){
-            log.error("数据预览失败{}", e);
             throw new DtLoaderException("数据预览失败", e);
         } finally {
             if (hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
@@ -342,7 +340,6 @@ public class HbaseClient<T> implements IClient<T> {
                 }
             }
         } catch (Exception e) {
-            log.error("hbase closeable close error", e);
             throw new DtLoaderException("hbase can not close table error", e);
         }
     }

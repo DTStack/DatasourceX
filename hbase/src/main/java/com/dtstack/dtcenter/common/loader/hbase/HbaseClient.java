@@ -190,7 +190,6 @@ public class HbaseClient<T> implements IClient<T> {
                 }
             }
         } catch (Exception e){
-            log.error("执行hbase自定义失败", e);
             throw new DtLoaderException("执行hbase自定义失败", e);
         } finally {
             if (hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
@@ -292,7 +291,6 @@ public class HbaseClient<T> implements IClient<T> {
                 results.add(r);
             }
         } catch (Exception e){
-            log.error("数据预览失败{}", e);
             throw new DtLoaderException("数据预览失败", e);
         } finally {
             if (hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
@@ -365,7 +363,6 @@ public class HbaseClient<T> implements IClient<T> {
                 tables.add(tableName.getNameAsString());
             }
         } catch (NamespaceNotFoundException noe) {
-            log.error("namespace [{}] not found!", queryDTO.getSchema());
             throw new DtLoaderException(String.format("namespace不存在！：%s", noe.getMessage()), noe);
         } catch (Exception e) {
             throw new DtLoaderException(String.format("获取指定namespace下的表异常：%s", e.getMessage()), e);
@@ -396,7 +393,6 @@ public class HbaseClient<T> implements IClient<T> {
                 }
             }
         } catch (Exception e) {
-            log.error("hbase closeable close error", e);
             throw new DtLoaderException("hbase can not close table error", e);
         }
     }
