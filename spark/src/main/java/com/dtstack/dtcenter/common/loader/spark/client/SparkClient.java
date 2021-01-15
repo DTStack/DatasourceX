@@ -108,6 +108,15 @@ public class SparkClient extends AbsRdbmsClient {
     }
 
     @Override
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
+        SparkSourceDTO sparkSourceDTO = (SparkSourceDTO) source;
+        if (Objects.nonNull(queryDTO) && StringUtils.isNotBlank(queryDTO.getSchema())) {
+            sparkSourceDTO.setSchema(queryDTO.getSchema());
+        }
+        return getTableList(sparkSourceDTO, queryDTO);
+    }
+
+    @Override
     public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         SparkSourceDTO sparkSourceDTO = (SparkSourceDTO) iSource;

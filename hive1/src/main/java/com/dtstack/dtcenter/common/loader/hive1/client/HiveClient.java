@@ -105,6 +105,15 @@ public class HiveClient extends AbsRdbmsClient {
     }
 
     @Override
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
+        Hive1SourceDTO hive1SourceDTO = (Hive1SourceDTO) source;
+        if (Objects.nonNull(queryDTO) && StringUtils.isNotBlank(queryDTO.getSchema())) {
+            hive1SourceDTO.setSchema(queryDTO.getSchema());
+        }
+        return getTableList(hive1SourceDTO, queryDTO);
+    }
+
+    @Override
     public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         Hive1SourceDTO hive1SourceDTO = (Hive1SourceDTO) iSource;

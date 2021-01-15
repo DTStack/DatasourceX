@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,7 +27,7 @@ import java.util.Map;
  */
 public class SparkTest {
     private static SparkSourceDTO source = SparkSourceDTO.builder()
-            .url("jdbc:hive2://172.16.8.107:10000/dev")
+            .url("jdbc:hive2://kudu1:10000/dev")
             .schema("default")
             .defaultFS("hdfs://ns1")
             .username("admin")
@@ -93,6 +94,14 @@ public class SparkTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         System.out.println(tableList);
+    }
+
+    @Test
+    public void getTableBySchema () {
+        IClient client = ClientCache.getClient(DataSourceType.Spark.getVal());
+        List listBySchema = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("dev").build());
+        System.out.println(listBySchema);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(listBySchema));
     }
 
     @Test
