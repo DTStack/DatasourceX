@@ -8,15 +8,13 @@ import com.dtstack.dtcenter.loader.dto.comparator.BinaryComparator;
 import com.dtstack.dtcenter.loader.dto.filter.Filter;
 import com.dtstack.dtcenter.loader.dto.filter.PageFilter;
 import com.dtstack.dtcenter.loader.dto.filter.RowFilter;
-import com.dtstack.dtcenter.loader.dto.filter.SingleColumnValueFilter;
 import com.dtstack.dtcenter.loader.dto.filter.TimestampFilter;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.enums.CompareOp;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import org.apache.commons.collections.CollectionUtils;
-import org.junit.Assert;
 import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
