@@ -12,27 +12,28 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.kafka.common.requests.MetadataResponse;
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
 
 /**
  * @company: www.dtstack.com
- * @Author ：Nanqi
+ * @Author ：loader_test
  * @Date ：Created in 13:04 2020/2/29
  * @Description：Kafka 测试类
  */
 @Slf4j
 public class KafkaTest {
-    KafkaSourceDTO source = KafkaSourceDTO.builder()
-            .url("172.16.100.112:2181/kafka")
+
+    // 构建kafka数据源信息
+    private static final KafkaSourceDTO source = KafkaSourceDTO.builder()
+            .url("172.16.101.236:2181,172.16.101.17:2181,172.16.100.109:2181/kafka")
             .build();
 
-    @Before
-    public void setUp() {
+    @BeforeClass
+    public static void setUp() {
         createTopic();
     }
 
@@ -69,12 +70,11 @@ public class KafkaTest {
         System.out.println(topicList);
     }
 
-    @Test
-    public void createTopic() {
+    public static void createTopic() {
         try {
             IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
-            KafkaTopicDTO topicDTO = KafkaTopicDTO.builder().partitions(1).replicationFactor((short) 1).topicName(
-                    "nanqi").build();
+            KafkaTopicDTO topicDTO = KafkaTopicDTO.builder().partitions(3).replicationFactor((short) 1).topicName(
+                    "loader_test").build();
             Boolean clientTopic = client.createTopic(source, topicDTO);
             assert (Boolean.TRUE.equals(clientTopic));
         } catch (Exception e) {
@@ -84,24 +84,16 @@ public class KafkaTest {
     }
 
     @Test
-    public void getAllPartitions() {
-        // 测试的时候需要引进 kafka 包
-        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
-        List<MetadataResponse.PartitionMetadata> allPartitions = client.getAllPartitions(source, "nanqi");
-        System.out.println(allPartitions.size());
-    }
-
-    @Test
     public void getOffset() {
         IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
-        List<KafkaOffsetDTO> offset = client.getOffset(source, "nanqi");
+        List<KafkaOffsetDTO> offset = client.getOffset(source, "loader_test");
         assert (offset != null);
     }
 
     @Test
     public void testPollView(){
         IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
-        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<List<Object>> results = client.getPreview(source,sqlQueryDTO);
         System.out.println(results);
     }
@@ -109,7 +101,7 @@ public class KafkaTest {
     @Test
     public void testPollViewLatest(){
         IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
-        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<List<Object>> results = client.getPreview(source, sqlQueryDTO, "latest");
         System.out.println(results);
     }
@@ -117,8 +109,7 @@ public class KafkaTest {
     @Test
     public void testTopicPartitions() {
         IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
-        List<KafkaPartitionDTO> partitionDTOS = client.getTopicPartitions(source, "partiton_test");
+        List<KafkaPartitionDTO> partitionDTOS = client.getTopicPartitions(source, "loader_test");
         Assert.assertTrue(CollectionUtils.isNotEmpty(partitionDTOS));
-        System.out.println(partitionDTOS);
     }
 }

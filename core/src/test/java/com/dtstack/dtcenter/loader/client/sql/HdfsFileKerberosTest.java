@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.client.IKerberos;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.FileStatus;
@@ -31,43 +32,50 @@ import java.util.Map;
  * @Description：hdfs 文件 Kerberos 测试
  */
 public class HdfsFileKerberosTest {
+
+    // 初始化客户端
+    private static final IHdfsFile client = ClientCache.getHdfs(DataSourceType.HDFS.getVal());
+
     private static HdfsSourceDTO source = HdfsSourceDTO.builder()
-            .defaultFS("hdfs://eng-cdh1:8020")
+            .defaultFS("hdfs://ns1")
+            .config("{\n" +
+                    "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"krbt2:9000\",\n" +
+                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"krbt1:9000\",\n" +
+                    "    \"dfs.nameservices\": \"ns1\"\n" +
+                    "}")
             .build();
 
     private static HiveSourceDTO hiveSource = HiveSourceDTO.builder()
-            .url("jdbc:hive2://eng-cdh1:10000/default;principal=hive/eng-cdh1@DTSTACK.COM")
-            .schema("default")
-            .defaultFS("hdfs://eng-cdh1:8020")
+            .url("jdbc:hive2://krbt3:10000/default;principal=hdfs/krbt3@DTSTACK.COM")
+            .defaultFS("hdfs://ns1")
+            .config("{\n" +
+                    "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"krbt2:9000\",\n" +
+                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"krbt1:9000\",\n" +
+                    "    \"dfs.nameservices\": \"ns1\"\n" +
+                    "}")
             .build();
 
     private static HdfsWriterDTO writerDTO;
 
-    private String localKerberosPath = HdfsFileTest.class.getResource("/hdfs-file").getPath();
+    private static final String localFilePath = HdfsFileTest.class.getResource("/hdfs-file").getPath();
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
-        // 准备 hdfs Kerberos 参数
+    public static void beforeClass() {
+        System.setProperty("HADOOP_USER_NAME", "admin");
+        // 准备 Kerberos 参数
         Map<String, Object> kerberosConfig = new HashMap<>();
-        kerberosConfig.put(HadoopConfTool.PRINCIPAL, "hdfs/eng-cdh1@DTSTACK.COM");
-        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/hadoop.keytab");
+        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/hdfs.keytab");
         kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
-        source.setKerberosConfig(kerberosConfig);
-        String localKerberosPath = HbaseKerberosTest.class.getResource("/eng-cdh").getPath();
+        String localKerberosPath = HdfsFileKerberosTest.class.getResource("/krbt").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HDFS.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
-        System.setProperty("HADOOP_USER_NAME", "root");
-        ClientCache.getHdfs(DataSourceType.HDFS.getVal()).checkAndDelete(source, "/tmp/hive_test");
-
-        // 准备 Hive Kerberos 参数
-        Map<String, Object> hive_kerberosConfig = new HashMap<>();
-        hive_kerberosConfig.put(HadoopConfTool.PRINCIPAL, "hive/eng-cdh1@DTSTACK.COM");
-        hive_kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/hive-cdh01.keytab");
-        hive_kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
-        hiveSource.setKerberosConfig(hive_kerberosConfig);
-        String hive_localKerberosPath = HiveKerberosTest.class.getResource("/eng-cdh").getPath();
-        IKerberos hive_kerberos = ClientCache.getKerberos(DataSourceType.HIVE.getVal());
-        hive_kerberos.prepareKerberosForConnect(hive_kerberosConfig, hive_localKerberosPath);
+        hiveSource.setKerberosConfig(kerberosConfig);
+        source.setKerberosConfig(kerberosConfig);
+        ClientCache.getHdfs(DataSourceType.HDFS.getVal()).delete(source, "/tmp/hive_test", true);
 
         // 创建parquet格式的hive外部表，并插入数据
         IClient hiveClient = ClientCache.getClient(DataSourceType.HIVE.getVal());
@@ -86,7 +94,7 @@ public class HdfsFileKerberosTest {
         writerDTO = new HdfsWriterDTO();
         writerDTO.setFileFormat(FileFormat.TEXT.getVal());
         writerDTO.setHdfsDirPath("/tmp/hive_test/");
-        writerDTO.setFromFileName(localKerberosPath + "/textfile");
+        writerDTO.setFromFileName(localFilePath + "/textfile");
         writerDTO.setFromLineDelimiter(",");
         writerDTO.setToLineDelimiter(",");
         writerDTO.setOriCharSet("UTF-8");
@@ -103,25 +111,26 @@ public class HdfsFileKerberosTest {
         metaDTO2.setKey("name");
         metaDTO2.setType("string");
         writerDTO.setColumnsList(Lists.newArrayList(metaDTO1, metaDTO2));
+        client.copyFromLocal(source, localFilePath + "/test.txt", "/tmp/test.txt", true);
     }
 
     /**
      * 测试hdfs连通性
-     * @throws Exception
+     * @
      */
     @Test
-    public void testConn() throws Exception{
+    public void testConn() {
         IClient client = ClientCache.getClient(DataSourceType.HDFS.getVal());
-        assert client.testCon(source);
+        assert  client.testCon(source);
     }
 
     /**
      * 获取文件状态
-     * @throws Exception
+     * @
      */
     @Test
-    public void getStatus () throws Exception {
-        FileStatus fileStatus = ClientCache.getHdfs(DataSourceType.HDFS.getVal()).getStatus(source, "/tmp");
+    public void getStatus ()  {
+        FileStatus fileStatus = client.getStatus(source, "/tmp");
         Assert.assertNotNull(fileStatus);
     }
 
@@ -129,111 +138,111 @@ public class HdfsFileKerberosTest {
      * 下载hdfs文件到本地
      */
     @Test
-    public void downloadFileFromHdfs() throws Exception {
-        ClientCache.getHdfs(DataSourceType.HDFS.getVal()).downloadFileFromHdfs(source, "/tmp/test.txt", localKerberosPath);
+    public void downloadFileFromHdfs()  {
+        client.downloadFileFromHdfs(source, "/tmp/test.txt", localFilePath);
     }
 
     /**
      * 上传本地文件到hdfs
      */
     @Test
-    public void uploadLocalFileToHdfs() throws Exception{
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).uploadLocalFileToHdfs(source, localKerberosPath + "/test.txt", "/tmp");
+    public void uploadLocalFileToHdfs() {
+        assert client.uploadLocalFileToHdfs(source, localFilePath + "/test.txt", "/tmp");
     }
 
     /**
      * 上传字节流文件到hdfs
      */
     @Test
-    public void uploadInputStreamToHdfs() throws Exception{
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).uploadInputStreamToHdfs(source, "test".getBytes(), "/tmp/test.txt");
+    public void uploadInputStreamToHdfs() {
+        assert client.uploadInputStreamToHdfs(source, "test".getBytes(), "/tmp/test.txt");
     }
 
     /**
      * 在hdfs文件系统创建文件夹
      */
     @Test
-    public void createDir() throws Exception {
-        ClientCache.getHdfs(DataSourceType.HDFS.getVal()).checkAndDelete(source, "/tmp/test");
-        short t = 14;
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).createDir(source, "/tmp/test", t);
+    public void createDir()  {
+        client.delete(source, "/tmp/test", true);
+        assert client.createDir(source, "/tmp/test", null);
+        assert client.createDir(source, "/tmp/test", (short) 7);
     }
 
     /**
      * 判断文件是否存在
      */
     @Test
-    public void isFileExist() throws Exception{
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).isFileExist(source, "/tmp/test.txt");
+    public void isFileExist() {
+        assert client.isFileExist(source, "/tmp/test.txt");
     }
 
     /**
      * 文件检测并删除
-     * @throws Exception
+     * @
      */
     @Test
-    public void checkAndDelete() throws Exception {
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).checkAndDelete(source, "/tmp/test111.txt");
+    public void checkAndDelete()  {
+        client.delete(source, "/tmp/test111.txt", true);
     }
 
     /**
      * 获取文件夹大小
-     * @throws Exception
+     * @
      */
     @Test
-    public void getDirSize() throws Exception {
-        ClientCache.getHdfs(DataSourceType.HDFS.getVal()).getDirSize(source, "/tmp");
+    public void getDirSize()  {
+        client.getDirSize(source, "/tmp");
     }
 
     /**
      * 删除文件
-     * @throws Exception
+     * @
      */
     @Test
-    public void deleteFiles () throws Exception {
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).deleteFiles(source, Lists.newArrayList("/tmp/test1.txt"));
+    public void deleteFiles ()  {
+        assert client.deleteFiles(source, Lists.newArrayList("/tmp/test1.txt"));
     }
 
     /**
      * 判断文件夹是否存在
      */
     @Test
-    public void isDirExist() throws Exception{
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).isDirExist(source, "/tmp");
+    public void isDirExist() {
+        assert client.isDirExist(source, "/tmp");
     }
 
     /**
      * 设置路径权限
      */
     @Test
-    public void setPermission() throws Exception{
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).setPermission(source, "/tmp/test.txt", "ugoa=rwx");
+    public void setPermission() {
+        assert client.setPermission(source, "/tmp/test.txt", "ugoa=rwx");
     }
 
     /**
      * 重命名
      */
     @Test
-    public void rename() throws Exception {
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).rename(source, "/tmp/test.txt", "/tmp/test1.txt");
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).rename(source, "/tmp/test1.txt", "/tmp/test.txt");
+    public void rename()  {
+        assert client.rename(source, "/tmp/test.txt", "/tmp/test1.txt");
+        assert client.rename(source, "/tmp/test1.txt", "/tmp/test.txt");
     }
 
     /**
      * hdfs内文件复制 - 覆盖
-     * @throws Exception
+     * @
      */
     @Test
-    public void copyFileOverwrite() throws Exception{
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).copyFile(source, "/tmp/test.txt", "/tmp/test.txt", true);
+    public void copyFileOverwrite() {
+        assert client.copyFile(source, "/tmp/test.txt", "/tmp/test.txt", true);
     }
 
     /**
      * 获取目标路径下所有文件名
      */
     @Test
-    public void listAllFilePath() throws Exception {
-        List<String> result = ClientCache.getHdfs(DataSourceType.HDFS.getVal()).listAllFilePath(source, "/tmp");
+    public void listAllFilePath()  {
+        List<String> result = client.listAllFilePath(source, "/tmp/hive_test");
         assert CollectionUtils.isNotEmpty(result);
     }
 
@@ -241,8 +250,8 @@ public class HdfsFileKerberosTest {
      * 获取目标路径下所有文件属性集 - 递归获取
      */
     @Test
-    public void listAllFiles() throws Exception {
-        List<FileStatus> result = ClientCache.getHdfs(DataSourceType.HDFS.getVal()).listAllFiles(source, "/tmp", true);
+    public void listAllFiles()  {
+        List<FileStatus> result = client.listAllFiles(source, "/tmp/hive_test", true);
         assert CollectionUtils.isNotEmpty(result);
     }
 
@@ -250,8 +259,8 @@ public class HdfsFileKerberosTest {
      * 获取目标路径下所有文件属性集 - 非递归获取
      */
     @Test
-    public void listAllFilesNoIterate() throws Exception {
-        List<FileStatus> result = ClientCache.getHdfs(DataSourceType.HDFS.getVal()).listAllFiles(source, "/tmp", false);
+    public void listAllFilesNoIterate()  {
+        List<FileStatus> result = client.listAllFiles(source, "/tmp/hive_test", false);
         assert CollectionUtils.isNotEmpty(result);
     }
 
@@ -259,138 +268,138 @@ public class HdfsFileKerberosTest {
      * 从hdfs上copy文件到本地
      */
     @Test
-    public void copyToLocal() throws Exception {
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).copyToLocal(source, "/tmp/test.txt", localKerberosPath);
+    public void copyToLocal()  {
+        assert client.copyToLocal(source, "/tmp/test.txt", localFilePath);
     }
 
     /**
      * copy本地文件到hdfs - 覆盖
-     * @throws Exception
+     * @
      */
     @Test
-    public void copyFromLocal() throws Exception {
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).copyFromLocal(source, localKerberosPath + "/test.txt", "/tmp/test.txt", true);
+    public void copyFromLocal()  {
+        assert client.copyFromLocal(source, localFilePath + "/test.txt", "/tmp/test.txt", true);
     }
 
     /**
      * 写入text文件到hdfs
      */
     @Test
-    public void writeTextByName() throws Exception {
+    public void writeTextByName()  {
         writerDTO.setFileFormat(FileFormat.TEXT.getVal());
-        writerDTO.setFromFileName(localKerberosPath + "/textfile");
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).writeByName(source, writerDTO) > 0;
+        writerDTO.setFromFileName(localFilePath + "/textfile");
+        assert client.writeByName(source, writerDTO) > 0;
     }
 
     /**
      * 写入parquet格式文件到hdfs
      */
     @Test
-    public void writeParquetByName () throws Exception {
+    public void writeParquetByName ()  {
         writerDTO.setFileFormat(FileFormat.PARQUET.getVal());
-        writerDTO.setFromFileName(localKerberosPath + "/textfile");
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).writeByName(source, writerDTO) > 0;
+        writerDTO.setFromFileName(localFilePath + "/textfile");
+        assert client.writeByName(source, writerDTO) > 0;
     }
 
     /**
      * 写入orc格式文件到hdfs
      */
     @Test
-    public void writeOrcByName () throws Exception {
+    public void writeOrcByName ()  {
         writerDTO.setFileFormat(FileFormat.ORC.getVal());
-        writerDTO.setFromFileName(localKerberosPath + "/textfile");
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).writeByName(source, writerDTO) > 0;
+        writerDTO.setFromFileName(localFilePath + "/textfile");
+        assert client.writeByName(source, writerDTO) > 0;
     }
 
     /**
      * 下载 text格式的文件
-     * @throws Exception
+     * @
      */
     @Test
-    public void getTextDownloader() throws Exception{
-        ClientCache.getHdfs(DataSourceType.HDFS.getVal()).uploadLocalFileToHdfs(source, localKerberosPath + "/textfile", "/tmp/");
+    public void getTextDownloader() {
+        client.uploadLocalFileToHdfs(source, localFilePath + "/textfile", "/tmp/");
         source.setYarnConf(new HashMap<>());
-        IDownloader downloader = ClientCache.getHdfs(DataSourceType.HDFS.getVal()).getDownloaderByFormat(source, "/tmp/textfile", Lists.newArrayList("id", "name"),",", FileFormat.TEXT.getVal());
+        IDownloader downloader = client.getDownloaderByFormat(source, "/tmp/textfile", Lists.newArrayList("id", "name"),",", FileFormat.TEXT.getVal());
         System.out.println(downloader.getMetaInfo());
         while (!downloader.reachedEnd()) {
             System.out.println(downloader.readNext());
         }
-        ClientCache.getHdfs(DataSourceType.HDFS.getVal()).checkAndDelete(source, "/tmp/textfile");
+        client.delete(source, "/tmp/textfile", true);
     }
 
     /**
      * 下载parquet格式的文件
-     * @throws Exception
+     * @
      */
     @Test
-    public void getParquetDownloader() throws Exception {
-        ClientCache.getHdfs(DataSourceType.HDFS.getVal()).uploadLocalFileToHdfs(source, localKerberosPath + "/parquetfile", "/tmp/");
+    public void getParquetDownloader()  {
+        client.uploadLocalFileToHdfs(source, localFilePath + "/parquetfile", "/tmp/");
         source.setYarnConf(new HashMap<>());
-        IDownloader downloader = ClientCache.getHdfs(DataSourceType.HDFS.getVal()).getDownloaderByFormat(source, "/tmp/parquetfile", Lists.newArrayList("id", "name"),",", FileFormat.PARQUET.getVal());
+        IDownloader downloader = client.getDownloaderByFormat(source, "/tmp/parquetfile", Lists.newArrayList("id", "name"),",", FileFormat.PARQUET.getVal());
         System.out.println(downloader.getMetaInfo());
         while (!downloader.reachedEnd()) {
             System.out.println(downloader.readNext());
         }
-        ClientCache.getHdfs(DataSourceType.HDFS.getVal()).checkAndDelete(source, "/tmp/parquetfile");
+        client.delete(source, "/tmp/parquetfile", true);
     }
 
     /**
      * 下载orc格式的文件
-     * @throws Exception
+     * @
      */
     @Test
-    public void getOrcDownloader() throws Exception {
-        ClientCache.getHdfs(DataSourceType.HDFS.getVal()).uploadLocalFileToHdfs(source, localKerberosPath + "/orcfile", "/tmp/");
+    public void getOrcDownloader()  {
+        client.uploadLocalFileToHdfs(source, localFilePath + "/orcfile", "/tmp/");
         source.setYarnConf(new HashMap<>());
-        IDownloader downloader = ClientCache.getHdfs(DataSourceType.HDFS.getVal()).getDownloaderByFormat(source, "/tmp/orcfile", Lists.newArrayList("id", "name"), ",", FileFormat.ORC.getVal());
+        IDownloader downloader = client.getDownloaderByFormat(source, "/tmp/orcfile", Lists.newArrayList("id", "name"), ",", FileFormat.ORC.getVal());
         System.out.println(downloader.getMetaInfo());
         while (!downloader.reachedEnd()) {
             System.out.println(downloader.readNext());
         }
-        ClientCache.getHdfs(DataSourceType.HDFS.getVal()).checkAndDelete(source, "/tmp/orcfile");
+        client.delete(source, "/tmp/orcfile", true);
     }
 
     /**
      * 获取hdfs上存储的文件的字段信息 - 暂时只支持orc格式
      */
     @Test
-    public void getColumnList () throws Exception {
-        ClientCache.getHdfs(DataSourceType.HDFS.getVal()).uploadLocalFileToHdfs(source, localKerberosPath + "/orcfile", "/tmp/");
-        List<ColumnMetaDTO> columnList = ClientCache.getHdfs(DataSourceType.HDFS.getVal()).getColumnList(source, SqlQueryDTO.builder().tableName("/tmp/orcfile").build(), FileFormat.ORC.getVal());
+    public void getColumnList ()  {
+        client.uploadLocalFileToHdfs(source, localFilePath + "/orcfile", "/tmp/");
+        List<ColumnMetaDTO> columnList = client.getColumnList(source, SqlQueryDTO.builder().tableName("/tmp/orcfile").build(), FileFormat.ORC.getVal());
         assert CollectionUtils.isNotEmpty(columnList);
-        ClientCache.getHdfs(DataSourceType.HDFS.getVal()).checkAndDelete(source, "/tmp/orcfile");
+        client.delete(source, "/tmp/orcfile", true);
     }
 
     /**
      * 写入text文件到hdfs
      */
     @Test
-    public void writeTextByPos() throws Exception {
+    public void writeTextByPos()  {
         writerDTO.setTopLineIsTitle(true);
         writerDTO.setFileFormat(FileFormat.TEXT.getVal());
-        writerDTO.setFromFileName(localKerberosPath + "/textfile");
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).writeByPos(source, writerDTO) > 0;
+        writerDTO.setFromFileName(localFilePath + "/textfile");
+        assert client.writeByPos(source, writerDTO) > 0;
     }
 
     /**
      * 写入parquet格式文件到hdfs
      */
     @Test
-    public void writeParquetByPos () throws Exception {
+    public void writeParquetByPos ()  {
         writerDTO.setTopLineIsTitle(true);
         writerDTO.setFileFormat(FileFormat.PARQUET.getVal());
-        writerDTO.setFromFileName(localKerberosPath + "/textfile");
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).writeByPos(source, writerDTO) > 0;
+        writerDTO.setFromFileName(localFilePath + "/textfile");
+        assert client.writeByPos(source, writerDTO) > 0;
     }
 
     /**
      * 写入orc格式文件到hdfs
      */
     @Test
-    public void writeOrcByPos () throws Exception {
+    public void writeOrcByPos ()  {
         writerDTO.setTopLineIsTitle(true);
         writerDTO.setFileFormat(FileFormat.ORC.getVal());
-        writerDTO.setFromFileName(localKerberosPath + "/textfile");
-        assert ClientCache.getHdfs(DataSourceType.HDFS.getVal()).writeByPos(source, writerDTO) > 0;
+        writerDTO.setFromFileName(localFilePath + "/textfile");
+        assert client.writeByPos(source, writerDTO) > 0;
     }
 }

@@ -24,11 +24,19 @@ import java.util.Map;
  */
 public class SparkTableTest {
 
-    private static SparkSourceDTO source = SparkSourceDTO.builder()
-            .url("jdbc:hive2://172.16.8.107:10000/dev")
-            .schema("default")
+    /**
+     * 构造spark客户端
+     */
+    private static final ITable client = ClientCache.getTable(DataSourceType.Spark.getVal());
+
+    /**
+     * 构建数据源信息
+     */
+    private static final SparkSourceDTO source = SparkSourceDTO.builder()
+            .url("jdbc:hive2://kudu1:10000/dev")
+            .schema("dev")
             .defaultFS("hdfs://ns1")
-            .username("root")
+            .username("admin")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
                     "    \"dfs.namenode.rpc-address.ns1.nn2\": \"kudu2:9000\",\n" +
@@ -42,26 +50,25 @@ public class SparkTableTest {
      * 数据准备
      */
     @BeforeClass
-    public static void setUp () throws Exception {
-        System.setProperty("HADOOP_USER_NAME", "root");
+    public static void setUp () {
         IClient client = ClientCache.getClient(DataSourceType.Spark.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan_partitions_test").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_part").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_partitions_test (id int, name string) partitioned by (pt1 string,pt2 string, pt3 string)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_part (id int, name string) partitioned by (pt1 string,pt2 string, pt3 string)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into  wangchuan_partitions_test partition (pt1 = 'a1', pt2 = 'b1', pt3 = 'c1') values(1, 'wangcahun')").build();
+        queryDTO = SqlQueryDTO.builder().sql("insert into  loader_test_part partition (pt1 = 'a1', pt2 = 'b1', pt3 = 'c1') values(1, 'wangcahun')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into  wangchuan_partitions_test partition (pt1 = 'a2', pt2 = 'b2', pt3 = 'c2') values(1, 'wangcahun')").build();
+        queryDTO = SqlQueryDTO.builder().sql("insert into  loader_test_part partition (pt1 = 'a2', pt2 = 'b2', pt3 = 'c2') values(1, 'wangcahun')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into  wangchuan_partitions_test partition (pt1 = 'a3', pt2 = 'b3', pt3 = 'c3') values(1, 'wangcahun')").build();
+        queryDTO = SqlQueryDTO.builder().sql("insert into  loader_test_part partition (pt1 = 'a3', pt2 = 'b3', pt3 = 'c3') values(1, 'wangcahun')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan_test2").build();
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_2").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_test2 (id int, name string)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_2 (id int, name string)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan_test3").build();
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_3").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_test3 (id int, name string)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_3 (id int, name string)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -69,9 +76,8 @@ public class SparkTableTest {
      * 获取所有分区
      */
     @Test
-    public void showPartitions () throws Exception {
-        ITable client = ClientCache.getTable(DataSourceType.Spark.getVal());
-        List<String> result = client.showPartitions(source, "wangchuan_partitions_test");
+    public void showPartitions () {
+        List<String> result = client.showPartitions(source, "loader_test_part");
         System.out.println(result);
         Assert.assertTrue(CollectionUtils.isNotEmpty(result));
     }
@@ -80,9 +86,8 @@ public class SparkTableTest {
      * 删除表
      */
     @Test
-    public void dropTable () throws Exception {
-        ITable client = ClientCache.getTable(DataSourceType.Spark.getVal());
-        Boolean check = client.dropTable(source, "wangchuan_test2");
+    public void dropTable () {
+        Boolean check = client.dropTable(source, "loader_test_2");
         Assert.assertTrue(check);
     }
 
@@ -90,23 +95,20 @@ public class SparkTableTest {
      * 重命名表
      */
     @Test
-    public void renameTable () throws Exception {
-        ITable client = ClientCache.getTable(DataSourceType.Spark.getVal());
-        Boolean renameCheck = client.renameTable(source, "wangchuan_test3", "wangchuan_test4");
+    public void renameTable () {
+        client.executeSqlWithoutResultSet(source, "drop table if exists loader_test_4");
+        Boolean renameCheck = client.renameTable(source, "loader_test_3", "loader_test_4");
         Assert.assertTrue(renameCheck);
-        Boolean dropCheck = client.dropTable(source, "wangchuan_test4");
-        Assert.assertTrue(dropCheck);
     }
 
     /**
      * 修改表参数
      */
     @Test
-    public void alterTableParams () throws Exception {
-        ITable client = ClientCache.getTable(DataSourceType.Spark.getVal());
+    public void alterTableParams () {
         Map<String, String> params = Maps.newHashMap();
         params.put("comment", "test");
-        Boolean alterCheck = client.alterTableParams(source, "wangchuan_partitions_test", params);
+        Boolean alterCheck = client.alterTableParams(source, "loader_test_part", params);
         Assert.assertTrue(alterCheck);
     }
 }

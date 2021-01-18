@@ -11,7 +11,9 @@ import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -25,203 +27,206 @@ import java.util.Map;
  * @Description：PostgreSQL 测试
  */
 public class PostgreSQLTest {
-    private static PostgresqlSourceDTO source = PostgresqlSourceDTO.builder()
-            .url("jdbc:postgresql://kudu5:54321/database?currentSchema=public")
+
+    // 获取数据源 client
+    private static final IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
+
+    private static final PostgresqlSourceDTO source = PostgresqlSourceDTO.builder()
+            .url("jdbc:postgresql://172.16.101.246:5432/postgres?currentSchema=public")
             .username("postgres")
-            .password("password")
+            .password("abc123")
+            .schema("public")
             .poolConfig(new PoolConfig())
             .build();
 
-    //@BeforeClass
-    public static void beforeClass() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists \"public\".nanqi").build();
+    /**
+     * 数据准备
+     */
+    @BeforeClass
+    public static void beforeClass() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table \"public\".nanqi (id int, name text)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test (id int, name text)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into \"public\".nanqi values (1, 'nanqi')").build();
+        queryDTO = SqlQueryDTO.builder().sql("comment on table loader_test is 'table comment'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test values (1, 'nanqi')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
+
+    /**
+     * 获取连接测试
+     */
     @Test
-    public void getCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
-        Connection con1 = client.getCon(source);
-        con1.close();
+    public void getCon() throws Exception{
+        Connection connection = client.getCon(source);
+        Assert.assertNotNull(connection);
+        connection.close();
     }
 
+    /**
+     * 测试连通性测试
+     */
     @Test
-    public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
+    public void testCon()  {
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
         }
     }
 
+    /**
+     * 执行查询语句测试
+     */
     @Test
-    public void executeQuery() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select 1111").build();
-        List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
-        System.out.println(mapList.size());
+    public void executeQuery()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from loader_test").build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(result));
     }
 
+    /**
+     * 字段别名查询测试
+     */
     @Test
-    public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select 1111").build();
+    public void executeQueryAlias()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select id as tAlias from loader_test").build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(result));
+    }
+
+    /**
+     * 无结果查询测试
+     */
+    @Test
+    public void executeSqlWithoutResultSet()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from loader_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     /**
-     * 获取表测试：没有schema，包括视图
-     * @throws Exception
+     * 获取表
      */
     @Test
-    public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
+    public void getTableList()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
     /**
-     * 获取表测试：没有schema，不包括视图
-     * @throws Exception
+     * 根据 schema获取表
      */
     @Test
-    public void getTableListNoSchemaNoView() throws Exception {
-        source.setSchema(null);
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().view(false).build();
-        List<String> tableList = client.getTableList(source, queryDTO);
-        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
-    }
-
-    /**
-     * 获取表测试：有schema，包括视图
-     * @throws Exception
-     */
-    @Test
-    public void getTableListSchemaView() throws Exception {
-        source.setSchema("pg_catalog");
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().view(true).build();
-        List<String> tableList = client.getTableList(source, queryDTO);
-        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
-    }
-
-    /**
-     * 获取表测试：有schema，不包括视图
-     * @throws Exception
-     */
-    @Test
-    public void getTableListSchemaNoView() throws Exception {
-        source.setSchema("pg_catalog");
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().view(false).build();
-        List<String> tableList = client.getTableList(source, queryDTO);
-        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
-    }
-
-    @Test
-    public void getTableListBySchema() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("pg_catalog").build();
+    public void getTableListBySchema()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("public").build();
         List<String> tableList = client.getTableListBySchema(source, queryDTO);
-        System.out.println(tableList);
-    }
-
-    @Test
-    public void getColumnClassInfo() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
-        List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
-        System.out.println(columnClassInfo.size());
-    }
-
-    @Test
-    public void getColumnMetaData() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
-        List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
-    }
-
-    @Test
-    public void getColumnMetaDataBySchema() throws Exception {
-        source.setSchema("yunchuan");
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test").build();
-        List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
-    }
-
-    @Test
-    public void getTableMetaComment() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
-        String metaComment = client.getTableMetaComment(source, queryDTO);
-        System.out.println(metaComment);
-    }
-
-    @Test
-    public void getDownloader() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi").build();
-        IDownloader downloader = client.getDownloader(source, queryDTO);
-        int i = 0;
-        while (!downloader.reachedEnd()){
-            List<List<String>> o = (List<List<String>>)downloader.readNext();
-            System.out.println("========================"+i+"========================");
-            for (List list:o){
-                System.out.println(list);
-            }
-            i++;
-        }
-    }
-
-    @Test
-    public void getPreview() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").previewNum(6).build();
-        List preview = client.getPreview(source, queryDTO);
-        System.out.println(preview);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
     /**
-     * 根据schema + tableName 数据预览
-     * @throws Exception
+     * 获取java 标准字段属性
      */
     @Test
-    public void getPreviewBySchema() throws Exception {
-        source.setSchema("yunchuan");
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getPluginName());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test").previewNum(3).build();
+    public void getColumnClassInfo()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
+        List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
+    }
+
+    /**
+     * 获取表字段详细信息
+     */
+    @Test
+    public void getColumnMetaData()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
+        List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
+        System.out.println(columnMetaData);
+    }
+
+    /**
+     * 获取表注释
+     */
+    @Test
+    public void getTableMetaComment()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
+        String metaComment = client.getTableMetaComment(source, queryDTO);
+        Assert.assertTrue(StringUtils.isNotBlank(metaComment));
+    }
+
+    /**
+     * 数据预览测试
+     */
+    @Test
+    public void preview() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").previewNum(1).build();
         List preview = client.getPreview(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(preview));
     }
 
+    /**
+     * 指定sql downloader下载 测试
+     */
     @Test
-    public void getAllDatabases() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
-        List<String> databases = client.getAllDatabases(source, SqlQueryDTO.builder().build());
-        System.out.println(databases);
+    public void downloader()throws Exception {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from loader_test").build();
+        IDownloader downloader = client.getDownloader(source, queryDTO);
+        List<String> metaInfo = downloader.getMetaInfo();
+        Assert.assertTrue(CollectionUtils.isNotEmpty(metaInfo));
+        while (!downloader.reachedEnd()){
+            List<List<String>> result = (List<List<String>>)downloader.readNext();
+            for (List<String> row : result){
+                Assert.assertTrue(CollectionUtils.isNotEmpty(row));
+            }
+        }
     }
 
+    /**
+     * 根据sql 获取对应结果的字段信息
+     */
     @Test
-    public void getCurrentDatabase() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
+    public void getColumnMetaDataWithSql() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from loader_test ").build();
+        List result = client.getColumnMetaDataWithSql(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(result));
+    }
+
+    /**
+     * 获取所有的schema
+     */
+    @Test
+    public void getAllDatabases()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        List databases = client.getAllDatabases(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(databases));
+    }
+
+    /**
+     * 获取当前使用的 schema
+     */
+    @Test
+    public void getCurrentDatabase()  {
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
     }
 
+    /**
+     * 获取指定schema下的表
+     */
     @Test
-    public void getTableSize () throws Exception {
+    public void searchTableAndViewBySchema ()  {
+        List list = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("public").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
+    }
+
+    /**
+     * 获取表占用存储
+     */
+    @Test
+    public void getTableSize ()  {
         ITable tableClient = ClientCache.getTable(DataSourceType.PostgreSQL.getVal());
-        Long tableSize = tableClient.getTableSize(source, "pg_catalog", "pg_depend");
-        System.out.println(tableSize);
+        Long tableSize = tableClient.getTableSize(source, "public", "loader_test");
         Assert.assertTrue(tableSize != null && tableSize > 0);
     }
 }

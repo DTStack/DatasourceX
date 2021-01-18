@@ -8,8 +8,6 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
 
-import java.util.List;
-
 /**
  * @company: www.dtstack.com
  * @Author ：Nanqi
@@ -18,13 +16,16 @@ import java.util.List;
  */
 public class RedisTest {
     RedisSourceDTO source = RedisSourceDTO.builder()
-            .hostPort("172.16.101.249:6379")
+            .hostPort("172.16.101.246:16379")
             .password("DT@Stack#123")
-            .schema("5")
+            .schema("1")
             .build();
 
+    /**
+     * 连通性测试
+     */
     @Test
-    public void testCon() throws Exception {
+    public void testCon() {
         IClient client = ClientCache.getClient(DataSourceType.REDIS.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
@@ -32,10 +33,12 @@ public class RedisTest {
         }
     }
 
+    /**
+     * 数据预览测试 - 没有插入数据的方法目前
+     */
     @Test
-    public void preview() throws Exception {
+    public void preview() {
         IClient client = ClientCache.getClient(DataSourceType.REDIS.getVal());
-        List test = client.getPreview(source, SqlQueryDTO.builder().previewNum(5).tableName("wangchuan_test").build());
-        System.out.println(test);
+        client.getPreview(source, SqlQueryDTO.builder().previewNum(5).tableName("loader_test").build());
     }
 }

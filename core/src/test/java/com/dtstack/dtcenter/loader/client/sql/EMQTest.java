@@ -5,6 +5,7 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.source.EMQSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -13,8 +14,11 @@ import org.junit.Test;
  *
  * @author xiaochen
  */
+@Ignore
 public class EMQTest {
     IClient client = ClientCache.getClient(DataSourceType.EMQ.getVal());
+
+    // 没有可用的数据源信息
     EMQSourceDTO source = EMQSourceDTO.builder()
             .url("tcp://kudu5:1883")
             .build();

@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -8,12 +9,15 @@ import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,132 +29,215 @@ import java.util.Map;
  */
 @Ignore
 public class Hive1Test {
-    private static Hive1SourceDTO source = Hive1SourceDTO.builder()
+    /**
+     * 构造hive客户端
+     */
+    private static final IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
+
+    /**
+     * 构建数据源信息 - em创建的数据源连不上
+     */
+    private static final Hive1SourceDTO source = Hive1SourceDTO.builder()
             .url("jdbc:hive2://172.16.10.67:10000/default")
             .username("root")
             .password("abc123")
             .defaultFS("hdfs://172.16.10.67:8020")
             .build();
 
+    /**
+     * 数据准备
+     */
     @BeforeClass
-    public static void beforeClass() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
+    public static void beforeClass()  {
+        System.setProperty("HADOOP_USER_NAME", "root");
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_1").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int comment 'id', name string comment '姓名') comment 'table comment' ").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi1").build();
+        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_1 values (1, 'loader_test_1')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table nanqi1 (id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_parquet").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_parquet (id int, name string) STORED AS PARQUET").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_parquet values (1, 'wc1'),(2,'wc2')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
+    /**
+     * 获取连接测试
+     */
     @Test
     public void getCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
         Connection con = client.getCon(source);
-        con.createStatement().close();
+        Assert.assertNotNull(con);
         con.close();
     }
 
+    /**
+     * 连通性测试
+     */
     @Test
-    public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
+    public void testCon()  {
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
         }
     }
 
+    /**
+     * 执行简单查询
+     */
     @Test
-    public void executeQuery() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
+    public void executeQuery()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
-        System.out.println(mapList.size());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(mapList));
     }
 
+    /**
+     * 执行sql无需结果
+     */
     @Test
-    public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
+    public void executeSqlWithoutResultSet()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
+    /**
+     * 获取表列表
+     */
     @Test
-    public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
+    public void getTableList()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
+    /**
+     * 获取表字段 java 规范化类型
+     */
     @Test
-    public void getColumnClassInfo() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+    public void getColumnClassInfo()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_1").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
-        System.out.println(columnClassInfo.size());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
     }
 
+    /**
+     * 获取表字段详细信息
+     */
     @Test
-    public void getColumnMetaData() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+    public void getColumnMetaData()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_1").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
+    }
+
+    /**
+     * 获取表注释
+     */
+    @Test
+    public void getTableMetaComment()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_1").build();
+        client.getTableMetaComment(source, queryDTO);
     }
 
     @Test
-    public void getTableMetaComment() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
-        String metaComment = client.getTableMetaComment(source, queryDTO);
-        System.out.println(metaComment);
-    }
-
-    @Test
-    public void getTableMetaComment1() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi1").build();
-        String metaComment = client.getTableMetaComment(source, queryDTO);
-        System.out.println(metaComment);
-    }
-
-    @Test
-    public void getPreview() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("nanqi").build();
-        List preview = client.getPreview(source, queryDTO);
-        System.out.println(preview);
-    }
-
-    @Test
-    public void getCreateTableSql() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
-        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
-        System.out.println(client.getCreateTableSql(source, sqlQueryDTO));
-    }
-
-    @Test
-    public void getAllDataBases() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
-        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().build();
-        System.out.println(client.getAllDatabases(source, sqlQueryDTO));
-    }
-
-    @Test
-    public void getTable() throws Exception {
+    public void getDownloader() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
-        Table table = client.getTable(source, SqlQueryDTO.builder().tableName("nanqi1").build());
-        System.out.println(table);
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_1").build();
+        IDownloader downloader = client.getDownloader(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
+        while (!downloader.reachedEnd()){
+            Assert.assertNotNull(downloader.readNext());
+        }
     }
 
     @Test
-    public void getCurrentDatabase() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
+    public void getDownloaderForParquet()throws Exception {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_parquet").build();
+        IDownloader downloader = client.getDownloader(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
+        while (!downloader.reachedEnd()){
+            Assert.assertNotNull(downloader.readNext());
+        }
+    }
+
+    @Test
+    public void getPreview() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_1").build();
+        List preview = client.getPreview(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(preview));
+    }
+
+    @Test
+    public void getPartitionColumn() {
+        List<ColumnMetaDTO> data = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("loader_test_1").build());
+        data.forEach(x-> System.out.println(x.getKey()+"=="+x.getPart()));
+    }
+
+    @Test
+    public void getPreview2() {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("id", "1");
+        List list = client.getPreview(source, SqlQueryDTO.builder().tableName("loader_test_1").partitionColumns(map).build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
+    }
+
+    /**
+     * 简单查询
+     */
+    @Test
+    public void query() {
+        List list = client.executeQuery(source, SqlQueryDTO.builder().sql("desc formatted loader_test_1").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
+    }
+
+    /**
+     * 根据sql获取结果字段信息
+     */
+    @Test
+    public void getColumnMetaDataWithSql() {
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().sql("select * from loader_test_1 ").build();
+        List list = client.getColumnMetaDataWithSql(source, sqlQueryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
+    }
+
+    /**
+     * 获取建表sql
+     */
+    @Test
+    public void getCreateTableSql()  {
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("loader_test_1").build();
+        String createTableSql = client.getCreateTableSql(source, sqlQueryDTO);
+        Assert.assertTrue(StringUtils.isNotBlank(createTableSql));
+    }
+
+    /**
+     * 获取所有的库列表
+     */
+    @Test
+    public void getAllDataBases()  {
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().build();
+        List databases = client.getAllDatabases(source, sqlQueryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(databases));
+    }
+
+    /**
+     * 获取表详细信息
+     */
+    @Test
+    public void getTable()  {
+        Table table = client.getTable(source, SqlQueryDTO.builder().tableName("loader_test_1").build());
+        Assert.assertNotNull(table);
+    }
+
+    /**
+     * 获取正在使用的数据库
+     */
+    @Test
+    public void getCurrentDatabase()  {
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
     }
@@ -159,26 +246,32 @@ public class Hive1Test {
      * 创建库测试
      */
     @Test
-    public void createDb() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
-        assert client.createDatabase(source, "wangchuan_dev_test", "测试注释");
+    public void createDb()  {
+        client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql("drop database if exists loader_test").build());
+        assert client.createDatabase(source, "loader_test", "测试注释");
     }
 
     /**
      * 判断db是否存在
      */
     @Test
-    public void isDbExists() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
-        assert client.isDatabaseExists(source, "wangchuan_dev_test");
+    public void isDbExists()  {
+        assert client.isDatabaseExists(source, "default");
     }
 
     /**
-     * 判断表是否在db中
+     * 表在db中
      */
     @Test
-    public void isTableInDb() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
-        assert !client.isTableExistsInDatabase(source, "test_1", "wangchuan_dev_test");
+    public void tableInDb()  {
+        assert client.isTableExistsInDatabase(source, "loader_test_1", "default");
+    }
+
+    /**
+     * 表不在db中
+     */
+    @Test
+    public void tableNotInDb()  {
+        assert !client.isTableExistsInDatabase(source, "test_n", "default");
     }
 }

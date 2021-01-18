@@ -5,6 +5,7 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.source.WebSocketSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -15,8 +16,12 @@ import java.util.HashMap;
  * @Date ：Created in 21:24 2020/11/25
  * @Description：WebSocket 测试类
  */
+@Ignore
 public class WebSocketTest {
 
+    /**
+     * 没有对应的数据源信息
+     */
     @Test
     public void testCon() throws Exception {
         HashMap<String, String> map = new HashMap<>();

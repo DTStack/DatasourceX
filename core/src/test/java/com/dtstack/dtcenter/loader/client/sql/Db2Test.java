@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -9,7 +10,10 @@ import com.dtstack.dtcenter.loader.dto.source.Db2SourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -24,117 +28,172 @@ import java.util.Map;
  */
 @Slf4j
 public class Db2Test {
-    private static Db2SourceDTO source = Db2SourceDTO.builder()
+
+    // 获取数据源 client
+    private static final IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
+
+    private static final Db2SourceDTO source = Db2SourceDTO.builder()
             .url("jdbc:db2://172.16.101.246:50002/DT_TEST")
             .username("db2inst1")
             .password("dtstack1")
-            //.schema("SAMPLE")
-            //.poolConfig(new PoolConfig())
+            .poolConfig(new PoolConfig())
             .build();
 
-    //@BeforeClass
-    public static void beforeClass() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
-        SqlQueryDTO queryDTO = null;
+    /**
+     * 数据准备
+     */
+    @BeforeClass
+    public static void beforeClass() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table LOADER_TEST").build();
         try {
-            // DB2 没找到 if exists 语法
-            queryDTO = SqlQueryDTO.builder().sql("drop table nanqi").build();
             client.executeSqlWithoutResultSet(source, queryDTO);
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            // db2 不支持drop table if exists语法
         }
-
-        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int, name varchar(50))").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table LOADER_TEST (id int, name varchar(50))").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("comment on table nanqi is 'table comment'").build();
+        queryDTO = SqlQueryDTO.builder().sql("comment on table LOADER_TEST is 'table comment'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        queryDTO = SqlQueryDTO.builder().sql("insert into LOADER_TEST values (1, 'nanqi')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
+
+    /**
+     * 获取连接测试
+     */
     @Test
-    public void getCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
-        Connection con1 = client.getCon(source);
-        con1.close();
+    public void getCon() throws Exception{
+        Connection connection = client.getCon(source);
+        Assert.assertNotNull(connection);
+        connection.close();
     }
 
+    /**
+     * 测试连通性测试
+     */
     @Test
-    public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
+    public void testCon()  {
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
         }
     }
 
+    /**
+     * 执行查询语句测试
+     */
     @Test
-    public void executeQuery() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi limit 1,1").build();
-        List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
+    public void executeQuery()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from LOADER_TEST").build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(result));
     }
 
+    /**
+     * 字段别名查询测试
+     */
     @Test
-    public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi").build();
+    public void executeQueryAlias()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select id as tAlias from LOADER_TEST").build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(result));
+    }
+
+    /**
+     * 无结果查询测试
+     */
+    @Test
+    public void executeSqlWithoutResultSet()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from LOADER_TEST").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
+    /**
+     * 获取表
+     */
     @Test
-    public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
-        List<String> tableList = client.getTableList(source, null);
-        System.out.println(tableList);
-    }
-
-    @Test
-    public void getTableListBySchema() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
-        List<String> tableList = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("SHIHU").build());
-        System.out.println(tableList);
-    }
-
-    @Test
-    public void getColumnClassInfo() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
-        List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
-    }
-
-    @Test
-    public void getColumnMetaData() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
-        List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-    }
-
-    @Test
-    public void getDownloader() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi").build();
-        IDownloader downloader = client.getDownloader(source, queryDTO);
-    }
-
-    @Test
-    public void preview() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
-        source.setSchema("SHIHU");
-        List preview = client.getPreview(source, SqlQueryDTO.builder().previewNum(2).tableName("TEST_SHIHU").build());
-        System.out.println(preview);
-    }
-
-    @Test
-    public void getAllDatabases() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
+    public void getTableList()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
-        System.out.println(client.getAllDatabases(source, queryDTO));
+        List<String> tableList = client.getTableList(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
+    /**
+     * 根据 schema获取表
+     */
     @Test
-    public void getCurrentDatabase() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.DB2.getVal());
+    public void getTableListBySchema()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("DB2INST1").build();
+        List<String> tableList = client.getTableListBySchema(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+    }
+
+    /**
+     * 获取java 标准字段属性
+     */
+    @Test
+    public void getColumnClassInfo()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
+        List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
+    }
+
+    /**
+     * 获取表字段详细信息
+     */
+    @Test
+    public void getColumnMetaData()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
+        List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
+        System.out.println(columnMetaData);
+    }
+
+    /**
+     * 获取表注释
+     */
+    @Test
+    public void getTableMetaComment()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
+        String metaComment = client.getTableMetaComment(source, queryDTO);
+        Assert.assertTrue(StringUtils.isNotBlank(metaComment));
+    }
+
+    /**
+     * 数据预览测试
+     */
+    @Test
+    public void preview() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").previewNum(1).build();
+        List preview = client.getPreview(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(preview));
+    }
+
+    /**
+     * 根据sql 获取对应结果的字段信息
+     */
+    @Test
+    public void getColumnMetaDataWithSql() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from LOADER_TEST ").build();
+        List result = client.getColumnMetaDataWithSql(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(result));
+    }
+
+    /**
+     * 获取所有的schema
+     */
+    @Test
+    public void getAllDatabases()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        List databases = client.getAllDatabases(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(databases));
+    }
+
+    /**
+     * 获取当前使用的 schema
+     */
+    @Test
+    public void getCurrentDatabase()  {
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
     }

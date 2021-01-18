@@ -30,27 +30,11 @@ public class HdfsTest {
             .build();
 
     @Test
-    public void testCon() throws Exception {
+    public void testCon() {
         IClient client = ClientCache.getClient(DataSourceType.HDFS.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
         }
-    }
-
-    @Test
-    public void testFileDownloader() throws Exception {
-        IHdfsFile hdfs = ClientCache.getHdfs(DataSourceType.HDFS.getVal());
-        IDownloader fileDownloader = hdfs.getFileDownloader(source, "/tmp/textfile");
-        while (!fileDownloader.reachedEnd()) {
-            System.out.println(fileDownloader.readNext());
-            Thread.sleep(1000);
-        }
-    }
-
-    @Test
-    public void getFileStatus() throws Exception {
-        IHdfsFile hdfs = ClientCache.getHdfs(DataSourceType.HDFS.getVal());
-        System.out.println(hdfs.getStatus(source, "/jars"));
     }
 }

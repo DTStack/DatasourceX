@@ -7,7 +7,9 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.MongoSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.math3.util.Pair;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
@@ -20,14 +22,21 @@ import java.util.Map;
  * @Description：Mongo 测试
  */
 public class MongoTest {
-    MongoSourceDTO source = MongoSourceDTO.builder()
-            .hostPort("172.16.8.193:27017/dtstack")
+
+    // 构建client
+    private static final IClient client = ClientCache.getClient(DataSourceType.MONGODB.getVal());
+
+    // 构建数据源信息
+    private static final MongoSourceDTO source = MongoSourceDTO.builder()
+            .hostPort("172.16.101.246:27017/admin")
             .poolConfig(new PoolConfig())
             .build();
 
+    /**
+     * 连通性测试
+     */
     @Test
-    public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.MONGODB.getVal());
+    public void testCon() {
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
@@ -35,23 +44,21 @@ public class MongoTest {
     }
 
     @Test
-    public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.MONGODB.getVal());
+    public void getTableList() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
     @Test
-    public void getDatabaseList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.MONGODB.getVal());
+    public void getDatabaseList() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List list = client.getAllDatabases(source, queryDTO);
-        System.out.println(list);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
     }
 
     @Test
-    public void getPreview() throws Exception{
+    public void getPreview() {
         IClient client = ClientCache.getClient(DataSourceType.MONGODB.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("user").build();
         List<List<Object>> preview = client.getPreview(source, queryDTO);
@@ -65,7 +72,7 @@ public class MongoTest {
     }
 
     @Test
-    public void executorQuery() throws Exception {
+    public void executorQuery() {
         IClient<List> client = ClientCache.getClient(DataSourceType.MONGODB.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("db.user.find({});").startRow(1).limit(5).build();
         List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
