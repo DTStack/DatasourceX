@@ -9,6 +9,8 @@ import com.dtstack.dtcenter.loader.dto.source.Phoenix5SourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -25,7 +27,12 @@ import java.util.Map;
  * company: www.dtstack.com
  */
 public class Phoenix5KerberosTest {
-    private static Phoenix5SourceDTO source = Phoenix5SourceDTO.builder()
+
+    // 构建客户端
+    private static final IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
+
+    // 构建数据源信息
+    private static final Phoenix5SourceDTO source = Phoenix5SourceDTO.builder()
             .url("jdbc:phoenix:172.16.101.239:2181:/hbase")
             .build();
 
@@ -33,7 +40,6 @@ public class Phoenix5KerberosTest {
     public static void beforeClass() {
         // 准备 Kerberos 参数
         Map<String, Object> kerberosConfig = new HashMap<>();
-        //kerberosConfig.put(HadoopConfTool.PRINCIPAL, "hbase/master@DTSTACK.COM");
         kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/hbase.keytab");
         kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
         kerberosConfig.put(HadoopConfTool.HBASE_MASTER_PRINCIPAL, "hbase/_HOST@DTSTACK.COM");
@@ -43,89 +49,145 @@ public class Phoenix5KerberosTest {
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.PHOENIX5.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
 
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
-
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists px_test1").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("CREATE TABLE px_test1 (\n" +
-                "      state CHAR(2) NOT NULL,\n" +
-                "      city VARCHAR NOT NULL,\n" +
-                "      population BIGINT\n" +
+        queryDTO = SqlQueryDTO.builder().sql("CREATE TABLE loader_test (" +
+                "      state CHAR(2) NOT NULL," +
+                "      city VARCHAR NOT NULL," +
+                "      population BIGINT" +
                 "      CONSTRAINT my_pk PRIMARY KEY (state, city))").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("UPSERT INTO px_test1 (state, city, population) values ('NY','New York',8143197)").build();
+        queryDTO = SqlQueryDTO.builder().sql("UPSERT INTO loader_test (state, city, population) values ('NY','New York',8143197)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
 
+    /**
+     * 获取连接测试
+     */
     @Test
-    public void getCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
-        Connection con = client.getCon(source);
-        con.createStatement().close();
-        con.close();
+    public void getCon() throws Exception{
+        Connection connection = client.getCon(source);
+        Assert.assertNotNull(connection);
+        connection.close();
     }
 
+    /**
+     * 测试连通性测试
+     */
     @Test
-    public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
+    public void testCon()  {
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
         }
     }
 
+    /**
+     * 执行查询语句测试
+     */
     @Test
-    public void executeQuery() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("SELECT * FROM PX_TEST1").build();
-        List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
-        System.out.println(mapList);
+    public void executeQuery()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from loader_test").build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(result));
     }
 
+    /**
+     * 无结果查询测试
+     */
     @Test
-    public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from PX_TEST1 limit 2000").build();
+    public void executeSqlWithoutResultSet()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from loader_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
+    /**
+     * 获取表
+     */
     @Test
-    public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().view(true).build();
+    public void getTableList()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
+    /**
+     * 根据 schema获取表
+     */
     @Test
-    public void getColumnClassInfo() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("PX_TEST1").build();
+    public void getTableListBySchema()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("default").build();
+        List<String> tableList = client.getTableListBySchema(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+    }
+
+    /**
+     * 获取java 标准字段属性
+     */
+    @Test
+    public void getColumnClassInfo()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
-        System.out.println(columnClassInfo.size());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
     }
 
+    /**
+     * 获取表字段详细信息
+     */
     @Test
-    public void getColumnMetaData() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("PX_TEST1").build();
+    public void getColumnMetaData()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        System.out.println(columnMetaData);
     }
 
+    /**
+     * 获取表注释
+     */
     @Test
-    public void getTableMetaComment() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("PX_TEST1").build();
-        String metaComment = client.getTableMetaComment(source, queryDTO);
-        System.out.println(metaComment);
+    public void getTableMetaComment()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
+        client.getTableMetaComment(source, queryDTO);
     }
 
+    /**
+     * 数据预览测试
+     */
     @Test
-    public void getAllSchema() {
-        IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
-        List allSchema = client.getAllDatabases(source, SqlQueryDTO.builder().build());
-        System.out.println(allSchema);
+    public void preview() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").previewNum(1).build();
+        List preview = client.getPreview(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(preview));
     }
+
+    /**
+     * 根据sql 获取对应结果的字段信息
+     */
+    @Test
+    public void getColumnMetaDataWithSql() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from loader_test ").build();
+        List result = client.getColumnMetaDataWithSql(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(result));
+    }
+
+    /**
+     * 获取所有的schema
+     */
+    @Test
+    public void getAllDatabases()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        List databases = client.getAllDatabases(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(databases));
+    }
+
+    /**
+     * 获取指定schema下的表
+     */
+    @Test
+    public void searchTableAndViewBySchema ()  {
+        List list = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("default").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
+    }
+
 }

@@ -15,10 +15,10 @@ import org.junit.Test;
  */
 public class FtpTest {
     FtpSourceDTO source = FtpSourceDTO.builder()
-            .url("kudu4")
+            .url("172.16.100.251")
             .hostPort("22")
             .username("root")
-            .password("abc123")
+            .password("dt@sz.com")
             .protocol("sftp")
             .build();
 

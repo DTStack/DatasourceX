@@ -58,7 +58,7 @@ public class Issue33045 {
      */
     @BeforeClass
     public static void setUp () throws Exception {
-        System.setProperty("HADOOP_USER_NAME", "root");
+        System.setProperty("HADOOP_USER_NAME", "admin");
         IHdfsFile hdfsClient = ClientCache.getHdfs(DataSourceType.HDFS.getVal());
         hdfsClient.checkAndDelete(hdfsSourceDTO, "/tmp/bug_33045");
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());

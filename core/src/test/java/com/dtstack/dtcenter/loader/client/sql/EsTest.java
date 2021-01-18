@@ -9,6 +9,9 @@ import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import com.dtstack.dtcenter.loader.enums.EsCommandType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
+import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
@@ -21,19 +24,26 @@ import java.util.Map;
  * @Description：ES 测试
  */
 public class EsTest {
-    ESSourceDTO source = ESSourceDTO.builder()
-            .url("172.16.8.193:9201,172.16.8.193:9202,172.16.8.193:9203")
-            //.username("elastic")
-            //.password("abc123")
-            //.schema("tools")
-            //.id("id_1")
-            //.isCache(true)
+
+    private static final IClient client = ClientCache.getClient(DataSourceType.ES6.getVal());
+
+    private static final ESSourceDTO source = ESSourceDTO.builder()
+            .url("172.16.100.186:9200")
             .poolConfig(new PoolConfig())
             .build();
 
+    /**
+     * 数据准备
+     */
+    @BeforeClass
+    public static void setUp () {
+        String sql = "{\"name\": \"小黄\", \"age\": 18,\"sex\": \"不详\",\"extraAttr_0_5_3\":{\"attributeValue\":\"2020-09-17 23:37:16\"}}";
+        String tableName = "commodity/_doc/3";
+        client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.INSERT.getType()).build());
+    }
+
     @Test
     public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
@@ -41,123 +51,80 @@ public class EsTest {
     }
 
     @Test
-    public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getVal());
-        List tableList = client.getTableList(source, SqlQueryDTO.builder().tableName("tools").build());
-        System.out.println(tableList);
+    public void getAllDb () {
+        List databases = client.getAllDatabases(source, SqlQueryDTO.builder().build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(databases));
     }
 
     @Test
-    public void getPreview() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getVal());
-        List viewList = client.getPreview(source, SqlQueryDTO.builder().tableName("tools").previewNum(5).build());
-        System.out.println(viewList);
+    public void getTableList() {
+        List tableList = client.getTableList(source, SqlQueryDTO.builder().tableName("commodity").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
     @Test
-    public void getColumnMetaData() throws Exception{
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getVal());
-        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("tools").build());
-        System.out.println(metaData);
+    public void getPreview() {
+        List viewList = client.getPreview(source, SqlQueryDTO.builder().tableName("commodity").previewNum(5).build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(viewList));
     }
 
     @Test
-    public void getDB() throws Exception{
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getVal());
-        List list = client.getAllDatabases(source, SqlQueryDTO.builder().build());
-        System.out.println(list);
+    public void getColumnMetaData() {
+        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("commodity").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(metaData));
     }
 
     @Test
-    public void executeQuery() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getVal());
-        List<Map<String, Object>> list = client.executeQuery(source, SqlQueryDTO.builder().sql("{\"query\": {\"match_all\": {}    }}").tableName("tools").build());
+    public void executeQuery() {
+        List<Map<String, Object>> list = client.executeQuery(source, SqlQueryDTO.builder().sql("{\"query\": {\"match_all\": {} }}").tableName("commodity").build());
         JSONObject result = (JSONObject) list.get(0).get("result");
-        System.out.println(result.toJSONString());
+        Assert.assertNotNull(result);
+    }
+
+    /**
+     * 删除
+     */
+    @Test
+    public void executeSqlWithoutResultSet() {
+        IClient client = ClientCache.getClient(DataSourceType.ES6.getVal());
+        String tableName = "commodity/_doc/3";
+        client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().tableName(tableName).esCommandType(EsCommandType.DELETE.getType()).build());
     }
 
     @Test
-    public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getPluginName());
-        String sql = null;
-        String tableName = "m6/doc/12";
-        Boolean result = client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.DELETE.getType()).build());
+    public void executeSqlWithoutResultSet4() {
+        String sql = "{\"doc\":{\"age\":26 }}";
+        String tableName = "commodity/_doc/3";
+        client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.UPDATE.getType()).build());
     }
 
+    /**
+     * 插数据测试
+     */
     @Test
-    public void executeSqlWithoutResultSet4() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getPluginName());
-        String sql = "{\n" +
-                "  \"doc\":{\n" +
-                "   \"age\": \"26\"\n" +
-                "  }\n" +
-                "}";
-        String tableName = "m6/doc/2";
-        Boolean result = client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.UPDATE.getType()).build());
+    public void executeSqlWithoutResultSet3() {
+        String sql = "{\"name\": \"小黄\", \"age\": 18,\"sex\": \"不详\",\"extraAttr_0_5_3\":{\"attributeValue\":\"2020-09-17 23:37:16\"}}";
+        String tableName = "commodity/_doc/3";
+        client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.INSERT.getType()).build());
     }
 
+    /**
+     * 根据查询更新
+     */
     @Test
-    public void executeSqlWithoutResultSet3() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getPluginName());
-        String sql = "{\n" +
-                "  \"name\": \"小黄\",\n" +
-                "  \"age\": 18,\n" +
-                "  \"sex\": \"不详\",\n" +
-                "  \"extraAttr_0_5_3\":{\n" +
-                "    \"attributeValue\":\"2020-09-17 23:37:16\"\n" +
-                "  }\n" +
-                "}";
-        String tableName = "m6/doc/3";
-        Boolean result = client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.INSERT.getType()).build());
+    public void executeSqlWithoutResultSet2() {
+        String sql = "{\"query\": {\"match_all\": {} }}";
+        String tableName = "commodity/_doc";
+        client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.UPDATE_BY_QUERY.getType()).build());
     }
 
+    /**
+     * 根据查询删除
+     */
     @Test
-    public void executeSqlWithoutResultSet2() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getPluginName());
-        String sql = "{\n" +
-                "  \"script\": {\n" +
-                "    \"source\": \"ctx._source.extraAttr_0_5_3= params.mifieldAsParam\",\n" +
-                "    \"params\":{\n" +
-                "      \"mifieldAsParam\":{\n" +
-                "        \"attributeValue\":\"2020-09-27 23:37:16\",\n" +
-                "        \"updateByQuery\":\"yes\"\n" +
-                "      }\n" +
-                "    },\n" +
-                "    \"lang\": \"painless\"\n" +
-                "  },\n" +
-                "  \"query\": {\n" +
-                "    \"term\": {\n" +
-                "      \"_id\": 1\n" +
-                "    }\n" +
-                "  }\n" +
-                "}";
-        String tableName = "m6/doc";
-        Boolean result = client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.UPDATE_BY_QUERY.getType()).build());
-    }
-
-    @Test
-    public void executeSqlWithoutResultSet1() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.ES6.getPluginName());
-        String sql = "{\n" +
-                "  \"query\": {\n" +
-                "    \"bool\": {\n" +
-                "      \"filter\": [\n" +
-                "        {\n" +
-                "          \"terms\": {\n" +
-                "            \"_id\": [\n" +
-                "              3,\n" +
-                "              23\n" +
-                "            ],\n" +
-                "            \"boost\": 1\n" +
-                "          }\n" +
-                "        }\n" +
-                "      ],\n" +
-                "      \"adjust_pure_negative\": true,\n" +
-                "      \"boost\": 1\n" +
-                "    }\n" +
-                "  }\n" +
-                "}";
-        String tableName = "m6/doc";
-        Boolean result = client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.DELETE_BY_QUERY.getType()).build());
+    public void executeSqlWithoutResultSet1() {
+        String sql = "{\"query\":{\"match_all\": {}}}";
+        String tableName = "commodity/_doc";
+        client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.DELETE_BY_QUERY.getType()).build());
     }
 }

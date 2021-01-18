@@ -36,7 +36,7 @@ public class ImpalaTableTest {
      * 数据准备
      */
     @BeforeClass
-    public static void setUp () throws Exception {
+    public static void setUp () {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan_partitions_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -62,7 +62,7 @@ public class ImpalaTableTest {
      * 获取所有分区
      */
     @Test
-    public void showPartitions () throws Exception {
+    public void showPartitions () {
         ITable client = ClientCache.getTable(DataSourceType.IMPALA.getVal());
         List<String> result = client.showPartitions(source, "wangchuan_partitions_test");
         System.out.println(result);
@@ -73,7 +73,7 @@ public class ImpalaTableTest {
      * 删除表
      */
     @Test
-    public void dropTable () throws Exception {
+    public void dropTable () {
         ITable client = ClientCache.getTable(DataSourceType.IMPALA.getVal());
         Boolean check = client.dropTable(source, "wangchuan_test2");
         Assert.assertTrue(check);
@@ -83,7 +83,7 @@ public class ImpalaTableTest {
      * 重命名表
      */
     @Test
-    public void renameTable () throws Exception {
+    public void renameTable () {
         ITable client = ClientCache.getTable(DataSourceType.IMPALA.getVal());
         Boolean renameCheck = client.renameTable(source, "wangchuan_test3", "wangchuan_test4");
         Assert.assertTrue(renameCheck);
@@ -95,7 +95,7 @@ public class ImpalaTableTest {
      * 修改表参数
      */
     @Test
-    public void alterTableParams () throws Exception {
+    public void alterTableParams () {
         ITable client = ClientCache.getTable(DataSourceType.IMPALA.getVal());
         Map<String, String> params = Maps.newHashMap();
         params.put("comment", "test");

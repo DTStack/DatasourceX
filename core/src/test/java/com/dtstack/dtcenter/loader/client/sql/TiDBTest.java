@@ -4,17 +4,18 @@ import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
-import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Mysql5SourceDTO;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,173 +26,204 @@ import java.util.Map;
  * @Description：
  */
 public class TiDBTest {
-    private static Mysql5SourceDTO source = Mysql5SourceDTO.builder()
-            .url("jdbc:mysql://172.16.101.249:3306/streamapp")
-            .username("drpeco")
-            .password("DT@Stack#123")
-            .schema("streamapp")
-            .poolConfig(new PoolConfig())
+    // 获取数据源 client
+    private static final IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
+
+    // 构建数据源信息
+    private static final Mysql5SourceDTO source = Mysql5SourceDTO.builder()
+            .url("jdbc:mysql://172.16.101.246:4000/db_dev")
+            .username("dev")
+            .password("Abc12345")
+            .poolConfig(PoolConfig.builder().build())
             .build();
 
+    /**
+     * 数据预处理
+     */
     @BeforeClass
-    public static void beforeClass() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
+    public static void beforeClass() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists LOADER_TEST").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int COMMENT 'id', name varchar(50) COMMENT '姓名') comment 'table comment'").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table LOADER_TEST (id int COMMENT 'id', name varchar(50) COMMENT '姓名') comment 'table comment'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        queryDTO = SqlQueryDTO.builder().sql("insert into LOADER_TEST values (1, 'LOADER_TEST')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     /**
-     * 获取连接测试 - 使用连接池，默认最大开启十个连接
-     * @throws Exception
+     * 获取连接测试
      */
     @Test
-    public void getCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
-        Connection con1 = client.getCon(source);
-        con1.close();
+    public void getCon() throws Exception{
+        Connection connection = client.getCon(source);
+        Assert.assertNotNull(connection);
+        connection.close();
     }
 
+    /**
+     * 连通性测试
+     */
     @Test
-    public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
+    public void testCon() {
         Boolean isConnected = client.testCon(source);
         Assert.assertTrue(isConnected);
     }
 
-    @Test(expected = DtLoaderException.class)
-    public void testErrorCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
-        source.setUsername("nanqi");
-        client.testCon(source);
+    /**
+     * 预编译查询
+     */
+    @Test
+    public void executeQuery() {
+        String sql = "select * from LOADER_TEST where id > ? and id < ?;";
+        List<Object> preFields = new ArrayList<>();
+        preFields.add(0);
+        preFields.add(5);
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).preFields(preFields).build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(result));
     }
 
+    /**
+     * 字段别名测试
+     */
     @Test
-    public void executeQuery() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
-        List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
-        System.out.println(mapList.size());
+    public void executeQueryAlias() {
+        String sql = "select id as testAlias from LOADER_TEST;";
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        Assert.assertTrue(result.get(0).containsKey("testAlias"));
     }
 
+    /**
+     * 无需结果查询
+     */
     @Test
-    public void executeSqlWithoutResultSet() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
+    public void executeSqlWithoutResultSet() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
+    /**
+     * 获取表列表
+     */
     @Test
-    public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
+    public void getTableList() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
+    /**
+     * 根据schema获取表
+     */
     @Test
-    public void getColumnClassInfo() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+    public void getTableListBySchema() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("db_dev").build();
+        List<String> tableList = client.getTableListBySchema(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+    }
+
+    /**
+     * 获取表字段java标准格式
+     */
+    @Test
+    public void getColumnClassInfo() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
-        System.out.println(columnClassInfo.size());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
     }
 
+    /**
+     * 获取表字段信息
+     */
     @Test
-    public void getColumnMetaData() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+    public void getColumnMetaData() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 
+    /**
+     * 获取表注释
+     */
     @Test
-    public void getTableMetaComment() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+    public void getTableMetaComment() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
-        System.out.println(metaComment);
+        Assert.assertTrue(StringUtils.isNotBlank(metaComment));
     }
 
+    /**
+     * 自定义sql 数据下载测试
+     */
     @Test
     public void testGetDownloader() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from LOADER_TEST").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
-        downloader.configure();
         List<String> metaInfo = downloader.getMetaInfo();
-        System.out.println(metaInfo);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(metaInfo));
         while (!downloader.reachedEnd()){
-            List<List<String>> o = (List<List<String>>)downloader.readNext();
-            for (List<String> list:o){
-                System.out.println(list);
+            List<List<String>> result = (List<List<String>>)downloader.readNext();
+            for (List<String> row : result){
+                Assert.assertTrue(CollectionUtils.isNotEmpty(row));
             }
         }
     }
 
     /**
      * 数据预览测试
-     * @throws Exception
      */
     @Test
-    public void testGetPreview() throws Exception{
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+    public void testGetPreview() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         List preview = client.getPreview(source, queryDTO);
-        System.out.println(preview);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(preview));
     }
 
+    /**
+     * 根据自定义sql获取表字段信息
+     */
     @Test
-    public void getCurrentDatabase() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
+    public void getColumnMetaDataWithSql() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from LOADER_TEST").build();
+        List sql = client.getColumnMetaDataWithSql(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(sql));
+    }
+
+    /**
+     * 获取所有的db
+     */
+    @Test
+    public void getAllDatabases() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        Assert.assertTrue(CollectionUtils.isNotEmpty(client.getAllDatabases(source,queryDTO)));
+    }
+
+    /**
+     * 获取表建表语句
+     */
+    @Test
+    public void getCreateTableSql() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
+        String createTableSql = client.getCreateTableSql(source, queryDTO);
+        Assert.assertTrue(StringUtils.isNotBlank(createTableSql));
+    }
+
+    /**
+     * 获取正在使用的database
+     */
+    @Test
+    public void getCurrentDatabase() {
         String currentDatabase = client.getCurrentDatabase(source);
-        Assert.assertNotNull(currentDatabase);
+        Assert.assertTrue(StringUtils.isNotBlank(currentDatabase));
     }
 
     /**
-     * 创建库测试
+     * 根据 schema 获取表
      */
     @Test
-    public void createDb() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
-        assert client.createDatabase(source, "wangchuan_dev_test", "测试注释");
-    }
-
-    /**
-     * 判断db是否存在
-     */
-    @Test
-    public void isDbExists() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
-        assert client.isDatabaseExists(source, "wangchuan_dev_test");
-    }
-
-    /**
-     * 表在db中
-     */
-    @Test
-    public void tableInDb() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
-        assert client.isTableExistsInDatabase(source, "test", "wangchuan_dev_test");
-    }
-
-    /**
-     * 表不在db中
-     */
-    @Test
-    public void tableNotInDb() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.TiDB.getVal());
-        assert !client.isTableExistsInDatabase(source, "test_1", "wangchuan_dev_test");
-    }
-
-    @Test
-    public void getTableSize () throws Exception {
-        ITable tableClient = ClientCache.getTable(DataSourceType.TiDB.getVal());
-        Long tableSize = tableClient.getTableSize(source, "streamapp", "nanqi");
-        System.out.println(tableSize);
-        Assert.assertTrue(tableSize != null && tableSize > 0);
+    public void getTableBySchema () {
+        List tableListBySchema = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("db_dev").tableNamePattern("").limit(5).build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableListBySchema));
     }
 }

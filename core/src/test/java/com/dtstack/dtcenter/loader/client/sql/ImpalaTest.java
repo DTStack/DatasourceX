@@ -19,7 +19,7 @@ import java.util.Map;
 
 /**
  * @company: www.dtstack.com
- * @Author ：Nanqi
+ * @Author ：loader_test
  * @Date ：Created in 01:23 2020/2/29
  * @Description：Impala 测试
  */
@@ -32,17 +32,17 @@ public class ImpalaTest {
             .build();
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int, name string)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test (id int, name string)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi1").build();
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test1").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table nanqi1 (id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test1 (id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test values (1, 'loader_test')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -54,7 +54,7 @@ public class ImpalaTest {
     }
 
     @Test
-    public void testCon() throws Exception {
+    public void testCon() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
@@ -63,7 +63,7 @@ public class ImpalaTest {
     }
 
     @Test
-    public void executeQuery() throws Exception {
+    public void executeQuery() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
@@ -71,14 +71,14 @@ public class ImpalaTest {
     }
 
     @Test
-    public void executeSqlWithoutResultSet() throws Exception {
+    public void executeSqlWithoutResultSet() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
-    public void getTableList() throws Exception {
+    public void getTableList() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
@@ -86,72 +86,72 @@ public class ImpalaTest {
     }
 
     @Test
-    public void getColumnClassInfo() throws Exception {
+    public void getColumnClassInfo() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         System.out.println(columnClassInfo.size());
     }
 
     @Test
-    public void getColumnMetaData() throws Exception {
+    public void getColumnMetaData() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         System.out.println(columnMetaData.size());
     }
 
     @Test
-    public void getTableMetaComment() throws Exception {
+    public void getTableMetaComment() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         String tableMetaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(tableMetaComment);
     }
 
     @Test
-    public void getTableMetaComment1() throws Exception {
+    public void getTableMetaComment1() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi1").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         String tableMetaComment = client.getTableMetaComment(source, queryDTO);
         System.out.println(tableMetaComment);
     }
 
     @Test
-    public void getPreview() throws Exception {
+    public void getPreview() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("nanqi").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("loader_test").build();
         List preview = client.getPreview(source, queryDTO);
         System.out.println(preview);
     }
 
     @Test
-    public void getAllDatabases() throws Exception {
+    public void getAllDatabases() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         System.out.println(client.getAllDatabases(source, SqlQueryDTO.builder().build()));
     }
 
     @Test
-    public void getPartitionColumn() throws Exception {
+    public void getPartitionColumn() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        System.out.println(client.getPartitionColumn(source, SqlQueryDTO.builder().tableName("nanqi").build()));
+        System.out.println(client.getPartitionColumn(source, SqlQueryDTO.builder().tableName("loader_test").build()));
     }
 
     @Test
-    public void getCreateSql() throws Exception {
+    public void getCreateSql() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        System.out.println(client.getCreateTableSql(source, SqlQueryDTO.builder().tableName("nanqi").build()));
+        System.out.println(client.getCreateTableSql(source, SqlQueryDTO.builder().tableName("loader_test").build()));
     }
 
     @Test
-    public void getTable() throws Exception {
+    public void getTable() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        Table table = client.getTable(source, SqlQueryDTO.builder().tableName("nanqi1").build());
+        Table table = client.getTable(source, SqlQueryDTO.builder().tableName("loader_test").build());
         System.out.println(table);
     }
 
     @Test
-    public void getCurrentDatabase() throws Exception {
+    public void getCurrentDatabase() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);

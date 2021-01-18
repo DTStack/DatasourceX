@@ -9,6 +9,8 @@ import com.dtstack.dtcenter.loader.dto.source.KuduSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,7 +30,7 @@ public class KuduKerberosTest {
             .build();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // 准备 Kerberos 参数
         Map<String, Object> kerberosConfig = new HashMap<>();
         kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/kudu-master.keytab");
@@ -41,7 +43,7 @@ public class KuduKerberosTest {
     }
 
     @Test
-    public void testCon() throws Exception {
+    public void testCon() {
         IClient client = ClientCache.getClient(DataSourceType.Kudu.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
@@ -50,18 +52,18 @@ public class KuduKerberosTest {
     }
 
     @Test
-    public void getTableList() throws Exception {
+    public void getTableList() {
         IClient client = ClientCache.getClient(DataSourceType.Kudu.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
     @Test
-    public void getColumnMetaData() throws Exception {
+    public void getColumnMetaData() {
         IClient client = ClientCache.getClient(DataSourceType.Kudu.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("foo").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 }

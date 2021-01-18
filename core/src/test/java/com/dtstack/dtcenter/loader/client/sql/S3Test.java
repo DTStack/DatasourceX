@@ -5,6 +5,7 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.source.S3SourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -15,7 +16,9 @@ import java.util.List;
  * @Date ：Created in 15:28 2020/9/29
  * @Description：S3 测试
  */
+@Ignore
 public class S3Test {
+    // 没有可用的数据源
     S3SourceDTO source = S3SourceDTO.builder()
             .username("KERUE23F0YDYOR8AHSIZ")
             .password("IU3yNb1spyX1FfHWZsceeaeNDYCMpV7Mmd2C8IeI")

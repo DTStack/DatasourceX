@@ -17,6 +17,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -29,13 +30,16 @@ import java.util.List;
  * @Description：HDFS 文件系统测试
  */
 public class HdfsFileTest {
-    private IHdfsFile client;
+    
+    // 初始化客户端
+    private static final IHdfsFile client = ClientCache.getHdfs(DataSourceType.HDFS.getVal());
 
-    private String localKerberosPath = HdfsFileTest.class.getResource("/hdfs-file").getPath();
+    private static final String localKerberosPath = HdfsFileTest.class.getResource("/hdfs-file").getPath();
 
-    private HdfsWriterDTO writerDTO;
+    private static HdfsWriterDTO writerDTO = new HdfsWriterDTO();
 
-    private HdfsSourceDTO source = HdfsSourceDTO.builder()
+    // 初始化hdfs数据源信息
+    private static final HdfsSourceDTO source = HdfsSourceDTO.builder()
             .defaultFS("hdfs://ns1")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
@@ -47,7 +51,8 @@ public class HdfsFileTest {
                     "}")
             .build();
 
-    private HiveSourceDTO hiveSource = HiveSourceDTO.builder()
+    // 初始化hive数据源信息
+    private static final HiveSourceDTO hiveSource = HiveSourceDTO.builder()
             .url("jdbc:hive2://kudu1:10000/dev")
             .schema("dev")
             .defaultFS("hdfs://ns1")
@@ -65,11 +70,10 @@ public class HdfsFileTest {
     /**
      * 参数准备
      */
-    @Before
-    public void setUp () throws Exception{
-        System.setProperty("HADOOP_USER_NAME", "root");
-        client = ClientCache.getHdfs(DataSourceType.HDFS.getVal());
-        client.checkAndDelete(source, "/tmp/hive_test");
+    @BeforeClass
+    public static void setUp () {
+        System.setProperty("HADOOP_USER_NAME", "admin");
+        client.delete(source, "/tmp/hive_test", true);
         // 创建parquet格式的hive外部表，并插入数据
         IClient hiveClient = ClientCache.getClient(DataSourceType.HIVE.getVal());
         hiveClient.executeSqlWithoutResultSet(hiveSource, SqlQueryDTO.builder().sql("drop table if exists parquetTable ").build());
@@ -83,8 +87,6 @@ public class HdfsFileTest {
         hiveClient.executeSqlWithoutResultSet(hiveSource, SqlQueryDTO.builder().sql("drop table if exists orcTable ").build());
         hiveClient.executeSqlWithoutResultSet(hiveSource, SqlQueryDTO.builder().sql("create external table if not exists orcTable(id int,name string) stored as orc location '/tmp/hive_test' ").build());
         hiveClient.executeSqlWithoutResultSet(hiveSource, SqlQueryDTO.builder().sql("insert into orcTable values(1,'wangchuan') ").build());
-
-        writerDTO = new HdfsWriterDTO();
         writerDTO.setFileFormat(FileFormat.TEXT.getVal());
         writerDTO.setHdfsDirPath("/tmp/hive_test/");
         writerDTO.setFromFileName(localKerberosPath + "/textfile");
@@ -104,24 +106,26 @@ public class HdfsFileTest {
         metaDTO2.setKey("name");
         metaDTO2.setType("string");
         writerDTO.setColumnsList(Lists.newArrayList(metaDTO1, metaDTO2));
+        // copy 本地文件到hdfs
+        client.copyFromLocal(source, localKerberosPath + "/test.txt", "/tmp/test.txt", true);
     }
 
     /**
      * 测试hdfs连通性
-     * @throws Exception
+     * @
      */
     @Test
-    public void testConn() throws Exception{
+    public void testConn() {
         IClient client = ClientCache.getClient(DataSourceType.HDFS.getVal());
         assert  client.testCon(source);
     }
 
     /**
      * 获取文件状态
-     * @throws Exception
+     * @
      */
     @Test
-    public void getStatus () throws Exception {
+    public void getStatus ()  {
         FileStatus fileStatus = client.getStatus(source, "/tmp");
         Assert.assertNotNull(fileStatus);
     }
@@ -130,7 +134,7 @@ public class HdfsFileTest {
      * 下载hdfs文件到本地
      */
     @Test
-    public void downloadFileFromHdfs() throws Exception {
+    public void downloadFileFromHdfs()  {
         client.downloadFileFromHdfs(source, "/tmp/test.txt", localKerberosPath);
     }
 
@@ -138,7 +142,7 @@ public class HdfsFileTest {
      * 上传本地文件到hdfs
      */
     @Test
-    public void uploadLocalFileToHdfs() throws Exception{
+    public void uploadLocalFileToHdfs() {
         assert client.uploadLocalFileToHdfs(source, localKerberosPath + "/test.txt", "/tmp");
     }
 
@@ -146,7 +150,7 @@ public class HdfsFileTest {
      * 上传字节流文件到hdfs
      */
     @Test
-    public void uploadInputStreamToHdfs() throws Exception{
+    public void uploadInputStreamToHdfs() {
         assert client.uploadInputStreamToHdfs(source, "test".getBytes(), "/tmp/test.txt");
     }
 
@@ -154,8 +158,8 @@ public class HdfsFileTest {
      * 在hdfs文件系统创建文件夹
      */
     @Test
-    public void createDir() throws Exception {
-        client.checkAndDelete(source, "/tmp/test");
+    public void createDir()  {
+        client.delete(source, "/tmp/test", true);
         assert client.createDir(source, "/tmp/test", null);
         assert client.createDir(source, "/tmp/test", (short) 7);
     }
@@ -164,34 +168,34 @@ public class HdfsFileTest {
      * 判断文件是否存在
      */
     @Test
-    public void isFileExist() throws Exception{
+    public void isFileExist() {
         assert client.isFileExist(source, "/tmp/test.txt");
     }
 
     /**
      * 文件检测并删除
-     * @throws Exception
+     * @
      */
     @Test
-    public void checkAndDelete() throws Exception {
-        assert client.checkAndDelete(source, "/tmp/test111.txt");
+    public void delete()  {
+        client.delete(source, "/tmp/test111.txt", true);
     }
 
     /**
      * 获取文件夹大小
-     * @throws Exception
+     * @
      */
     @Test
-    public void getDirSize() throws Exception {
+    public void getDirSize()  {
         client.getDirSize(source, "/tmp");
     }
 
     /**
      * 删除文件
-     * @throws Exception
+     * @
      */
     @Test
-    public void deleteFiles () throws Exception {
+    public void deleteFiles ()  {
         assert client.deleteFiles(source, Lists.newArrayList("/tmp/test1.txt"));
     }
 
@@ -199,7 +203,7 @@ public class HdfsFileTest {
      * 判断文件夹是否存在
      */
     @Test
-    public void isDirExist() throws Exception{
+    public void isDirExist() {
         assert client.isDirExist(source, "/tmp");
     }
 
@@ -207,7 +211,7 @@ public class HdfsFileTest {
      * 设置路径权限
      */
     @Test
-    public void setPermission() throws Exception{
+    public void setPermission() {
         assert client.setPermission(source, "/tmp/test.txt", "ugoa=rwx");
     }
 
@@ -215,17 +219,17 @@ public class HdfsFileTest {
      * 重命名
      */
     @Test
-    public void rename() throws Exception {
+    public void rename()  {
         assert client.rename(source, "/tmp/test.txt", "/tmp/test1.txt");
         assert client.rename(source, "/tmp/test1.txt", "/tmp/test.txt");
     }
 
     /**
      * hdfs内文件复制 - 覆盖
-     * @throws Exception
+     * @
      */
     @Test
-    public void copyFileOverwrite() throws Exception{
+    public void copyFileOverwrite() {
         assert client.copyFile(source, "/tmp/test.txt", "/tmp/test.txt", true);
     }
 
@@ -233,8 +237,8 @@ public class HdfsFileTest {
      * 获取目标路径下所有文件名
      */
     @Test
-    public void listAllFilePath() throws Exception {
-        List<String> result = client.listAllFilePath(source, "/tmp/history");
+    public void listAllFilePath()  {
+        List<String> result = client.listAllFilePath(source, "/tmp/hive_test");
         assert CollectionUtils.isNotEmpty(result);
     }
 
@@ -242,8 +246,8 @@ public class HdfsFileTest {
      * 获取目标路径下所有文件属性集 - 递归获取
      */
     @Test
-    public void listAllFiles() throws Exception {
-        List<FileStatus> result = client.listAllFiles(source, "/tmp/history", true);
+    public void listAllFiles()  {
+        List<FileStatus> result = client.listAllFiles(source, "/tmp/hive_test", true);
         assert CollectionUtils.isNotEmpty(result);
     }
 
@@ -251,8 +255,8 @@ public class HdfsFileTest {
      * 获取目标路径下所有文件属性集 - 非递归获取
      */
     @Test
-    public void listAllFilesNoIterate() throws Exception {
-        List<FileStatus> result = client.listAllFiles(source, "/tmp/history", false);
+    public void listAllFilesNoIterate()  {
+        List<FileStatus> result = client.listAllFiles(source, "/tmp/hive_test", false);
         assert CollectionUtils.isNotEmpty(result);
     }
 
@@ -260,16 +264,16 @@ public class HdfsFileTest {
      * 从hdfs上copy文件到本地
      */
     @Test
-    public void copyToLocal() throws Exception {
+    public void copyToLocal()  {
         assert client.copyToLocal(source, "/tmp/test.txt", localKerberosPath);
     }
 
     /**
      * copy本地文件到hdfs - 覆盖
-     * @throws Exception
+     * @
      */
     @Test
-    public void copyFromLocal() throws Exception {
+    public void copyFromLocal()  {
         assert client.copyFromLocal(source, localKerberosPath + "/test.txt", "/tmp/test.txt", true);
     }
 
@@ -277,7 +281,7 @@ public class HdfsFileTest {
      * 写入text文件到hdfs
      */
     @Test
-    public void writeTextByName() throws Exception {
+    public void writeTextByName()  {
         writerDTO.setFileFormat(FileFormat.TEXT.getVal());
         writerDTO.setFromFileName(localKerberosPath + "/textfile");
         assert client.writeByName(source, writerDTO) > 0;
@@ -287,7 +291,7 @@ public class HdfsFileTest {
      * 写入parquet格式文件到hdfs
      */
     @Test
-    public void writeParquetByName () throws Exception {
+    public void writeParquetByName ()  {
         writerDTO.setFileFormat(FileFormat.PARQUET.getVal());
         writerDTO.setFromFileName(localKerberosPath + "/textfile");
         assert client.writeByName(source, writerDTO) > 0;
@@ -297,7 +301,7 @@ public class HdfsFileTest {
      * 写入orc格式文件到hdfs
      */
     @Test
-    public void writeOrcByName () throws Exception {
+    public void writeOrcByName ()  {
         writerDTO.setFileFormat(FileFormat.ORC.getVal());
         writerDTO.setFromFileName(localKerberosPath + "/textfile");
         assert client.writeByName(source, writerDTO) > 0;
@@ -305,10 +309,10 @@ public class HdfsFileTest {
 
     /**
      * 下载 text格式的文件
-     * @throws Exception
+     * @
      */
     @Test
-    public void getTextDownloader() throws Exception{
+    public void getTextDownloader() {
         client.uploadLocalFileToHdfs(source, localKerberosPath + "/textfile", "/tmp/");
         source.setYarnConf(new HashMap<>());
         IDownloader downloader = client.getDownloaderByFormat(source, "/tmp/textfile", Lists.newArrayList("id", "name"),",", FileFormat.TEXT.getVal());
@@ -316,15 +320,15 @@ public class HdfsFileTest {
         while (!downloader.reachedEnd()) {
             System.out.println(downloader.readNext());
         }
-        client.checkAndDelete(source, "/tmp/textfile");
+        client.delete(source, "/tmp/textfile", true);
     }
 
     /**
      * 下载parquet格式的文件
-     * @throws Exception
+     * @
      */
     @Test
-    public void getParquetDownloader() throws Exception {
+    public void getParquetDownloader()  {
         client.uploadLocalFileToHdfs(source, localKerberosPath + "/parquetfile", "/tmp/");
         source.setYarnConf(new HashMap<>());
         IDownloader downloader = client.getDownloaderByFormat(source, "/tmp/parquetfile", Lists.newArrayList("id", "name"),",", FileFormat.PARQUET.getVal());
@@ -332,15 +336,15 @@ public class HdfsFileTest {
         while (!downloader.reachedEnd()) {
             System.out.println(downloader.readNext());
         }
-        client.checkAndDelete(source, "/tmp/parquetfile");
+        client.delete(source, "/tmp/parquetfile", true);
     }
 
     /**
      * 下载orc格式的文件
-     * @throws Exception
+     * @
      */
     @Test
-    public void getOrcDownloader() throws Exception {
+    public void getOrcDownloader()  {
         client.uploadLocalFileToHdfs(source, localKerberosPath + "/orcfile", "/tmp/");
         source.setYarnConf(new HashMap<>());
         IDownloader downloader = client.getDownloaderByFormat(source, "/tmp/orcfile", Lists.newArrayList("id", "name"), ",", FileFormat.ORC.getVal());
@@ -348,25 +352,25 @@ public class HdfsFileTest {
         while (!downloader.reachedEnd()) {
             System.out.println(downloader.readNext());
         }
-        client.checkAndDelete(source, "/tmp/orcfile");
+        client.delete(source, "/tmp/orcfile", true);
     }
 
     /**
      * 获取hdfs上存储的文件的字段信息 - 暂时只支持orc格式
      */
     @Test
-    public void getColumnList () throws Exception {
+    public void getColumnList ()  {
         client.uploadLocalFileToHdfs(source, localKerberosPath + "/orcfile", "/tmp/");
         List<ColumnMetaDTO> columnList = client.getColumnList(source, SqlQueryDTO.builder().tableName("/tmp/orcfile").build(), FileFormat.ORC.getVal());
         assert CollectionUtils.isNotEmpty(columnList);
-        client.checkAndDelete(source, "/tmp/orcfile");
+        client.delete(source, "/tmp/orcfile", true);
     }
 
     /**
      * 写入text文件到hdfs
      */
     @Test
-    public void writeTextByPos() throws Exception {
+    public void writeTextByPos()  {
         writerDTO.setTopLineIsTitle(true);
         writerDTO.setFileFormat(FileFormat.TEXT.getVal());
         writerDTO.setFromFileName(localKerberosPath + "/textfile");
@@ -377,7 +381,7 @@ public class HdfsFileTest {
      * 写入parquet格式文件到hdfs
      */
     @Test
-    public void writeParquetByPos () throws Exception {
+    public void writeParquetByPos ()  {
         writerDTO.setTopLineIsTitle(true);
         writerDTO.setFileFormat(FileFormat.PARQUET.getVal());
         writerDTO.setFromFileName(localKerberosPath + "/textfile");
@@ -388,7 +392,7 @@ public class HdfsFileTest {
      * 写入orc格式文件到hdfs
      */
     @Test
-    public void writeOrcByPos () throws Exception {
+    public void writeOrcByPos ()  {
         writerDTO.setTopLineIsTitle(true);
         writerDTO.setFileFormat(FileFormat.ORC.getVal());
         writerDTO.setFromFileName(localKerberosPath + "/textfile");

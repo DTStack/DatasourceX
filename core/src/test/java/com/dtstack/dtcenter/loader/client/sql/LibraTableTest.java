@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.ITable;
@@ -22,29 +23,37 @@ import java.util.Map;
  */
 public class LibraTableTest {
 
-    private static LibraSourceDTO source = LibraSourceDTO.builder()
-            .url("jdbc:postgresql://kudu5:54321/database?currentSchema=public")
+    // 构建client
+    private static final ITable client = ClientCache.getTable(DataSourceType.LIBRA.getVal());
+
+    // 构建数据源信息
+    private static final LibraSourceDTO source = LibraSourceDTO.builder()
+            .url("jdbc:postgresql://172.16.101.246:5432/postgres")
             .username("postgres")
-            .password("password")
+            .password("abc123")
+            .schema("public")
+            .poolConfig(new PoolConfig())
             .build();
 
     /**
      * 数据准备
      */
     @BeforeClass
-    public static void setUp () throws Exception {
+    public static void setUp () {
         IClient client = ClientCache.getClient(DataSourceType.LIBRA.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan_test1").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_libra_table").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_test1 (id int)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_libra_table (id int)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan_test2").build();
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_libra_table_2").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_test2 (id int)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_libra_table_2 (id int)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_test5 (id int)").build();
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_libra_table_5").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into wangchuan_test5 values (1),(2),(1),(2),(1),(2),(1),(2),(1),(2),(1),(2)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_libra_table_5 (id int)").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_libra_table_5 values (1),(2),(1),(2),(1),(2),(1),(2),(1),(2),(1),(2)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -52,9 +61,9 @@ public class LibraTableTest {
      * 重命名表
      */
     @Test
-    public void dropTable () throws Exception {
+    public void dropTable () {
         ITable client = ClientCache.getTable(DataSourceType.LIBRA.getVal());
-        Boolean dropCheck = client.dropTable(source, "wangchuan_test1");
+        Boolean dropCheck = client.dropTable(source, "loader_test_libra_table");
         Assert.assertTrue(dropCheck);
     }
 
@@ -62,23 +71,21 @@ public class LibraTableTest {
      * 重命名表
      */
     @Test
-    public void renameTable () throws Exception {
-        ITable client = ClientCache.getTable(DataSourceType.LIBRA.getVal());
-        Boolean renameCheck1 = client.renameTable(source, "wangchuan_test2", "wangchuan_test3");
-        Assert.assertTrue(renameCheck1);
-        Boolean renameCheck2 = client.renameTable(source, "wangchuan_test3", "wangchuan_test2");
-        Assert.assertTrue(renameCheck2);
+    public void renameTable () {
+        client.executeSqlWithoutResultSet(source, "drop table if exists loader_test_libra_table_3");
+        Boolean renameCheck = client.renameTable(source, "loader_test_libra_table_2", "loader_test_libra_table_3");
+        Assert.assertTrue(renameCheck);
     }
 
     /**
      * 重命名表
      */
     @Test
-    public void alterParamTable () throws Exception {
+    public void alterParamTable () {
         ITable client = ClientCache.getTable(DataSourceType.LIBRA.getVal());
         Map<String, String> params = Maps.newHashMap();
         params.put("comment", "test");
-        Boolean alterParamCheck = client.alterTableParams(source, "wangchuan_test2", params);
+        Boolean alterParamCheck = client.alterTableParams(source, "loader_test_libra_table_5", params);
         Assert.assertTrue(alterParamCheck);
     }
 
@@ -86,9 +93,9 @@ public class LibraTableTest {
      * 重命名表
      */
     @Test
-    public void getTableSize () throws Exception {
+    public void getTableSize () {
         ITable tableClient = ClientCache.getTable(DataSourceType.LIBRA.getVal());
-        Long tableSize = tableClient.getTableSize(source, "public", "wangchuan_test5");
+        Long tableSize = tableClient.getTableSize(source, "public", "loader_test_libra_table_5");
         System.out.println(tableSize);
         Assert.assertTrue(tableSize != null && tableSize > 0);
     }
