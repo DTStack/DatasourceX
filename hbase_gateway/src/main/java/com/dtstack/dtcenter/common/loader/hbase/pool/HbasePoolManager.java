@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
@@ -79,7 +80,20 @@ public class HbasePoolManager {
         for (Map.Entry<String, Object> entry : sourceToMap.entrySet()) {
             hConfig.set(entry.getKey(), (String) entry.getValue());
         }
-        return KerberosLoginUtil.loginWithUGI(source.getKerberosConfig()).doAs(
+        Map<String, Object> kerberosConfig = source.getKerberosConfig();
+        if (MapUtils.isNotEmpty(kerberosConfig)) {
+            if (!kerberosConfig.containsKey(HadoopConfTool.HBASE_MASTER_PRINCIPAL)) {
+                throw new DtLoaderException(String.format("HBASE 需要配置 %s 的值", HadoopConfTool.HBASE_MASTER_PRINCIPAL));
+            }
+
+            if (!kerberosConfig.containsKey(HadoopConfTool.HBASE_REGION_PRINCIPAL)) {
+                log.info("手动设置 hbase.regionserver.kerberos.principal 为 {}", kerberosConfig.get(HadoopConfTool.HBASE_MASTER_PRINCIPAL));
+                kerberosConfig.put(HadoopConfTool.HBASE_REGION_PRINCIPAL, kerberosConfig.get(HadoopConfTool.HBASE_MASTER_PRINCIPAL));
+            }
+        }
+
+        log.info("获取 Hbase 数据源连接, url : {}, path : {}, kerberosConfig : {}", source.getUrl(), source.getUsername(), source.getKerberosConfig());
+        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Connection>) () -> {
                     try {
                         return ConnectionFactory.createConnection(hConfig);
