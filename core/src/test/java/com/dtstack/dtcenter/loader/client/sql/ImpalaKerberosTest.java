@@ -30,7 +30,7 @@ public class ImpalaKerberosTest {
             .build();
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() {
         // 准备 Kerberos 参数
         Map<String, Object> kerberosConfig = new HashMap<>();
         kerberosConfig.put(HadoopConfTool.PRINCIPAL, "impala/eng-cdh3@DTSTACK.COM");
@@ -59,7 +59,7 @@ public class ImpalaKerberosTest {
     }
 
     @Test
-    public void testCon() throws Exception {
+    public void testCon() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
@@ -68,7 +68,7 @@ public class ImpalaKerberosTest {
     }
 
     @Test
-    public void executeQuery() throws Exception {
+    public void executeQuery() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
@@ -76,14 +76,14 @@ public class ImpalaKerberosTest {
     }
 
     @Test
-    public void executeSqlWithoutResultSet() throws Exception {
+    public void executeSqlWithoutResultSet() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
-    public void getTableList() throws Exception {
+    public void getTableList() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
@@ -91,7 +91,7 @@ public class ImpalaKerberosTest {
     }
 
     @Test
-    public void getColumnClassInfo() throws Exception {
+    public void getColumnClassInfo() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
@@ -99,7 +99,7 @@ public class ImpalaKerberosTest {
     }
 
     @Test
-    public void getColumnMetaData() throws Exception {
+    public void getColumnMetaData() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
@@ -107,7 +107,7 @@ public class ImpalaKerberosTest {
     }
 
     @Test
-    public void getTableMetaComment() throws Exception {
+    public void getTableMetaComment() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String tableMetaComment = client.getTableMetaComment(source, queryDTO);
@@ -115,7 +115,7 @@ public class ImpalaKerberosTest {
     }
 
     @Test
-    public void getPreview() throws Exception {
+    public void getPreview() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("nanqi").build();
         List preview = client.getPreview(source, queryDTO);
@@ -123,19 +123,19 @@ public class ImpalaKerberosTest {
     }
 
     @Test
-    public void getAllDatabases() throws Exception {
+    public void getAllDatabases() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         System.out.println(client.getAllDatabases(source, SqlQueryDTO.builder().build()));
     }
 
     @Test
-    public void getPartitionColumn() throws Exception {
+    public void getPartitionColumn() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         System.out.println(client.getPartitionColumn(source, SqlQueryDTO.builder().tableName("nanqi").build()));
     }
 
     @Test
-    public void getCreateSql() throws Exception {
+    public void getCreateSql() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         System.out.println(client.getCreateTableSql(source, SqlQueryDTO.builder().tableName("nanqi").build()));
     }

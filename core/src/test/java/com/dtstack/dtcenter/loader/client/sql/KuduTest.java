@@ -7,6 +7,8 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.KuduSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
@@ -20,16 +22,19 @@ import java.util.regex.Pattern;
  * @Description：Kudu 测试
  */
 public class KuduTest {
-    KuduSourceDTO source = KuduSourceDTO.builder()
-            .url("172.16.101.13:7051,172.16.100.105:7051,172.16.100.132:7051")
+
+    // 构建client
+    private static final IClient client = ClientCache.getClient(DataSourceType.Kudu.getVal());
+
+    // 数据源信息
+    private static final KuduSourceDTO source = KuduSourceDTO.builder()
+            .url("172.16.100.109:7051")
             .build();
 
     private static final Pattern TABLE_COLUMN = Pattern.compile("(?i)schema.columns\\s*");
 
-
     @Test
-    public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.Kudu.getVal());
+    public void testCon() {
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("连接异常");
@@ -37,19 +42,17 @@ public class KuduTest {
     }
 
     @Test
-    public void getTableList() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.Kudu.getVal());
+    public void getTableList() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
     @Test
-    public void getColumnMetaData() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.Kudu.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("impala::default.nanqi01").build();
+    public void getColumnMetaData() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test_kudu").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 
     @Test

@@ -13,6 +13,7 @@ import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.requests.MetadataResponse;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import java.util.Map;
  * @Description：Kafka Kerberos 认证
  */
 @Slf4j
+@Ignore
 public class KafkaKerberosTest {
     KafkaSourceDTO source = KafkaSourceDTO.builder()
             .url("172.16.100.170:2181,172.16.100.191:2181,172.16.101.123:2181")

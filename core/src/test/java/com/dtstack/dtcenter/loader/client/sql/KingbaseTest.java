@@ -7,6 +7,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.KingbaseSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -23,38 +24,37 @@ import java.util.List;
  */
 public class KingbaseTest {
 
-    IClient client = ClientCache.getClient(DataSourceType.KINGBASE8.getVal());
+    // 构建client
+    private static final IClient client = ClientCache.getClient(DataSourceType.KINGBASE8.getVal());
 
-    private static KingbaseSourceDTO source = KingbaseSourceDTO.builder()
-            .url("jdbc:kingbase8://172.16.10.131:54321/WANGCHUAN")
-            .username("root")
+    // 构建数据源信息
+    private static final KingbaseSourceDTO source = KingbaseSourceDTO.builder()
+            .url("jdbc:kingbase8://172.16.100.181:54321/TEST")
+            .username("SYSTEM")
             .password("abc123")
+            .schema("")
             .poolConfig(PoolConfig.builder().maximumPoolSize(2).build())
             .build();
 
+    /**
+     * 数据准备
+     */
     @BeforeClass
-    public static void beforeClass() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.KINGBASE8.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
+    public static void beforeClass() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists LOADER_TEST").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int, name varchar(50))").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table LOADER_TEST (id int, name varchar(50))").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
+        queryDTO = SqlQueryDTO.builder().sql("insert into LOADER_TEST values (1, 'LOADER_TEST')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     /**
      * 获取连接 - 支持连接池测试
-     * @throws Exception
+     * @throws Exception 异常
      */
     @Test
     public void getCon() throws Exception{
-        KingbaseSourceDTO source = KingbaseSourceDTO.builder()
-                .url("jdbc:kingbase8://172.16.8.182:54321/ide")
-                .username("admin")
-                .password("Abc123")
-                .poolConfig(PoolConfig.builder().maximumPoolSize(2).build())
-                .build();
         Connection con1 = client.getCon(source);
         String con1JdbcConn = con1.toString().split("wrapping")[1];
         Connection con2 = client.getCon(source);
@@ -70,7 +70,7 @@ public class KingbaseTest {
      * 测试连通性
      */
     @Test
-    public void testCon() throws Exception {
+    public void testCon() {
         client.testCon(source);
     }
 
@@ -78,9 +78,9 @@ public class KingbaseTest {
      * 获取所有schema - 去除系统schema
      */
     @Test
-    public void getAllDatabases() throws Exception {
+    public void getAllDatabases() {
         List databases = client.getAllDatabases(source, SqlQueryDTO.builder().build());
-        System.out.println(databases);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(databases));
     }
 
     /**
@@ -88,47 +88,45 @@ public class KingbaseTest {
      * @throws Exception
      */
     @Test
-    public void getColumnMetaData() throws Exception {
-        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("nanqi").build());
-        System.out.println(metaData);
+    public void getColumnMetaData() {
+        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("LOADER_TEST").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(metaData));
     }
 
     /**
      * 获取表字段信息 - 不指定schema ：有注释的表
-     * @throws Exception
      */
     @Test
-    public void getColumnMetaDataHiveComment() throws Exception {
-        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("nanqi").build());
-        System.out.println(metaData);
+    public void getColumnMetaDataHiveComment() {
+        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("LOADER_TEST").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(metaData));
     }
 
     /**
-     * 获取表字段信息 - 指定schema ，且表名中有.
-     * @throws Exception
+     * 获取表字段信息 - 指定schema ，且表名中有
      */
     @Test
-    public void getColumnMetaDataBySchema() throws Exception {
-        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("nanqi").build());
-        System.out.println(metaData);
+    public void getColumnMetaDataBySchema() {
+        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("LOADER_TEST").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(metaData));
     }
 
     /**
      * 获取字段 Java 类的标准名称 - 不指定schema
      */
     @Test
-    public void getColumnClassInfo() throws Exception {
-        List rdos_dict = client.getColumnClassInfo(source, SqlQueryDTO.builder().tableName("nanqi").build());
-        System.out.println(rdos_dict);
+    public void getColumnClassInfo(){
+        List result = client.getColumnClassInfo(source, SqlQueryDTO.builder().tableName("LOADER_TEST").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(result));
     }
 
     /**
      * 获取字段 Java 类的标准名称 - 指定schema
      */
     @Test
-    public void getColumnClassInfoBySchema() throws Exception {
-        List rdos_dict = client.getColumnClassInfo(source, SqlQueryDTO.builder().tableName("nanqi").build());
-        System.out.println(rdos_dict);
+    public void getColumnClassInfoBySchema() {
+        List result = client.getColumnClassInfo(source, SqlQueryDTO.builder().tableName("LOADER_TEST").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(result));
     }
 
     /**
@@ -136,67 +134,65 @@ public class KingbaseTest {
      * @throws Exception
      */
     @Test
-    public void getTableList() throws Exception {
+    public void getTableList() {
         List tableList = client.getTableList(source, SqlQueryDTO.builder().build());
-        System.out.println(tableList);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
     /**
      * 获取指定schema下的表
-     * @throws Exception
      */
     @Test
-    public void getTableListBySchema() throws Exception {
+    public void getTableListBySchema() {
         List tableList = client.getTableList(source, SqlQueryDTO.builder().build());
-        System.out.println(tableList);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
     /**
      * 数据预览 - 不指定schema
      */
     @Test
-    public void getPreview() throws Exception {
-        List dict = client.getPreview(source, SqlQueryDTO.builder().tableName("nanqi").previewNum(5).build());
-        System.out.println(dict);
+    public void getPreview() {
+        List preview = client.getPreview(source, SqlQueryDTO.builder().tableName("LOADER_TEST").previewNum(5).build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(preview));
     }
 
     /**
      * 数据预览 - 指定schema， 且表名中有.存在
      */
     @Test
-    public void getPreviewBySchema() throws Exception {
-        List dict = client.getPreview(source, SqlQueryDTO.builder().tableName("nanqi").previewNum(5).build());
-        System.out.println(dict);
+    public void getPreviewBySchema() {
+        List dict = client.getPreview(source, SqlQueryDTO.builder().tableName("LOADER_TEST").previewNum(5).build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(dict));
     }
 
     /**
      * 异常测试 - 数据预览 - 不指定schema， 且表名不再搜索范围内
      */
     @Test(expected = DtLoaderException.class)
-    public void getPreviewException() throws Exception {
+    public void getPreviewException() {
         client.getPreview(source, SqlQueryDTO.builder().tableName("dev").previewNum(5).build());
     }
 
     /**
      * 自定义查询
-     * @throws Exception
      */
     @Test
-    public void executeQuery() throws Exception {
-        client.executeQuery(source, SqlQueryDTO.builder().sql("select * from nanqi").build());
+    public void executeQuery() {
+        client.executeQuery(source, SqlQueryDTO.builder().sql("select * from LOADER_TEST").build());
     }
 
     /**
      * 获取表注释
      */
     @Test
-    public void getTableMetaComment() throws Exception {
-        String metaComment = client.getTableMetaComment(source, SqlQueryDTO.builder().tableName("nanqi").build());
+    public void getTableMetaComment() {
+        String metaComment = client.getTableMetaComment(source, SqlQueryDTO.builder().tableName("LOADER_TEST").build());
         System.out.println(metaComment);
     }
 
     @Test
-    public void getCurrentDatabase() throws Exception {
+    public void getCurrentDatabase() {
         IClient client = ClientCache.getClient(DataSourceType.KINGBASE8.getVal());
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
