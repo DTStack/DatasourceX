@@ -18,21 +18,12 @@ public class KerberosClient extends AbsKerberosClient {
     @Override
     public Boolean prepareKerberosForConnect(Map<String, Object> conf, String localKerberosPath) {
         super.prepareKerberosForConnect(conf, localKerberosPath);
-        // 因为 HBASE 需要两张 Principal 所以这边做一下处理
+        // 设置principal账号
         if (!conf.containsKey(HadoopConfTool.PRINCIPAL)) {
             String principal = getPrincipals(conf).get(0);
             log.info("手动设置 principal 为 {}", principal);
             conf.put(HadoopConfTool.PRINCIPAL, principal);
         }
-        if (!conf.containsKey(HadoopConfTool.HBASE_MASTER_PRINCIPAL)) {
-            throw new DtLoaderException(String.format("HBASE 需要配置 %s 的值", HadoopConfTool.HBASE_MASTER_PRINCIPAL));
-        }
-
-        if (!conf.containsKey(HadoopConfTool.HBASE_REGION_PRINCIPAL)) {
-            log.info("手动设置 hbase.regionserver.kerberos.principal 为 {}", conf.get(HadoopConfTool.HBASE_MASTER_PRINCIPAL));
-            conf.put(HadoopConfTool.HBASE_REGION_PRINCIPAL, conf.get(HadoopConfTool.HBASE_MASTER_PRINCIPAL));
-        }
-
         return true;
     }
 }
