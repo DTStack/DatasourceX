@@ -8,6 +8,7 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -41,6 +42,7 @@ import java.util.concurrent.TimeUnit;
  * Company: www.dtstack.com
  * @author wangchuan
  */
+@Slf4j
 public class SparkParquetDownload implements IDownloader {
 
     private int readNum = 0;
@@ -49,7 +51,8 @@ public class SparkParquetDownload implements IDownloader {
 
     private List<String> columnNames;
 
-    private List<Integer> columnIndex;
+    // 查询字段在所有字段中的索引
+    private List<Integer> needIndex;
 
     private List<String> partitionColumns;
 
@@ -85,13 +88,14 @@ public class SparkParquetDownload implements IDownloader {
     private Map<String, String> filterPartition;
 
     public SparkParquetDownload(Configuration conf, String tableLocation, List<String> columnNames,
-                               List<String> partitionColumns, Map<String, String> filterPartition, Map<String, Object> kerberosConfig){
+                               List<String> partitionColumns, List<Integer> needIndex, Map<String, String> filterPartition, Map<String, Object> kerberosConfig){
         this.tableLocation = tableLocation;
         this.columnNames = columnNames;
         this.partitionColumns = partitionColumns;
         this.conf = conf;
         this.filterPartition = filterPartition;
         this.kerberosConfig = kerberosConfig;
+        this.needIndex = needIndex;
     }
 
     @Override
@@ -120,7 +124,6 @@ public class SparkParquetDownload implements IDownloader {
         }
 
         ParquetReader.Builder<Group> reader = ParquetReader.builder(readSupport, new Path(currFile)).withConf(conf);
-
         build = reader.build();
 
         if(CollectionUtils.isNotEmpty(partitionColumns)){
@@ -176,64 +179,97 @@ public class SparkParquetDownload implements IDownloader {
         List<String> line = null;
         if (currentLine != null){
             line = new ArrayList<>();
-            // 每次重新构建columnIndex，对于parquet来说，如果对应schema下没有该列，
-            // currentLine.getType().getFields()返回值的size可能会不同，导致数组越界异常!
-            // bug 连接：http://redmine.prod.dtstack.cn/issues/33045
-            columnIndex = new ArrayList<>();
-            for (String columnName : columnNames) {
-                GroupTypeIgnoreCase groupType = new GroupTypeIgnoreCase(currentLine.getType());
-                columnIndex.add(groupType.containsField(columnName) ?
-                        groupType.getFieldIndex(columnName) : -1);
-            }
-
-            if (CollectionUtils.isNotEmpty(columnIndex)){
-                line = new ArrayList<>();
-                for (Integer index : columnIndex) {
-                    if(index == -1){
-                        line.add(null);
-                    } else {
-                        Type type = currentLine.getType().getType(index);
-                        String value = null;
-
-                        try{
-                            // 处理时间戳类型
-                            if("INT96".equals(type.asPrimitiveType().getPrimitiveTypeName().name())){
-                                long time = getTimestampMillis(currentLine.getInt96(index,0));
-                                value = String.valueOf(time);
-                            } else if (type.getOriginalType() != null && type.getOriginalType().name().equalsIgnoreCase("DATE")){
-                                value = currentLine.getValueToString(index,0);
-                                value = new Timestamp(Integer.parseInt(value) * 60 * 60 * 24 * 1000L).toString().substring(0,10);
-                            } else if (type.getOriginalType() != null && type.getOriginalType().name().equalsIgnoreCase("DECIMAL")){
-                                DecimalMetadata dm = ((PrimitiveType) type).getDecimalMetadata();
-                                String primitiveTypeName = currentLine.getType().getType(index).asPrimitiveType().getPrimitiveTypeName().name();
-                                if ("INT32".equals(primitiveTypeName)){
-                                    int intVal = currentLine.getInteger(index,0);
-                                    value = longToDecimalStr((long)intVal,dm.getScale());
-                                } else if("INT64".equals(primitiveTypeName)){
-                                    long longVal = currentLine.getLong(index,0);
-                                    value = longToDecimalStr(longVal,dm.getScale());
-                                } else {
-                                    Binary binary = currentLine.getBinary(index,0);
-                                    value = binaryToDecimalStr(binary,dm.getScale());
-                                }
-                            }else {
-                                value = currentLine.getValueToString(index,0);
-                            }
-                        } catch (Exception e){
-                            value = null;
+            // needIndex不为空表示获取指定字段
+            if (CollectionUtils.isNotEmpty(needIndex)) {
+                for (Integer index : needIndex) {
+                    // 表示该字段为分区字段
+                    if (index > columnNames.size() - 1 && CollectionUtils.isNotEmpty(currentPartData)) {
+                        // 分区字段的索引
+                        int partIndex = index - columnNames.size();
+                        if (partIndex < currentPartData.size()) {
+                            line.add(currentPartData.get(partIndex));
+                        } else {
+                            line.add(null);
                         }
-
-                        line.add(value);
+                    } else if (index < columnNames.size()) {
+                        Integer fieldIndex = isFieldExists(columnNames.get(index));
+                        if (fieldIndex != -1) {
+                            line.add(getFieldByIndex(fieldIndex));
+                        }else {
+                            line.add(null);
+                        }
+                    } else {
+                        line.add(null);
                     }
+                }
+                // needIndex为空表示获取所有字段
+            } else {
+                for (int index = 0; index < columnNames.size(); index++) {
+                    Integer fieldIndex = isFieldExists(columnNames.get(index));
+                    if (fieldIndex != -1) {
+                        line.add(getFieldByIndex(fieldIndex));
+                    }else {
+                        line.add(null);
+                    }
+                }
+                if(CollectionUtils.isNotEmpty(partitionColumns)){
+                    line.addAll(currentPartData);
                 }
             }
         }
-
-        if(CollectionUtils.isNotEmpty(partitionColumns)){
-            line.addAll(currentPartData);
-        }
-
         return line;
+    }
+
+    /**
+     * 判断字段是否存在，存在则返回字段索引
+     * 每行数据重新判断，对于parquet来说，如果对应schema下没有该列，
+     * currentLine.getType().getFields()返回值的size可能会不同，导致数组越界异常!
+     * bug 连接：http://redmine.prod.dtstack.cn/issues/33045
+     *
+     * @param columnName 字段名
+     * @return 字段索引
+     */
+    private Integer isFieldExists (String columnName) {
+        GroupTypeIgnoreCase groupType = new GroupTypeIgnoreCase(currentLine.getType());
+        if (!groupType.containsField(columnName)) {
+            return -1;
+        }
+        return groupType.getFieldIndex(columnName);
+    }
+
+    // 获取指定index下的字段值
+    private String getFieldByIndex (Integer index) {
+        Type type = currentLine.getType().getType(index);
+        String value;
+        try{
+            // 处理时间戳类型
+            if("INT96".equals(type.asPrimitiveType().getPrimitiveTypeName().name())){
+                long time = getTimestampMillis(currentLine.getInt96(index,0));
+                value = String.valueOf(time);
+            } else if (type.getOriginalType() != null && type.getOriginalType().name().equalsIgnoreCase("DATE")){
+                value = currentLine.getValueToString(index,0);
+                value = new Timestamp(Integer.parseInt(value) * 60 * 60 * 24 * 1000L).toString().substring(0,10);
+            } else if (type.getOriginalType() != null && type.getOriginalType().name().equalsIgnoreCase("DECIMAL")){
+                DecimalMetadata dm = ((PrimitiveType) type).getDecimalMetadata();
+                String primitiveTypeName = currentLine.getType().getType(index).asPrimitiveType().getPrimitiveTypeName().name();
+                if ("INT32".equals(primitiveTypeName)){
+                    int intVal = currentLine.getInteger(index,0);
+                    value = longToDecimalStr((long)intVal,dm.getScale());
+                } else if("INT64".equals(primitiveTypeName)){
+                    long longVal = currentLine.getLong(index,0);
+                    value = longToDecimalStr(longVal,dm.getScale());
+                } else {
+                    Binary binary = currentLine.getBinary(index,0);
+                    value = binaryToDecimalStr(binary,dm.getScale());
+                }
+            }else {
+                value = currentLine.getValueToString(index,0);
+            }
+        } catch (Exception e){
+            value = null;
+            log.error("从当前行获取字段信息异常！", e);
+        }
+        return value;
     }
 
     private static String binaryToDecimalStr(Binary binary,int scale){

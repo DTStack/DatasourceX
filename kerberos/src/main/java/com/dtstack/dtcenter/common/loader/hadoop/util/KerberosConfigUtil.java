@@ -90,8 +90,8 @@ public class KerberosConfigUtil {
      */
     public static void changeRelativePathToAbsolutePath(Map<String, Object> conf, String localKerberosPath, String checkKey) {
         String relativePath = MapUtils.getString(conf, checkKey);
-        // 如果包含多级目录，说明不是相对路径，已经被改为绝对路径了
-        if (relativePath.indexOf("/", 1) > 0) {
+        // 如果目录超过三级，说明不是相对路径，已经被改为绝对路径了
+        if (relativePath.split("/").length > 3) {
             return;
         }
 
