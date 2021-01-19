@@ -2,7 +2,6 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
-import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.KylinSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;

@@ -1,7 +1,7 @@
 build:
   stage: test
   script:
-    - mvn clean package -DskipTests
+    - mvn clean package -DskipTests -T 1C
     - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package -Dmaven.test.failure.ignore=true -q
     - mvn sonar:sonar -Dsonar.projectKey="dt-insight-web/dt-center-common-loader" -Dsonar.login=11974c5e9a29625efa09fdc3c3fdc031efb1aab1 -Dsonar.host.url=http://172.16.100.198:9000 -Dsonar.jdbc.url=jdbc:postgresql://172.16.100.198:5432/sonar -Dsonar.exclusions="src/main/java/com/dtstack/dtcenter/common/loader/common/**, core/src/main/java/com/dtstack/dtcenter/loader/dto/source/**"
     - sh ci/sonar_notify.sh

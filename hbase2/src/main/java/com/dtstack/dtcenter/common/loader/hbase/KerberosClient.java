@@ -1,7 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hbase;
 
 import com.dtstack.dtcenter.common.loader.hadoop.AbsKerberosClient;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import lombok.extern.slf4j.Slf4j;
 
