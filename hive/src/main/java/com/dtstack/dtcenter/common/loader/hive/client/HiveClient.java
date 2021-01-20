@@ -449,7 +449,7 @@ public class HiveClient extends AbsRdbmsClient {
                 continue;
             }
 
-            if (colName.contains("Table Type:")) {
+            if (colName.contains("Type")) {
                 tableInfo.setExternalOrManaged(dataType);
                 continue;
             }
