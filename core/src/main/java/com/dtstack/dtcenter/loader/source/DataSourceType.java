@@ -46,13 +46,14 @@ public enum DataSourceType {
     FTP(9, 61, "FTP", "ftp"),
 
     // Analytic
-    IMPALA(29, 80, "Impala", "impala"),
-    Clickhouse(25, 81, "ClickHouse", "clickhouse"),
-    TiDB(31, 82, "TiDB", "mysql5"),
-    CarbonData(20, 83, "CarbonData", "hive"),
-    Kudu(24, 84, "Kudu", "kudu"),
-    ADS(15, 85, "AnalyticDB", "mysql5"),
-    Kylin(23, 86, "Kylin", "kylin"),
+    ThriftServer(45, 80, "ThriftServer", "spark"),
+    IMPALA(29, 81, "Impala", "impala"),
+    Clickhouse(25, 82, "ClickHouse", "clickhouse"),
+    TiDB(31, 83, "TiDB", "mysql5"),
+    CarbonData(20, 84, "CarbonData", "hive"),
+    Kudu(24, 85, "Kudu", "kudu"),
+    ADS(15, 86, "AnalyticDB", "mysql5"),
+    Kylin(23, 87, "Kylin", "kylin"),
 
     // NoSQL
     HBASE(8, 100, "HBase", "hbase"),
