@@ -43,6 +43,8 @@ public class LibraTableTest {
         IClient client = ClientCache.getClient(DataSourceType.LIBRA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_libra_table").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("drop view if exists libra_test_view").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table loader_test_libra_table (id int)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_libra_table_2").build();
@@ -54,6 +56,8 @@ public class LibraTableTest {
         queryDTO = SqlQueryDTO.builder().sql("create table loader_test_libra_table_5 (id int)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_libra_table_5 values (1),(2),(1),(2),(1),(2),(1),(2),(1),(2),(1),(2)").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create view libra_test_view as select * from loader_test_libra_table_5").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -98,5 +102,25 @@ public class LibraTableTest {
         Long tableSize = tableClient.getTableSize(source, "public", "loader_test_libra_table_5");
         System.out.println(tableSize);
         Assert.assertTrue(tableSize != null && tableSize > 0);
+    }
+
+    /**
+     * 判断表是否是视图 - 是
+     */
+    @Test
+    public void tableIsView () {
+        ITable client = ClientCache.getTable(DataSourceType.LIBRA.getVal());
+        Boolean check = client.isView(source, null, "libra_test_view");
+        Assert.assertTrue(check);
+    }
+
+    /**
+     * 判断表是否是视图 - 否
+     */
+    @Test
+    public void tableIsNotView () {
+        ITable client = ClientCache.getTable(DataSourceType.LIBRA.getVal());
+        Boolean check = client.isView(source, null, "wangchuan_test5");
+        Assert.assertFalse(check);
     }
 }
