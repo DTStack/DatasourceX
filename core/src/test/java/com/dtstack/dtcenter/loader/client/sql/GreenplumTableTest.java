@@ -2,7 +2,9 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.ClientCache;
+import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.ITable;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Greenplum6SourceDTO;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Assert;
@@ -28,6 +30,21 @@ public class GreenplumTableTest {
             .schema("public")
             .poolConfig(new PoolConfig())
             .build();
+
+    @BeforeClass
+    public static void setUp () {
+        IClient client = ClientCache.getClient(DataSourceType.GREENPLUM6.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop view if exists gp_test_view").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists gp_test").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table gp_test (id integer, name text)").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into gp_test values (1, 'gpp')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create view gp_test_view as select * from gp_test").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+    }
 
     /**
      * 数据准备
@@ -65,4 +82,23 @@ public class GreenplumTableTest {
         Assert.assertTrue(tableSize != null && tableSize > 0);
     }
 
+    /**
+     * 判断表是否是视图 - 是
+     */
+    @Test
+    public void tableIsView () {
+        ITable client = ClientCache.getTable(DataSourceType.GREENPLUM6.getVal());
+        Boolean check = client.isView(source, null, "gp_test_view");
+        Assert.assertTrue(check);
+    }
+
+    /**
+     * 判断表是否是视图 - 否
+     */
+    @Test
+    public void tableIsNotView () {
+        ITable client = ClientCache.getTable(DataSourceType.GREENPLUM6.getVal());
+        Boolean check = client.isView(source, null, "gp_test");
+        Assert.assertFalse(check);
+    }
 }

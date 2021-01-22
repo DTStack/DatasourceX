@@ -70,4 +70,10 @@ public class TableClientProxy implements ITable {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableSize(source, schema, tableName),
                 targetClient.getClass().getClassLoader());
     }
+
+    @Override
+    public Boolean isView(ISourceDTO source, String schema, String tableName) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.isView(source, schema, tableName),
+                targetClient.getClass().getClassLoader());
+    }
 }

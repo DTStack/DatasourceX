@@ -70,6 +70,10 @@ public class SparkTableTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table loader_test_3 (id int, name string)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("drop view if exists loader_test_5").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create view loader_test_5 as select * from loader_test_3").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     /**
@@ -110,5 +114,25 @@ public class SparkTableTest {
         params.put("comment", "test");
         Boolean alterCheck = client.alterTableParams(source, "loader_test_part", params);
         Assert.assertTrue(alterCheck);
+    }
+
+    /**
+     * 判断表是否是视图 - 是
+     */
+    @Test
+    public void tableIsView () {
+        ITable client = ClientCache.getTable(DataSourceType.Spark.getVal());
+        Boolean check = client.isView(source, null, "loader_test_5");
+        Assert.assertTrue(check);
+    }
+
+    /**
+     * 判断表是否是视图 - 否
+     */
+    @Test
+    public void tableIsNotView () {
+        ITable client = ClientCache.getTable(DataSourceType.Spark.getVal());
+        Boolean check = client.isView(source, null, "loader_test_3");
+        Assert.assertFalse(check);
     }
 }
