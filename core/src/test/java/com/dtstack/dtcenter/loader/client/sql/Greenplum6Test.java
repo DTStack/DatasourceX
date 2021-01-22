@@ -190,4 +190,13 @@ public class Greenplum6Test {
         List databases = client.getAllDatabases(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(databases));
     }
+
+    /**
+     * 获取当前使用的库
+     */
+    @Test
+    public void getCurrentDatabases()  {
+        String currentDatabase = client.getCurrentDatabase(source);
+        Assert.assertTrue(StringUtils.isNotBlank(currentDatabase));
+    }
 }
