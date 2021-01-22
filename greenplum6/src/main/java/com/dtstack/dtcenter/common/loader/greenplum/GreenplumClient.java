@@ -70,6 +70,9 @@ public class GreenplumClient extends AbsRdbmsClient {
 
     private static final String TABLES_IS_IN_SCHEMA = "select table_name from information_schema.tables WHERE table_schema = '%s' and table_name = '%s'";
 
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "select current_database()";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new GreenplumFactory();
@@ -200,5 +203,10 @@ public class GreenplumClient extends AbsRdbmsClient {
     @Override
     public String getShowDbSql() {
         return DATABASE_QUERY;
+    }
+
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
     }
 }
