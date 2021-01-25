@@ -11,7 +11,6 @@ import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -24,7 +23,6 @@ import java.util.Map;
  * date：Created in 10:14 上午 2020/12/7
  * company: www.dtstack.com
  */
-@Ignore
 public class ImpalaTableTest {
 
     private static ImpalaSourceDTO source = ImpalaSourceDTO.builder()

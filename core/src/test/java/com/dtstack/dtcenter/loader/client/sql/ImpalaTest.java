@@ -11,7 +11,6 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -24,7 +23,6 @@ import java.util.Map;
  * @Date ：Created in 01:23 2020/2/29
  * @Description：Impala 测试
  */
-@Ignore
 public class ImpalaTest {
     private static ImpalaSourceDTO source = ImpalaSourceDTO.builder()
             .url("jdbc:impala://172.16.100.242:21050/default;AuthMech=3")
