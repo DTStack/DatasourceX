@@ -33,10 +33,17 @@ public class Hive1xTableTest {
      * 构建数据源信息
      */
     private static final Hive1SourceDTO source = Hive1SourceDTO.builder()
-            .url("jdbc:hive2://172.16.10.67:10000/default")
-            .username("root")
-            .password("abc123")
-            .defaultFS("hdfs://172.16.10.67:8020")
+            .url("jdbc:hive2://kudu1:10000/dev")
+            .schema("dev")
+            .defaultFS("hdfs://ns1")
+            .username("admin")
+            .config("{\n" +
+                    "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"kudu2:9000\",\n" +
+                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"kudu1:9000\",\n" +
+                    "    \"dfs.nameservices\": \"ns1\"\n" +
+                    "}")
             .build();
 
     /**
