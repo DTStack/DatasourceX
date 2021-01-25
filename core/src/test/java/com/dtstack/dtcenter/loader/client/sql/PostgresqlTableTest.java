@@ -21,10 +21,9 @@ import org.junit.Test;
 public class PostgresqlTableTest {
 
     private static PostgresqlSourceDTO source = PostgresqlSourceDTO.builder()
-            .url("jdbc:postgresql://172.16.101.246:5432/postgres")
+            .url("jdbc:postgresql://kudu5:54321/database?currentSchema=public")
             .username("postgres")
-            .password("abc123")
-            .schema("public")
+            .password("password")
             .poolConfig(new PoolConfig())
             .build();
 
