@@ -7,6 +7,9 @@ package com.dtstack.dtcenter.loader.enums;
  * @Date: 2020/9/18
  */
 public enum EsCommandType {
+    /**
+     * 默认操作
+     */
     DEFAULT(0),
     /**
      * insert 操作，插入时要指定_id

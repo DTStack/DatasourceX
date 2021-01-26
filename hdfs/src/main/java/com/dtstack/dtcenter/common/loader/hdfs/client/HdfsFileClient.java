@@ -401,34 +401,34 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     @Override
-    public HDFSContentSummary getContentSummary(ISourceDTO source, String HDFSDirPath) {
-        return getContentSummary(source, Lists.newArrayList(HDFSDirPath)).get(0);
+    public HDFSContentSummary getContentSummary(ISourceDTO source, String hdfsDirPath) {
+        return getContentSummary(source, Lists.newArrayList(hdfsDirPath)).get(0);
     }
 
     @Override
-    public List<HDFSContentSummary> getContentSummary(ISourceDTO source, List<String> HDFSDirPaths){
-        if (CollectionUtils.isEmpty(HDFSDirPaths)) {
+    public List<HDFSContentSummary> getContentSummary(ISourceDTO source, List<String> hdfsDirPaths){
+        if (CollectionUtils.isEmpty(hdfsDirPaths)) {
             throw new DtLoaderException("hdfs路径不能为空！");
         }
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
-        List<HDFSContentSummary> HDFSContentSummaries = Lists.newArrayList();
+        List<HDFSContentSummary> hdfsContentSummaries = Lists.newArrayList();
         // kerberos认证
         return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<List<HDFSContentSummary>>) () -> {
                     try {
                         Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
                         FileSystem fs = FileSystem.get(conf);
-                        for (String HDFSDirPath : HDFSDirPaths) {
-                            org.apache.hadoop.fs.FileStatus fileStatus = fs.getFileStatus(new Path(HDFSDirPath));
-                            ContentSummary contentSummary = fs.getContentSummary(new Path(HDFSDirPath));
+                        for (String hdfsDirPath : hdfsDirPaths) {
+                            org.apache.hadoop.fs.FileStatus fileStatus = fs.getFileStatus(new Path(hdfsDirPath));
+                            ContentSummary contentSummary = fs.getContentSummary(new Path(hdfsDirPath));
                             HDFSContentSummary hdfsContentSummary = HDFSContentSummary.builder()
                                     .directoryCount(contentSummary.getDirectoryCount())
                                     .fileCount(contentSummary.getFileCount())
                                     .ModifyTime(fileStatus.getModificationTime())
                                     .spaceConsumed(contentSummary.getLength()).build();
-                            HDFSContentSummaries.add(hdfsContentSummary);
+                            hdfsContentSummaries.add(hdfsContentSummary);
                         }
-                        return HDFSContentSummaries;
+                        return hdfsContentSummaries;
                     } catch (Exception e) {
                         throw new DtLoaderException("获取HDFS文件摘要失败！", e);
                     }

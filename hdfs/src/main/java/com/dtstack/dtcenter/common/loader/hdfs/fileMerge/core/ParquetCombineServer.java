@@ -138,25 +138,25 @@ public class ParquetCombineServer extends CombineServer {
         }
     }
 
-    protected ParquetMetaData getFileMetaData(FileStatus fileStatus) throws IOException {
+    protected ParquetMetaData getFileMetaData(FileStatus fileStatus) {
         ParquetMetaData metaData = new ParquetMetaData();
+        try (ParquetFileReader parquetFileReader = ParquetFileReader.open(configuration, fileStatus.getPath())) {
+            BlockMetaData blockMetaData = parquetFileReader.getFooter().getBlocks().get(0);
+            CompressionCodec compressionCodec = CompressionCodec.valueOf(blockMetaData.getColumns().get(0).getCodec().toString());
 
-        ParquetFileReader parquetFileReader = ParquetFileReader.open(configuration, fileStatus.getPath());
+            //小文件的数据大小
+            long compressedSize = blockMetaData.getCompressedSize();
+            //小文件的行数
+            long rowSize = blockMetaData.getRowCount();
+            BigDecimal limitRows = new BigDecimal(rowSize + "").divide(new BigDecimal(compressedSize + ""), 8, ROUND_HALF_UP);
 
-        BlockMetaData blockMetaData = parquetFileReader.getFooter().getBlocks().get(0);
-        CompressionCodec compressionCodec = CompressionCodec.valueOf(blockMetaData.getColumns().get(0).getCodec().toString());
-
-        //小文件的数据大小
-        long compressedSize = blockMetaData.getCompressedSize();
-        //小文件的行数
-        long rowSize = blockMetaData.getRowCount();
-        BigDecimal limitRows = new BigDecimal(rowSize + "").divide(new BigDecimal(compressedSize + ""), 8, ROUND_HALF_UP);
-
-        metaData.setSchema(parquetFileReader.getFileMetaData().getSchema());
-        metaData.seteCompressType(ECompressType.getByTypeAndFileType(compressionCodec.name(), "parquet"));
-        metaData.setCompressed(metaData.geteCompressType() != null && !compressionCodec.equals(CompressionCodec.UNCOMPRESSED));
-        metaData.setLimitSize(new BigDecimal(maxCombinedFileSize + "").multiply(limitRows).longValue());
-
+            metaData.setSchema(parquetFileReader.getFileMetaData().getSchema());
+            metaData.seteCompressType(ECompressType.getByTypeAndFileType(compressionCodec.name(), "parquet"));
+            metaData.setCompressed(metaData.geteCompressType() != null && !compressionCodec.equals(CompressionCodec.UNCOMPRESSED));
+            metaData.setLimitSize(new BigDecimal(maxCombinedFileSize + "").multiply(limitRows).longValue());
+        } catch (IOException e) {
+            throw new DtLoaderException("ParquetFileReader open error", e);
+        }
         log.info("FileMeatData info   {}", metaData);
         return metaData;
 
