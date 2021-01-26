@@ -145,7 +145,7 @@ public class Hive1Test {
 
     @Test
     public void getDownloader() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_1").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));

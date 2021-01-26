@@ -34,10 +34,10 @@ public class KerberosLoginUtil {
 
     private static ConcurrentHashMap<String, UGICacheData> UGI_INFO = new ConcurrentHashMap<>();
 
-    private static final ScheduledExecutorService scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new DtClassThreadFactory("ugiCacheFactory"));
+    private static final ScheduledExecutorService SCHEDULED_THREAD_POOL_EXECUTOR = new ScheduledThreadPoolExecutor(1, new DtClassThreadFactory("ugiCacheFactory"));
 
     static {
-        scheduledThreadPoolExecutor.scheduleAtFixedRate(new KerberosLoginUtil.CacheTimerTask(), 0, 10, TimeUnit.SECONDS);
+        SCHEDULED_THREAD_POOL_EXECUTOR.scheduleAtFixedRate(new KerberosLoginUtil.CacheTimerTask(), 0, 10, TimeUnit.SECONDS);
     }
 
     static class CacheTimerTask implements Runnable {

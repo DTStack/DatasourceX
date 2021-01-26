@@ -188,13 +188,4 @@ public enum DataSourceType {
     public static List<Integer> getKafkaS() {
         return KAFKA_S;
     }
-
-    public static void main(String[] args) {
-        List<DataSourceType> collect = Arrays.stream(DataSourceType.values()).sorted(Comparator.comparingInt(DataSourceType::getVal)).collect(Collectors.toList());
-        int val = 1;
-        for (DataSourceType dataSourceType : collect) {
-            val = val == dataSourceType.getVal() - 1 ? dataSourceType.getVal() : val;
-        }
-        System.out.println("Sys.out.currentVal : " + (val + 1));
-    }
 }

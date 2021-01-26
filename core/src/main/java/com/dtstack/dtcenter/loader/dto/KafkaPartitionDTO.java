@@ -18,7 +18,7 @@ public class KafkaPartitionDTO {
     private final String topic;
 
     // 分区编号
-    private final int partition;
+    private final Integer partition;
 
     // 副本中的leader
     private final Node leader;
