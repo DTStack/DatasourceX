@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.common.loader.hdfs.downloader;
+package com.dtstack.dtcenter.common.loader.hdfs.downloader.YarnLogDownload;
 
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.YarnConfUtil;
@@ -37,7 +37,7 @@ import java.util.Map;
  * @Description：Yarn 日志下载
  */
 @Slf4j
-public class YarnDownload implements IDownloader {
+public class YarnTFileDownload implements IDownloader {
     private static final int BUFFER_SIZE = 4095;
 
     private int readLimit = BUFFER_SIZE;
@@ -90,7 +90,9 @@ public class YarnDownload implements IDownloader {
 
     private String containerId;
 
-    private YarnDownload(String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit) {
+    private String defaultFS = null;
+
+    private YarnTFileDownload(String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit) {
         this.appIdStr = appIdStr;
         this.yarnConf = yarnConf;
         this.hdfsConfig = hdfsConfig;
@@ -102,21 +104,22 @@ public class YarnDownload implements IDownloader {
         }
     }
 
-    public YarnDownload(String user, String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit, String logType, Map<String, Object> kerberosConfig) {
+    public YarnTFileDownload(String defaultFS, String user, String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit, String logType, Map<String, Object> kerberosConfig) {
         this(hdfsConfig, yarnConf, appIdStr, readLimit);
         this.logType = logType;
         this.kerberosConfig = kerberosConfig;
         this.user = user;
+        this.defaultFS = defaultFS;
     }
 
-    public YarnDownload(String user, String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit, String logType, Map<String, Object> kerberosConfig, String containerId) {
-        this(user, hdfsConfig, yarnConf, appIdStr, readLimit, logType, kerberosConfig);
+    public YarnTFileDownload(String defaultFS, String user, String hdfsConfig, Map<String, Object> yarnConf, String appIdStr, Integer readLimit, String logType, Map<String, Object> kerberosConfig, String containerId) {
+        this(defaultFS, user, hdfsConfig, yarnConf, appIdStr, readLimit, logType, kerberosConfig);
         this.containerId = containerId;
     }
 
     @Override
     public boolean configure() throws Exception {
-        configuration = YarnConfUtil.getFullConfiguration(null, hdfsConfig, yarnConf, kerberosConfig);
+        configuration = YarnConfUtil.getFullConfiguration(defaultFS, hdfsConfig, yarnConf, kerberosConfig);
 
         //TODO 暂时在这个地方加上
         configuration.set("fs.AbstractFileSystem.hdfs.impl", "org.apache.hadoop.fs.Hdfs");
