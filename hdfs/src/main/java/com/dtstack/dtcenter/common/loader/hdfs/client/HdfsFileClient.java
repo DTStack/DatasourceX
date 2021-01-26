@@ -418,9 +418,9 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
                         FileSystem fs = FileSystem.get(conf);
-                        for (String HdfsDirPath : hdfsDirPaths) {
-                            org.apache.hadoop.fs.FileStatus fileStatus = fs.getFileStatus(new Path(HdfsDirPath));
-                            ContentSummary contentSummary = fs.getContentSummary(new Path(HdfsDirPath));
+                        for (String hdfsDirPath : hdfsDirPaths) {
+                            org.apache.hadoop.fs.FileStatus fileStatus = fs.getFileStatus(new Path(hdfsDirPath));
+                            ContentSummary contentSummary = fs.getContentSummary(new Path(hdfsDirPath));
                             HDFSContentSummary hdfsContentSummary = HDFSContentSummary.builder()
                                     .directoryCount(contentSummary.getDirectoryCount())
                                     .fileCount(contentSummary.getFileCount())
