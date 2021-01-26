@@ -89,6 +89,12 @@ public class HdfsFileClient implements IHdfsFile {
         );
     }
 
+    /**
+     * 创建yarn 聚合日志下载器，区分ifile、tfile格式
+     * @param hdfsSourceDTO 数据源信息
+     * @return yarn日志下载器
+     * @throws Exception 异常信息
+     */
     private IDownloader createYarnLogDownload(HdfsSourceDTO hdfsSourceDTO) throws Exception {
         IDownloader yarnDownload;
         Configuration configuration = YarnConfUtil.getFullConfiguration(null, hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getKerberosConfig());
