@@ -39,8 +39,9 @@ public class LibraClient extends AbsRdbmsClient {
     @Override
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) throws Exception {
         LibraSourceDTO libraSourceDTO = (LibraSourceDTO) iSource;
+        String currentDatabase = getCurrentDatabase(libraSourceDTO);
         Integer clearStatus = beforeQuery(libraSourceDTO, queryDTO, false);
-        if (queryDTO == null || StringUtils.isBlank(libraSourceDTO.getSchema())) {
+        if ((queryDTO == null || StringUtils.isBlank(libraSourceDTO.getSchema())) && StringUtils.isBlank(currentDatabase)) {
             return super.getTableList(libraSourceDTO, queryDTO);
         }
 
@@ -50,7 +51,7 @@ public class LibraClient extends AbsRdbmsClient {
             statement = libraSourceDTO.getConnection().createStatement();
             //大小写区分
             rs = statement.executeQuery(String.format("select table_name from information_schema.tables WHERE " +
-                    "table_schema in ( '%s' )", libraSourceDTO.getSchema()));
+                    "table_schema in ( '%s' )", StringUtils.isBlank(libraSourceDTO.getSchema()) ? currentDatabase : libraSourceDTO.getSchema()));
             List<String> tableList = new ArrayList<>();
             while (rs.next()) {
                 tableList.add(rs.getString(1));
@@ -61,6 +62,23 @@ public class LibraClient extends AbsRdbmsClient {
         } finally {
             DBUtil.closeDBResources(rs, statement, libraSourceDTO.clearAfterGetConnection(clearStatus));
         }
+    }
+
+    @Override
+    public String getCurrentDatabase(ISourceDTO iSource) throws Exception {
+        LibraSourceDTO libraSourceDTO = (LibraSourceDTO) iSource;
+        if (iSource == null || StringUtils.isBlank(libraSourceDTO.getUrl())) {
+            return StringUtils.EMPTY;
+        }
+
+        // 从 URL 中获取 Schema 信息
+        String currentSchema = LibraConnFactory.getDriverPropertyInfo(libraSourceDTO.getUrl(), null, "currentSchema");
+        if (StringUtils.isNotBlank(currentSchema)) {
+            return currentSchema;
+        }
+
+        // 如果不存在则从数据库中获取
+        return super.getCurrentDatabase(libraSourceDTO);
     }
 
     @Override
