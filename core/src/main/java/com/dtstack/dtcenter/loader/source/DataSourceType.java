@@ -4,7 +4,10 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -59,10 +62,11 @@ public enum DataSourceType {
     PHOENIX5(38, 103, "Phoenix5.x", "phoenix5"),
     ES(11, 104, "ElasticSearch5.x", "es"),
     ES6(33, 105, "ElasticSearch6.x", "es"),
-    MONGODB(13, 106, "MongoDB", "mongo"),
-    REDIS(12, 107, "Redis", "redis"),
+    ES7(46, 106, "ElasticSearch7.x", "es"),
+    MONGODB(13, 107, "MongoDB", "mongo"),
+    REDIS(12, 108, "Redis", "redis"),
     //FIXME 临时增加，适配gateway上线，排除hadoop和hbase依赖，下版本删除
-    HBASE_GATEWAY(99, 108, "HBase1.x", "hbase_gateway"),
+    HBASE_GATEWAY(99, 109, "HBase1.x", "hbase_gateway"),
 
     // others
     KAFKA_2X(37, 120, "Kafka2.x", "kafka"),
@@ -180,9 +184,24 @@ public enum DataSourceType {
 
     /**
      * 获取所有的 kafka 相关数据源
+     *
      * @return
      */
     public static List<Integer> getKafkaS() {
         return KAFKA_S;
+    }
+
+    /**
+     * 用来计算未使用的最小数据源值
+     *
+     * @param args
+     */
+    public static void main(String[] args) {
+        List<DataSourceType> collect = Arrays.stream(DataSourceType.values()).sorted(Comparator.comparingInt(DataSourceType::getVal)).collect(Collectors.toList());
+        int val = 1;
+        for (DataSourceType dataSourceType : collect) {
+            val = val == dataSourceType.getVal() - 1 ? dataSourceType.getVal() : val;
+        }
+        System.out.println("Sys.out.currentVal : " + (val + 1));
     }
 }
