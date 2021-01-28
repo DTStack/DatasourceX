@@ -18,6 +18,7 @@ public class OracleDbAdapter {
             case Types.CHAR:
                 return JavaType.TYPE_VARCHAR.getFlinkSqlType();
             case Types.CLOB:
+            case Types.BLOB:
                 return JavaType.TYPE_VARCHAR.getFlinkSqlType();
             case Types.LONGVARCHAR:
                 return JavaType.TYPE_VARCHAR.getFlinkSqlType();
@@ -61,7 +62,7 @@ public class OracleDbAdapter {
                 return JavaType.TYPE_DECIMAL.getFlinkSqlType();
 
         }
-        return null;
+        return "";
     }
 
     public enum JavaType{
