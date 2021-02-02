@@ -444,7 +444,7 @@ public class HiveClient extends AbsRdbmsClient {
                 continue;
             }
 
-            if (colName.contains("Location:")) {
+            if (colName.contains("Location")) {
                 tableInfo.setPath(dataType);
                 continue;
             }
@@ -464,7 +464,7 @@ public class HiveClient extends AbsRdbmsClient {
                 continue;
             }
 
-            if (tableInfo.getStoreType() == null && colName.contains("InputFormat:")) {
+            if (tableInfo.getStoreType() == null && colName.contains("InputFormat")) {
                 for (StoredType hiveStoredType : StoredType.values()) {
                     if (dataType.contains(hiveStoredType.getInputFormatClass())) {
                         tableInfo.setStoreType(hiveStoredType.getValue());

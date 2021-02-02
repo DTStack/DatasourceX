@@ -244,6 +244,15 @@ public class HiveTest {
     }
 
     /**
+     * 判断表 Location
+     */
+    @Test
+    public void getTableLocation()  {
+        Table table = client.getTable(source, SqlQueryDTO.builder().tableName("loader_test_1").build());
+        Assert.assertNotNull(table.getPath());
+    }
+
+    /**
      * 获取正在使用的数据库
      */
     @Test
