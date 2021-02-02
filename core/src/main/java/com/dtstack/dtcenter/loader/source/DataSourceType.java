@@ -77,9 +77,10 @@ public enum DataSourceType {
     EMQ(34, 125, "EMQ", "emq"),
     WEB_SOCKET(42, 126, "WebSocket", "websocket"),
     SOCKET(44, 127, "Socket", "socket"),
-    VERTICA(43, 128, "Vertica", "vertica"),
-    BEATS(16, 129, "Beats", "null"),
-    Spark(1002, 130, "Spark", "spark"),
+    RESTFUL(47, 128, "Restful", "restful"),
+    VERTICA(43, 129, "Vertica", "vertica"),
+    BEATS(16, 130, "Beats", "null"),
+    Spark(1002, 131, "Spark", "spark"),
     ;
 
     DataSourceType(int val, int order, String name, String pluginName) {
