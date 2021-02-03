@@ -292,7 +292,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
             ResultSetMetaData rsMetaData = rs.getMetaData();
             for (int i = 0, len = rsMetaData.getColumnCount(); i < len; i++) {
                 ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
-                columnMetaDTO.setKey(rsMetaData.getColumnName(i + 1));
+                columnMetaDTO.setKey(rsMetaData.getColumnLabel(i + 1));
                 columnMetaDTO.setType(doDealType(rsMetaData, i));
                 columnMetaDTO.setPart(false);
                 // 获取字段精度
@@ -416,7 +416,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
             //字段数量
             int len = rsmd.getColumnCount();
             for (int i = 0; i < len; i++) {
-                metaDataList.add(rsmd.getColumnName(i + 1));
+                metaDataList.add(rsmd.getColumnLabel(i + 1));
             }
             previewList.add(metaDataList);
             while (rs.next()){
