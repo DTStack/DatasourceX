@@ -8,7 +8,6 @@ common-loader支持开启kerberos认证的插件：
 - hbase
 - impala
 - kudu
-- phoenix4
 - phoenix5
 - kafka
 
