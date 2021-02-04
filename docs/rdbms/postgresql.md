@@ -1,16 +1,16 @@
-## oracle client
+## PostgreSQL client
 
 ### 一、插件包名称
-名称：**oracle**
+名称：**postgresql**
 
 ### 二、对应数据源sourceDTO及参数说明
 
-[OracleSourceDTO](/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/OracleSourceDTO.java)
+[PostgresqlSourceDTO](/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/PostgresqlSourceDTO.java)
 
 参数说明：
 
 - **url**
-  - 描述：oracle数据库的jdbc连接字符串，参考文档：[Oracle官方文档](http://www.oracle.com/technetwork/database/enterprise-edition/documentation/index.html)
+  - 描述：PostgreSQL数据库的jdbc连接字符串，参考文档：[PostgreSQL官方文档](https://jdbc.postgresql.org/documentation/head/connect.html)
   - 必选：是
   - 默认值：无
 
@@ -56,8 +56,8 @@
 构造sourceDTO
 
 ```$java
-        OracleSourceDTO sourceDTO = OracleSourceDTO.builder()
-                    .url("jdbc:oracle:thin@://xxxx")
+        PostgresqlSourceDTO sourceDTO = PostgresqlSourceDTO.builder()
+                    .url("jdbc:postgresql://xxx:xxx/xxx?currentSchema=xxx")
                     .username("xxxx")
                     .password("xxxx")
                     .build();
@@ -65,33 +65,33 @@
 
 ###### 1. 获取连接
 入参类型：
-- OracleSourceDTO：数据源连接信息
+- PostgresqlSourceDTO：数据源连接信息
 
 出参类型：
 - Connection：数据源连接
 
 使用：
 ```$java
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         Connection conn = client.getCon(sourceDTO);
 ```
 
 ###### 2. 校验数据源连通性
 入参类型：
-- OracleSourceDTO：数据源连接信息
+- PostgresqlSourceDTO：数据源连接信息
 
 出参类型：
 - Connection：数据源连接
 
 使用：
 ```$java
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         Boolean isConnected = client.testCon(sourceDTO);
 ```
 
 ###### 3. 执行查询
 入参类型：
-- OracleSourceDTO：数据源连接信息
+- PostgresqlSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -100,14 +100,14 @@
 使用：
 ```$java
         // 普通查询
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         String sql = "select * from dtstack limit 10";
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).build();
         List<Map<String, Object>> mapList = client.executeQuery(sourceDTO, queryDTO);
 ```
 ```$java
         // 预编译查询
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         String sql = "select * from dtstack limit 10 where id > ? and id < ? ";
         List<Object> preFields = new ArrayList<>();
         preFields.add(2);
@@ -118,7 +118,7 @@
 
 ###### 4. 执行不需要结果集的sql
 入参类型：
-- OracleSourceDTO：数据源连接信息
+- PostgresqlSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -126,7 +126,7 @@
 
 使用：
 ```$java
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         String sql = "create table if not exists dtstack (id int)";
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).build();
         client.executeSqlWithoutResultSet(sourceDTO, queryDTO);
@@ -134,7 +134,7 @@
 
 ###### 5. 获取所有的表名称
 入参类型：
-- OracleSourceDTO：数据源连接信息
+- PostgresqlSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -142,14 +142,14 @@
 
 使用：
 ```$java
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(sourceDTO, queryDTO);
 ```
 
-###### 6. 获取指定库下的的表名称，支持正则匹配、条数限制
+###### 6. 获取指定schema下的的表名称
 入参类型：
-- OracleSourceDTO：数据源连接信息
+- PostgresqlSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -157,14 +157,14 @@
 
 使用：
 ```$java
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().limit(10).tableNamePattern("xxx").schema("dtstack").build();
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("dtstack").build();
         List<String> tableList = client.getTableListBySchema(source, queryDTO);
 ```
 
 ###### 7. 获取表字段 Java 类的标准名称
 入参类型：
-- OracleSourceDTO：数据源连接信息
+- PostgresqlSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -172,14 +172,14 @@
 
 使用：
 ```$java
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("dtstack").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
 ```
 
 ###### 8. 获取表字段信息
 入参类型：
-- OracleSourceDTO：数据源连接信息
+- PostgresqlSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -187,14 +187,14 @@
 
 使用：
 ```$java
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("dtstack").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
 ```
 
 ###### 9. 获取表注释
 入参类型：
-- OracleSourceDTO：数据源连接信息
+- PostgresqlSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -202,14 +202,14 @@
 
 使用：
 ```$java
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("dtstack").build();
         String comment = client.getTableMetaComment(source, queryDTO);
 ```
 
 ###### 10. 数据预览
 入参类型：
-- OracleSourceDTO：数据源连接信息
+- PostgresqlSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -217,14 +217,14 @@
 
 使用：
 ```$java
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("dtstack").previewNum(200).build();
         List<List<Object>> previewDate = client.getPreview(source, queryDTO);
 ```
 
 ###### 11. 获取所有库
 入参类型：
-- OracleSourceDTO：数据源连接信息
+- PostgresqlSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -232,42 +232,27 @@
 
 使用：
 ```$java
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         List<String> allDatabases = client.getAllDatabases(source, SqlQueryDTO.builder().build());
 ```
 
-###### 12. 获取建表sql
+###### 12. 获取当前使用的schema
 入参类型：
-- OracleSourceDTO：数据源连接信息
+- PostgresqlSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
-- String：建表sql
+- String：正在使用的schema
 
 使用：
 ```$java
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("dtstack").build();
-        String createTableSql = client.getCreateTableSql(source, queryDTO);
-```
-
-###### 13. 获取当前使用的数据库
-入参类型：
-- OracleSourceDTO：数据源连接信息
-- SqlQueryDTO：查询信息
-
-出参类型：
-- String：正在使用的数据库
-
-使用：
-```$java
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         String currentDatabase = client.getCurrentDatabase(source);
 ```
 
-###### 14. 根据sql获取字段信息
+###### 13. 根据sql获取字段信息
 入参类型：
-- OracleSourceDTO：数据源连接信息
+- PostgresqlSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -275,14 +260,14 @@
 
 使用：
 ```$java
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from dtstack").build();
         List<ColumnMetaDTO> result = client.getColumnMetaDataWithSql(source, queryDTO);
 ```
 
-###### 15. 获取数据下载器
+###### 14. 获取数据下载器
 入参类型：
-- OracleSourceDTO：数据源连接信息
+- PostgresqlSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -290,7 +275,7 @@
 
 使用：
 ```$java
-        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.PostgreSQL.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from nanqi").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         downloader.configure();
@@ -302,4 +287,74 @@
                 System.out.println(row);
             }
         }
+```
+
+##### ITable客户端使用
+
+构造sourceDTO
+
+```$java
+        PostgresqlSourceDTO sourceDTO = PostgresqlSourceDTO.builder()
+                    .url("jdbc:postgresql://xxx:xxx/xxx?currentSchema=xxx")
+                    .username("xxxx")
+                    .password("xxxx")
+                    .build();
+```
+
+###### 1. 获取表占用存储
+入参类型：
+- PostgresqlSourceDTO：数据源连接信息
+- schema：schema名称
+- tableName：表名
+
+出参类型：
+- Long：表占用存储，单位：byte
+
+使用：
+```$java
+        ITable tableClient = ClientCache.getTable(DataSourceType.PostgreSQL.getVal());
+        Long tableSize = tableClient.getTableSize(source, "public", "xxxx");
+```
+
+###### 2. 重命名表
+入参类型：
+- PostgresqlSourceDTO：数据源连接信息
+- oldTableName：旧表名
+- newTableName：新表名
+
+出参类型：
+- Boolean: 是否成功
+
+使用：
+```$java
+        ITable client = ClientCache.getTable(DataSourceType.PostgreSQL.getVal());
+        Boolean renameCheck1 = client.renameTable(source, "pg_test", "pg_test2");
+```
+
+###### 3. 删除表
+入参类型：
+- PostgresqlSourceDTO：数据源连接信息
+- tableName：表名
+
+出参类型：
+- Boolean: 是否删除成功
+
+使用：
+```$java
+        ITable client = ClientCache.getTable(DataSourceType.PostgreSQL.getVal());
+        Boolean dropCheck = client.dropTable(source, "pg_test");
+```
+
+###### 4. 判断表是否是视图
+入参类型：
+- PostgresqlSourceDTO：数据源连接信息
+- tableName：表名
+
+出参类型：
+- Boolean: 是否是视图
+
+使用：
+```$java
+        ITable client = ClientCache.getTable(DataSourceType.PostgreSQL.getVal());
+        Boolean check = client.isView(source, null, "pg_test_view");
 ```
