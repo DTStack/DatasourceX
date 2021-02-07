@@ -27,13 +27,13 @@ import java.util.UUID;
  * @Date ：Created in 17:43 2020/7/9
  * @Description：Hbase 2 测试
  */
-public class HbaseTest {
+public class Hbase1Test {
 
     // 构建client
-    private static final IClient client = ClientCache.getClient(DataSourceType.HBASE2.getPluginName());
+    private static final IClient client = ClientCache.getClient(DataSourceType.HBASE.getPluginName());
 
     // 构建hbase client
-    private static final IHbase HBASE_CLIENT = ClientCache.getHbase(DataSourceType.HBASE2.getVal());
+    private static final IHbase HBASE_CLIENT = ClientCache.getHbase(DataSourceType.HBASE.getVal());
 
     // 连接池信息
     private static final PoolConfig poolConfig = PoolConfig.builder().maximumPoolSize(100).build();

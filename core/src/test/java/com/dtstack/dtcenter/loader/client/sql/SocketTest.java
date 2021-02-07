@@ -8,6 +8,7 @@ import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -98,8 +99,9 @@ public class SocketTest {
     }
 
     /**
-     * 连通性失败测试 - 错误ip
+     * 连通性失败测试 - 错误ip ，跳过 太费时间
      */
+    @Ignore
     @Test(expected = DtLoaderException.class)
     public void testConIpError() {
         IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());

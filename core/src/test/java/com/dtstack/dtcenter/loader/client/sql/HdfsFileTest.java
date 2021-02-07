@@ -72,7 +72,11 @@ public class HdfsFileTest {
     @BeforeClass
     public static void setUp () {
         System.setProperty("HADOOP_USER_NAME", "admin");
-        client.delete(source, "/tmp/hive_test", true);
+        try {
+            client.delete(source, "/tmp/hive_test", true);
+        } catch (Exception e) {
+            // do nothing
+        }
         // 创建parquet格式的hive外部表，并插入数据
         IClient hiveClient = ClientCache.getClient(DataSourceType.HIVE.getVal());
         hiveClient.executeSqlWithoutResultSet(hiveSource, SqlQueryDTO.builder().sql("drop table if exists parquetTable ").build());
@@ -106,7 +110,7 @@ public class HdfsFileTest {
         metaDTO2.setType("string");
         writerDTO.setColumnsList(Lists.newArrayList(metaDTO1, metaDTO2));
         // copy 本地文件到hdfs
-        client.copyFromLocal(source, localKerberosPath + "/test.txt", "/tmp/test.txt", true);
+        client.uploadLocalFileToHdfs(source, localKerberosPath + "/test.txt", "/tmp/test.txt");
     }
 
     /**

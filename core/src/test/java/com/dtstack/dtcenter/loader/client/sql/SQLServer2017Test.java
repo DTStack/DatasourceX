@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.Sqlserver2017SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SqlserverSourceDTO;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.collections.CollectionUtils;
@@ -23,13 +24,13 @@ import java.util.Map;
  * @company: www.dtstack.com
  * @Author ：LOADER_TEST
  * @Date ：Created in 04:10 2020/2/29
- * @Description：SQLServer 测试
+ * @Description：SQLServer2017 测试
  */
-public class SQLServerTest {
+public class SQLServer2017Test {
     // 获取数据源 client
-    private static final IClient client = ClientCache.getClient(DataSourceType.SQLServer.getVal());
+    private static final IClient client = ClientCache.getClient(DataSourceType.SQLSERVER_2017_LATER.getPluginName());
 
-    private static final SqlserverSourceDTO source = SqlserverSourceDTO.builder()
+    private static final Sqlserver2017SourceDTO source = Sqlserver2017SourceDTO.builder()
             .url("jdbc:sqlserver://172.16.101.246:1433;databaseName=db_dev")
             .username("dev")
             .password("Abc12345")
@@ -132,6 +133,12 @@ public class SQLServerTest {
      */
     @Test
     public void getTableList() {
+        SqlserverSourceDTO source = SqlserverSourceDTO.builder()
+                .url("jdbc:sqlserver://172.16.101.246:1433;databaseName=db_dev")
+                .username("dev")
+                .password("Abc12345")
+                .poolConfig(PoolConfig.builder().build())
+                .build();
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
@@ -172,6 +179,12 @@ public class SQLServerTest {
      */
     @Test
     public void getTableMetaComment() {
+        SqlserverSourceDTO source = SqlserverSourceDTO.builder()
+                .url("jdbc:sqlserver://172.16.101.246:1433;databaseName=db_dev")
+                .username("dev")
+                .password("Abc12345")
+                .poolConfig(PoolConfig.builder().build())
+                .build();
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         Assert.assertTrue(StringUtils.isNotBlank(metaComment));
@@ -182,6 +195,12 @@ public class SQLServerTest {
      */
     @Test
     public void testGetDownloader() throws Exception {
+        SqlserverSourceDTO source = SqlserverSourceDTO.builder()
+                .url("jdbc:sqlserver://172.16.101.246:1433;databaseName=db_dev")
+                .username("dev")
+                .password("Abc12345")
+                .poolConfig(PoolConfig.builder().build())
+                .build();
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from LOADER_TEST").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         List<String> metaInfo = downloader.getMetaInfo();
