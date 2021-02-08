@@ -24,10 +24,9 @@ import java.util.Map;
  * @Date ：Created in 01:23 2020/2/29
  * @Description：Impala 测试
  */
-@Ignore
 public class ImpalaTest {
     private static ImpalaSourceDTO source = ImpalaSourceDTO.builder()
-            .url("jdbc:impala://172.16.100.242:21050/default;AuthMech=3")
+            .url("jdbc:impala://172.16.100.226:21050/shier;AuthMech=3")
             .username("hxb")
             .password("admin123")
             .poolConfig(new PoolConfig())

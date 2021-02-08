@@ -24,11 +24,10 @@ import java.util.Map;
  * date：Created in 10:14 上午 2020/12/7
  * company: www.dtstack.com
  */
-@Ignore
 public class ImpalaTableTest {
 
     private static ImpalaSourceDTO source = ImpalaSourceDTO.builder()
-            .url("jdbc:impala://172.16.100.242:21050/default;AuthMech=3")
+            .url("jdbc:impala://172.16.100.226:21050/shier;AuthMech=3")
             .username("hxb")
             .password("admin123")
             .poolConfig(new PoolConfig())
