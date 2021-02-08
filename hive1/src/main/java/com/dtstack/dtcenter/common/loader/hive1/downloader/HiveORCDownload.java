@@ -6,8 +6,10 @@ import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import jodd.util.StringUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
@@ -36,6 +38,7 @@ import java.util.Properties;
  * @author wangchuan
  * @// FIXME: 2020/8/11 : orc暂时不支持根据分区下载表数据，后面做，通过orcSplit.getPath().toString()拿到切片路径
  */
+@Slf4j
 public class HiveORCDownload implements IDownloader {
     private static final int SPLIT_NUM = 1;
 
@@ -81,8 +84,14 @@ public class HiveORCDownload implements IDownloader {
         this.orcSerde = new OrcSerde();
         this.inputFormat = new OrcInputFormat();
         conf = new JobConf(configuration);
-
         Path targetFilePath = new Path(tableLocation);
+
+        FileSystem fileSystem = FileSystem.get(configuration);
+        // 判断表路径是否存在
+        if (!fileSystem.exists(targetFilePath)) {
+            log.warn("表路径：{} 不存在", tableLocation);
+            return false;
+        }
         FileInputFormat.setInputPaths(conf, targetFilePath);
         splits = inputFormat.getSplits(conf, SPLIT_NUM);
         if(splits !=null && splits.length > 0){

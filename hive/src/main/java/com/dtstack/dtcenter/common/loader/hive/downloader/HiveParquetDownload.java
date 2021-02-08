@@ -103,6 +103,12 @@ public class HiveParquetDownload implements IDownloader {
 
         jobConf = new JobConf(conf);
         paths = Lists.newArrayList();
+        FileSystem fileSystem = FileSystem.get(conf);
+        // 判断表路径是否存在
+        if (!fileSystem.exists(new Path(tableLocation))) {
+            log.warn("表路径：{} 不存在", tableLocation);
+            return false;
+        }
         // 递归获取表路径下所有文件
         getAllPartitionPath(tableLocation, paths);
         if(paths.size() == 0){

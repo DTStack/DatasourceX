@@ -5,6 +5,7 @@ import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -34,6 +35,7 @@ import java.util.Set;
  * Company: www.dtstack.com
  * @author wangchuan
  */
+@Slf4j
 public class SparkTextDownload implements IDownloader {
     private static final int SPLIT_NUM = 1;
 
@@ -90,6 +92,12 @@ public class SparkTextDownload implements IDownloader {
 
         conf = new JobConf(configuration);
         paths = Lists.newArrayList();
+        FileSystem fileSystem = FileSystem.get(conf);
+        // 判断表路径是否存在
+        if (!fileSystem.exists(new Path(tableLocation))) {
+            log.warn("表路径：{} 不存在", tableLocation);
+            return false;
+        }
         // 递归获取表路径下所有文件
         getAllPartitionPath(tableLocation, paths);
         if(paths.size() == 0){
