@@ -204,10 +204,10 @@ public class HbaseClient extends AbsRdbmsClient {
             long timestamp = 0L;
             HashMap<String, Object> row = Maps.newHashMap();
             for (Cell cell : cells){
-                row.put(ROWKEY, Bytes.toString(cell.getRowArray()));
-                String family = Bytes.toString(cell.getFamilyArray());
-                String qualifier = Bytes.toString(cell.getQualifierArray());
-                String value = Bytes.toString(cell.getValueArray());
+                row.put(ROWKEY, Bytes.toString(cell.getRowArray(), cell.getRowOffset(),cell.getRowLength()));
+                String family = Bytes.toString(cell.getFamilyArray(), cell.getFamilyOffset(),cell.getFamilyLength());
+                String qualifier = Bytes.toString(cell.getQualifierArray(), cell.getQualifierOffset(),cell.getQualifierLength());
+                String value = Bytes.toString(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
                 row.put(String.format(FAMILY_QUALIFIER, family, qualifier), value);
                 //取到最新变动的时间
                 if (cell.getTimestamp() > timestamp) {
@@ -301,10 +301,10 @@ public class HbaseClient extends AbsRdbmsClient {
             long timestamp = 0L;
             HashMap<String, Object> row = Maps.newHashMap();
             for (Cell cell : cells){
-                row.put(ROWKEY, Bytes.toString(cell.getRowArray()));
-                String family = Bytes.toString(cell.getFamilyArray());
-                String qualifier = Bytes.toString(cell.getQualifierArray());
-                String value = Bytes.toString(cell.getValueArray());
+                row.put(ROWKEY, Bytes.toString(cell.getRowArray(), cell.getRowOffset(),cell.getRowLength()));
+                String family = Bytes.toString(cell.getFamilyArray(), cell.getFamilyOffset(),cell.getFamilyLength());
+                String qualifier = Bytes.toString(cell.getQualifierArray(), cell.getQualifierOffset(),cell.getQualifierLength());
+                String value = Bytes.toString(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
                 row.put(String.format(FAMILY_QUALIFIER, family, qualifier), value);
                 //取到最新变动的时间
                 if (cell.getTimestamp() > timestamp) {
