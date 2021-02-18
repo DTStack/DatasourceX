@@ -4,7 +4,6 @@ import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.client.IKerberos;
-import com.dtstack.dtcenter.loader.client.sql.HdfsKerberosTest;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
@@ -42,7 +41,7 @@ public class Issue34269 {
         kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
         kerberosConfig.put("dfs.namenode.kerberos.principal", "hdfs/_HOST@DTSTACK.COM");
         source.setKerberosConfig(kerberosConfig);
-        String localKerberosPath = HdfsKerberosTest.class.getResource("/cdp").getPath();
+        String localKerberosPath = Issue34269.class.getResource("/cdp").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HDFS.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
         HashMap<String, Object> yarnConf = Maps.newHashMap();

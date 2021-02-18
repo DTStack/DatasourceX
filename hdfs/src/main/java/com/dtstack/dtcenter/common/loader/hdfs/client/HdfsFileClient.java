@@ -8,7 +8,6 @@ import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsFileDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsORCDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsParquetDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsTextDownload;
-import org.apache.hadoop.yarn.logaggregation.filecontroller.ifile.LogAggregationIndexedFileController;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.YarnLogDownload.YarnTFileDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.fileMerge.core.CombineMergeBuilder;
 import com.dtstack.dtcenter.common.loader.hdfs.fileMerge.core.CombineServer;
@@ -37,6 +36,7 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
+import org.apache.hadoop.yarn.logaggregation.filecontroller.ifile.LogAggregationIndexedFileController;
 
 import java.io.IOException;
 import java.security.PrivilegedAction;
