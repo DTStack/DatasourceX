@@ -2,8 +2,8 @@ package com.dtstack.dtcenter.common.loader.libra;
 
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.postgresql.Driver;
 
 import java.sql.DriverPropertyInfo;
