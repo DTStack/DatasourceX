@@ -2,6 +2,12 @@ package com.dtstack.dtcenter.common.loader.libra;
 
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.postgresql.Driver;
+
+import java.sql.DriverPropertyInfo;
+import java.util.Properties;
 
 /**
  * @company: www.dtstack.com
@@ -10,7 +16,41 @@ import com.dtstack.dtcenter.loader.source.DataBaseType;
  * @Description：Libra 连接工厂
  */
 public class LibraConnFactory extends ConnFactory {
+    /**
+     * Libra 驱动
+     */
+    private static Driver LIBRA_DRIVER = new Driver();
+
     public LibraConnFactory() {
         this.driverName = DataBaseType.PostgreSQL.getDriverClassName();
+    }
+
+    /**
+     * 获取 URL 属性
+     *
+     * @param url
+     * @param info
+     * @param key
+     * @return
+     */
+    public static String getDriverPropertyInfo(String url, Properties info, String key) {
+        if (StringUtils.isBlank(key)) {
+            return StringUtils.EMPTY;
+        }
+
+        // 读取 Libra 所有属性
+        DriverPropertyInfo[] propertyInfo = LIBRA_DRIVER.getPropertyInfo(url, info);
+        if (ArrayUtils.isEmpty(propertyInfo)) {
+            return StringUtils.EMPTY;
+        }
+
+        for (DriverPropertyInfo driverPropertyInfo : propertyInfo) {
+            // 根据 KEY 判断
+            if (driverPropertyInfo != null && key.equalsIgnoreCase(driverPropertyInfo.name)) {
+                return driverPropertyInfo.value;
+            }
+        }
+
+        return StringUtils.EMPTY;
     }
 }

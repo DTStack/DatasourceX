@@ -3,11 +3,13 @@ package com.dtstack.dtcenter.common.loader.hdfs.client;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
+import com.dtstack.dtcenter.common.loader.hdfs.YarnConfUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsFileDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsORCDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsParquetDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsTextDownload;
-import com.dtstack.dtcenter.common.loader.hdfs.downloader.YarnDownload;
+import org.apache.hadoop.yarn.logaggregation.filecontroller.ifile.LogAggregationIndexedFileController;
+import com.dtstack.dtcenter.common.loader.hdfs.downloader.YarnLogDownload.YarnTFileDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.fileMerge.core.CombineMergeBuilder;
 import com.dtstack.dtcenter.common.loader.hdfs.fileMerge.core.CombineServer;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsOrcWriter;
@@ -53,6 +55,9 @@ public class HdfsFileClient implements IHdfsFile {
 
     private static final String PATH_DELIMITER = "/";
 
+    // yarn聚合日志格式，默认TFIle
+    private static final String LOG_FORMAT = "yarn.log-aggregation.file-formats";
+
     @Override
     public FileStatus getStatus(ISourceDTO iSource, String location) {
         org.apache.hadoop.fs.FileStatus hadoopFileStatus = getHadoopStatus(iSource, location);
@@ -76,21 +81,41 @@ public class HdfsFileClient implements IHdfsFile {
         return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
-                        YarnDownload yarnDownload;
-                        boolean containerFiledExists = Arrays.stream(HdfsSourceDTO.class.getDeclaredFields())
-                                .filter(field -> "ContainerId".equalsIgnoreCase(field.getName())).findFirst().isPresent();
-                        if (!containerFiledExists || StringUtils.isEmpty(hdfsSourceDTO.getContainerId())) {
-                            yarnDownload = new YarnDownload(hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig());
-                        } else {
-                            yarnDownload = new YarnDownload(hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getContainerId());
-                        }
-                        yarnDownload.configure();
-                        return yarnDownload;
+                        return createYarnLogDownload(hdfsSourceDTO);
                     } catch (Exception e) {
                         throw new DtLoaderException("创建下载器异常", e);
                     }
                 }
         );
+    }
+
+    /**
+     * 创建yarn 聚合日志下载器，区分ifile、tfile格式
+     * @param hdfsSourceDTO 数据源信息
+     * @return yarn日志下载器
+     * @throws Exception 异常信息
+     */
+    private IDownloader createYarnLogDownload(HdfsSourceDTO hdfsSourceDTO) throws Exception {
+        IDownloader yarnDownload;
+        Configuration configuration = YarnConfUtil.getFullConfiguration(null, hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getKerberosConfig());
+        String fileFormat = configuration.get(LOG_FORMAT);
+        boolean containerFiledExists = Arrays.stream(HdfsSourceDTO.class.getDeclaredFields())
+                .anyMatch(field -> "ContainerId".equalsIgnoreCase(field.getName()));
+        if (StringUtils.isNotBlank(fileFormat) && StringUtils.containsIgnoreCase(fileFormat, "IFile")) {
+            if (!containerFiledExists || StringUtils.isEmpty(hdfsSourceDTO.getContainerId())) {
+                yarnDownload = new LogAggregationIndexedFileController(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig(), null);
+            } else {
+                yarnDownload = new LogAggregationIndexedFileController(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getContainerId());
+            }
+        } else {
+            if (!containerFiledExists || StringUtils.isEmpty(hdfsSourceDTO.getContainerId())) {
+                yarnDownload = new YarnTFileDownload(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig());
+            } else {
+                yarnDownload = new YarnTFileDownload(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getContainerId());
+            }
+        }
+        yarnDownload.configure();
+        return yarnDownload;
     }
 
     @Override

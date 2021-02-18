@@ -19,6 +19,7 @@ public class OracleDbAdapter {
         switch (columnType) {
             case Types.CHAR:
             case Types.CLOB:
+            case Types.BLOB:
             case Types.LONGVARCHAR:
             case Types.VARCHAR:
             case Types.NVARCHAR:
