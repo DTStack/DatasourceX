@@ -75,7 +75,7 @@ public class LibraClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getCurrentDatabase(ISourceDTO iSource) throws Exception {
+    public String getCurrentDatabase(ISourceDTO iSource) {
         LibraSourceDTO libraSourceDTO = (LibraSourceDTO) iSource;
         if (iSource == null || StringUtils.isBlank(libraSourceDTO.getUrl())) {
             return StringUtils.EMPTY;
