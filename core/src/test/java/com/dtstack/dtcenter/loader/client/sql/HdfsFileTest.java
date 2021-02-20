@@ -6,15 +6,18 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.FileStatus;
+import com.dtstack.dtcenter.loader.dto.HDFSContentSummary;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -71,7 +74,7 @@ public class HdfsFileTest {
      */
     @BeforeClass
     public static void setUp () {
-        System.setProperty("HADOOP_USER_NAME", "admin");
+        System.setProperty("HADOOP_USER_NAME", "root");
         try {
             client.delete(source, "/tmp/hive_test", true);
         } catch (Exception e) {
@@ -400,5 +403,23 @@ public class HdfsFileTest {
         writerDTO.setFileFormat(FileFormat.ORC.getVal());
         writerDTO.setFromFileName(localKerberosPath + "/textfile");
         assert client.writeByPos(source, writerDTO) > 0;
+    }
+
+    /**
+     * 批量统计文件夹内容摘要，包括文件的数量，文件夹的数量，文件变动时间，以及这个文件夹的占用存储等内容
+     */
+    @Test
+    public void getContentSummaryList() {
+        List<HDFSContentSummary> list = client.getContentSummary(source, Lists.newArrayList("/temp"));
+        assert CollectionUtils.isNotEmpty(list);
+    }
+
+    /**
+     * 统计文件夹内容摘要，包括文件的数量，文件夹的数量，文件变动时间，以及这个文件夹的占用存储等内容
+     */
+    @Test
+    public void getContentSummary() {
+        HDFSContentSummary hdfsContentSummary = client.getContentSummary(source, "/temp");
+        assert hdfsContentSummary != null;
     }
 }
