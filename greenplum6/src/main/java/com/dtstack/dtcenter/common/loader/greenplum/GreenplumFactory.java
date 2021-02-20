@@ -21,6 +21,7 @@ public class GreenplumFactory extends ConnFactory {
 
     public GreenplumFactory() {
         driverName = DataBaseType.Greenplum6.getDriverClassName();
+        errorPattern = new GreenplumErrorPattern();
     }
 
     @Override

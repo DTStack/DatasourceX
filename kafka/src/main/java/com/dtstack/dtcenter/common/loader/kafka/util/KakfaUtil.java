@@ -1,7 +1,11 @@
 package com.dtstack.dtcenter.common.loader.kafka.util;
 
+import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
+import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
+import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.common.utils.TelUtil;
 import com.dtstack.dtcenter.common.loader.kafka.KafkaConsistent;
+import com.dtstack.dtcenter.common.loader.kafka.KafkaErrorPattern;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -51,6 +55,12 @@ public class KakfaUtil {
     public static final String EARLIEST = "earliest";
     private static final int MAX_POOL_RECORDS = 5;
 
+    private static final IErrorPattern ERROR_PATTERN = new KafkaErrorPattern();
+
+    // 异常适配器
+    private static final IErrorAdapter ERROR_ADAPTER = new ErrorAdapterImpl();
+
+
     public static boolean checkConnection(String zkUrls, String brokerUrls, Map<String, Object> kerberosConfig) {
         ZkUtils zkUtils = null;
         try {
@@ -59,8 +69,7 @@ public class KakfaUtil {
             }
             return StringUtils.isNotBlank(brokerUrls) ? checkKafkaConnection(brokerUrls, kerberosConfig) : false;
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return false;
+            throw new DtLoaderException(ERROR_ADAPTER.connAdapter(e.getMessage(), ERROR_PATTERN), e);
         } finally {
             if (zkUtils != null) {
                 zkUtils.close();

@@ -12,5 +12,6 @@ import com.dtstack.dtcenter.loader.source.DataBaseType;
 public class ClickhouseConnFactory extends ConnFactory {
     public ClickhouseConnFactory() {
         this.driverName = DataBaseType.Clickhouse.getDriverClassName();
+        this.errorPattern = new ClickhouseErrorPattern();
     }
 }

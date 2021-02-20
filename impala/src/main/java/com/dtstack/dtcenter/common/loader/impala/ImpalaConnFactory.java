@@ -21,6 +21,7 @@ import java.sql.Connection;
 public class ImpalaConnFactory extends ConnFactory {
     public ImpalaConnFactory() {
         this.driverName = DataBaseType.Impala.getDriverClassName();
+        this.errorPattern = new ImpalaErrorPattern();
     }
 
     @Override
@@ -32,7 +33,7 @@ public class ImpalaConnFactory extends ConnFactory {
                     try {
                         return super.getConn(impalaSourceDTO);
                     } catch (Exception e) {
-                        throw new DtLoaderException("getImpalaConnection error : " + e.getMessage(), e);
+                        throw new DtLoaderException(e.getMessage(), e);
                     }
                 }
         );

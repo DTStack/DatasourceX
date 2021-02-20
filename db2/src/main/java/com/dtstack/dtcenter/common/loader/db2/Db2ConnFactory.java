@@ -12,5 +12,6 @@ import com.dtstack.dtcenter.loader.source.DataBaseType;
 public class Db2ConnFactory extends ConnFactory {
     public Db2ConnFactory() {
         this.driverName = DataBaseType.DB2.getDriverClassName();
+        this.errorPattern = new Db2ErrorPattern();
     }
 }

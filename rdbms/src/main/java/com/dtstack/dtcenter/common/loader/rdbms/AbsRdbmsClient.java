@@ -79,22 +79,16 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         if (!CacheConnectionHelper.isStart()) {
             try {
                 return connFactory.getConn(iSource);
-            } catch (DtLoaderException e) {
-                // 定义过的dtLoaderException直接抛出
-                throw e;
             } catch (Exception e){
-                throw new DtLoaderException("获取数据库连接异常！", e);
+                throw new DtLoaderException(e.getMessage(), e);
             }
         }
 
         return CacheConnectionHelper.getConnection(getSourceType().getVal(), con -> {
             try {
                 return connFactory.getConn(iSource);
-            } catch (DtLoaderException e) {
-                // 定义过的dtLoaderException直接抛出
-                throw e;
             } catch (Exception e) {
-                throw new DtLoaderException("获取数据库连接异常", e);
+                throw new DtLoaderException(e.getMessage(), e);
             }
         });
     }

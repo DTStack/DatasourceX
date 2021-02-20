@@ -13,5 +13,6 @@ public class KylinConnFactory extends ConnFactory {
     public KylinConnFactory() {
         this.driverName = DataBaseType.Kylin.getDriverClassName();
         this.testSql = DataBaseType.Kylin.getTestSql();
+        this.errorPattern = new KylinErrorPattern();
     }
 }

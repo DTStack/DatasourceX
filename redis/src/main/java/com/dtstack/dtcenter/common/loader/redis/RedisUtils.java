@@ -1,5 +1,8 @@
 package com.dtstack.dtcenter.common.loader.redis;
 
+import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
+import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
+import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.common.utils.AddressUtil;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -19,6 +22,7 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisSentinelPool;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.util.Pool;
 
 import java.io.Closeable;
@@ -43,19 +47,32 @@ public class RedisUtils {
     private static final int DEFAULT_PORT = 6379;
     private static final int TIME_OUT = 5 * 1000;
 
+    private static final IErrorPattern ERROR_PATTERN = new RedisErrorPattern();
+
+    // 异常适配器
+    private static final IErrorAdapter ERROR_ADAPTER = new ErrorAdapterImpl();
+
     public static boolean checkConnection(ISourceDTO iSource) {
         RedisSourceDTO redisSourceDTO = (RedisSourceDTO) iSource;
         log.info("获取 Redis 数据源连接, host : {}, port : {}", redisSourceDTO.getMaster(), redisSourceDTO.getHostPort());
         RedisMode redisMode = redisSourceDTO.getRedisMode() != null ? redisSourceDTO.getRedisMode() : RedisMode.Standalone;
-        switch (redisMode) {
-            case Standalone:
-                return checkConnectionStandalone(redisSourceDTO);
-            case Sentinel:
-                return checkRedisConnectionSentinel(redisSourceDTO);
-            case Cluster:
-                return checkRedisConnectionCluster(redisSourceDTO);
-            default:
-                throw new DtLoaderException("暂不支持的模式");
+        try {
+            switch (redisMode) {
+                case Standalone:
+                    return checkConnectionStandalone(redisSourceDTO);
+                case Sentinel:
+                    return checkRedisConnectionSentinel(redisSourceDTO);
+                case Cluster:
+                    return checkRedisConnectionCluster(redisSourceDTO);
+                default:
+                    throw new DtLoaderException("暂不支持的模式");
+            }
+        } catch (Exception e) {
+            String errorMsg = e.getMessage();
+            if (e instanceof JedisConnectionException && e.getCause() != null) {
+                errorMsg = e.getCause().getMessage();
+            }
+            throw new DtLoaderException(ERROR_ADAPTER.connAdapter(errorMsg, ERROR_PATTERN), e);
         }
     }
 

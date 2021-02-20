@@ -39,7 +39,8 @@ public class SparkConnFactory extends ConnFactory {
                         return DriverManager.getConnection(urlWithoutSchema, sparkSourceDTO.getUsername(),
                                 sparkSourceDTO.getPassword());
                     } catch (SQLException e) {
-                        throw new DtLoaderException("getHiveConnection error : " + e.getMessage(), e);
+                        // 对异常进行统一处理
+                        throw new DtLoaderException(errorAdapter.connAdapter(e.getMessage(), errorPattern), e);
                     }
                 }
         );

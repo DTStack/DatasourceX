@@ -12,5 +12,6 @@ import com.dtstack.dtcenter.loader.source.DataBaseType;
 public class KingbaseConnFactory extends ConnFactory {
     public KingbaseConnFactory() {
         driverName = DataBaseType.KINGBASE8.getDriverClassName();
+        errorPattern = new KingbaseErrorPattern();
     }
 }
