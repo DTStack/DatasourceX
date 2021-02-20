@@ -38,7 +38,7 @@ public class ConnFactory {
     protected IErrorPattern errorPattern = null;
 
     // 异常适配器
-    private IErrorAdapter errorAdapter = new ErrorAdapterImpl();
+    protected final IErrorAdapter errorAdapter = new ErrorAdapterImpl();
 
     protected String testSql;
 
@@ -84,12 +84,8 @@ public class ConnFactory {
             return isStart && MapUtils.isEmpty(rdbmsSourceDTO.getKerberosConfig()) ?
                     getCpConn(rdbmsSourceDTO) : getSimpleConn(rdbmsSourceDTO);
         } catch (Exception e){
-            if (Objects.isNull(errorPattern)) {
-                throw new DtLoaderException("获取数据库连接异常！", e);
-            }
             // 对异常进行统一处理
-            String msg = errorAdapter.connAdapter(e.getMessage(), errorPattern);
-            throw new DtLoaderException(msg, e);
+            throw new DtLoaderException(errorAdapter.connAdapter(e.getMessage(), errorPattern), e);
         }
     }
 
@@ -160,10 +156,8 @@ public class ConnFactory {
                 statement.execute((testSql));
             }
             return true;
-        } catch (DtLoaderException e) {
-            throw e;
         } catch (Exception e) {
-            throw new DtLoaderException("数据源连接异常:" + e.getMessage(), e);
+            throw new DtLoaderException(e.getMessage(), e);
         }finally {
             DBUtil.closeDBResources(null, statement, conn);
         }

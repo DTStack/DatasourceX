@@ -1,5 +1,8 @@
 package com.dtstack.dtcenter.common.loader.kudu;
 
+import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
+import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
+import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -50,6 +53,10 @@ public class DtKuduClient<T> implements IClient<T> {
 
     private static final String COLUMN_TYPE_NOT_SUPPORT= "DECIMAL、CHAR、VARCHAR、DATE";
 
+    private static final IErrorPattern ERROR_PATTERN = new KuduErrorPattern();
+
+    // 异常适配器
+    private static final IErrorAdapter ERROR_ADAPTER = new ErrorAdapterImpl();
 
     @Override
     public Boolean testCon(ISourceDTO iSource) {
@@ -60,10 +67,9 @@ public class DtKuduClient<T> implements IClient<T> {
         try (KuduClient client = getConnection(kuduSourceDTO)){
                 client.getTablesList();
             return true;
-        } catch (KuduException e) {
-            log.error("检查连接异常", e);
+        } catch (Exception e) {
+            throw new DtLoaderException(ERROR_ADAPTER.connAdapter(e.getMessage(), ERROR_PATTERN), e);
         }
-        return false;
     }
 
     @Override

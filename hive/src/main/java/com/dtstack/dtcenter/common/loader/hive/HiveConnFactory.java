@@ -38,7 +38,8 @@ public class HiveConnFactory extends ConnFactory {
                         return DriverManager.getConnection(urlWithoutSchema, hiveSourceDTO.getUsername(),
                                 hiveSourceDTO.getPassword());
                     } catch (Exception e) {
-                        throw new DtLoaderException("getHiveConnection error : " + e.getMessage(), e);
+                        // 对异常进行统一处理
+                        throw new DtLoaderException(errorAdapter.connAdapter(e.getMessage(), errorPattern), e);
                     }
                 }
         );

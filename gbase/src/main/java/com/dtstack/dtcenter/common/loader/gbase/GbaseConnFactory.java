@@ -12,5 +12,6 @@ import com.dtstack.dtcenter.loader.source.DataBaseType;
 public class GbaseConnFactory extends ConnFactory {
     public GbaseConnFactory() {
         this.driverName = DataBaseType.GBase8a.getDriverClassName();
+        this.errorPattern = new GbaselErrorPattern();
     }
 }

@@ -1,5 +1,8 @@
 package com.dtstack.dtcenter.common.loader.mongo;
 
+import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
+import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
+import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.common.utils.AddressUtil;
 import com.dtstack.dtcenter.common.loader.mongo.pool.MongoManager;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
@@ -55,6 +58,11 @@ public class MongoDBUtils {
 
     public static final ThreadLocal<Boolean> IS_OPEN_POOL = new ThreadLocal<>();
 
+    private static final IErrorPattern ERROR_PATTERN = new MongoErrorPattern();
+
+    // 异常适配器
+    private static final IErrorAdapter ERROR_ADAPTER = new ErrorAdapterImpl();
+
     public static boolean checkConnection(ISourceDTO iSource) {
         MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
         boolean check = false;
@@ -67,7 +75,7 @@ public class MongoDBUtils {
             mongoIterable.iterator().hasNext();
             check = true;
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            throw new DtLoaderException(ERROR_ADAPTER.connAdapter(e.getMessage(), ERROR_PATTERN), e);
         } finally {
             if (!BooleanUtils.isTrue(IS_OPEN_POOL.get()) && mongoClient != null) {
                 mongoClient.close();

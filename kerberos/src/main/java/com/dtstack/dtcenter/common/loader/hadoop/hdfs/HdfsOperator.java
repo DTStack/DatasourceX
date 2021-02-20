@@ -1,5 +1,8 @@
 package com.dtstack.dtcenter.common.loader.hadoop.hdfs;
 
+import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
+import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
+import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +41,11 @@ import java.util.regex.Pattern;
 @Slf4j
 public class HdfsOperator {
 
+    private static final IErrorPattern ERROR_PATTERN = new HDFSErrorPattern();
+
+    // 异常适配器
+    private static final IErrorAdapter ERROR_ADAPTER = new ErrorAdapterImpl();
+
     /**
      * HDFS 文件路径正则
      */
@@ -57,7 +65,7 @@ public class HdfsOperator {
             fs.getStatus(new Path("/"));
             return Boolean.TRUE;
         } catch (Exception e) {
-            throw new DtLoaderException("Hdfs 校验连通性异常", e);
+            throw new DtLoaderException(ERROR_ADAPTER.connAdapter(e.getMessage(), ERROR_PATTERN), e);
         }
     }
 

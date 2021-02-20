@@ -1,5 +1,8 @@
 package com.dtstack.dtcenter.common.loader.websocket;
 
+import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
+import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
+import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -33,6 +36,11 @@ public class SocketClient implements IClient {
      * socket 地址
      */
     private static final String SOCKET_URL = "%s?%s";
+
+    private static final IErrorPattern ERROR_PATTERN = new WebsocketErrorPattern();
+
+    // 异常适配器
+    private static final IErrorAdapter ERROR_ADAPTER = new ErrorAdapterImpl();
 
     @Override
     public Boolean testCon(ISourceDTO source) {
@@ -74,13 +82,12 @@ public class SocketClient implements IClient {
             }
             return WebSocket.READYSTATE.OPEN.equals(myClient.getReadyState());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            throw new DtLoaderException(ERROR_ADAPTER.connAdapter(e.getMessage(), ERROR_PATTERN), e);
         } finally {
             if (myClient != null) {
                 myClient.close();
             }
         }
-        return false;
     }
 
     @Override

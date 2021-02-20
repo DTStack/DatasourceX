@@ -229,7 +229,13 @@ public class HiveClient extends AbsRdbmsClient {
         } catch (TimeoutException e) {
             throw new DtLoaderException("测试连通性超时！", e);
         } catch (Exception e){
-            throw new DtLoaderException("测试连通性出错！", e);
+            if (e instanceof DtLoaderException) {
+                throw new DtLoaderException(e.getMessage(), e);
+            }
+            if (e.getCause() != null && e.getCause() instanceof DtLoaderException) {
+                throw new DtLoaderException(e.getCause().getMessage(), e);
+            }
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             if (Objects.nonNull(future)) {
                 future.cancel(true);

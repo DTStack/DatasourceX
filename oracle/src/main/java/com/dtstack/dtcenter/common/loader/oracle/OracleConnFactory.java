@@ -12,5 +12,6 @@ import com.dtstack.dtcenter.loader.source.DataBaseType;
 public class OracleConnFactory extends ConnFactory {
     public OracleConnFactory() {
         driverName = DataBaseType.Oracle.getDriverClassName();
+        errorPattern = new OracleErrorPattern();
     }
 }

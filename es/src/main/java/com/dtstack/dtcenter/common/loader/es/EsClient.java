@@ -2,6 +2,9 @@ package com.dtstack.dtcenter.common.loader.es;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
+import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
+import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
+import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.es.pool.ElasticSearchManager;
 import com.dtstack.dtcenter.common.loader.es.pool.ElasticSearchPool;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -29,6 +32,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.nio.entity.NStringEntity;
 import org.apache.http.util.EntityUtils;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
+import org.elasticsearch.action.main.MainResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.GetAliasesResponse;
@@ -89,15 +93,24 @@ public class EsClient<T> implements IClient<T> {
 
     public static final ThreadLocal<Boolean> IS_OPEN_POOL = new ThreadLocal<>();
 
+    private static final IErrorPattern ERROR_PATTERN = new EsErrorPattern();
+
+    // 异常适配器
+    private static final IErrorAdapter ERROR_ADAPTER = new ErrorAdapterImpl();
+
     @Override
     public Boolean testCon(ISourceDTO iSource) {
         ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return false;
         }
-        RestHighLevelClient client = getClient(esSourceDTO);
+        RestHighLevelClient client = null;
         try {
-            return checkConnect(client);
+            client = getClient(esSourceDTO);
+            client.info(RequestOptions.DEFAULT);
+            return true;
+        } catch (Exception e) {
+            throw new DtLoaderException(ERROR_ADAPTER.connAdapter(e.getMessage(), ERROR_PATTERN), e);
         } finally {
             closeResource(null, client, esSourceDTO);
         }
@@ -304,23 +317,6 @@ public class EsClient<T> implements IClient<T> {
         map.put(RESULT_KEY, resultJsonObject);
         list.add(map);
         return list;
-    }
-
-    /**
-     * 根据连接确定连接成功性
-     *
-     * @param client
-     * @return
-     */
-    private static boolean checkConnect(RestHighLevelClient client) {
-        boolean check = false;
-        try {
-            client.info(RequestOptions.DEFAULT);
-            check = true;
-        } catch (Exception e) {
-            log.error("", e);
-        }
-        return check;
     }
 
     private static RestHighLevelClient getClient(ESSourceDTO esSourceDTO) {

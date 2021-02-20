@@ -40,6 +40,7 @@ public class PhoenixConnFactory extends ConnFactory {
     public PhoenixConnFactory() {
         this.driverName = DataBaseType.Phoenix.getDriverClassName();
         this.testSql = DataBaseType.Phoenix.getTestSql();
+        this.errorPattern = new PhoenixErrorPattern();
     }
 
     /**
@@ -64,12 +65,15 @@ public class PhoenixConnFactory extends ConnFactory {
             if (Objects.isNull(conn)) {
                 throw new DtLoaderException("获取phoenix5连接失败！");
             }
-        } catch (InterruptedException e) {
-            throw new DtLoaderException("获取phoenix5过程中线程中中断！", e);
-        } catch (ExecutionException e) {
-            throw new DtLoaderException("获取phoenix5连接出错！", e);
         } catch (TimeoutException e) {
             throw new DtLoaderException("获取phoenix5连接超时！", e);
+        } catch (Exception e) {
+            String errorMsg = e.getMessage();
+            if (e.getCause() != null && e.getCause() instanceof DtLoaderException) {
+                errorMsg = e.getCause().getMessage();
+            }
+            // 对异常进行统一处理
+            throw new DtLoaderException(errorAdapter.connAdapter(errorMsg, errorPattern), e);
         } finally {
             if (Objects.nonNull(future)) {
                 future.cancel(true);

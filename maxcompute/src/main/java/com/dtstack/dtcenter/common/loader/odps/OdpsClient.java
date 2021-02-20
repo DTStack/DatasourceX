@@ -17,6 +17,9 @@ import com.aliyun.odps.data.DefaultRecordReader;
 import com.aliyun.odps.data.Record;
 import com.aliyun.odps.data.ResultSet;
 import com.aliyun.odps.task.SQLTask;
+import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
+import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
+import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.odps.common.OdpsFields;
 import com.dtstack.dtcenter.common.loader.odps.pool.OdpsManager;
 import com.dtstack.dtcenter.common.loader.odps.pool.OdpsPool;
@@ -57,6 +60,11 @@ public class OdpsClient<T> implements IClient<T> {
 
     private static OdpsManager odpsManager = OdpsManager.getInstance();
 
+    private static final IErrorPattern ERROR_PATTERN = new OdpsErrorPattern();
+
+    // 异常适配器
+    private static final IErrorAdapter ERROR_ADAPTER = new ErrorAdapterImpl();
+
     @Override
     public Boolean testCon(ISourceDTO iSource) {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
@@ -67,11 +75,10 @@ public class OdpsClient<T> implements IClient<T> {
             tables.iterator().hasNext();
             return true;
         } catch (Exception ex) {
-            log.error("检查odps连接失败..{}", odpsSourceDTO, ex);
+            throw new DtLoaderException(ERROR_ADAPTER.connAdapter(ex.getMessage(), ERROR_PATTERN), ex);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
-        return false;
     }
 
     public static Odps initOdps(OdpsSourceDTO odpsSourceDTO) {

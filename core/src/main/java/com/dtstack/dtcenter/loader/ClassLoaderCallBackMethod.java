@@ -14,10 +14,8 @@ public class ClassLoaderCallBackMethod {
         Thread.currentThread().setContextClassLoader(toSetClassLoader);
         try {
             return classLoaderCallBack.execute();
-        } catch (DtLoaderException e) {
-            throw e;
         } catch (Exception e) {
-            throw new DtLoaderException("方法执行异常！", e);
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }

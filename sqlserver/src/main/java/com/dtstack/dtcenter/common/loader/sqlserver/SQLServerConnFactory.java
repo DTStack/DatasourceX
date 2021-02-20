@@ -21,5 +21,6 @@ public class SQLServerConnFactory extends ConnFactory {
         }
         driverName = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
         testSql = DataBaseType.SQLServer.getTestSql();
+        errorPattern = new SqlServerErrorPattern();
     }
 }

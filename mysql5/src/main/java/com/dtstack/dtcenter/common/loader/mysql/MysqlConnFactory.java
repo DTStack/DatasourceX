@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 public class MysqlConnFactory extends ConnFactory {
     public MysqlConnFactory() {
         driverName = DataBaseType.MySql.getDriverClassName();
+        this.errorPattern = new MysqlErrorPattern();
     }
 
     @Override

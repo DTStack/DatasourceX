@@ -12,5 +12,6 @@ import com.dtstack.dtcenter.loader.source.DataBaseType;
 public class PostgresqlConnFactory extends ConnFactory {
     public PostgresqlConnFactory() {
         this.driverName = DataBaseType.PostgreSQL.getDriverClassName();
+        this.errorPattern = new PostgreSqlErrorPattern();
     }
 }

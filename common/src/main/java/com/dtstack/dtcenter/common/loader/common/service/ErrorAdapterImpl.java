@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.common.service;
 
 import com.dtstack.dtcenter.common.loader.common.exception.ConnErrorCode;
 import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -19,6 +20,9 @@ public class ErrorAdapterImpl implements IErrorAdapter {
     @Override
     public String connAdapter(String errorMsg, IErrorPattern errorPattern){
         for (ConnErrorCode errorCode : ConnErrorCode.values()){
+            if (StringUtils.isBlank(errorMsg) || Objects.isNull(errorPattern)) {
+                break;
+            }
             Pattern connErrorPattern = errorPattern.getConnErrorPattern(errorCode.getCode());
             if (Objects.isNull(connErrorPattern)) {
                 continue;
@@ -28,8 +32,8 @@ public class ErrorAdapterImpl implements IErrorAdapter {
                 return errorCode.getDesc();
             }
         }
-        // 未定义该异常
-        return ConnErrorCode.UNDEFINED_ERROR.getDesc();
+        // 未匹配到该异常则返回原异常信息
+        return String.format("%s: %s", ConnErrorCode.UNDEFINED_ERROR.getDesc(), errorMsg);
     }
 
     @Override

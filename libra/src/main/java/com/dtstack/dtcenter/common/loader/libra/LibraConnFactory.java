@@ -23,6 +23,7 @@ public class LibraConnFactory extends ConnFactory {
 
     public LibraConnFactory() {
         this.driverName = DataBaseType.PostgreSQL.getDriverClassName();
+        this.errorPattern = new LibraErrorPattern();
     }
 
     /**
