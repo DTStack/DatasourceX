@@ -33,6 +33,15 @@ public class EsTest {
             .build();
 
     /**
+     * 用户名和密码不正确，172.16.100.186:9200 不需要密码
+     */
+    private static final ESSourceDTO esSource = ESSourceDTO.builder()
+            .url("172.16.100.186:9200")
+            .password("abc")
+            .username("123")
+            .build();
+
+    /**
      * 数据准备
      */
     @BeforeClass
@@ -127,4 +136,145 @@ public class EsTest {
         String tableName = "commodity/_doc";
         client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.DELETE_BY_QUERY.getType()).build());
     }
+
+    /**
+     * 连接失败
+     */
+    @Test
+    public void testConFalse() {
+        ESSourceDTO source = new ESSourceDTO();
+        Boolean isConnected = client.testCon(source);
+        Assert.assertFalse(isConnected);
+    }
+
+    /**
+     * 获取表失败
+     */
+    @Test(expected = DtLoaderException.class)
+    public void getTableListFalse() {
+        ESSourceDTO source1 = new ESSourceDTO();
+        List<String> list = client.getTableList(source1, null);
+        assert CollectionUtils.isEmpty(list);
+        client.getTableList(source, SqlQueryDTO.builder().build());
+    }
+
+    /**
+     * 获取ES所有索引,校验null
+     */
+    @Test
+    public void getAllDatabasesFalse() {
+        ESSourceDTO source1 = new ESSourceDTO();
+        List<String> list1= client.getAllDatabases(source1, null);
+        assert CollectionUtils.isEmpty(list1);
+        client.getAllDatabases(source1, SqlQueryDTO.builder().build());
+    }
+
+    /**
+     * 数据预览，检验null
+     */
+    @Test(expected = DtLoaderException.class)
+    public void getPreviewFalse() {
+        ESSourceDTO source1 = new ESSourceDTO();
+        List<List<Object>> list1= client.getPreview(source1, null);
+        assert CollectionUtils.isEmpty(list1);
+        client.getPreview(source, SqlQueryDTO.builder().build());
+    }
+
+    /**
+     * 获取ES字段信息 ，校验null
+     */
+    @Test(expected = DtLoaderException.class)
+    public void getColumnMetaDataReturnFalse(){
+        ESSourceDTO source1 = new ESSourceDTO();
+        List<List<Object>> list1= client.getColumnMetaData(source1, null);
+        assert CollectionUtils.isEmpty(list1);
+        client.getColumnMetaData(source, SqlQueryDTO.builder().build());
+    }
+
+    /**
+     * 执行query，校验null
+     */
+    @Test(expected = DtLoaderException.class)
+    public void executeQueryReturnFalse(){
+        ESSourceDTO source1 = new ESSourceDTO();
+        List<List<Object>> list1= client.executeQuery(source1, null);
+        assert CollectionUtils.isEmpty(list1);
+        client.executeQuery(source, SqlQueryDTO.builder().build());
+    }
+
+    /**
+     * 测试链接，使用用户名密码
+     */
+    @Test
+    public void testConUseName() {
+        Boolean isConnected = client.testCon(esSource);
+        Assert.assertTrue(isConnected);
+        Boolean isConnect = client.testCon(esSource);
+        Assert.assertTrue(isConnect);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getColumnClassInfo() {
+        client.getColumnClassInfo(esSource, null);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getColumnMetaDataWithSql() {
+        client.getColumnMetaDataWithSql(esSource, null);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getCreateTableSql() {
+        client.getCreateTableSql(esSource, null);
+    }
+
+
+    @Test(expected = DtLoaderException.class)
+    public void getPartitionColumn() {
+        client.getPartitionColumn(esSource, null);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getDownloader() throws Exception {
+        client.getDownloader(esSource, null);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getFlinkColumnMetaData() {
+        client.getFlinkColumnMetaData(esSource, null);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getTableMetaComment() {
+        client.getTableMetaComment(esSource, null);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getTable() {
+        client.getTable(esSource, null);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getCurrentDatabase() {
+        client.getCurrentDatabase(esSource);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void createDatabase() {
+        client.createDatabase(esSource, null ,null);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void isDatabaseExists() {
+        client.isDatabaseExists(esSource, null);
+    }
+
+
+
+    @Test(expected = DtLoaderException.class)
+    public void isTableExistsInDatabase() {
+        client.isTableExistsInDatabase(esSource, null, null);
+    }
+
+
 }
