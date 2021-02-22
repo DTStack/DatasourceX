@@ -98,25 +98,39 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         return connFactory.testConn(iSource);
     }
 
+    /**
+     * 执行查询
+     *
+     * @param conn
+     * @param queryDTO
+     * @param clearStatus
+     * @return
+     * @throws SQLException
+     */
+    public List<Map<String, Object>> executeQuery(Connection conn, SqlQueryDTO queryDTO, Integer clearStatus) throws SQLException {
+        // 如果当前 connection 已关闭，直接返回空列表
+        if (conn == null || conn.isClosed()) {
+            return Lists.newArrayList();
+        }
+
+        // 预编译字段
+        if (queryDTO.getPreFields() != null) {
+            return DBUtil.executeQuery(conn, queryDTO.getSql(), ConnectionClearStatus.CLOSE.getValue().equals(clearStatus), queryDTO.getPreFields(), queryDTO.getQueryTimeout());
+        }
+
+        return DBUtil.executeQuery(conn, queryDTO.getSql(), queryDTO.getLimit(), queryDTO.getQueryTimeout(), ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
+    }
+
     @Override
     public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, true);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
         // 如果当前 connection 已关闭，直接返回空列表
         try {
-            if (rdbmsSourceDTO.getConnection().isClosed()) {
-                return Lists.newArrayList();
-            }
+            return executeQuery(rdbmsSourceDTO.getConnection(), queryDTO, clearStatus);
         } catch (Exception e) {
             throw new DtLoaderException(String.format("connection调用isClosed方法异常 : %s", e.getMessage()), e);
         }
-        if (queryDTO.getPreFields() != null) {
-            return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
-                    ConnectionClearStatus.CLOSE.getValue().equals(clearStatus), queryDTO.getPreFields(), queryDTO.getQueryTimeout());
-        }
-
-        return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(), queryDTO.getLimit(), queryDTO.getQueryTimeout(),
-                ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
     }
 
     @Override
