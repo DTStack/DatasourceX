@@ -18,6 +18,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
+import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
@@ -29,6 +30,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.PrivilegedAction;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -121,13 +123,27 @@ public class SparkClient extends AbsRdbmsClient {
     public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         SparkSourceDTO sparkSourceDTO = (SparkSourceDTO) iSource;
+        try {
+            return getTableMetaComment(sparkSourceDTO.getConnection(), queryDTO.getTableName());
+        } finally {
+            DBUtil.closeDBResources(null, null, sparkSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+    }
 
+    /**
+     * 获取表注释信息
+     *
+     * @param conn
+     * @param tableName
+     * @return
+     */
+    private String getTableMetaComment(Connection conn, String tableName) {
         Statement statement = null;
         ResultSet resultSet = null;
         try {
-            statement = sparkSourceDTO.getConnection().createStatement();
+            statement = conn.createStatement();
             resultSet = statement.executeQuery(String.format(DtClassConsistent.HadoopConfConsistent.DESCRIBE_EXTENDED
-                    , queryDTO.getTableName()));
+                    , tableName));
             while (resultSet.next()) {
                 String columnName = resultSet.getString(1);
                 if (StringUtils.isNotEmpty(columnName) && DtClassConsistent.HadoopConfConsistent.TABLE_INFORMATION.equalsIgnoreCase(columnName)) {
@@ -140,27 +156,23 @@ public class SparkClient extends AbsRdbmsClient {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
-                    queryDTO.getTableName()), e);
+                    tableName), e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, sparkSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, null);
         }
         return "";
     }
 
-    @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
-        SparkSourceDTO sparkSourceDTO = (SparkSourceDTO) iSource;
-
+    private List<ColumnMetaDTO> getColumnMetaData(Connection conn, String tableName, Boolean filterPartitionColumns) {
         List<ColumnMetaDTO> columnMetaDTOS = new ArrayList<>();
         Statement stmt = null;
         ResultSet resultSet = null;
 
         try {
-            stmt = sparkSourceDTO.getConnection().createStatement();
-            resultSet = stmt.executeQuery("desc extended " + queryDTO.getTableName());
+            stmt = conn.createStatement();
+            resultSet = stmt.executeQuery("desc extended " + tableName);
             while (resultSet.next()) {
                 String dataType = resultSet.getString(DtClassConsistent.PublicConsistent.DATA_TYPE);
                 String colName = resultSet.getString(DtClassConsistent.PublicConsistent.COL_NAME);
@@ -181,7 +193,7 @@ public class SparkClient extends AbsRdbmsClient {
             }
 
             DBUtil.closeDBResources(resultSet, null, null);
-            resultSet = stmt.executeQuery("desc extended " + queryDTO.getTableName());
+            resultSet = stmt.executeQuery("desc extended " + tableName);
             boolean partBegin = false;
             while (resultSet.next()) {
                 String colName = resultSet.getString(DtClassConsistent.PublicConsistent.COL_NAME).trim();
@@ -211,12 +223,22 @@ public class SparkClient extends AbsRdbmsClient {
                 }
             }
 
-            return columnMetaDTOS.stream().filter(column -> !queryDTO.getFilterPartitionColumns() || !column.getPart()).collect(Collectors.toList());
+            return columnMetaDTOS.stream().filter(column -> !filterPartitionColumns || !column.getPart()).collect(Collectors.toList());
         } catch (SQLException e) {
-            throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
-                    queryDTO.getTableName()), e);
+            throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", tableName), e);
         } finally {
-            DBUtil.closeDBResources(resultSet, stmt, sparkSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, stmt, null);
+        }
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+        Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
+        SparkSourceDTO sparkSourceDTO = (SparkSourceDTO) iSource;
+        try {
+            return getColumnMetaData(sparkSourceDTO.getConnection(), queryDTO.getTableName(), queryDTO.getFilterPartitionColumns());
+        } finally {
+            DBUtil.closeDBResources(null, null, sparkSourceDTO.clearAfterGetConnection(clearStatus));
         }
     }
 
@@ -431,13 +453,42 @@ public class SparkClient extends AbsRdbmsClient {
 
     @Override
     public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
-        Table tableInfo = new Table();
-        tableInfo.setName(queryDTO.getTableName());
-        tableInfo.setComment(getTableMetaComment(source, queryDTO));
-        // 处理字段信息
-        tableInfo.setColumns(getColumnMetaData(source, queryDTO));
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
+        SparkSourceDTO sparkSourceDTO = (SparkSourceDTO) source;
 
-        List<Map<String, Object>> result = executeQuery(source, SqlQueryDTO.builder().sql("desc formatted " + queryDTO.getTableName()).build());
+        Table tableInfo = new Table();
+        try {
+            tableInfo.setName(queryDTO.getTableName());
+            // 获取表注释
+            tableInfo.setComment(getTableMetaComment(sparkSourceDTO.getConnection(), queryDTO.getTableName()));
+            // 处理字段信息
+            tableInfo.setColumns(getColumnMetaData(sparkSourceDTO.getConnection(), queryDTO.getTableName(), queryDTO.getFilterPartitionColumns()));
+            // 获取表结构信息
+            getTable(tableInfo, sparkSourceDTO.getConnection(), queryDTO.getTableName());
+        } catch (Exception e) {
+            throw new DtLoaderException(String.format("SQL 执行异常, %s", e.getMessage()), e);
+        } finally {
+            DBUtil.closeDBResources(null, null, sparkSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        return tableInfo;
+    }
+
+    /**
+     * 获取表结构信息
+     *
+     * @param tableInfo
+     * @param conn
+     * @param tableName
+     */
+    private void getTable (Table tableInfo, Connection conn, String tableName) {
+        List<Map<String, Object>> result;
+        try {
+            // 获取表结构信息
+            result = executeQuery(conn, SqlQueryDTO.builder().sql("desc formatted " + tableName).build(), ConnectionClearStatus.NORMAL.getValue());
+        } catch (Exception e) {
+            throw new DtLoaderException(String.format("SQL 执行异常, %s", e.getMessage()), e);
+        }
+
         boolean isTableInfo = false;
         for (Map<String, Object> row : result) {
             String colName = MapUtils.getString(row, "col_name");
@@ -483,7 +534,6 @@ public class SparkClient extends AbsRdbmsClient {
                 }
             }
         }
-        return tableInfo;
     }
 
     @Override
