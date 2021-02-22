@@ -133,7 +133,17 @@
                     <artifactId>jetty-util</artifactId>
                     <groupId>org.eclipse.jetty</groupId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.glassfish</groupId>
+                    <artifactId>javax.el</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
+            <version>3.0.1-b12</version>
         </dependency>
 
         <dependency>
