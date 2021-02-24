@@ -80,7 +80,7 @@ public class DBUtil {
             }
 
         } catch (Exception e) {
-            throw new DtLoaderException("SQL 执行异常", e);
+            throw new DtLoaderException(String.format("SQL执行异常：%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(res, statement, closeConn ? conn : null);
         }
