@@ -127,7 +127,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
         // 如果当前 connection 已关闭，直接返回空列表
         try {
-            return executeQuery(rdbmsSourceDTO.getConnection(), queryDTO, clearStatus);
+            return executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO, clearStatus);
         } catch (Exception e) {
             throw new DtLoaderException(String.format("connection调用isClosed方法异常 : %s", e.getMessage()), e);
         }
