@@ -30,7 +30,7 @@ public class Pool<T> implements Cloneable {
             try {
                 closeInternalPool();
             } catch (Exception e) {
-                throw new DtLoaderException("init pool error", e);
+                throw new DtLoaderException(String.format("init pool error:%s", e.getMessage()), e);
             }
         }
 

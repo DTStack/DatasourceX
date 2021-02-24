@@ -77,7 +77,7 @@ public class HbaseClient<T> implements IClient<T> {
                 }
             }
         } catch (IOException e) {
-            throw new DtLoaderException("获取 hbase table list 异常", e);
+            throw new DtLoaderException(String.format("获取 hbase table list 异常：%s", e.getMessage()), e);
         } finally {
             closeAdmin(admin);
             closeConnection(hConn,hbaseSourceDTO);
@@ -123,7 +123,7 @@ public class HbaseClient<T> implements IClient<T> {
                 cfList.add(columnMetaDTO);
             }
         } catch (IOException e) {
-            throw new DtLoaderException("hbase list column families error", e);
+            throw new DtLoaderException(String.format("hbase list column families error：%s", e.getMessage()), e);
         } finally {
             closeTable(tb);
             closeConnection(hConn,hbaseSourceDTO);

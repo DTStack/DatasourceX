@@ -114,8 +114,8 @@ public class KingbaseClient extends AbsRdbmsClient {
                 return resultSet.getString(1);
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
-                    queryDTO.getTableName()), e);
+            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息 ：%s",
+                    queryDTO.getTableName(), e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, kingbaseSourceDTO.clearAfterGetConnection(clearStatus));
         }

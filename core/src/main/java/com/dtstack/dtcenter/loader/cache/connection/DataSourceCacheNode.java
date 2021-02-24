@@ -37,7 +37,7 @@ public class DataSourceCacheNode {
                 log.info("close connection sourceType = {}", sourceType);
                 connection.close();
             } catch (SQLException e) {
-                throw new DtLoaderException("缓存连接关闭失败", e);
+                throw new DtLoaderException(String.format("缓存连接关闭失败：%s", e.getMessage()), e);
             }
         }
     }
