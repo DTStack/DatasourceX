@@ -166,7 +166,7 @@ public class DBUtil {
             statement = conn.createStatement();
             statement.execute(sql);
         } catch (Exception e) {
-            throw new DtLoaderException("SQL 执行异常", e);
+            throw new DtLoaderException(String.format("SQL 执行异常：%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(null, statement, closeConn ? conn : null);
         }
