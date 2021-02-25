@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -138,5 +139,20 @@ public class ImpalaKerberosTest {
     public void getCreateSql() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         System.out.println(client.getCreateTableSql(source, SqlQueryDTO.builder().tableName("nanqi").build()));
+    }
+
+
+    @Test
+    public void test() {
+        IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
+        List<Map<String,Object>> list = client.executeQuery(source, SqlQueryDTO.builder().sql("show tables").build());
+        Assert.assertNotNull(list);
+    }
+
+    @Test
+    public void tes1t() {
+        IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
+        List<Map<String,Object>> list = client.executeQuery(source, SqlQueryDTO.builder().sql("DESCRIBE extended nanqi").build());
+        Assert.assertNotNull(list);
     }
 }

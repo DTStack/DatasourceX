@@ -82,4 +82,67 @@ public class MongoTest {
             });
         });
     }
+
+    /**
+     * aggregate
+     */
+    @Test
+    public void executoraggregate() {
+        IClient<List> client = ClientCache.getClient(DataSourceType.MONGODB.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("db.user.aggregate([{$group : {_id : \"$by_user\", num_tutorial : {$sum : 1}}}])").build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        result.forEach(map->{
+            map.keySet().forEach(x->{
+                System.out.println(x+"==="+map.get(x));
+            });
+        });
+    }
+
+    /**
+     * count
+     */
+    @Test
+    public void executorCount() {
+        IClient<List> client = ClientCache.getClient(DataSourceType.MONGODB.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(" db.user.count()").build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        result.forEach(map->{
+            map.keySet().forEach(x->{
+                System.out.println(x+"==="+map.get(x));
+            });
+        });
+    }
+
+    /**
+     * findOne
+     */
+    @Test
+    public void executorFindOne() {
+        IClient<List> client = ClientCache.getClient(DataSourceType.MONGODB.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("db.user.findOne({ })").build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        result.forEach(map->{
+            map.keySet().forEach(x->{
+                System.out.println(x+"==="+map.get(x));
+            });
+        });
+    }
+
+
+    /**
+     * findOne
+     */
+    @Test
+    public void executorDistinct() {
+        IClient<List> client = ClientCache.getClient(DataSourceType.MONGODB.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(" db.inventory.distinct( \"dept\" )").build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        result.forEach(map->{
+            map.keySet().forEach(x->{
+                System.out.println(x+"==="+map.get(x));
+            });
+        });
+    }
+
+
 }

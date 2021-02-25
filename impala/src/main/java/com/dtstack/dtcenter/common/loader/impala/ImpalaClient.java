@@ -233,6 +233,21 @@ public class ImpalaClient extends AbsRdbmsClient {
                 continue;
             }
 
+            if (colName.contains("Owner")) {
+                tableInfo.setOwner(dataType);
+                continue;
+            }
+
+            if (colName.contains("CreateTime")) {
+                tableInfo.setCreatedTime(dataType);
+                continue;
+            }
+
+            if (colName.contains("LastAccessTime")) {
+                tableInfo.setLastAccess(dataType);
+                continue;
+            }
+
             if (colName.contains("Database")) {
                 tableInfo.setDb(dataType);
                 continue;
