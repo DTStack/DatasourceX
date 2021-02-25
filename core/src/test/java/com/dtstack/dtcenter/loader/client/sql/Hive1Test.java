@@ -12,7 +12,6 @@ import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -38,21 +37,27 @@ public class Hive1Test {
      * 构建数据源信息 - em创建的数据源连不上
      */
     private static final Hive1SourceDTO source = Hive1SourceDTO.builder()
-            .url("jdbc:hive2://172.16.10.67:10000/default")
-            .username("root")
-            .password("abc123")
-            .defaultFS("hdfs://172.16.10.67:8020")
+            .url("jdbc:hive2://172.16.101.17:10000/default")
+            .username("admin")
+            .defaultFS("hdfs://172.16.101.196:9000")
+            .config("{\n" +
+                    "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.101.227:9000\",\n" +
+                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.101.196:9000\",\n" +
+                    "    \"dfs.nameservices\": \"ns1\"\n" +
+                    "}")
             .build();
 
     /**
      * 数据准备
      */
-    @BeforeClass
+//    @BeforeClass
     public static void beforeClass()  {
-        System.setProperty("HADOOP_USER_NAME", "root");
+        System.setProperty("HADOOP_USER_NAME", "admin");
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_1").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int comment 'id comment', name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_1 values (1, 'loader_test_1')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);

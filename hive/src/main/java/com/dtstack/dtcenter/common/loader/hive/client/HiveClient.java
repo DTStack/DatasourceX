@@ -127,12 +127,20 @@ public class HiveClient extends AbsRdbmsClient {
                     , queryDTO.getTableName()));
             while (resultSet.next()) {
                 String columnName = resultSet.getString(1);
-                if (StringUtils.isNotEmpty(columnName) && DtClassConsistent.HadoopConfConsistent.TABLE_INFORMATION.equalsIgnoreCase(columnName)) {
+                if (StringUtils.isNotEmpty(columnName) && columnName.toLowerCase().contains(DtClassConsistent.HadoopConfConsistent.TABLE_INFORMATION)) {
+                    // 兼容两种数据结构 Comment: comment=
                     String string = resultSet.getString(2);
-                    if (StringUtils.isNotEmpty(string) && string.contains(DtClassConsistent.HadoopConfConsistent.COMMENT)) {
-                        String[] split = string.split(DtClassConsistent.HadoopConfConsistent.COMMENT);
+                    if (StringUtils.isNotEmpty(string) && string.contains(DtClassConsistent.HadoopConfConsistent.HIVE_COMMENT)) {
+                        String[] split = string.split(DtClassConsistent.HadoopConfConsistent.HIVE_COMMENT);
                         if (split.length > 1) {
-                            return split[1].split(DtClassConsistent.PublicConsistent.LINE_SEPARATOR)[0].trim();
+                            return split[1].split(",|}|\n")[0].trim();
+                        }
+                    }
+
+                    if (StringUtils.isNotEmpty(string) && string.contains(DtClassConsistent.HadoopConfConsistent.COMMENT_WITH_COLON)) {
+                        String[] split = string.split(DtClassConsistent.HadoopConfConsistent.COMMENT_WITH_COLON);
+                        if (split.length > 1) {
+                            return split[1].split(",|}|\n")[0].trim();
                         }
                     }
                 }
@@ -462,6 +470,26 @@ public class HiveClient extends AbsRdbmsClient {
 
             if (colName.contains("field.delim")) {
                 tableInfo.setDelim(dataType);
+                continue;
+            }
+
+            if (colName.contains("Owner")) {
+                tableInfo.setOwner(dataType);
+                continue;
+            }
+
+            if (colName.contains("CreateTime") || colName.contains("CreatedTime")) {
+                tableInfo.setCreatedTime(dataType);
+                continue;
+            }
+
+            if (colName.contains("LastAccess")) {
+                tableInfo.setLastAccess(dataType);
+                continue;
+            }
+
+            if (colName.contains("CreatedBy")) {
+                tableInfo.setCreatedBy(dataType);
                 continue;
             }
 

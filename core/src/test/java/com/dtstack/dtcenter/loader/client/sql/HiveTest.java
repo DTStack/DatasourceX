@@ -39,7 +39,7 @@ public class HiveTest {
      * 构建数据源信息
      */
     private static final HiveSourceDTO source = HiveSourceDTO.builder()
-            .url("jdbc:hive2://kudu1:10000/dev")
+            .url("jdbc:hive2://kudu3:10000/dev")
             .schema("dev")
             .defaultFS("hdfs://ns1")
             .username("admin")
@@ -61,7 +61,7 @@ public class HiveTest {
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_1").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int comment 'id comment', name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_1 values (1, 'loader_test_1')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);

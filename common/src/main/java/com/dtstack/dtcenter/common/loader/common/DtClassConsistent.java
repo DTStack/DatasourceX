@@ -113,13 +113,13 @@ public interface DtClassConsistent {
 
         public static final String DEFAULT_FS_REGEX = "hdfs://.*";
 
-        public static final String TABLE_INFORMATION = "# Detailed Table Information";
+        public static final String TABLE_INFORMATION = "detailed table information";
 
-        public static final String HIVE_1_TABLE_INFORMATION = "Detailed Table Information";
+        public static final String COMMENT_WITH_COLON = "Comment:";
 
-        public static final String COMMENT = "Comment:";
+        public static final String COMMENT = "Comment";
 
-        public static final String HIVE_1_COMMENT = "comment=";
+        public static final String HIVE_COMMENT = "comment=";
 
         public static final String DESCRIBE_EXTENDED = "describe extended %s";
     }
