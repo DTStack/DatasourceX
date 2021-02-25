@@ -12,6 +12,7 @@ import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -52,7 +53,7 @@ public class Hive1Test {
     /**
      * 数据准备
      */
-//    @BeforeClass
+    @BeforeClass
     public static void beforeClass()  {
         System.setProperty("HADOOP_USER_NAME", "admin");
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_1").build();
