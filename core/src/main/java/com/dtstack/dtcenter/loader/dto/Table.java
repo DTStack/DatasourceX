@@ -19,6 +19,26 @@ public class Table {
     private String db;
 
     /**
+     * 所有者
+     */
+    private String owner;
+
+    /**
+     * 创建时间
+     */
+    private String createdTime;
+
+    /**
+     * 最近访问时间
+     */
+    private String lastAccess;
+
+    /**
+     * 创建者
+     */
+    private String createdBy;
+
+    /**
      * 名称
      */
     private String name;

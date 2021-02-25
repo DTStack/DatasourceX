@@ -144,16 +144,41 @@ public class SparkClient extends AbsRdbmsClient {
             statement = conn.createStatement();
             resultSet = statement.executeQuery(String.format(DtClassConsistent.HadoopConfConsistent.DESCRIBE_EXTENDED
                     , tableName));
+            boolean tableInfoFlag = false;
             while (resultSet.next()) {
                 String columnName = resultSet.getString(1);
-                if (StringUtils.isNotEmpty(columnName) && DtClassConsistent.HadoopConfConsistent.TABLE_INFORMATION.equalsIgnoreCase(columnName)) {
-                    String string = resultSet.getString(2);
-                    if (StringUtils.isNotEmpty(string) && string.contains(DtClassConsistent.HadoopConfConsistent.COMMENT)) {
-                        String[] split = string.split(DtClassConsistent.HadoopConfConsistent.COMMENT);
-                        if (split.length > 1) {
-                            return split[1].split(DtClassConsistent.PublicConsistent.LINE_SEPARATOR)[0].trim();
-                        }
+                // 如果 key 为空，则直接下一行
+                if (StringUtils.isBlank(columnName)) {
+                    continue;
+                }
+
+                // 如果获取到表信息属性，则修改 tableInfoFlag
+                if (columnName.toLowerCase().contains(DtClassConsistent.HadoopConfConsistent.TABLE_INFORMATION)) {
+                    tableInfoFlag = true;
+                }
+
+                // 如果没到获取表信息的时候，则直接下一条
+                if (!tableInfoFlag) {
+                    continue;
+                }
+
+                // 获取键值，抽取注释信息
+                String metaValue = resultSet.getString(2);
+                if (StringUtils.isBlank(metaValue)) {
+                    continue;
+                }
+
+                // ThriftServer 2.1.x 属性在 tableInformation 中，且取出来的信息为字符串
+                if (metaValue.contains(DtClassConsistent.HadoopConfConsistent.COMMENT_WITH_COLON)) {
+                    String[] split = metaValue.split(DtClassConsistent.HadoopConfConsistent.COMMENT_WITH_COLON);
+                    if (split.length > 1) {
+                        return split[1].split(DtClassConsistent.PublicConsistent.LINE_SEPARATOR)[0].trim();
                     }
+                }
+
+                // ThriftServer 2.4.x 属性在后面，且为键值对
+                if (DtClassConsistent.HadoopConfConsistent.COMMENT.equalsIgnoreCase(columnName)) {
+                    return metaValue.trim();
                 }
             }
         } catch (SQLException e) {
@@ -515,8 +540,39 @@ public class SparkClient extends AbsRdbmsClient {
                 continue;
             }
 
+            // ThriftServer 2.1.x 分隔符为 key
             if (colName.contains("field.delim")) {
                 tableInfo.setDelim(dataType);
+                continue;
+            }
+
+            // ThriftServer 2.4.x 处理存储属性里面 [field.delim=,, serialization.format=,]
+            if ("Storage Properties".equals(colName)) {
+                int fieldDelimLos = dataType.indexOf("field.delim=");
+                int serializationLos = dataType.indexOf(", serialization.format=");
+                if (serializationLos > fieldDelimLos + 12) {
+                    tableInfo.setDelim(dataType.substring(fieldDelimLos+12, serializationLos));
+                    continue;
+                }
+            }
+
+            if (colName.contains("Owner")) {
+                tableInfo.setOwner(dataType);
+                continue;
+            }
+
+            if (colName.contains("Create Time") || colName.contains("Created Time")) {
+                tableInfo.setCreatedTime(dataType);
+                continue;
+            }
+
+            if (colName.contains("Last Access")) {
+                tableInfo.setLastAccess(dataType);
+                continue;
+            }
+
+            if (colName.contains("Created By")) {
+                tableInfo.setCreatedBy(dataType);
                 continue;
             }
 

@@ -198,12 +198,12 @@ public class HiveClient extends AbsRdbmsClient {
                     , queryDTO.getTableName()));
             while (resultSet.next()) {
                 String columnName = resultSet.getString(1);
-                if (StringUtils.isNotEmpty(columnName) && DtClassConsistent.HadoopConfConsistent.HIVE_1_TABLE_INFORMATION.equalsIgnoreCase(columnName)) {
+                if (StringUtils.isNotEmpty(columnName) && columnName.toLowerCase().contains(DtClassConsistent.HadoopConfConsistent.TABLE_INFORMATION)) {
                     String string = resultSet.getString(2);
-                    if (StringUtils.isNotEmpty(string) && string.contains(DtClassConsistent.HadoopConfConsistent.HIVE_1_COMMENT)) {
-                        String[] split = string.split(DtClassConsistent.HadoopConfConsistent.HIVE_1_COMMENT);
+                    if (StringUtils.isNotEmpty(string) && string.contains(DtClassConsistent.HadoopConfConsistent.HIVE_COMMENT)) {
+                        String[] split = string.split(DtClassConsistent.HadoopConfConsistent.HIVE_COMMENT);
                         if (split.length > 1) {
-                            return split[1].split("}")[0].trim();
+                            return split[1].split(",|}|\n")[0].trim();
                         }
                     }
                 }
@@ -456,6 +456,26 @@ public class HiveClient extends AbsRdbmsClient {
 
             if (dataType.contains("field.delim")) {
                 tableInfo.setDelim(MapUtils.getString(row, "comment", "").trim());
+                continue;
+            }
+
+            if (colName.contains("Owner")) {
+                tableInfo.setOwner(dataType);
+                continue;
+            }
+
+            if (colName.contains("CreateTime") || colName.contains("CreatedTime")) {
+                tableInfo.setCreatedTime(dataType);
+                continue;
+            }
+
+            if (colName.contains("LastAccess")) {
+                tableInfo.setLastAccess(dataType);
+                continue;
+            }
+
+            if (colName.contains("CreatedBy")) {
+                tableInfo.setCreatedBy(dataType);
                 continue;
             }
 
