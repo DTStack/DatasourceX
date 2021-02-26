@@ -97,4 +97,87 @@ public class HbaseTest {
         List<List<Object>> result = client.getPreview(source, SqlQueryDTO.builder().tableName("loader_test").previewNum(2).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(result));
     }
+
+    @Test
+    public void getTableListBySchema() {
+        List<String> result = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("default").tableName("loader_test").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(result));
+    }
+
+    @Test
+    public void getAllDatabases() {
+        List<String> result = client.getAllDatabases(source, SqlQueryDTO.builder().build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(result));
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getCon() {
+        client.getCon(source);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getColumnMetaDataWithSql() {
+        client.getColumnMetaDataWithSql(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getFlinkColumnMetaData() {
+        client.getFlinkColumnMetaData(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getTableMetaComment() {
+        client.getTableMetaComment(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void executeSqlWithoutResultSet() {
+        client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getColumnClassInfo() {
+        client.getColumnClassInfo(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getDownloader() throws Exception {
+        client.getDownloader(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getCreateTableSql() {
+        client.getCreateTableSql(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getPartitionColumn() {
+        client.getPartitionColumn(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getTable() {
+        client.getTable(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getCurrentDatabase() {
+        client.getCurrentDatabase(source);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void createDatabase() {
+        client.createDatabase(source, "", "");
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void isDatabaseExists() {
+        client.isDatabaseExists(source, "");
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void isTableExistsInDatabase() {
+        client.isTableExistsInDatabase(source, "", "");
+    }
+
 }

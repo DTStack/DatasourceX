@@ -56,7 +56,7 @@ public class KuduTest {
     }
 
     @Test
-    public void testRegx(){
+    public void testRegx() {
         String errorMessage = "error is : schema.columns[120]sass";
         Matcher passLine = TABLE_COLUMN.matcher(errorMessage);
         System.out.println(passLine.find());
@@ -71,5 +71,85 @@ public class KuduTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test_kudu").build();
         List<ColumnMetaDTO> columnMetaData = client.getPreview(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getCon() {
+        client.getCon(source);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void executeQuery() {
+        client.executeQuery(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void executeSqlWithoutResultSet() {
+        client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getTableListBySchema() {
+        client.getTableListBySchema(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getColumnClassInfo() {
+        client.getColumnClassInfo(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getColumnMetaDataWithSql() {
+        client.getColumnMetaDataWithSql(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getTableMetaComment() {
+        client.getTableMetaComment(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getDownloader() throws Exception {
+        client.getDownloader(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getAllDatabases() {
+        client.getAllDatabases(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getCreateTableSql() {
+        client.getCreateTableSql(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getPartitionColumn() {
+        client.getPartitionColumn(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getTable() {
+        client.getTable(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getCurrentDatabase() {
+        client.getCurrentDatabase(source);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void createDatabase() {
+        client.createDatabase(source, "", "");
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void isDatabaseExists() {
+        client.isDatabaseExists(source, "");
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void isTableExistsInDatabase() {
+        client.isTableExistsInDatabase(source, null, null);
     }
 }

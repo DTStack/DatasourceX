@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.SocketSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
@@ -35,7 +36,7 @@ public class SocketTest {
      * 初始化socket服务端
      */
     @BeforeClass
-    public static void setUp () {
+    public static void setUp() {
         ES.submit(() -> {
             try {
                 // 创建socket服务端，端口为15000
@@ -118,8 +119,149 @@ public class SocketTest {
      * 清理资源
      */
     @AfterClass
-    public static void clean () {
+    public static void clean() {
         // 关闭线程池
         ES.shutdownNow();
+    }
+
+    /********************************* 非关系型数据库无需实现的方法 ******************************************/
+    @Test(expected = DtLoaderException.class)
+    public void getCon() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.getCon(source);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void executeQuery() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.executeQuery(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void executeSqlWithoutResultSet() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.executeSqlWithoutResultSet(source,SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getTableList() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.getTableList(source,SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getTableListBySchema() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.getTableListBySchema(source,SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getColumnClassInfo() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.getColumnClassInfo(source,SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getColumnMetaData() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.getColumnMetaData(source, SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getColumnMetaDataWithSql() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.getColumnMetaDataWithSql(source,SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getFlinkColumnMetaData() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.getFlinkColumnMetaData(source,SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getTableMetaComment() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.getTableMetaComment(source,SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getPreview() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.getPreview(source,SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getDownloader() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.getDownloader(source,SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getAllDatabases() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.getAllDatabases(source,SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getCreateTableSql() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.getCreateTableSql(source,SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getPartitionColumn() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.getPartitionColumn(source,SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getTable() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.getTable(source,SqlQueryDTO.builder().build());
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getCurrentDatabase() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.getCurrentDatabase(source);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void createDatabase() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.createDatabase(source,"","");
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void isDatabaseExists() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.isDatabaseExists(source,"");
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void isTableExistsInDatabase() {
+        IClient client = ClientCache.getClient(DataSourceType.SOCKET.getVal());
+        SocketSourceDTO source = SocketSourceDTO.builder().hostPort("localhost:15000").build();
+        client.isTableExistsInDatabase(source,"","");
     }
 }
