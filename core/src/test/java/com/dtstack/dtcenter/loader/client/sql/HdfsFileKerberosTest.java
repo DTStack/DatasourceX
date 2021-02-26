@@ -11,7 +11,7 @@ import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
-import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
@@ -19,6 +19,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -31,32 +32,19 @@ import java.util.Map;
  * @Date ：Created in 17:44 2020/9/8
  * @Description：hdfs 文件 Kerberos 测试
  */
+@Ignore
 public class HdfsFileKerberosTest {
 
     // 初始化客户端
     private static final IHdfsFile client = ClientCache.getHdfs(DataSourceType.HDFS.getVal());
 
     private static HdfsSourceDTO source = HdfsSourceDTO.builder()
-            .defaultFS("hdfs://ns1")
-            .config("{\n" +
-                    "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"krbt2:9000\",\n" +
-                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"krbt1:9000\",\n" +
-                    "    \"dfs.nameservices\": \"ns1\"\n" +
-                    "}")
+            .defaultFS("hdfs://eng-cdh1:8020")
             .build();
 
-    private static HiveSourceDTO hiveSource = HiveSourceDTO.builder()
-            .url("jdbc:hive2://krbt3:10000/default;principal=hdfs/krbt3@DTSTACK.COM")
-            .defaultFS("hdfs://ns1")
-            .config("{\n" +
-                    "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"krbt2:9000\",\n" +
-                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"krbt1:9000\",\n" +
-                    "    \"dfs.nameservices\": \"ns1\"\n" +
-                    "}")
+    private static Hive1SourceDTO hiveSource = Hive1SourceDTO.builder()
+            .url("jdbc:hive2://eng-cdh3:10001/default;principal=hive/eng-cdh3@DTSTACK.COM")
+            .defaultFS("hdfs://eng-cdh1:8020")
             .build();
 
     private static HdfsWriterDTO writerDTO;
@@ -68,9 +56,9 @@ public class HdfsFileKerberosTest {
         System.setProperty("HADOOP_USER_NAME", "admin");
         // 准备 Kerberos 参数
         Map<String, Object> kerberosConfig = new HashMap<>();
-        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/hdfs.keytab");
+        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/hive-cdh03.keytab");
         kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
-        String localKerberosPath = HdfsFileKerberosTest.class.getResource("/krbt").getPath();
+        String localKerberosPath = HdfsFileKerberosTest.class.getResource("/eng-cdh").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HDFS.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
         hiveSource.setKerberosConfig(kerberosConfig);
@@ -78,7 +66,7 @@ public class HdfsFileKerberosTest {
         ClientCache.getHdfs(DataSourceType.HDFS.getVal()).delete(source, "/tmp/hive_test", true);
 
         // 创建parquet格式的hive外部表，并插入数据
-        IClient hiveClient = ClientCache.getClient(DataSourceType.HIVE.getVal());
+        IClient hiveClient = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
         hiveClient.executeSqlWithoutResultSet(hiveSource, SqlQueryDTO.builder().sql("drop table if exists parquetTable ").build());
         hiveClient.executeSqlWithoutResultSet(hiveSource, SqlQueryDTO.builder().sql("create external table if not exists parquetTable(id int,name string) stored as parquet location '/tmp/hive_test' ").build());
         hiveClient.executeSqlWithoutResultSet(hiveSource, SqlQueryDTO.builder().sql("insert into parquetTable values(1,'wangchuan') ").build());
@@ -111,7 +99,7 @@ public class HdfsFileKerberosTest {
         metaDTO2.setKey("name");
         metaDTO2.setType("string");
         writerDTO.setColumnsList(Lists.newArrayList(metaDTO1, metaDTO2));
-        client.copyFromLocal(source, localFilePath + "/test.txt", "/tmp/test.txt", true);
+        client.copyFromLocal(source, localFilePath + "/test.txt", "/tmp/loader_test.txt", true);
     }
 
     /**
@@ -139,7 +127,7 @@ public class HdfsFileKerberosTest {
      */
     @Test
     public void downloadFileFromHdfs()  {
-        client.downloadFileFromHdfs(source, "/tmp/test.txt", localFilePath);
+        client.downloadFileFromHdfs(source, "/tmp/loader_test.txt", localFilePath);
     }
 
     /**
@@ -147,7 +135,7 @@ public class HdfsFileKerberosTest {
      */
     @Test
     public void uploadLocalFileToHdfs() {
-        assert client.uploadLocalFileToHdfs(source, localFilePath + "/test.txt", "/tmp");
+        assert client.uploadLocalFileToHdfs(source, localFilePath + "/loader_test.txt", "/tmp");
     }
 
     /**
@@ -155,7 +143,7 @@ public class HdfsFileKerberosTest {
      */
     @Test
     public void uploadInputStreamToHdfs() {
-        assert client.uploadInputStreamToHdfs(source, "test".getBytes(), "/tmp/test.txt");
+        assert client.uploadInputStreamToHdfs(source, "test".getBytes(), "/tmp/loader_test.txt");
     }
 
     /**
@@ -173,7 +161,7 @@ public class HdfsFileKerberosTest {
      */
     @Test
     public void isFileExist() {
-        assert client.isFileExist(source, "/tmp/test.txt");
+        assert client.isFileExist(source, "/tmp/loader_test.txt");
     }
 
     /**
@@ -216,7 +204,7 @@ public class HdfsFileKerberosTest {
      */
     @Test
     public void setPermission() {
-        assert client.setPermission(source, "/tmp/test.txt", "ugoa=rwx");
+        assert client.setPermission(source, "/tmp/loader_test.txt", "ugoa=rwx");
     }
 
     /**
@@ -224,8 +212,8 @@ public class HdfsFileKerberosTest {
      */
     @Test
     public void rename()  {
-        assert client.rename(source, "/tmp/test.txt", "/tmp/test1.txt");
-        assert client.rename(source, "/tmp/test1.txt", "/tmp/test.txt");
+        assert client.rename(source, "/tmp/loader_test.txt", "/tmp/test1.txt");
+        assert client.rename(source, "/tmp/test1.txt", "/tmp/loader_test.txt");
     }
 
     /**
@@ -234,7 +222,7 @@ public class HdfsFileKerberosTest {
      */
     @Test
     public void copyFileOverwrite() {
-        assert client.copyFile(source, "/tmp/test.txt", "/tmp/test.txt", true);
+        assert client.copyFile(source, "/tmp/loader_test.txt", "/tmp/loader_test.txt", true);
     }
 
     /**
@@ -269,7 +257,7 @@ public class HdfsFileKerberosTest {
      */
     @Test
     public void copyToLocal()  {
-        assert client.copyToLocal(source, "/tmp/test.txt", localFilePath);
+        assert client.copyToLocal(source, "/tmp/loader_test.txt", localFilePath);
     }
 
     /**
@@ -278,7 +266,7 @@ public class HdfsFileKerberosTest {
      */
     @Test
     public void copyFromLocal()  {
-        assert client.copyFromLocal(source, localFilePath + "/test.txt", "/tmp/test.txt", true);
+        assert client.copyFromLocal(source, localFilePath + "/loader_test.txt", "/tmp/loader_test.txt", true);
     }
 
     /**

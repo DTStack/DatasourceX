@@ -33,7 +33,7 @@ public class LibraTest {
             .url("jdbc:postgresql://172.16.101.246:5432/postgres")
             .username("postgres")
             .password("abc123")
-            .schema("public")
+            //.schema("public")
             .poolConfig(new PoolConfig())
             .build();
 
@@ -141,8 +141,7 @@ public class LibraTest {
     @Test
     public void getTableList()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
-        List<String> tableList = client.getTableList(source, queryDTO);
-        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+        client.getTableList(source, queryDTO);
     }
 
     /**
@@ -192,5 +191,14 @@ public class LibraTest {
     public void getCurrentDatabase()  {
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
+    }
+
+    /**
+     * 获取当前使用的 schema
+     */
+    @Test
+    public void getAllDb()  {
+        List allDatabases = client.getAllDatabases(source, SqlQueryDTO.builder().build());
+        System.out.println(allDatabases);
     }
 }
