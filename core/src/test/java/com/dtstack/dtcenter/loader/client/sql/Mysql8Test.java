@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -53,7 +54,7 @@ public class Mysql8Test {
      * 获取连接测试
      */
     @Test
-    public void getCon() throws Exception{
+    public void getCon() throws Exception {
         Connection connection = client.getCon(source);
         Assert.assertNotNull(connection);
         connection.close();
@@ -156,7 +157,7 @@ public class Mysql8Test {
      * 根据自定义sql获取表字段信息
      */
     @Test
-    public void getColumnMetaDataWithSql() throws Exception{
+    public void getColumnMetaDataWithSql() throws Exception {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from LOADER_TEST").build();
         List sql = client.getColumnMetaDataWithSql(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(sql));
@@ -168,7 +169,7 @@ public class Mysql8Test {
     @Test
     public void getAllDatabases() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
-        Assert.assertTrue(CollectionUtils.isNotEmpty(client.getAllDatabases(source,queryDTO)));
+        Assert.assertTrue(CollectionUtils.isNotEmpty(client.getAllDatabases(source, queryDTO)));
     }
 
     /**
@@ -194,8 +195,22 @@ public class Mysql8Test {
      * 根据 schema 获取表
      */
     @Test
-    public void getTableBySchema () {
+    public void getTableBySchema() {
         List tableListBySchema = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("dev").tableNamePattern("").limit(5).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableListBySchema));
+    }
+
+    @Test
+    public void getTableMetaComment() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
+        String metaComment = client.getTableMetaComment(source, queryDTO);
+        Assert.assertTrue(StringUtils.isNotBlank(metaComment));
+    }
+
+    @Test
+    public void getDownloader() throws Exception {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").sql("select * from LOADER_TEST").build();
+        IDownloader iDownloader = client.getDownloader(source, queryDTO);
+        assert iDownloader != null;
     }
 }
