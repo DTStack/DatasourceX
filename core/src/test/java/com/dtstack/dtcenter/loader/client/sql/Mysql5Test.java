@@ -227,4 +227,23 @@ public class Mysql5Test {
         List tableListBySchema = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("dev").tableNamePattern("").limit(5).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableListBySchema));
     }
+
+    /**
+     * 获取downloader
+     */
+    @Test
+    public void getDownloader() throws Exception {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").sql("select * from LOADER_TEST").build();
+        IDownloader iDownloader = client.getDownloader(source, queryDTO);
+        assert iDownloader != null;
+    }
+
+    @Test
+    public void isDatabaseExists() {
+       assert  client.isDatabaseExists(source, "dev");
+    }
+    @Test
+    public void isTableExistsInDatabase() {
+       assert  client.isTableExistsInDatabase(source, "LOADER_TEST","dev");
+    }
 }
