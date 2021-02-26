@@ -27,6 +27,9 @@ public class LibraClient extends AbsRdbmsClient {
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select current_database()";
 
+    // 获取所有schema
+    private static final String DATABASE_QUERY = "select nspname from pg_namespace";
+
     // 创建schema
     private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
 
@@ -99,6 +102,11 @@ public class LibraClient extends AbsRdbmsClient {
     @Override
     protected String getCreateDatabaseSql(String dbName, String comment) {
         return String.format(CREATE_SCHEMA_SQL_TMPL, dbName);
+    }
+
+    @Override
+    public String getShowDbSql() {
+        return DATABASE_QUERY;
     }
 
     /**

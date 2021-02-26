@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.ITable;
@@ -33,17 +34,18 @@ public class Hive1xTableTest {
      * 构建数据源信息
      */
     private static final Hive1SourceDTO source = Hive1SourceDTO.builder()
-            .url("jdbc:hive2://kudu1:10000/dev")
-            .schema("dev")
+            .url("jdbc:hive2://172.16.100.214:10000/default")
+            .schema("default")
             .defaultFS("hdfs://ns1")
             .username("admin")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"kudu2:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.101.227:9000\",\n" +
                     "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"kudu1:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.101.196:9000\",\n" +
                     "    \"dfs.nameservices\": \"ns1\"\n" +
                     "}")
+            .poolConfig(PoolConfig.builder().build())
             .build();
 
     /**
@@ -70,9 +72,9 @@ public class Hive1xTableTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table loader_test_3 (id int, name string)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("drop view if exists wangchuan_test5").build();
+        queryDTO = SqlQueryDTO.builder().sql("drop view if exists loader_test_5").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create view wangchuan_test5 as select * from wangchuan_test3").build();
+        queryDTO = SqlQueryDTO.builder().sql("create view loader_test_5 as select * from loader_test_3").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -122,7 +124,7 @@ public class Hive1xTableTest {
     @Test
     public void tableIsView () {
         ITable client = ClientCache.getTable(DataSourceType.HIVE1X.getVal());
-        Boolean check = client.isView(source, null, "wangchuan_test5");
+        Boolean check = client.isView(source, null, "loader_test_5");
         Assert.assertTrue(check);
     }
 
@@ -132,7 +134,7 @@ public class Hive1xTableTest {
     @Test
     public void tableIsNotView () {
         ITable client = ClientCache.getTable(DataSourceType.HIVE1X.getVal());
-        Boolean check = client.isView(source, null, "wangchuan_test3");
+        Boolean check = client.isView(source, null, "loader_test_3");
         Assert.assertFalse(check);
     }
 }
