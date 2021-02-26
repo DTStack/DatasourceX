@@ -61,4 +61,15 @@ public class KuduTest {
         Matcher passLine = TABLE_COLUMN.matcher(errorMessage);
         System.out.println(passLine.find());
     }
+
+
+    /**
+     * 数据预览，表没有有效的位置
+     */
+    @Test(expected = Exception.class)
+    public void preview(){
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("test_kudu").build();
+        List<ColumnMetaDTO> columnMetaData = client.getPreview(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
+    }
 }
