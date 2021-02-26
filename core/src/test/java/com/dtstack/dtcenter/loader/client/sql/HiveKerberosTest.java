@@ -15,6 +15,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -28,6 +29,7 @@ import java.util.Map;
  * @Date ：Created in 13:49 2020/9/8
  * @Description：hive Kerberos 测试
  */
+@Ignore
 public class HiveKerberosTest {
 
     /**
@@ -36,25 +38,18 @@ public class HiveKerberosTest {
     private static final IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
 
     private static HiveSourceDTO source = HiveSourceDTO.builder()
-            .url("jdbc:hive2://krbt3:10000/default;principal=hdfs/krbt3@DTSTACK.COM")
-            .defaultFS("hdfs://ns1")
-            .config("{\n" +
-                    "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"krbt2:9000\",\n" +
-                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"krbt1:9000\",\n" +
-                    "    \"dfs.nameservices\": \"ns1\"\n" +
-                    "}")
+            .url("jdbc:hive2://eng-cdh3:10001/default;principal=hive/eng-cdh3@DTSTACK.COM")
+            .defaultFS("hdfs://eng-cdh1:8020")
             .build();
 
     @BeforeClass
     public static void beforeClass() {
         // 准备 Kerberos 参数
         Map<String, Object> kerberosConfig = new HashMap<>();
-        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/hdfs.keytab");
+        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/hive-cdh03.keytab");
         kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
         source.setKerberosConfig(kerberosConfig);
-        String localKerberosPath = HiveKerberosTest.class.getResource("/krbt").getPath();
+        String localKerberosPath = HiveKerberosTest.class.getResource("/eng-cdh").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HIVE.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
 

@@ -3,17 +3,19 @@ package com.dtstack.dtcenter.loader.client.sql;
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.client.IKerberos;
 import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
+import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,14 +26,11 @@ import java.util.Map;
  * date：Created in 10:14 上午 2020/12/7
  * company: www.dtstack.com
  */
-@Ignore
-public class ImpalaTableTest {
+public class ImpalaKerberosTableTest {
 
     private static ImpalaSourceDTO source = ImpalaSourceDTO.builder()
-            .url("jdbc:impala://172.16.100.226:21050/shier;AuthMech=3")
-            .username("hxb")
-            .password("admin123")
-            .poolConfig(new PoolConfig())
+            .url("jdbc:impala://eng-cdh3:21050;AuthMech=1;KrbServiceName=impala;KrbHostFQDN=eng-cdh3")
+            .schema("dev")
             .build();
 
     /**
@@ -39,6 +38,16 @@ public class ImpalaTableTest {
      */
     @BeforeClass
     public static void setUp () {
+        // 准备 Kerberos 参数
+        Map<String, Object> kerberosConfig = new HashMap<>();
+        kerberosConfig.put(HadoopConfTool.PRINCIPAL, "impala/eng-cdh3@DTSTACK.COM");
+        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/impalad-cdh3.keytab");
+        kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
+        source.setKerberosConfig(kerberosConfig);
+
+        String localKerberosPath = ImpalaKerberosTest.class.getResource("/eng-cdh").getPath();
+        IKerberos kerberos = ClientCache.getKerberos(DataSourceType.IMPALA.getVal());
+        kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan_partitions_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);

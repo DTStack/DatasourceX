@@ -32,7 +32,7 @@ public class VerticaTest {
 
     // 构建数据源信息 ps：em没有对应的数据源信息
     private static final VerticaSourceDTO source = VerticaSourceDTO.builder()
-            .url("jdbc:vertica://172.16.101.225:5433/docker")
+            .url("jdbc:vertica://172.16.8.178:5433/docker")
             .username("dbadmin")
             .poolConfig(PoolConfig.builder().build())
             .build();

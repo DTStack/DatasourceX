@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
@@ -12,12 +13,10 @@ import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
-import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,28 +44,27 @@ public class HdfsFileTest {
             .defaultFS("hdfs://ns1")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"kudu2:9000\",\n" +
-                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha" +
-                    ".ConfiguredFailoverProxyProvider\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"kudu1:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.101.227:9000\",\n" +
+                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.101.196:9000\",\n" +
                     "    \"dfs.nameservices\": \"ns1\"\n" +
                     "}")
             .build();
 
     // 初始化hive数据源信息
     private static final HiveSourceDTO hiveSource = HiveSourceDTO.builder()
-            .url("jdbc:hive2://kudu1:10000/dev")
-            .schema("dev")
+            .url("jdbc:hive2://172.16.100.214:10000/default")
+            .schema("default")
             .defaultFS("hdfs://ns1")
             .username("admin")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"kudu2:9000\",\n" +
-                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha" +
-                    ".ConfiguredFailoverProxyProvider\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"kudu1:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.101.227:9000\",\n" +
+                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.101.196:9000\",\n" +
                     "    \"dfs.nameservices\": \"ns1\"\n" +
                     "}")
+            .poolConfig(PoolConfig.builder().build())
             .build();
 
     /**
@@ -74,7 +72,7 @@ public class HdfsFileTest {
      */
     @BeforeClass
     public static void setUp () {
-        System.setProperty("HADOOP_USER_NAME", "root");
+        System.setProperty("HADOOP_USER_NAME", "admin");
         try {
             client.delete(source, "/tmp/hive_test", true);
         } catch (Exception e) {
@@ -410,7 +408,7 @@ public class HdfsFileTest {
      */
     @Test
     public void getContentSummaryList() {
-        List<HDFSContentSummary> list = client.getContentSummary(source, Lists.newArrayList("/temp"));
+        List<HDFSContentSummary> list = client.getContentSummary(source, Lists.newArrayList("/tmp"));
         assert CollectionUtils.isNotEmpty(list);
     }
 
@@ -419,7 +417,7 @@ public class HdfsFileTest {
      */
     @Test
     public void getContentSummary() {
-        HDFSContentSummary hdfsContentSummary = client.getContentSummary(source, "/temp");
+        HDFSContentSummary hdfsContentSummary = client.getContentSummary(source, "/tmp");
         assert hdfsContentSummary != null;
     }
 }

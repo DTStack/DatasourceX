@@ -27,10 +27,10 @@ import java.util.UUID;
  * @Date ：Created in 17:43 2020/7/9
  * @Description：Hbase 2 测试
  */
-public class Hbase1Test {
+public class Hbase2Test {
 
     // 构建client
-    private static final IClient client = ClientCache.getClient(DataSourceType.HBASE.getPluginName());
+    private static final IClient client = ClientCache.getClient("hbase2");
 
     // 构建hbase client
     private static final IHbase HBASE_CLIENT = ClientCache.getHbase(DataSourceType.HBASE.getVal());
@@ -82,12 +82,7 @@ public class Hbase1Test {
 
     @Test
     public void executorQuery() {
-        ArrayList<Filter> filters = new ArrayList<>();
-        RowFilter hbaseRowFilter = new RowFilter(
-                CompareOp.GREATER, new BinaryComparator("0".getBytes()));
-        hbaseRowFilter.setReversed(true);
-        filters.add(hbaseRowFilter);
-        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("loader_test").hbaseFilter(filters).build();
+        SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List result = client.executeQuery(source, sqlQueryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(result));
     }

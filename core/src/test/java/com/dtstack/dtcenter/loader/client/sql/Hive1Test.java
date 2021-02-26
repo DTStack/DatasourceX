@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -27,7 +28,6 @@ import java.util.Map;
  * @Date ：Created in 00:00 2020/2/29
  * @Description：Hive 1.x 测试
  */
-@Ignore
 public class Hive1Test {
     /**
      * 构造hive客户端
@@ -38,9 +38,10 @@ public class Hive1Test {
      * 构建数据源信息 - em创建的数据源连不上
      */
     private static final Hive1SourceDTO source = Hive1SourceDTO.builder()
-            .url("jdbc:hive2://172.16.101.17:10000/default")
+            .url("jdbc:hive2://172.16.100.214:10000/default")
+            .schema("default")
+            .defaultFS("hdfs://ns1")
             .username("admin")
-            .defaultFS("hdfs://172.16.101.196:9000")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
                     "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.101.227:9000\",\n" +
@@ -48,6 +49,7 @@ public class Hive1Test {
                     "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.101.196:9000\",\n" +
                     "    \"dfs.nameservices\": \"ns1\"\n" +
                     "}")
+            .poolConfig(PoolConfig.builder().build())
             .build();
 
     /**
@@ -253,8 +255,11 @@ public class Hive1Test {
      */
     @Test
     public void createDb()  {
-        client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql("drop database if exists loader_test").build());
-        assert client.createDatabase(source, "loader_test", "测试注释");
+        try {
+            client.createDatabase(source, "loader_test", "测试注释");
+        } catch (Exception e) {
+            // 可能失败
+        }
     }
 
     /**

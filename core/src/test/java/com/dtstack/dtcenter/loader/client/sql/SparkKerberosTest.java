@@ -15,6 +15,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -28,6 +29,7 @@ import java.util.Map;
  * @Date ：Created in 13:49 2020/9/8
  * @Description：Spark Kerberos 测试
  */
+@Ignore
 public class SparkKerberosTest {
 
     /**
@@ -58,7 +60,7 @@ public class SparkKerberosTest {
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.Spark.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
 
-        System.setProperty("HADOOP_USER_NAME", "root");
+        System.setProperty("HADOOP_USER_NAME", "admin");
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_1").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();

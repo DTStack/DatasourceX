@@ -229,7 +229,7 @@ public class OracleTest {
     /**
      * 获取 表的建表语句 (数据源有问题)
      */
-    @Test(expected = DtLoaderException.class)
+    @Test
     public void getCreateTableSql()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         String createTableSql = client.getCreateTableSql(source, queryDTO);

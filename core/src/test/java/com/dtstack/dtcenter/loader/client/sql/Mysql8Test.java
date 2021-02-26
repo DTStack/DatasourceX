@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public class Mysql8Test {
     // 获取数据源 client
-    private static final IClient client = ClientCache.getClient(DataSourceType.MySQL8.getVal());
+    private static final IClient client = ClientCache.getClient("mysql8");
 
     // 构建数据源信息
     private static final Mysql8SourceDTO source = Mysql8SourceDTO.builder()

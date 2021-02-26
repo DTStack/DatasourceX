@@ -37,15 +37,15 @@ public class Bug1477 {
      * 构建数据源信息
      */
     private static final HiveSourceDTO HIVE_SOURCE_DTO = HiveSourceDTO.builder()
-            .url("jdbc:hive2://kudu1:10000/dev")
-            .schema("dev")
+            .url("jdbc:hive2://172.16.100.214:10000/default")
+            .schema("default")
             .defaultFS("hdfs://ns1")
             .username("admin")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"kudu2:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.101.227:9000\",\n" +
                     "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"kudu1:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.101.196:9000\",\n" +
                     "    \"dfs.nameservices\": \"ns1\"\n" +
                     "}")
             .build();
@@ -55,10 +55,9 @@ public class Bug1477 {
             .defaultFS("hdfs://ns1")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"kudu2:9000\",\n" +
-                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha" +
-                    ".ConfiguredFailoverProxyProvider\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"kudu1:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.101.227:9000\",\n" +
+                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.101.196:9000\",\n" +
                     "    \"dfs.nameservices\": \"ns1\"\n" +
                     "}")
             .build();
@@ -68,7 +67,7 @@ public class Bug1477 {
      */
     @BeforeClass
     public static void setUp () {
-        System.setProperty("HADOOP_USER_NAME", "root");
+        System.setProperty("HADOOP_USER_NAME", "admin");
         // text 格式表
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_bug1477_text").build();
         HIVE_CLIENT.executeSqlWithoutResultSet(HIVE_SOURCE_DTO, queryDTO);

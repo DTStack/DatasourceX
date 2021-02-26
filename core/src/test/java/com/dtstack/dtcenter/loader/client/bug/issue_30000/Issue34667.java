@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.loader.client.IKerberos;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Map;
@@ -19,6 +20,7 @@ import java.util.Map;
  * date：Created in 2:58 下午 2021/1/13
  * company: www.dtstack.com
  */
+@Ignore
 public class Issue34667 {
 
     private static final HiveSourceDTO source = HiveSourceDTO.builder()
