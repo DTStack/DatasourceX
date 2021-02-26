@@ -82,6 +82,12 @@ public class HbaseGatewayTest {
         Assert.assertFalse(check);
     }
 
+    @Test
+    public void preview() {
+        List<List<Object>> result = hbaseClient.getPreview(source, SqlQueryDTO.builder().tableName("loader_test").previewNum(2).build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(result));
+    }
+
     /**
      * 创建已经存在的表测试
      */
