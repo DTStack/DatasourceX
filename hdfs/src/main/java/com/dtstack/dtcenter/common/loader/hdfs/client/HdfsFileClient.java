@@ -27,6 +27,7 @@ import com.dtstack.dtcenter.loader.enums.FileFormat;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -52,6 +53,7 @@ import java.util.Properties;
  * @Date ：Created in 14:50 2020/8/10
  * @Description：HDFS 文件操作实现类
  */
+@Slf4j
 public class HdfsFileClient implements IHdfsFile {
 
     private static final String PATH_DELIMITER = "/";
@@ -123,6 +125,7 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     private org.apache.hadoop.fs.FileStatus getFileStatus (Configuration conf, String location) throws Exception{
+        log.info("Hdfs get {} fileStatus;", location);
         if (HdfsOperator.isFileExist(conf, location)) {
             return HdfsOperator.getFileStatus(conf, location);
         }
@@ -136,6 +139,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean downloadFileFromHdfs(ISourceDTO source, String remotePath, String localDir) throws Exception {
+        log.info("Hdfs downloadFile from {} to {};", remotePath, localDir);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
 
@@ -154,6 +158,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean uploadLocalFileToHdfs(ISourceDTO source, String localFilePath, String remotePath) throws Exception {
+        log.info("Hdfs uploadFile from {} to {};", localFilePath, remotePath);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
 
@@ -171,6 +176,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean uploadInputStreamToHdfs(ISourceDTO source, byte[] bytes, String remotePath) throws Exception {
+        log.info("Hdfs uploadFile to {};", remotePath);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
 
@@ -187,6 +193,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean createDir(ISourceDTO source, String remotePath, Short permission) throws Exception {
+        log.info("Hdfs createDir {};", remotePath);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
@@ -202,6 +209,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean isFileExist(ISourceDTO source, String remotePath) throws Exception {
+        log.info("Hdfs check file exists {};", remotePath);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
@@ -217,6 +225,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean checkAndDelete(ISourceDTO source, String remotePath) throws Exception {
+        log.info("Hdfs check file and delete {};", remotePath);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
@@ -232,6 +241,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean delete(ISourceDTO source, String remotePath, boolean recursive) throws Exception {
+        log.info("Hdfs delete file {};", remotePath);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Boolean>) () -> {
@@ -248,6 +258,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean copyDirector(ISourceDTO source, String src, String dist) throws Exception {
+        log.info("Hdfs copy director from {} to {};", src, dist);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Boolean>) () -> {
@@ -278,6 +289,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean fileMerge(ISourceDTO source, String src, String mergePath, FileFormat fileFormat, Long maxCombinedFileSize, Long needCombineFileSizeLimit) throws Exception {
+        log.info("Hdfs fileMerge from {} to {};", src, mergePath);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Boolean>) () -> {
@@ -302,6 +314,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public long getDirSize(ISourceDTO source, String remotePath) throws Exception {
+        log.info("Hdfs get dir size {};", remotePath);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
@@ -317,6 +330,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean deleteFiles(ISourceDTO source, List<String> fileNames) throws Exception {
+        log.info("Hdfs delete files {};", fileNames);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
@@ -333,6 +347,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean isDirExist(ISourceDTO source, String remotePath) throws Exception {
+        log.info("Hdfs check dir exist {};", remotePath);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
@@ -348,6 +363,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean setPermission(ISourceDTO source, String remotePath, String mode) throws Exception {
+        log.info("Hdfs set permission {};", remotePath);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
@@ -364,6 +380,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean rename(ISourceDTO source, String src, String dist) throws Exception {
+        log.info("Hdfs rename file from {} to {};", src, dist);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
@@ -379,6 +396,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean copyFile(ISourceDTO source, String src, String dist, boolean isOverwrite) throws Exception {
+        log.info("Hdfs copy file from {} to {};", src, dist);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
@@ -395,6 +413,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public List<FileStatus> listStatus(ISourceDTO source, String remotePath) throws Exception {
+        log.info("Hdfs list file or dir status {};", remotePath);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
@@ -410,6 +429,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public List<String> listAllFilePath(ISourceDTO source, String remotePath) throws Exception {
+        log.info("Hdfs list all file path {};", remotePath);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
@@ -425,6 +445,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public List<FileStatus> listAllFiles(ISourceDTO source, String remotePath, boolean isIterate) throws Exception {
+        log.info("Hdfs list all files {};", remotePath);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
@@ -440,6 +461,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean copyToLocal(ISourceDTO source, String srcPath, String dstPath) throws Exception {
+        log.info("Hdfs copy file from {} to local {};", srcPath, dstPath);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
@@ -456,6 +478,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public boolean copyFromLocal(ISourceDTO source, String srcPath, String dstPath, boolean overwrite) throws Exception {
+        log.info("Hdfs copy file from local {} to {};", srcPath, dstPath);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
@@ -518,6 +541,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public List<ColumnMetaDTO> getColumnList(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat) throws Exception {
+        log.info("Hdfs get column lists by query : {}, fileFormat : {};", queryDTO, fileFormat);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<List<ColumnMetaDTO>>) () -> {
@@ -533,6 +557,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception {
+        log.info("Hdfs write by position {};", hdfsWriterDTO);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Integer>) () -> {
@@ -547,6 +572,7 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws Exception {
+        log.info("Hdfs write by name {};", hdfsWriterDTO);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         // kerberos认证
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
@@ -562,11 +588,13 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public HDFSContentSummary getContentSummary(ISourceDTO source, String HDFSDirPath) throws Exception {
+        log.info("Hdfs get file context summary {};", HDFSDirPath);
         return getContentSummary(source, Lists.newArrayList(HDFSDirPath)).get(0);
     }
 
     @Override
     public List<HDFSContentSummary> getContentSummary(ISourceDTO source, List<String> HDFSDirPaths) throws Exception {
+        log.info("Hdfs get file context summary {};", HDFSDirPaths);
         if (CollectionUtils.isEmpty(HDFSDirPaths)) {
             throw new DtLoaderException("hdfs路径不能为空！");
         }
