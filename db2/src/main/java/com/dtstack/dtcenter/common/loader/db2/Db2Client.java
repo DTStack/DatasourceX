@@ -121,6 +121,7 @@ public class Db2Client extends AbsRdbmsClient {
         return String.format(TABLE_BY_SCHEMA, queryDTO.getSchema());
     }
 
+    @Override
     protected String dealSql(ISourceDTO iSource, SqlQueryDTO sqlQueryDTO){
         Db2SourceDTO db2SourceDTO = (Db2SourceDTO) iSource;
         String schema = StringUtils.isNotBlank(sqlQueryDTO.getSchema()) ? sqlQueryDTO.getSchema() : db2SourceDTO.getSchema();
@@ -128,7 +129,7 @@ public class Db2Client extends AbsRdbmsClient {
     }
 
     /**
-     * 处理Oracle schema和tableName，适配schema和tableName中有.的情况
+     * 处理db2 schema和tableName，适配schema和tableName中有.的情况
      * @param schema
      * @param tableName
      * @return

@@ -26,6 +26,7 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -51,6 +52,7 @@ import java.util.Map;
  * @Date ：Created in 14:50 2020/8/10
  * @Description：HDFS 文件操作实现类
  */
+@Slf4j
 public class HdfsFileClient implements IHdfsFile {
 
     private static final String PATH_DELIMITER = "/";
@@ -307,6 +309,22 @@ public class HdfsFileClient implements IHdfsFile {
         } catch (IOException e) {
             throw new DtLoaderException(String.format("hdfs内复制文件异常 : %s" + e.getMessage()), e);
         }
+    }
+
+    @Override
+    public List<FileStatus> listStatus(ISourceDTO source, String remotePath) throws Exception {
+        log.info("Hdfs list file or dir status {};", remotePath);
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+        return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<List<FileStatus>>) () -> {
+                    try {
+                        return transferFileStatus(HdfsOperator.listStatus(conf, remotePath));
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("获取 hdfs目录 文件异常", e);
+                    }
+                }
+        );
     }
 
     @Override

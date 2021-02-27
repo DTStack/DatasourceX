@@ -37,8 +37,6 @@ import java.util.Objects;
  */
 @Slf4j
 public class OracleClient extends AbsRdbmsClient {
-    private static final String ORACLE_ALL_TABLES_SQL = "SELECT TABLE_NAME FROM USER_TABLES UNION SELECT '\"'||GRANTOR||'\"'||'.'||'\"'||TABLE_NAME||'\"' FROM ALL_TAB_PRIVS WHERE grantee = (SELECT USERNAME FROM user_users WHERE ROWNUM = 1) and table_schema != 'SYS' ";
-    private static final String ORACLE_WITH_VIEWS_SQL = "UNION SELECT VIEW_NAME FROM USER_VIEWS ";
 
     private static String ORACLE_NUMBER_TYPE = "NUMBER";
     private static String ORACLE_NUMBER_FORMAT = "NUMBER(%d,%d)";
@@ -83,27 +81,8 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) iSource;
-        Integer clearStatus = beforeQuery(oracleSourceDTO, queryDTO, false);
-
-        Statement statement = null;
-        ResultSet rs = null;
-        List<String> tableList = new ArrayList<>();
-        try {
-            String sql = queryDTO != null && queryDTO.getView() ? ORACLE_ALL_TABLES_SQL + ORACLE_WITH_VIEWS_SQL :
-                    ORACLE_ALL_TABLES_SQL;
-            statement = oracleSourceDTO.getConnection().createStatement();
-            rs = statement.executeQuery(sql);
-            while (rs.next()) {
-                tableList.add(rs.getString(1));
-            }
-        } catch (Exception e) {
-            throw new DtLoaderException("获取表异常", e);
-        } finally {
-            DBUtil.closeDBResources(rs, statement, oracleSourceDTO.clearAfterGetConnection(clearStatus));
-        }
-        return tableList;
+    public List<String> getTableList(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+        return getTableListBySchema(sourceDTO, queryDTO);
     }
 
     @Override

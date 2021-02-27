@@ -274,9 +274,15 @@ public class RedisUtils {
         Set<HostAndPort> nodes = new LinkedHashSet<>();
         String[] split = hostPorts.split(",");
         for (String node : split) {
-            String[] nodeInfo = node.split(":");
-            if (nodeInfo.length == 2) {
-                nodes.add(new HostAndPort(nodeInfo[0].trim(), Integer.valueOf(nodeInfo[1].trim())));
+            Matcher matcher = HOST_PORT_PATTERN.matcher(node);
+            if (matcher.find()) {
+                String host = matcher.group("host");
+                String portStr = matcher.group("port");
+                if (StringUtils.isNotBlank(host) && StringUtils.isNotBlank(portStr)) {
+                    // 转化为int格式的端口
+                    int port = Integer.parseInt(portStr);
+                    nodes.add(new HostAndPort(host, port));
+                }
             }
         }
         return nodes;
