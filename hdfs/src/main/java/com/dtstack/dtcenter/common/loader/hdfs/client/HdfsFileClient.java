@@ -312,19 +312,14 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     @Override
-    public List<FileStatus> listStatus(ISourceDTO source, String remotePath) throws Exception {
-        log.info("Hdfs list file or dir status {};", remotePath);
+    public List<FileStatus> listStatus(ISourceDTO source, String remotePath) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
-        Configuration conf = getHadoopConf(hdfsSourceDTO);
-        return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
-                (PrivilegedAction<List<FileStatus>>) () -> {
-                    try {
-                        return transferFileStatus(HdfsOperator.listStatus(conf, remotePath));
-                    } catch (Exception e) {
-                        throw new DtCenterDefException("获取 hdfs目录 文件异常", e);
-                    }
-                }
-        );
+        FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
+        try {
+            return transferFileStatus(HdfsOperator.listStatus(fs, remotePath));
+        } catch (IOException e) {
+            throw new DtLoaderException(String.format("获取目标路径下文件或者文件夹状态异常 : %s" + e.getMessage()), e);
+        }
     }
 
     @Override
@@ -585,13 +580,21 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     private List<FileStatus> listFiles(FileSystem fs, String remotePath, boolean isIterate) {
-        List<FileStatus> fileStatusList = new ArrayList<>();
-        List<org.apache.hadoop.fs.FileStatus> fileStatuses;
         try {
-            fileStatuses = HdfsOperator.listFiles(fs, remotePath, isIterate);
+            return transferFileStatus(HdfsOperator.listFiles(fs, remotePath, isIterate));
         } catch (IOException e) {
             throw new DtLoaderException(String.format("获取目标路径下文件失败 : %s", e.getMessage()), e);
         }
+    }
+
+    /**
+     * Apache Status 转换
+     *
+     * @param fileStatuses
+     * @return
+     */
+    private List<FileStatus> transferFileStatus(List<org.apache.hadoop.fs.FileStatus> fileStatuses) {
+        List<FileStatus> fileStatusList = new ArrayList<>();
         for (org.apache.hadoop.fs.FileStatus fileStatus : fileStatuses) {
             FileStatus fileStatusTemp = FileStatus.builder()
                     .length(fileStatus.getLen())

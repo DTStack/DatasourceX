@@ -218,7 +218,7 @@ public interface IHdfsFile {
      * @return
      * @throws Exception
      */
-    List<FileStatus> listStatus(ISourceDTO source, String remotePath) throws Exception;
+    List<FileStatus> listStatus(ISourceDTO source, String remotePath);
 
     /**
      * 获取目录下所有文件

@@ -250,6 +250,15 @@ public class HdfsFileTest {
      * 获取目标路径下所有文件属性集 - 递归获取
      */
     @Test
+    public void listStatus()  {
+        List<FileStatus> result = client.listStatus(source, "/tmp");
+        assert CollectionUtils.isNotEmpty(result);
+    }
+
+    /**
+     * 获取目标路径下所有文件属性集 - 递归获取
+     */
+    @Test
     public void listAllFiles()  {
         List<FileStatus> result = client.listAllFiles(source, "/tmp/hive_test", true);
         assert CollectionUtils.isNotEmpty(result);

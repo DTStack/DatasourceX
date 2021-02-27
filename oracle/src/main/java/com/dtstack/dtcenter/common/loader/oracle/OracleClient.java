@@ -81,7 +81,7 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
+    public List<String> getTableList(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         return getTableListBySchema(sourceDTO, queryDTO);
     }
 

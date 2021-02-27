@@ -214,7 +214,7 @@ public class HdfsFileProxy implements IHdfsFile {
     }
 
     @Override
-    public List<FileStatus> listStatus(ISourceDTO source, String remotePath) throws Exception {
+    public List<FileStatus> listStatus(ISourceDTO source, String remotePath) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.listStatus(source, remotePath),
                     targetClient.getClass().getClassLoader());
