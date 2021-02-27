@@ -192,6 +192,16 @@ public interface IHdfsFile {
     boolean fileMerge(ISourceDTO source, String src, String mergePath, FileFormat fileFormat, Long maxCombinedFileSize, Long needCombineFileSizeLimit) throws Exception;
 
     /**
+     * 获取目录或者文件的属性
+     *
+     * @param source
+     * @param remotePath
+     * @return
+     * @throws Exception
+     */
+    List<FileStatus> listStatus(ISourceDTO source, String remotePath) throws Exception;
+
+    /**
      * 获取目录下所有文件
      *
      * @param source
