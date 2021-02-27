@@ -26,6 +26,7 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -51,6 +52,7 @@ import java.util.Map;
  * @Date ：Created in 14:50 2020/8/10
  * @Description：HDFS 文件操作实现类
  */
+@Slf4j
 public class HdfsFileClient implements IHdfsFile {
 
     private static final String PATH_DELIMITER = "/";
@@ -306,6 +308,17 @@ public class HdfsFileClient implements IHdfsFile {
             return HdfsOperator.copyFile(fs, src, dist, isOverwrite);
         } catch (IOException e) {
             throw new DtLoaderException(String.format("hdfs内复制文件异常 : %s" + e.getMessage()), e);
+        }
+    }
+
+    @Override
+    public List<FileStatus> listStatus(ISourceDTO source, String remotePath) {
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
+        try {
+            return transferFileStatus(HdfsOperator.listStatus(fs, remotePath));
+        } catch (IOException e) {
+            throw new DtLoaderException(String.format("获取目标路径下文件或者文件夹状态异常 : %s" + e.getMessage()), e);
         }
     }
 
@@ -567,13 +580,21 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     private List<FileStatus> listFiles(FileSystem fs, String remotePath, boolean isIterate) {
-        List<FileStatus> fileStatusList = new ArrayList<>();
-        List<org.apache.hadoop.fs.FileStatus> fileStatuses;
         try {
-            fileStatuses = HdfsOperator.listFiles(fs, remotePath, isIterate);
+            return transferFileStatus(HdfsOperator.listFiles(fs, remotePath, isIterate));
         } catch (IOException e) {
             throw new DtLoaderException(String.format("获取目标路径下文件失败 : %s", e.getMessage()), e);
         }
+    }
+
+    /**
+     * Apache Status 转换
+     *
+     * @param fileStatuses
+     * @return
+     */
+    private List<FileStatus> transferFileStatus(List<org.apache.hadoop.fs.FileStatus> fileStatuses) {
+        List<FileStatus> fileStatusList = new ArrayList<>();
         for (org.apache.hadoop.fs.FileStatus fileStatus : fileStatuses) {
             FileStatus fileStatusTemp = FileStatus.builder()
                     .length(fileStatus.getLen())

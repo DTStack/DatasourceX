@@ -25,6 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -115,6 +116,7 @@ public class HdfsOperator {
      * @return
      */
     public static FileStatus getFileStatus(FileSystem fs, String location) {
+        log.info("Hdfs get {} fileStatus;", location);
         try {
             return fs.getFileStatus(new Path(location));
         } catch (IOException e) {
@@ -317,6 +319,19 @@ public class HdfsOperator {
         } else {
             return null;
         }
+    }
+
+    /**
+     * 获取文件或者文件夹的状态
+     *
+     * @param fs
+     * @param remotePath
+     * @return
+     */
+    public static List<FileStatus> listStatus(FileSystem fs, String remotePath) throws IOException {
+        log.info("列出文件夹或者文件的状态 {}", remotePath);
+        Path parentPath = new Path(remotePath);
+        return Arrays.asList(fs.listStatus(parentPath));
     }
 
     /**
