@@ -394,6 +394,21 @@ public class HdfsFileClient implements IHdfsFile {
     }
 
     @Override
+    public List<FileStatus> listStatus(ISourceDTO source, String remotePath) throws Exception {
+        HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = getHadoopConf(hdfsSourceDTO);
+        return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<List<FileStatus>>) () -> {
+                    try {
+                        return transferFileStatus(HdfsOperator.listStatus(conf, remotePath));
+                    } catch (Exception e) {
+                        throw new DtCenterDefException("获取 hdfs目录 文件异常", e);
+                    }
+                }
+        );
+    }
+
+    @Override
     public List<String> listAllFilePath(ISourceDTO source, String remotePath) throws Exception {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = getHadoopConf(hdfsSourceDTO);
@@ -415,7 +430,7 @@ public class HdfsFileClient implements IHdfsFile {
         return KerberosUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<List<FileStatus>>) () -> {
                     try {
-                        return listFiles(conf, remotePath, isIterate);
+                        return transferFileStatus(HdfsOperator.listFiles(conf, remotePath, isIterate));
                     } catch (Exception e) {
                         throw new DtCenterDefException("获取 hdfs 目录下文件状态异常", e);
                     }
@@ -699,9 +714,14 @@ public class HdfsFileClient implements IHdfsFile {
         return conf;
     }
 
-    private List<FileStatus> listFiles(Configuration conf, String remotePath, boolean isIterate) throws IOException {
+    /**
+     * Apache Status 转换
+     *
+     * @param fileStatuses
+     * @return
+     */
+    private List<FileStatus> transferFileStatus(List<org.apache.hadoop.fs.FileStatus> fileStatuses) {
         List<FileStatus> fileStatusList = new ArrayList<>();
-        List<org.apache.hadoop.fs.FileStatus> fileStatuses = HdfsOperator.listFiles(conf, remotePath, isIterate);
         for (org.apache.hadoop.fs.FileStatus fileStatus : fileStatuses) {
             FileStatus fileStatusTemp = FileStatus.builder()
                     .length(fileStatus.getLen())
