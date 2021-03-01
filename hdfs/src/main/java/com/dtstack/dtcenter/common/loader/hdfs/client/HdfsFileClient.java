@@ -307,7 +307,7 @@ public class HdfsFileClient implements IHdfsFile {
         try {
             return HdfsOperator.copyFile(fs, src, dist, isOverwrite);
         } catch (IOException e) {
-            throw new DtLoaderException(String.format("hdfs内复制文件异常 : %s" + e.getMessage()), e);
+            throw new DtLoaderException(String.format("hdfs内复制文件异常 : %s", e.getMessage()), e);
         }
     }
 
@@ -318,7 +318,7 @@ public class HdfsFileClient implements IHdfsFile {
         try {
             return transferFileStatus(HdfsOperator.listStatus(fs, remotePath));
         } catch (IOException e) {
-            throw new DtLoaderException(String.format("获取目标路径下文件或者文件夹状态异常 : %s" + e.getMessage()), e);
+            throw new DtLoaderException(String.format("获取目标路径下文件或者文件夹状态异常 : %s", e.getMessage()), e);
         }
     }
 
@@ -329,7 +329,7 @@ public class HdfsFileClient implements IHdfsFile {
         try {
             return HdfsOperator.listAllFilePath(fs, remotePath);
         } catch (IOException e) {
-            throw new DtLoaderException(String.format("获取目标路径下所有文件异常 : %s" + e.getMessage()), e);
+            throw new DtLoaderException(String.format("获取目标路径下所有文件异常 : %s", e.getMessage()), e);
         }
     }
 
