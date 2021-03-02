@@ -14,6 +14,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
@@ -428,5 +429,13 @@ public class HdfsFileTest {
     public void getContentSummary() {
         HDFSContentSummary hdfsContentSummary = client.getContentSummary(source, "/tmp");
         assert hdfsContentSummary != null;
+    }
+
+    /**
+     * 统计文件夹内容摘要，包括文件的数量，文件夹的数量，文件变动时间，以及这个文件夹的占用存储等内容 - 异常测试
+     */
+    @Test(expected = DtLoaderException.class)
+    public void getContentSummaryError() {
+        client.getContentSummary(source, "/tmp/xxxxx");
     }
 }
