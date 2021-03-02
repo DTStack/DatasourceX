@@ -234,7 +234,7 @@ public class SparkTextDownload implements IDownloader {
         readNum++;
         String line = value.toString();
         value.clear();
-        String[] fields = line.split(fieldDelimiter);
+        String[] fields = line.split(fieldDelimiter, -1);
         List<String> row = Lists.newArrayList(fields);
         if(CollectionUtils.isNotEmpty(partitionColumns)){
             row.addAll(currentPartData);
