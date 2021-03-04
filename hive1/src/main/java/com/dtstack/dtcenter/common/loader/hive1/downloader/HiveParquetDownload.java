@@ -273,7 +273,6 @@ public class HiveParquetDownload implements IDownloader {
             }
         } catch (Exception e){
             value = null;
-            log.error("从当前行获取字段信息异常！", e);
         }
         return value;
     }
