@@ -547,13 +547,22 @@ public class SparkClient extends AbsRdbmsClient {
             }
 
             // ThriftServer 2.4.x 处理存储属性里面 [field.delim=,, serialization.format=,]
+            // ThriftServer 2.2.x 处理存储属性里面 [serialization.format=,, field.delim=,]
             if ("Storage Properties".equals(colName)) {
+                int serializationFormatLos = dataType.indexOf("serialization.format=");
                 int fieldDelimLos = dataType.indexOf("field.delim=");
-                int serializationLos = dataType.indexOf(", serialization.format=");
-                if (serializationLos > fieldDelimLos + 12) {
-                    tableInfo.setDelim(dataType.substring(fieldDelimLos+12, serializationLos));
+                // 如果两个值中某个值不存在，则直接返回
+                if (serializationFormatLos == -1 || fieldDelimLos == -1) {
                     continue;
                 }
+
+                // 固定值处理
+                if (serializationFormatLos > fieldDelimLos) {
+                    tableInfo.setDelim(dataType.substring(fieldDelimLos + 12, serializationFormatLos - 2));
+                } else {
+                    tableInfo.setDelim(dataType.substring(serializationFormatLos + 21, fieldDelimLos - 2));
+                }
+                continue;
             }
 
             if (colName.contains("Owner")) {
