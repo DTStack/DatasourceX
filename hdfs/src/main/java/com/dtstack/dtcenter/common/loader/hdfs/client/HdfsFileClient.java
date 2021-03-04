@@ -307,7 +307,7 @@ public class HdfsFileClient implements IHdfsFile {
         try {
             return HdfsOperator.copyFile(fs, src, dist, isOverwrite);
         } catch (IOException e) {
-            throw new DtLoaderException(String.format("hdfs内复制文件异常 : %s" + e.getMessage()), e);
+            throw new DtLoaderException(String.format("hdfs内复制文件异常 : %s", e.getMessage()), e);
         }
     }
 
@@ -318,7 +318,7 @@ public class HdfsFileClient implements IHdfsFile {
         try {
             return transferFileStatus(HdfsOperator.listStatus(fs, remotePath));
         } catch (IOException e) {
-            throw new DtLoaderException(String.format("获取目标路径下文件或者文件夹状态异常 : %s" + e.getMessage()), e);
+            throw new DtLoaderException(String.format("获取目标路径下文件或者文件夹状态异常 : %s", e.getMessage()), e);
         }
     }
 
@@ -329,7 +329,7 @@ public class HdfsFileClient implements IHdfsFile {
         try {
             return HdfsOperator.listAllFilePath(fs, remotePath);
         } catch (IOException e) {
-            throw new DtLoaderException(String.format("获取目标路径下所有文件异常 : %s" + e.getMessage()), e);
+            throw new DtLoaderException(String.format("获取目标路径下所有文件异常 : %s", e.getMessage()), e);
         }
     }
 
@@ -457,8 +457,12 @@ public class HdfsFileClient implements IHdfsFile {
                         Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
                         FileSystem fs = FileSystem.get(conf);
                         for (String hdfsDirPath : hdfsDirPaths) {
-                            org.apache.hadoop.fs.FileStatus fileStatus = fs.getFileStatus(new Path(hdfsDirPath));
-                            ContentSummary contentSummary = fs.getContentSummary(new Path(hdfsDirPath));
+                            Path hdfsPath = new Path(hdfsDirPath);
+                            if (!fs.exists(hdfsPath)) {
+                                throw new DtLoaderException(String.format("hdfs路径：%s 不存在", hdfsDirPath));
+                            }
+                            org.apache.hadoop.fs.FileStatus fileStatus = fs.getFileStatus(hdfsPath);
+                            ContentSummary contentSummary = fs.getContentSummary(hdfsPath);
                             HDFSContentSummary hdfsContentSummary = HDFSContentSummary.builder()
                                     .directoryCount(contentSummary.getDirectoryCount())
                                     .fileCount(contentSummary.getFileCount())
@@ -468,7 +472,7 @@ public class HdfsFileClient implements IHdfsFile {
                         }
                         return hdfsContentSummaries;
                     } catch (Exception e) {
-                        throw new DtLoaderException("获取HDFS文件摘要失败！", e);
+                        throw new DtLoaderException(String.format("获取HDFS文件信息失败：%s", e.getMessage()), e);
                     }
                 }
         );
