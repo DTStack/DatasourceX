@@ -420,8 +420,10 @@ public class HdfsOperator {
             String fileName = (String) var3.next();
             Path path = new Path(fileName);
             try {
-                if (fs.exists(path) && fs.isFile(path)) {
+                if (fs.exists(path)) {
                     Trash.moveToAppropriateTrash(fs, path, fs.getConf());
+                } else {
+                    log.error("HDFS 文件不存在 {}", path);
                 }
             } catch (Exception e) {
                 throw new DtLoaderException(String.format("判断文件是否存在时异常 : %s", e.getMessage()), e);
