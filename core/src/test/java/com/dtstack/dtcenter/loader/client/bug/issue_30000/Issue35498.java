@@ -1,11 +1,10 @@
 package com.dtstack.dtcenter.loader.client.bug.issue_30000;
 
 import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.client.AbsClientCache;
+import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
-import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Assert;
 import org.junit.Test;
@@ -19,8 +18,6 @@ import java.util.List;
  * company: www.dtstack.com
  */
 public class Issue35498 {
-
-    private static final AbsClientCache CLIENT_CACHE = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     private static HiveSourceDTO source = HiveSourceDTO.builder()
             .url("jdbc:hive2://kudu3:10000/dev")
@@ -39,7 +36,7 @@ public class Issue35498 {
     @Test
     public void test () throws Exception{
         System.setProperty("HADOOP_USER_NAME", "admin");
-        IClient client = CLIENT_CACHE.getClient(DataSourceType.HIVE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getPluginName());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_textfile").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table loader_test_textfile (col1 string , col2 string, col3 string) stored as textfile").build();
