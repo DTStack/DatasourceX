@@ -103,4 +103,17 @@ public interface IKafka<T> {
      * @return 分区数量
      */
     List<KafkaPartitionDTO> getTopicPartitions (ISourceDTO source, String topic);
+
+    /**
+     * 从kafka 中消费数据
+     *
+     * @param source          数据源信息
+     * @param topic           topic
+     * @param collectNum      最大条数
+     * @param offsetReset     从哪里开始消费
+     * @param timestampOffset 消费启始位置
+     * @param maxTimeWait     最大等待时间，单位秒
+     * @return kafka数据
+     */
+    List<String> consumeData(ISourceDTO source, String topic, Integer collectNum, String offsetReset, Long timestampOffset, Integer maxTimeWait);
 }

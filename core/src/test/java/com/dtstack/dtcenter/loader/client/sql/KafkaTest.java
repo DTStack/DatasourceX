@@ -112,4 +112,20 @@ public class KafkaTest {
         List<KafkaPartitionDTO> partitionDTOS = client.getTopicPartitions(source, "loader_test");
         Assert.assertTrue(CollectionUtils.isNotEmpty(partitionDTOS));
     }
+
+    @Test
+    public void consumeData() {
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
+        List<String> result = client.consumeData(source, "loader_test", 100, "earliest", null, 60);
+        Assert.assertEquals(100, result.size());
+    }
+
+    @Test
+    public void consumeDataTimestamp() {
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
+        // 从指定的timestamp 消费
+        List<String> result = client.consumeData(source, "loader_test", 100, "timestamp", 1615871158731L, 60);
+        Assert.assertEquals(100, result.size());
+    }
+
 }
