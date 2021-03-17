@@ -6,11 +6,13 @@ import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.common.utils.TelUtil;
 import com.dtstack.dtcenter.common.loader.kafka.KafkaConsistent;
 import com.dtstack.dtcenter.common.loader.kafka.KafkaErrorPattern;
+import com.dtstack.dtcenter.common.loader.kafka.enums.EConsumeType;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import kafka.admin.AdminUtils;
 import kafka.cluster.Broker;
 import kafka.cluster.EndPoint;
@@ -24,6 +26,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
@@ -513,5 +516,91 @@ public class KakfaUtil {
                 .port(node.port())
                 .rack(node.rack())
                 .build();
+    }
+
+
+    /**
+     * 从 kafka 消费数据
+     *
+     * @param brokerUrls      kafka broker节点信息
+     * @param topic           消费主题
+     * @param collectNum      收集条数
+     * @param offsetReset     消费方式
+     * @param timestampOffset 按时间消费
+     * @param maxTimeWait     最大等待时间
+     * @param kerberosConfig  kerberos 配置
+     * @return 消费到的数据
+     */
+    public static List<String> consumeData(String brokerUrls, String topic, Integer collectNum,
+                                           String offsetReset, Long timestampOffset,
+                                           Integer maxTimeWait, Map<String, Object> kerberosConfig) {
+        // 结果集
+        List<String> result = new ArrayList<>();
+        Properties prop = initProperties(brokerUrls, kerberosConfig);
+        // 每次拉取最大条数
+        prop.put("max.poll.records", MAX_POOL_RECORDS);
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(prop)) {
+            List<TopicPartition> partitions = Lists.newArrayList();
+            // 获取所有的分区
+            List<PartitionInfo> allPartitions = consumer.partitionsFor(topic);
+            for (PartitionInfo partitionInfo : allPartitions) {
+                partitions.add(new TopicPartition(partitionInfo.topic(), partitionInfo.partition()));
+            }
+            consumer.assign(partitions);
+
+            // 从最早位置开始消费
+            if (EConsumeType.EARLIEST.name().toLowerCase().equals(offsetReset)) {
+                consumer.seekToBeginning(partitions);
+            } else if (EConsumeType.TIMESTAMP.name().toLowerCase().equals(offsetReset) && Objects.nonNull(timestampOffset)) {
+                Map<TopicPartition, Long> timestampsToSearch = Maps.newHashMap();
+                for (TopicPartition partition : partitions) {
+                    timestampsToSearch.put(partition, timestampOffset);
+                }
+                Map<TopicPartition, OffsetAndTimestamp> offsetsForTimes = consumer.offsetsForTimes(timestampsToSearch);
+                // 没有找到offset 则从当前时间开始消费
+                if (MapUtils.isEmpty(offsetsForTimes)) {
+                    consumer.seekToEnd(partitions);
+                } else {
+                    for (Map.Entry<TopicPartition, OffsetAndTimestamp> entry : offsetsForTimes.entrySet()) {
+                        consumer.seek(entry.getKey(), entry.getValue().offset());
+                    }
+                }
+            } else {
+                // 默认从最当前位置开始消费
+                if (EConsumeType.LATEST.name().toLowerCase().equals(offsetReset)) {
+                    consumer.seekToEnd(partitions);
+                }
+            }
+
+            // 开始时间
+            long start = System.currentTimeMillis();
+            // 消费结束时间
+            long endTime = start + maxTimeWait * 1000;
+            while (true) {
+                long nowTime = System.currentTimeMillis();
+                if (nowTime >= endTime) {
+                    break;
+                }
+                ConsumerRecords<String, String> records = consumer.poll(1000);
+                for (ConsumerRecord<String, String> record : records) {
+                    String value = record.value();
+                    if (StringUtils.isBlank(value)) {
+                        continue;
+                    }
+                    result.add(value);
+                    if (result.size() >= collectNum) {
+                        break;
+                    }
+                }
+                if (result.size() >= collectNum) {
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            log.error("从kafka消费数据异常：brokerUrls:{} \ntopic:{} \noffsetReset:{} \n timestampOffset:{} \n maxTimeWait:{} \n ", brokerUrls, topic, offsetReset, timestampOffset, maxTimeWait, e);
+        } finally {
+            destroyProperty();
+        }
+        return result;
     }
 }

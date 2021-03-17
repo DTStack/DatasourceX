@@ -79,4 +79,10 @@ public class KafkaClientProxy<T> implements IKafka<T> {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTopicPartitions(source, topic),
                 targetClient.getClass().getClassLoader());
     }
+
+    @Override
+    public List<String> consumeData(ISourceDTO source, String topic, Integer collectNum, String offsetReset, Long timestampOffset, Integer maxTimeWait) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.consumeData(source, topic, collectNum, offsetReset, timestampOffset, maxTimeWait),
+                targetClient.getClass().getClassLoader());
+    }
 }

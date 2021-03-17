@@ -106,4 +106,11 @@ public class Kafka<T> implements IKafka<T> {
         String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
         return KakfaUtil.getPartitions(brokerUrl, topic, kafkaSourceDTO.getKerberosConfig());
     }
+
+    @Override
+    public List<String> consumeData(ISourceDTO source, String topic, Integer collectNum, String offsetReset, Long timestampOffset, Integer maxTimeWait) {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
+        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
+        return KakfaUtil.consumeData(brokerUrl, topic, collectNum, offsetReset, timestampOffset, maxTimeWait, kafkaSourceDTO.getKerberosConfig());
+    }
 }
