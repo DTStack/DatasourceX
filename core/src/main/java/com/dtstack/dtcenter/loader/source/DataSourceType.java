@@ -54,6 +54,7 @@ public enum DataSourceType {
     Kudu(24, 85, "Kudu", "kudu"),
     ADS(15, 86, "AnalyticDB", "mysql5"),
     Kylin(23, 87, "Kylin", "kylin"),
+    Presto(48, 88, "Presto", "presto"),
 
     // NoSQL
     HBASE(8, 100, "HBase", "hbase"),
