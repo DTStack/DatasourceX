@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.common.loader.kafka;
 
-import com.dtstack.dtcenter.common.loader.kafka.util.KakfaUtil;
+import com.dtstack.dtcenter.common.loader.kafka.util.KafkaUtil;
 import com.dtstack.dtcenter.loader.client.IKafka;
 import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
@@ -26,7 +26,7 @@ public class Kafka<T> implements IKafka<T> {
     @Override
     public Boolean testCon(ISourceDTO iSource) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
-        return KakfaUtil.checkConnection(kafkaSourceDTO.getUrl(), kafkaSourceDTO.getBrokerUrls(),
+        return KafkaUtil.checkConnection(kafkaSourceDTO.getUrl(), kafkaSourceDTO.getBrokerUrls(),
                 kafkaSourceDTO.getKerberosConfig());
     }
 
@@ -36,7 +36,7 @@ public class Kafka<T> implements IKafka<T> {
         if (StringUtils.isNotBlank(kafkaSourceDTO.getBrokerUrls())) {
             return kafkaSourceDTO.getBrokerUrls();
         }
-        return KakfaUtil.getAllBrokersAddressFromZk(kafkaSourceDTO.getUrl());
+        return KafkaUtil.getAllBrokersAddressFromZk(kafkaSourceDTO.getUrl());
     }
 
     @Override
@@ -45,10 +45,10 @@ public class Kafka<T> implements IKafka<T> {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
 
         if (StringUtils.isNotBlank(kafkaSourceDTO.getBrokerUrls())) {
-            topics = KakfaUtil.getTopicListFromBroker(kafkaSourceDTO.getBrokerUrls(),
+            topics = KafkaUtil.getTopicListFromBroker(kafkaSourceDTO.getBrokerUrls(),
                     kafkaSourceDTO.getKerberosConfig());
         } else {
-            topics = KakfaUtil.getTopicListFromZk(kafkaSourceDTO.getUrl());
+            topics = KafkaUtil.getTopicListFromZk(kafkaSourceDTO.getUrl());
         }
 
         //过滤特殊topic
@@ -63,7 +63,7 @@ public class Kafka<T> implements IKafka<T> {
     public Boolean createTopic(ISourceDTO iSource, KafkaTopicDTO kafkaTopic) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
         String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(iSource) : kafkaSourceDTO.getBrokerUrls();
-        KakfaUtil.createTopicFromBroker(brokerUrl, kafkaSourceDTO.getKerberosConfig(), kafkaTopic.getTopicName(),
+        KafkaUtil.createTopicFromBroker(brokerUrl, kafkaSourceDTO.getKerberosConfig(), kafkaTopic.getTopicName(),
                 kafkaTopic.getPartitions(),
                 kafkaTopic.getReplicationFactor());
         return true;
@@ -72,27 +72,27 @@ public class Kafka<T> implements IKafka<T> {
     @Override
     public List<T> getAllPartitions(ISourceDTO iSource, String topic) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
-        return (List<T>) KakfaUtil.getAllPartitionsFromZk(kafkaSourceDTO.getUrl(), topic);
+        return (List<T>) KafkaUtil.getAllPartitionsFromZk(kafkaSourceDTO.getUrl(), topic);
     }
 
     @Override
     public List getOffset(ISourceDTO iSource, String topic) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
         if (StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls())) {
-            kafkaSourceDTO.setBrokerUrls(KakfaUtil.getAllBrokersAddressFromZk(kafkaSourceDTO.getUrl()));
+            kafkaSourceDTO.setBrokerUrls(KafkaUtil.getAllBrokersAddressFromZk(kafkaSourceDTO.getUrl()));
         }
-        return KakfaUtil.getPartitionOffset(kafkaSourceDTO.getBrokerUrls(), kafkaSourceDTO.getKerberosConfig(), topic);
+        return KafkaUtil.getPartitionOffset(kafkaSourceDTO.getBrokerUrls(), kafkaSourceDTO.getKerberosConfig(), topic);
     }
 
     @Override
     public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        return getPreview(iSource, queryDTO, KakfaUtil.EARLIEST);
+        return getPreview(iSource, queryDTO, KafkaUtil.EARLIEST);
     }
 
     @Override
     public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO, String prevMode) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
-        List<String> recordsFromKafka = KakfaUtil.getRecordsFromKafka(kafkaSourceDTO.getUrl(),
+        List<String> recordsFromKafka = KafkaUtil.getRecordsFromKafka(kafkaSourceDTO.getUrl(),
                 kafkaSourceDTO.getBrokerUrls(), queryDTO.getTableName(), prevMode, kafkaSourceDTO.getKerberosConfig());
         List<Object> records = new ArrayList<>(recordsFromKafka);
         List<List<Object>> result = new ArrayList<>();
@@ -104,6 +104,6 @@ public class Kafka<T> implements IKafka<T> {
     public List<KafkaPartitionDTO> getTopicPartitions(ISourceDTO source, String topic) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
         String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
-        return KakfaUtil.getPartitions(brokerUrl, topic, kafkaSourceDTO.getKerberosConfig());
+        return KafkaUtil.getPartitions(brokerUrl, topic, kafkaSourceDTO.getKerberosConfig());
     }
 }

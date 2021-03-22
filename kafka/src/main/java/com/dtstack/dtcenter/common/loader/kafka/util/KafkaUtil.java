@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
  * @Description：Kafka 工具类
  */
 @Slf4j
-public class KakfaUtil {
+public class KafkaUtil {
 
     public static final String EARLIEST = "earliest";
     private static final int MAX_POOL_RECORDS = 5;
@@ -350,7 +350,7 @@ public class KakfaUtil {
      * @param kerberosConfig
      * @return
      */
-    private static Properties initProperties(String brokerUrls, Map<String, Object> kerberosConfig) {
+    private synchronized static Properties initProperties(String brokerUrls, Map<String, Object> kerberosConfig) {
         log.info("初始化 Kafka 配置信息, brokerUrls : {}, kerberosConfig : {}", brokerUrls, kerberosConfig);
         Properties props = new Properties();
         if (StringUtils.isBlank(brokerUrls)) {

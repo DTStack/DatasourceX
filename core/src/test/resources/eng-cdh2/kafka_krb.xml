@@ -1,0 +1,7 @@
+<configuration>
+<property>
+    <name>sasl.kerberos.service.name</name>
+    <value>kafka</value>
+    <description>填写kafka配置文件中相同的参数</description>
+</property>
+</configuration>
