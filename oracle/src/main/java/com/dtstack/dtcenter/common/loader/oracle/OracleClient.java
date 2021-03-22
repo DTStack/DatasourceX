@@ -15,7 +15,10 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.dtstack.dtcenter.loader.utils.CollectionUtil;
 import com.dtstack.dtcenter.loader.utils.DBUtil;
+import lombok.extern.slf4j.Slf4j;
 import oracle.jdbc.OracleResultSetMetaData;
+import oracle.sql.BLOB;
+import oracle.sql.CLOB;
 import oracle.xdb.XMLType;
 import org.apache.commons.lang.StringUtils;
 
@@ -36,6 +39,7 @@ import java.util.Objects;
  * @Date ：Created in 12:00 2020/1/6
  * @Description：Oracle 客户端
  */
+@Slf4j
 public class OracleClient extends AbsRdbmsClient {
 
     private static String ORACLE_NUMBER_TYPE = "NUMBER";
@@ -237,11 +241,34 @@ public class OracleClient extends AbsRdbmsClient {
     @Override
     protected Object dealResult(Object result) {
         if (result instanceof XMLType) {
-            XMLType xmlResult = (XMLType) result;
             try {
-                result = xmlResult.getString();
+                XMLType xmlResult = (XMLType) result;
+                return xmlResult.getString();
             } catch (Exception e) {
-                throw new DtLoaderException("oracle xml格式转string异常！");
+                log.error("oracle xml格式转string异常！", e);
+                return "";
+            }
+        }
+
+        // 处理 Blob 字段
+        if (result instanceof BLOB) {
+            try {
+                BLOB blobResult = (BLOB) result;
+                return blobResult.toString();
+            } catch (Exception e) {
+                log.error("oracle Blob 格式转 String 异常！", e);
+                return "";
+            }
+        }
+
+        // 处理 Clob 字段
+        if (result instanceof CLOB) {
+            CLOB clobResult = (CLOB) result;
+            try {
+                return clobResult.toSQLXML().getString();
+            } catch (Exception e) {
+                log.error("oracle Clob 格式转 String 异常！", e);
+                return "";
             }
         }
         return result;
