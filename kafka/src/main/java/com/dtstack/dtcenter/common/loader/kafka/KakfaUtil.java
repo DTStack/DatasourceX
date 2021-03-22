@@ -44,7 +44,7 @@ public class KakfaUtil {
     private static final String EARLIEST = "earliest";
     private static final int MAX_POOL_RECORDS = 5;
 
-    public static boolean checkConnection(String zkUrls, String brokerUrls, Map<String, Object> kerberosConfig) {
+    public synchronized static boolean checkConnection(String zkUrls, String brokerUrls, Map<String, Object> kerberosConfig) {
         ZkUtils zkUtils = null;
         try {
             if (StringUtils.isEmpty(brokerUrls)) {
