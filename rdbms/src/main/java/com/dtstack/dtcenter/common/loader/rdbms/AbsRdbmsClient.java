@@ -115,7 +115,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
         // 预编译字段
         if (queryDTO.getPreFields() != null) {
-            return DBUtil.executeQuery(conn, queryDTO.getSql(), ConnectionClearStatus.CLOSE.getValue().equals(clearStatus), queryDTO.getPreFields(), queryDTO.getQueryTimeout());
+            return DBUtil.executeQuery(conn, queryDTO.getSql(), queryDTO.getLimit(), ConnectionClearStatus.CLOSE.getValue().equals(clearStatus), queryDTO.getPreFields(), queryDTO.getQueryTimeout());
         }
 
         return DBUtil.executeQuery(conn, queryDTO.getSql(), queryDTO.getLimit(), queryDTO.getQueryTimeout(), ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
