@@ -21,8 +21,6 @@ import java.util.stream.Collectors;
  * @Description：Kafka 客户端 支持 Kafka 0.9、0.10、0.11、1.x版本
  */
 public class Kafka<T> implements IKafka<T> {
-
-
     @Override
     public Boolean testCon(ISourceDTO iSource) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
@@ -111,6 +109,6 @@ public class Kafka<T> implements IKafka<T> {
     public List<String> consumeData(ISourceDTO source, String topic, Integer collectNum, String offsetReset, Long timestampOffset, Integer maxTimeWait) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
         String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
-        return KakfaUtil.consumeData(brokerUrl, topic, collectNum, offsetReset, timestampOffset, maxTimeWait, kafkaSourceDTO.getKerberosConfig());
+        return KafkaUtil.consumeData(brokerUrl, topic, collectNum, offsetReset, timestampOffset, maxTimeWait, kafkaSourceDTO.getKerberosConfig());
     }
 }
