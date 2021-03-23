@@ -1,22 +1,14 @@
 import com.dtstack.dtcenter.common.loader.hbase.HbaseClient;
-import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
-import com.dtstack.dtcenter.loader.client.ClientCache;
-import com.dtstack.dtcenter.loader.client.IHbase;
-import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.comparator.BinaryComparator;
 import com.dtstack.dtcenter.loader.dto.filter.Filter;
 import com.dtstack.dtcenter.loader.dto.filter.RowFilter;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
-import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.enums.CompareOp;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;

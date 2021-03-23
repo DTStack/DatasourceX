@@ -1,11 +1,10 @@
 package com.dtstack.dtcenter.loader.client.bug.issue_30000;
 
 import com.alibaba.fastjson.JSONObject;
-import com.dtstack.dtcenter.loader.client.AbsClientCache;
+import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
-import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -20,8 +19,6 @@ import java.util.List;
  * @Description：Oracle Blob & Clob 测试
  */
 public class Issue35748 {
-    private static final AbsClientCache clientCache = ClientType.DATA_SOURCE_CLIENT.getClientCache();
-
     private static OracleSourceDTO source = OracleSourceDTO.builder()
             .url("jdbc:oracle:thin:@172.16.100.243:1521:orcl")
             .username("oracle")
@@ -30,7 +27,7 @@ public class Issue35748 {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table LOADER_TEST").build();
         try {
             client.executeSqlWithoutResultSet(source, queryDTO);
@@ -48,7 +45,7 @@ public class Issue35748 {
 
     @Test
     public void test_for_issue() throws Exception {
-        IClient client = clientCache.getClient(DataSourceType.Oracle.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
         List preview = client.getPreview(source, SqlQueryDTO.builder().tableName("LOADER_TEST").build());
         String previewJSON = JSONObject.toJSONString(preview);
         Assert.assertTrue(previewJSON.contains("LOADER_TEST"));
