@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.common.loader.kafka;
 
-import com.dtstack.dtcenter.common.loader.kafka.util.KakfaUtil;
+import com.dtstack.dtcenter.common.loader.kafka.util.KafkaUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -24,7 +24,7 @@ public class KafkaClient<T> implements IClient<T> {
     @Override
     public Boolean testCon(ISourceDTO iSource) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
-        return KakfaUtil.checkConnection(kafkaSourceDTO.getUrl(), kafkaSourceDTO.getBrokerUrls(),
+        return KafkaUtil.checkConnection(kafkaSourceDTO.getUrl(), kafkaSourceDTO.getBrokerUrls(),
                 kafkaSourceDTO.getKerberosConfig());
     }
 

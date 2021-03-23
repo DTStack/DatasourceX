@@ -5,11 +5,7 @@ import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.IHbase;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
-import com.dtstack.dtcenter.loader.dto.comparator.BinaryComparator;
-import com.dtstack.dtcenter.loader.dto.filter.Filter;
-import com.dtstack.dtcenter.loader.dto.filter.RowFilter;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
-import com.dtstack.dtcenter.loader.enums.CompareOp;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.collections.CollectionUtils;
@@ -17,7 +13,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
