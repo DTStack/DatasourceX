@@ -229,4 +229,10 @@ public interface IClient<T> {
      */
     Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName);
 
+    /**
+     * 获取数据源/数据库目录列表，目前presto使用，后续pgSql等可以实现该方法用于获取所有库
+     *
+     * @return 数据源目录
+     */
+    List<String> getCatalogs(ISourceDTO source);
 }

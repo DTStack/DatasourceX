@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.rdbms;
 
 import com.dtstack.dtcenter.common.loader.common.DtClassThreadFactory;
+import com.dtstack.dtcenter.common.loader.common.exception.ErrorCode;
 import com.dtstack.dtcenter.common.loader.common.utils.CollectionUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -234,26 +235,37 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      */
     @Override
     public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
-        Integer clearStatus = beforeQuery(source, queryDTO, false);
-        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
-        // 获取根据schema获取表的sql
         String sql = getTableBySchemaSql(source, queryDTO);
-        log.info("最终获取表的sql语句：{}", sql);
+        return queryWithSingleColumn(source, sql, 1,"get table exception according to schema...");
+    }
+
+    /**
+     * 执行查询sql，结果为单列
+     *
+     * @param source      数据源信息
+     * @param sql         sql信息
+     * @param errMsg      错误信息
+     * @return 查询结果
+     */
+    protected List<String> queryWithSingleColumn(ISourceDTO source, String sql, Integer columnIndex, String errMsg) {
+        Integer clearStatus = beforeQuery(source, SqlQueryDTO.builder().sql(sql).build(), true);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        log.info("The SQL executed by method queryWithSingleColumn is:{}", sql);
         Statement statement = null;
         ResultSet rs = null;
-        List<String> tableList = new ArrayList<>();
+        List<String> result = new ArrayList<>();
         try {
             statement = rdbmsSourceDTO.getConnection().createStatement();
             rs = statement.executeQuery(sql);
             while (rs.next()) {
-                tableList.add(rs.getString(1));
+                result.add(rs.getString(columnIndex == null ? 1 : columnIndex));
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("根据schema获取表异常：%s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("%s:%s", errMsg, e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
         }
-        return tableList;
+        return result;
     }
 
     @Override
@@ -497,40 +509,23 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     /**
      * 根据schema获取表，默认不支持。需要支持的数据源自己去实现该方法
      *
-     * @param queryDTO
-     * @return
+     * @param queryDTO 查询queryDTO
+     * @return sql语句
      */
     protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("该数据源暂不支持该方法！");
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }
 
     @Override
     public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        throw new DtLoaderException("Not Support");
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }
 
     @Override
     public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO){
-        Integer clearStatus = beforeQuery(source, queryDTO, false);
-        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
-
         // 获取表信息需要通过show databases 语句
         String sql = getShowDbSql();
-        Statement statement = null;
-        ResultSet rs = null;
-        List<String> databaseList = new ArrayList<>();
-        try {
-            statement = rdbmsSourceDTO.getConnection().createStatement();
-            rs = statement.executeQuery(sql);
-            while (rs.next()) {
-                databaseList.add(rs.getString(1));
-            }
-        } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取库异常：%s", e.getMessage()), e);
-        } finally {
-            DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
-        }
-        return databaseList;
+        return queryWithSingleColumn(source, sql, 1, "获取所有库异常");
     }
 
     @Override
@@ -558,7 +553,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                 break;
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取库异常：%s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("failed to get the create table sql：%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -587,11 +582,11 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     public String getCurrentDatabase(ISourceDTO source) {
         // 获取根据schema获取表的sql
         String sql = getCurrentDbSql();
-        List<Map<String, Object>> result = executeQuery(source, SqlQueryDTO.builder().sql(sql).build());
-        if (CollectionUtils.isEmpty(result) || MapUtils.isEmpty(result.get(0))) {
-            throw new DtLoaderException("获取当前数据库失败！");
+        List<String> result = queryWithSingleColumn(source, sql, 1, "failed to get the currently used database");
+        if (CollectionUtils.isEmpty(result)) {
+            throw new DtLoaderException("failed to get the currently used database");
         }
-        return (String) result.get(0).entrySet().stream().findAny().orElseThrow(() -> new DtLoaderException("获取当前数据库失败！")).getValue();
+        return result.get(0);
     }
 
     /**
@@ -599,16 +594,22 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @return 对应的sql
      */
     protected String getCurrentDbSql() {
-        throw new DtLoaderException("该数据源暂时不支持该方法!");
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }
 
     @Override
     public Boolean createDatabase(ISourceDTO source, String dbName, String comment) {
         if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("数据库名称不能为空");
+            throw new DtLoaderException("database or schema cannot be empty");
         }
         String createSchemaSql = getCreateDatabaseSql(dbName, comment);
         return executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(createSchemaSql).build());
+    }
+
+    @Override
+    public List<String> getCatalogs(ISourceDTO source) {
+        String showCatalogsSql = getCatalogSql();
+        return queryWithSingleColumn(source, showCatalogsSql, 1, "failed to get data source directory list");
     }
 
     /**
@@ -618,17 +619,25 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @return sql
      */
     protected String getCreateDatabaseSql(String dbName, String comment) {
-        throw new DtLoaderException("该数据源暂时不支持该方法！");
-    };
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
 
 
     @Override
     public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
-        throw new DtLoaderException("该数据源暂时不支持该方法!");
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }
 
     @Override
     public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
-        throw new DtLoaderException("该数据源暂时不支持该方法!");
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
+
+    /**
+     * 获取数据源/数据库目录列表的sql，需要实现的数据源去重写该方法
+     * @return sql
+     */
+    protected String getCatalogSql() {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }
 }

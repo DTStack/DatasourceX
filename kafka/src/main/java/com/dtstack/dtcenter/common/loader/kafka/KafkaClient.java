@@ -1,18 +1,9 @@
 package com.dtstack.dtcenter.common.loader.kafka;
 
+import com.dtstack.dtcenter.common.loader.common.nosql.AbsNoSqlClient;
 import com.dtstack.dtcenter.common.loader.kafka.util.KakfaUtil;
-import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.client.IClient;
-import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
-import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
-import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.KafkaSourceDTO;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-
-import java.sql.Connection;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @company: www.dtstack.com
@@ -20,111 +11,11 @@ import java.util.Map;
  * @Date ：Created in 下午4:35 2020/6/2
  * @Description：Kafka 客户端 支持 Kafka 0.9、0.10、0.11、1.x版本
  */
-public class KafkaClient<T> implements IClient<T> {
+public class KafkaClient<T> extends AbsNoSqlClient<T> {
     @Override
     public Boolean testCon(ISourceDTO iSource) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
         return KakfaUtil.checkConnection(kafkaSourceDTO.getUrl(), kafkaSourceDTO.getBrokerUrls(),
                 kafkaSourceDTO.getKerberosConfig());
-    }
-
-    @Override
-    public Connection getCon(ISourceDTO iSource) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public Boolean executeSqlWithoutResultSet(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public String getCurrentDatabase(ISourceDTO source) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) {
-        throw new DtLoaderException("kafka数据源不支持该方法");
-    }
-
-    @Override
-    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
-        throw new DtLoaderException("kafka数据源不支持该方法");
-    }
-
-    @Override
-    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
-        throw new DtLoaderException("kafka数据源不支持该方法");
     }
 }

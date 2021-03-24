@@ -36,6 +36,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.dtstack.dtcenter</groupId>
+            <artifactId>common.loader.common</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.cmcc</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
             <version>1.10.69</version>

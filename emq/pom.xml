@@ -44,6 +44,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.dtstack.dtcenter</groupId>
+            <artifactId>common.loader.common</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.eclipse.paho</groupId>
             <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
             <version>1.2.2</version>
