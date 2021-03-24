@@ -1,8 +1,11 @@
 package com.dtstack.dtcenter.loader.utils;
 
-import com.dtstack.dtcenter.common.exception.DBErrorCode;
-import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.util.AddressUtil;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @company: www.dtstack.com
@@ -11,22 +14,26 @@ import com.dtstack.dtcenter.common.util.AddressUtil;
  * @Description：Tel 工具类
  */
 public class TelUtil {
+
+    // ip:端口 正则解析，适配ipv6
+    private static final Pattern HOST_PORT_PATTERN = Pattern.compile("(?<host>(.*)):(?<port>\\d+)*");
+
     public static boolean checkTelnetAddr(String urls) {
         boolean result = false;
         String[] addrs = urls.split(",");
         for (String addr : addrs) {
-            String[] ad = addr.split(":", 2);
-            if (ad.length != 2) {
-                throw new DtCenterDefException(addr + "地址格式错误", DBErrorCode.IP_PORT_FORMAT_ERROR);
+            Matcher matcher = HOST_PORT_PATTERN.matcher(addr);
+            if (!matcher.find()) {
+                throw new DtLoaderException(String.format("地址：%s 格式错误", addr));
             }
-            String ip = ad[0].trim();
-            String port = ad[1].trim();
-            if (port.contains("/")) {
-                port = port.substring(0, port.indexOf("/"));
+            String host = matcher.group("host");
+            String portStr = matcher.group("port");
+            if (StringUtils.isBlank(host) || StringUtils.isBlank(portStr)) {
+                throw new DtLoaderException(String.format("地址：%s 缺少ip或端口", addr));
             }
-            result = AddressUtil.telnet(ip, Integer.parseInt(port));
+            result = AddressUtil.telnet(host.trim(), Integer.parseInt(portStr.trim()));
             if (!result) {
-                throw new DtCenterDefException(addr + "无法联通", DBErrorCode.IP_PORT_CONN_ERROR);
+                throw new DtLoaderException(String.format("地址：%s 无法连通", addr));
             }
         }
         return result;
