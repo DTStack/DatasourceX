@@ -60,7 +60,7 @@ public class Issue35789 {
             .username("admin")
             .build();
 
-    //@BeforeClass
+    @BeforeClass
     public static void setUp() throws Exception {
         IClient client = CLIENT_CACHE.getClient(DataSourceType.IMPALA.getPluginName());
         /*-----------------------创建text格式表-----------------------------*/
