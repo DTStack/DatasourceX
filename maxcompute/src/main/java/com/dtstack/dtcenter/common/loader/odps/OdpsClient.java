@@ -18,6 +18,7 @@ import com.aliyun.odps.data.Record;
 import com.aliyun.odps.data.ResultSet;
 import com.aliyun.odps.task.SQLTask;
 import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
+import com.dtstack.dtcenter.common.loader.common.nosql.AbsNoSqlClient;
 import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
 import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.odps.common.OdpsFields;
@@ -54,7 +55,7 @@ import java.util.Set;
  * @Description：ODPS 客户端
  */
 @Slf4j
-public class OdpsClient<T> implements IClient<T> {
+public class OdpsClient<T> extends AbsNoSqlClient<T> {
 
     public static final ThreadLocal<Boolean> IS_OPEN_POOL = new ThreadLocal<>();
 
@@ -440,65 +441,5 @@ public class OdpsClient<T> implements IClient<T> {
         queryDTO.setColumns(CollectionUtils.isEmpty(queryDTO.getColumns()) ? Collections.singletonList("*") :
                 queryDTO.getColumns());
         return clearStatus;
-    }
-
-    @Override
-    public Connection getCon(ISourceDTO source) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public com.dtstack.dtcenter.loader.dto.Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public String getCurrentDatabase(ISourceDTO source) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) {
-        throw new DtLoaderException("maxcompute数据源不支持该方法");
-    }
-
-    @Override
-    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
-        throw new DtLoaderException("maxcompute数据源不支持该方法");
-    }
-
-    @Override
-    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
-        throw new DtLoaderException("maxcompute数据源不支持该方法");
     }
 }

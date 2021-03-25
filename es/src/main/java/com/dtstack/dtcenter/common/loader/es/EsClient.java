@@ -3,15 +3,13 @@ package com.dtstack.dtcenter.common.loader.es;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
 import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
+import com.dtstack.dtcenter.common.loader.common.nosql.AbsNoSqlClient;
 import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
 import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.es.pool.ElasticSearchManager;
 import com.dtstack.dtcenter.common.loader.es.pool.ElasticSearchPool;
-import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
-import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -64,7 +62,7 @@ import java.util.Set;
  * @Description：ES 客户端
  */
 @Slf4j
-public class EsClient<T> implements IClient<T> {
+public class EsClient<T> extends AbsNoSqlClient<T> {
 
     private static final int MAX_NUM = 10000;
 
@@ -515,68 +513,4 @@ public class EsClient<T> implements IClient<T> {
         return lowLevelClient.performRequest(request);
     }
 
-    private JSONObject getJsonResult(Response response) throws IOException {
-        String result = EntityUtils.toString(response.getEntity());
-        return JSONObject.parseObject(result);
-    }
-
-    @Override
-    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public String getCurrentDatabase(ISourceDTO source) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) {
-        throw new DtLoaderException("es数据源不支持该方法");
-    }
-
-    @Override
-    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
-        throw new DtLoaderException("es数据源不支持该方法");
-    }
-
-    @Override
-    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
-        throw new DtLoaderException("es数据源不支持该方法");
-    }
 }

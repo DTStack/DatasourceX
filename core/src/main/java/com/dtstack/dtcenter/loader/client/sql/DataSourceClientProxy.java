@@ -153,4 +153,10 @@ public class DataSourceClientProxy<T> implements IClient<T> {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.isTableExistsInDatabase(source, tableName, dbName),
                 targetClient.getClass().getClassLoader());
     }
+
+    @Override
+    public List<String> getCatalogs(ISourceDTO source) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getCatalogs(source),
+                targetClient.getClass().getClassLoader());
+    }
 }
