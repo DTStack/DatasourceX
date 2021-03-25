@@ -7,6 +7,6 @@ build:
     - sh ci/sonar_notify.sh
   only:
     - /^test_.*$/
-    - /^release_.*$/
+    - dev
   tags:
     - dt-insight
