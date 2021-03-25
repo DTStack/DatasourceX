@@ -6,7 +6,7 @@
 
     <groupId>com.dtstack.dtcenter</groupId>
     <artifactId>common-loader</artifactId>
-    <version>1.4.0-SNAPSHOT</version>
+    <version>1.5.0-SNAPSHOT</version>
     <modules>
         <module>core</module>
         <module>rdbms</module>
@@ -48,6 +48,7 @@
         <module>websocket</module>
         <module>vertica</module>
         <module>socket</module>
+        <module>presto</module>
     </modules>
     <packaging>pom</packaging>
 

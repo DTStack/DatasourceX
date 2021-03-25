@@ -1,7 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hbase;
 
-import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.common.loader.common.nosql.AbsNoSqlClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.filter.RowFilter;
@@ -47,7 +46,7 @@ import java.util.Objects;
  * @Description：Hbase 客户端
  */
 @Slf4j
-public class HbaseClient<T> implements IClient<T> {
+public class HbaseClient<T> extends AbsNoSqlClient<T> {
     private HbaseConnFactory connFactory = new HbaseConnFactory();
 
     private static final String ROWKEY = "rowkey";
@@ -342,86 +341,5 @@ public class HbaseClient<T> implements IClient<T> {
         } catch (Exception e) {
             throw new DtLoaderException("hbase can not close table error", e);
         }
-    }
-
-    /******************** 未支持的方法 **********************/
-    @Override
-    public java.sql.Connection getCon(ISourceDTO iSource) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO)  {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public Boolean executeSqlWithoutResultSet(ISourceDTO iSourcev, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getColumnClassInfo(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public IDownloader getDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getAllDatabases(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public String getCreateTableSql(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getPartitionColumn(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public com.dtstack.dtcenter.loader.dto.Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public String getCurrentDatabase(ISourceDTO source)  {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public Boolean createDatabase(ISourceDTO source, String dbName, String comment) {
-        throw new DtLoaderException("hbase数据源不支持该方法");
-    }
-
-    @Override
-    public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
-        throw new DtLoaderException("hbase数据源不支持该方法");
-    }
-
-    @Override
-    public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
-        throw new DtLoaderException("hbase数据源不支持该方法");
     }
 }

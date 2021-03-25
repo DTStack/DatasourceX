@@ -39,6 +39,8 @@ public enum ConnErrorCode implements IErrorCode {
 
     ZK_IS_NOT_CONNECT(15, "zookeeper 服务拒绝连接，请检查zk地址、端口是否正确或zookeeper服务是否正常"),
 
+    MISSING_USERNAME(16, "缺少用户名信息"),
+
     /**
      * 未定义异常
      */
