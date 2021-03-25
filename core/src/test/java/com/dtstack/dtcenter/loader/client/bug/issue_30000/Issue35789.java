@@ -1,13 +1,12 @@
 package com.dtstack.dtcenter.loader.client.bug.issue_30000;
 
 import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.client.AbsClientCache;
+import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
-import com.dtstack.dtcenter.loader.enums.ClientType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -25,8 +24,6 @@ import java.util.Objects;
  * company: www.dtstack.com
  */
 public class Issue35789 {
-
-    private static final AbsClientCache CLIENT_CACHE = ClientType.DATA_SOURCE_CLIENT.getClientCache();
 
     private static final ImpalaSourceDTO IMPALA_SOURCE_DTO = ImpalaSourceDTO.builder()
             .url("jdbc:impala://172.16.101.17:21050/default")
@@ -60,9 +57,9 @@ public class Issue35789 {
             .username("admin")
             .build();
 
-    //@BeforeClass
+    @BeforeClass
     public static void setUp() throws Exception {
-        IClient client = CLIENT_CACHE.getClient(DataSourceType.IMPALA.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         /*-----------------------创建text格式表-----------------------------*/
         String dropTextSql = "drop table if exists loader_test_textfile";
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(dropTextSql).build();
@@ -88,7 +85,7 @@ public class Issue35789 {
 
     @Test
     public void test_for_issue_spark_text() throws Exception {
-        IClient client = CLIENT_CACHE.getClient(DataSourceType.Spark.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Spark.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_textfile").build();
         IDownloader downloader = client.getDownloader(SPARK_SOURCE_DTO, queryDTO);
         System.out.println(downloader.getMetaInfo());
@@ -99,7 +96,7 @@ public class Issue35789 {
 
     @Test
     public void test_for_issue_spark_parquet() throws Exception {
-        IClient client = CLIENT_CACHE.getClient(DataSourceType.Spark.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.Spark.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_parquet").build();
         IDownloader downloader = client.getDownloader(SPARK_SOURCE_DTO, queryDTO);
         System.out.println(downloader.getMetaInfo());
@@ -110,7 +107,7 @@ public class Issue35789 {
 
     @Test
     public void test_for_issue_hive_text() throws Exception {
-        IClient client = CLIENT_CACHE.getClient(DataSourceType.HIVE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_textfile").build();
         IDownloader downloader = client.getDownloader(HIVE_SOURCE_DTO, queryDTO);
         System.out.println(downloader.getMetaInfo());
@@ -121,7 +118,7 @@ public class Issue35789 {
 
     @Test
     public void test_for_issue_hive_parquet() throws Exception {
-        IClient client = CLIENT_CACHE.getClient(DataSourceType.HIVE.getPluginName());
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_parquet").build();
         IDownloader downloader = client.getDownloader(HIVE_SOURCE_DTO, queryDTO);
         System.out.println(downloader.getMetaInfo());
