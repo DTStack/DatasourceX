@@ -46,7 +46,7 @@ public enum DataSourceType {
     FTP(9, 61, "FTP", "ftp"),
 
     // Analytic
-    SparkThrift2_1(45, 80, "SparkThrift2.1.x", "spark"),
+    SparkThrift2_1(45, 80, "SparkThrift2.x", "spark"),
     IMPALA(29, 81, "Impala", "impala"),
     Clickhouse(25, 82, "ClickHouse", "clickhouse"),
     TiDB(31, 83, "TiDB", "mysql5"),
