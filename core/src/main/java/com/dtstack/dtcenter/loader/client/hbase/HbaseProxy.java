@@ -5,6 +5,7 @@ import com.dtstack.dtcenter.loader.client.IHbase;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * hbase客户端代理
@@ -62,4 +63,21 @@ public class HbaseProxy implements IHbase {
                 targetClient.getClass().getClassLoader());
     }
 
+    @Override
+    public List<List<String>> preview(ISourceDTO source, String tableName, Integer previewNum) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.preview(source, tableName, previewNum),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public List<List<String>> preview(ISourceDTO source, String tableName, List<String> familyList, Integer previewNum) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.preview(source, tableName, familyList, previewNum),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public List<List<String>> preview(ISourceDTO source, String tableName, Map<String, List<String>> familyQualifierMap, Integer previewNum) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.preview(source, tableName, familyQualifierMap, previewNum),
+                targetClient.getClass().getClassLoader());
+    }
 }

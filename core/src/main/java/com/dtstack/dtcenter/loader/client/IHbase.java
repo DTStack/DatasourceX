@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.loader.client;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * hbase客户端接口
@@ -87,4 +88,35 @@ public interface IHbase {
      */
     String getRow(ISourceDTO source, String tableName, String rowKey, String family, String qualifier);
 
+    /**
+     * hbase 数据预览，如果有数据则第一行为字段信息，如果没有数据返回空 list
+     *
+     * @param source     数据源信息
+     * @param tableName  表名
+     * @param previewNum 预览条数，最大5000条 默认100条
+     * @return 预览数据
+     */
+    List<List<String>> preview(ISourceDTO source, String tableName, Integer previewNum);
+
+    /**
+     * hbase 数据预览，如果有数据则第一行为字段信息，如果没有数据返回空 list
+     *
+     * @param source     数据源信息
+     * @param tableName  表名
+     * @param familyList 预览指定列族的数据，即当前行如果有满足该列族的数据就返回
+     * @param previewNum 预览条数，最大5000条 默认100条
+     * @return 预览数据
+     */
+    List<List<String>> preview(ISourceDTO source, String tableName, List<String> familyList, Integer previewNum);
+
+    /**
+     * hbase 数据预览，如果有数据则第一行为字段信息，如果没有数据返回空 list
+     *
+     * @param source             数据源信息
+     * @param tableName          表名
+     * @param familyQualifierMap 预览指定列族、列名下的数据
+     * @param previewNum         预览条数，最大5000条 默认100条
+     * @return 预览数据
+     */
+    List<List<String>> preview(ISourceDTO source, String tableName, Map<String, List<String>> familyQualifierMap, Integer previewNum);
 }
