@@ -7,12 +7,14 @@ import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -133,5 +135,49 @@ public class HbaseClientTest {
     public void deleteByRowKey() {
         Boolean check = HBASE_CLIENT.deleteByRowKey(source, "loader_test_2", "info1", "name", Lists.newArrayList("1001", "1002"));
         Assert.assertTrue(check);
+    }
+
+    /**
+     * 数据预览
+     */
+    @Test
+    public void preview() {
+        List<List<String>> preview = HBASE_CLIENT.preview(source, "loader_test_2", 10);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(preview));
+    }
+
+    /**
+     * 数据预览
+     */
+    @Test
+    public void preview2() {
+        List<List<String>> preview = HBASE_CLIENT.preview(source, "loader_test_2", Lists.newArrayList("info2"), 1);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(preview));
+    }
+
+    /**
+     * 数据预览
+     */
+    @Test
+    public void preview3() {
+        Map<String, List<String>> familyQualifierMap = Maps.newHashMap();
+        List<String> info1Columns = Lists.newArrayList("name", "age");
+        List<String> info2Columns = Lists.newArrayList("addr", "name", "age");
+        familyQualifierMap.put("info1", info1Columns);
+        familyQualifierMap.put("info2", info2Columns);
+        List<List<String>> preview = HBASE_CLIENT.preview(source, "loader_test_2", familyQualifierMap, 10);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(preview));
+    }
+
+    /**
+     * 数据预览 无数据测试
+     */
+    @Test
+    public void preview4() {
+        Map<String, List<String>> familyQualifierMap = Maps.newHashMap();
+        List<String> info1Columns = Lists.newArrayList("xxx");
+        familyQualifierMap.put("info1", info1Columns);
+        List<List<String>> preview = HBASE_CLIENT.preview(source, "loader_test_2", familyQualifierMap, 10);
+        Assert.assertEquals(0, preview.size());
     }
 }
