@@ -275,10 +275,12 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
         Statement stmt = null;
         ResultSet rs = null;
+        // schema 先从queryDTO中获取
+        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? rdbmsSourceDTO.getSchema() : queryDTO.getSchema();
         try {
             stmt = rdbmsSourceDTO.getConnection().createStatement();
             String queryColumnSql =
-                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(rdbmsSourceDTO.getSchema(), queryDTO.getTableName())
+                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(schema, queryDTO.getTableName())
                             + " where 1=2";
             rs = stmt.executeQuery(queryColumnSql);
             ResultSetMetaData rsmd = rs.getMetaData();
@@ -347,10 +349,12 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         Statement statement = null;
         ResultSet rs = null;
         List<ColumnMetaDTO> columns = new ArrayList<>();
+        // schema 先从queryDTO中获取
+        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? rdbmsSourceDTO.getSchema() : queryDTO.getSchema();
         try {
             statement = rdbmsSourceDTO.getConnection().createStatement();
             String queryColumnSql =
-                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(rdbmsSourceDTO.getSchema(), queryDTO.getTableName()) + " where 1=2";
+                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(schema, queryDTO.getTableName()) + " where 1=2";
 
             rs = statement.executeQuery(queryColumnSql);
             ResultSetMetaData rsMetaData = rs.getMetaData();

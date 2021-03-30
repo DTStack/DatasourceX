@@ -75,14 +75,16 @@ public class ImpalaClient extends AbsRdbmsClient {
     public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
+        // schema 先从queryDTO中获取
+        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? impalaSourceDTO.getSchema() : queryDTO.getSchema();
         try {
-            return getColumnMetaData(impalaSourceDTO.getConnection(), queryDTO.getTableName(), queryDTO.getFilterPartitionColumns());
+            return getColumnMetaData(impalaSourceDTO.getConnection(), schema, queryDTO.getTableName(), queryDTO.getFilterPartitionColumns());
         } finally {
             DBUtil.closeDBResources(null, null, impalaSourceDTO.clearAfterGetConnection(clearStatus));
         }
     }
 
-    private List<ColumnMetaDTO> getColumnMetaData(Connection conn, String tableName, Boolean filterPartitionColumns) {
+    private List<ColumnMetaDTO> getColumnMetaData(Connection conn, String schema, String tableName, Boolean filterPartitionColumns) {
         List<ColumnMetaDTO> columnList = new ArrayList<>();
         Statement stmt = null;
         ResultSet resultSet = null;
@@ -90,7 +92,7 @@ public class ImpalaClient extends AbsRdbmsClient {
             LinkedHashMap<String, JSONObject> colNameMap = new LinkedHashMap<>();
             stmt = conn.createStatement();
             //首先判断是否是kudu表 是kudu表直接用主键代替 isPart
-            resultSet = stmt.executeQuery("DESCRIBE " + tableName);
+            resultSet = stmt.executeQuery("DESCRIBE " + transferSchemaAndTableName(schema, tableName));
             int columnCnt = resultSet.getMetaData().getColumnCount();
 
             // kudu表
@@ -104,7 +106,7 @@ public class ImpalaClient extends AbsRdbmsClient {
 
             //hive表 继续获取分区字段 先关闭之前的 rs
             resultSet.close();
-            resultSet = stmt.executeQuery("DESCRIBE formatted " + tableName);
+            resultSet = stmt.executeQuery("DESCRIBE formatted " + transferSchemaAndTableName(schema, tableName));
             while (resultSet.next()) {
                 String colName = resultSet.getString(DtClassConsistent.PublicConsistent.NAME).trim();
 
@@ -142,7 +144,7 @@ public class ImpalaClient extends AbsRdbmsClient {
 
         } catch (SQLException e) {
             throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
-                    tableName), e);
+                    transferSchemaAndTableName(schema, tableName)), e);
         } finally {
             DBUtil.closeDBResources(resultSet, stmt, null);
         }
@@ -154,21 +156,23 @@ public class ImpalaClient extends AbsRdbmsClient {
     public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
         ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
+        // schema 先从queryDTO中获取
+        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? impalaSourceDTO.getSchema() : queryDTO.getSchema();
         try {
-            return getTableMetaComment(impalaSourceDTO.getConnection(), queryDTO.getTableName());
+            return getTableMetaComment(impalaSourceDTO.getConnection(), schema, queryDTO.getTableName());
         } finally {
             DBUtil.closeDBResources(null, null, impalaSourceDTO.clearAfterGetConnection(clearStatus));
         }
     }
 
-    private String getTableMetaComment(Connection conn, String tableName) {
+    private String getTableMetaComment(Connection conn, String schema, String tableName) {
 
         Statement statement = null;
         ResultSet resultSet = null;
         try {
             statement = conn.createStatement();
             resultSet = statement.executeQuery(String.format(DtClassConsistent.HadoopConfConsistent.DESCRIBE_EXTENDED
-                    , tableName));
+                    , transferSchemaAndTableName(schema, tableName)));
             while (resultSet.next()) {
                 String columnType = resultSet.getString(2);
                 if (StringUtils.isNotBlank(columnType) && columnType.contains("comment")) {
@@ -177,7 +181,7 @@ public class ImpalaClient extends AbsRdbmsClient {
             }
         } catch (Exception e) {
             throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
-                    tableName), e);
+                    transferSchemaAndTableName(schema, tableName)), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, null);
         }
@@ -218,14 +222,16 @@ public class ImpalaClient extends AbsRdbmsClient {
         ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) source;
 
         Table tableInfo = new Table();
+        // schema 先从queryDTO中获取
+        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? impalaSourceDTO.getSchema() : queryDTO.getSchema();
         try {
             tableInfo.setName(queryDTO.getTableName());
             // 获取表注释
-            tableInfo.setComment(getTableMetaComment(impalaSourceDTO.getConnection(), queryDTO.getTableName()));
+            tableInfo.setComment(getTableMetaComment(impalaSourceDTO.getConnection(), schema, queryDTO.getTableName()));
             // 处理字段信息
-            tableInfo.setColumns(getColumnMetaData(impalaSourceDTO.getConnection(), queryDTO.getTableName(), queryDTO.getFilterPartitionColumns()));
+            tableInfo.setColumns(getColumnMetaData(impalaSourceDTO.getConnection(), schema, queryDTO.getTableName(), queryDTO.getFilterPartitionColumns()));
             // 获取表结构信息
-            getTable(tableInfo, impalaSourceDTO.getConnection(), queryDTO.getTableName());
+            getTable(tableInfo, impalaSourceDTO.getConnection(), schema, queryDTO.getTableName());
         } catch (Exception e) {
             throw new DtLoaderException(String.format("SQL 执行异常, %s", e.getMessage()), e);
         } finally {
@@ -235,10 +241,10 @@ public class ImpalaClient extends AbsRdbmsClient {
 
     }
 
-    private void getTable(Table tableInfo, Connection conn, String tableName) {
+    private void getTable(Table tableInfo, Connection conn, String schema, String tableName) {
         List<Map<String, Object>> result = null;
         try {
-            result = executeQuery(conn, SqlQueryDTO.builder().sql("DESCRIBE formatted " + tableName).build(), ConnectionClearStatus.NORMAL.getValue());
+            result = executeQuery(conn, SqlQueryDTO.builder().sql("DESCRIBE formatted " + transferSchemaAndTableName(schema, tableName)).build(), ConnectionClearStatus.NORMAL.getValue());
         } catch (Exception e) {
             throw new DtLoaderException(String.format("SQL 执行异常, %s", e.getMessage()), e);
         }
@@ -307,4 +313,20 @@ public class ImpalaClient extends AbsRdbmsClient {
     protected String getCurrentDbSql() {
         return CURRENT_DB;
     }
+
+    /**
+     * 处理 schema和tableName
+     *
+     * @param schema
+     * @param tableName
+     * @return
+     */
+    @Override
+    protected String transferSchemaAndTableName(String schema, String tableName) {
+        if (StringUtils.isBlank(schema)) {
+            return tableName;
+        }
+        return String.format("%s.%s", schema, tableName);
+    }
+
 }

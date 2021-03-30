@@ -143,10 +143,12 @@ public class MysqlClient extends AbsRdbmsClient {
         Statement statement = null;
         ResultSet rs = null;
         Map<String, String> columnComments = new HashMap<>();
+        // schema 先从queryDTO中获取
+        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? sourceDTO.getSchema() : queryDTO.getSchema();
         try {
             statement = sourceDTO.getConnection().createStatement();
             String queryColumnCommentSql =
-                    "show full columns from " + transferTableName(queryDTO.getTableName());
+                    "show full columns from " + transferSchemaAndTableName(schema, queryDTO.getTableName());
             rs = statement.executeQuery(queryColumnCommentSql);
             while (rs.next()) {
                 String columnName = rs.getString("Field");
@@ -222,5 +224,25 @@ public class MysqlClient extends AbsRdbmsClient {
             constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));
         }
         return String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema, constr.toString());
+    }
+
+    /**
+     * 处理 schema和tableName，适配schema和tableName中有.的情况
+     * @param schema
+     * @param tableName
+     * @return
+     */
+    @Override
+    protected String transferSchemaAndTableName(String schema, String tableName) {
+        if (!tableName.startsWith("`") || !tableName.endsWith("`")) {
+            tableName = String.format("`%s`", tableName);
+        }
+        if (StringUtils.isBlank(schema)) {
+            return tableName;
+        }
+        if (!schema.startsWith("`") || !schema.endsWith("`")){
+            schema = String.format("`%s`", schema);
+        }
+        return String.format("%s.%s", schema, tableName);
     }
 }
