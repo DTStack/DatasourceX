@@ -512,6 +512,11 @@ public class HiveClient extends AbsRdbmsClient {
                 continue;
             }
 
+            if (dataType.contains("field.delim")) {
+                tableInfo.setDelim(MapUtils.getString(row, "comment", "\001").trim());
+                continue;
+            }
+
             if (colName.contains("Owner")) {
                 tableInfo.setOwner(dataType);
                 continue;
