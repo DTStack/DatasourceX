@@ -483,13 +483,12 @@ public class HiveClient extends AbsRdbmsClient {
         }
         boolean isTableInfo = false;
         for (Map<String, Object> row : result) {
-            String colName = MapUtils.getString(row, "col_name");
-            String dataType = MapUtils.getString(row, "data_type");
+            String colName = MapUtils.getString(row, "col_name", "");
+            String dataType = MapUtils.getString(row, "data_type", "");
             if (StringUtils.isBlank(colName) || StringUtils.isBlank(dataType)) {
                 if (StringUtils.isNotBlank(colName) && colName.contains("# Detailed Table Information")) {
                     isTableInfo = true;
                 }
-                continue;
             }
             // 去空格处理
             dataType = dataType.trim();
@@ -509,6 +508,11 @@ public class HiveClient extends AbsRdbmsClient {
 
             if (colName.contains("field.delim")) {
                 tableInfo.setDelim(dataType);
+                continue;
+            }
+
+            if (dataType.contains("field.delim")) {
+                tableInfo.setDelim(MapUtils.getString(row, "comment", "\001").trim());
                 continue;
             }
 
