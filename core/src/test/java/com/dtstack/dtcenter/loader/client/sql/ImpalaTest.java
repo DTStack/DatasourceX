@@ -75,6 +75,19 @@ public class ImpalaTest {
         System.out.println(tableList);
     }
 
+    @Test
+    public void getColumnMetaData_0003() {
+        ImpalaSourceDTO source = ImpalaSourceDTO.builder()
+                .url("jdbc:impala://172.16.101.17:21050/default")
+                .defaultFS("hdfs://ns1")
+                .schema("aa_aa")
+                .build();
+        IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("aa_aa").tableName("aa_aa.shop_info").build();
+        List<ColumnMetaDTO> tableList = client.getColumnMetaData(source, queryDTO);
+        System.out.println(tableList);
+    }
+
 
     @Test
     public void getTableList() {
