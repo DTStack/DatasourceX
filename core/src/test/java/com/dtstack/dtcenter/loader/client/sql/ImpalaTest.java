@@ -11,10 +11,10 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +45,29 @@ public class ImpalaTest {
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test2 values(1, 'loader_test')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
+
+    @Test
+    public void getTableList_0001() throws SQLException {
+        ImpalaSourceDTO source = ImpalaSourceDTO.builder()
+                .url("jdbc:impala://172.16.101.17:21050/default")
+                .defaultFS("hdfs://ns1")
+                .schema("aa_aa")
+                .build();
+        IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        List<String> tableList = client.getTableList(source, queryDTO);
+        System.out.println(tableList);
+    }
+
+
+    @Test
+    public void getTableList() {
+        IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        List<String> tableList = client.getTableList(source, queryDTO);
+        System.out.println(tableList);
+    }
+
 
     @Test
     public void getCon() throws Exception {
@@ -103,14 +126,6 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-    }
-
-    @Test
-    public void getTableList() {
-        IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
-        List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList);
     }
 
     @Test
