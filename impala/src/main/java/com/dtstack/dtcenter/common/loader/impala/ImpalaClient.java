@@ -326,6 +326,10 @@ public class ImpalaClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(schema)) {
             return tableName;
         }
+        //如果tableName带 . 如 database.table 直接返回
+        if(StringUtils.isNotEmpty(tableName) && tableName.contains(".")){
+            return tableName;
+        }
         return String.format("%s.%s", schema, tableName);
     }
 
