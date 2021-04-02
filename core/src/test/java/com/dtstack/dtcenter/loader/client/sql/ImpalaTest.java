@@ -44,6 +44,10 @@ public class ImpalaTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test2 values(1, 'loader_test')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists aa_aa.shop_info").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table aa_aa.shop_info(id int, name string)").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
@@ -56,6 +60,18 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
+        System.out.println(tableList);
+    }
+    @Test
+    public void getColumnMetaData_0002() {
+        ImpalaSourceDTO source = ImpalaSourceDTO.builder()
+                .url("jdbc:impala://172.16.101.17:21050/default")
+                .defaultFS("hdfs://ns1")
+                .schema("aa_aa")
+                .build();
+        IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("aa_aa.shop_info").build();
+        List<ColumnMetaDTO> tableList = client.getColumnMetaData(source, queryDTO);
         System.out.println(tableList);
     }
 
