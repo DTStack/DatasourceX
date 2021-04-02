@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * @company: www.dtstack.com
@@ -26,8 +27,8 @@ public class ImpalaDriverUtil {
             return conn;
         }
 
-        try {
-            conn.setSchema(schema);
+        try (Statement stmt = conn.createStatement()){
+            stmt.execute("use " + schema);
         } catch (SQLException e) {
             log.error("Hive 设置 Schema 异常 : ", e.getMessage(), e);
         }

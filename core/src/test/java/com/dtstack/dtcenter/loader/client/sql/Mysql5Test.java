@@ -52,6 +52,34 @@ public class Mysql5Test {
     }
 
     /**
+     * 根据schema获取表
+     */
+    @Test
+    public void getTableListBySchema_001() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("test").build();
+        List<String> tableList = client.getTableListBySchema(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+    }
+
+    /**
+     * 选择schema
+     */
+    @Test
+    public void getTableList_0001() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        List<String> tableList = client.getTableList(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+    }
+
+    @Test
+    public void getColumnMetaData_0001() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("test").tableName("demo").build();
+        List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
+    }
+
+
+    /**
      * 获取连接测试
      */
     @Test
