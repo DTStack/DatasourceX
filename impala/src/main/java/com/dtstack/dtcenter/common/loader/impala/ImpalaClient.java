@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
@@ -333,4 +334,10 @@ public class ImpalaClient extends AbsRdbmsClient {
         return String.format("%s.%s", schema, tableName);
     }
 
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        ImpalaDownload impalaDownload = new ImpalaDownload(getCon(source), queryDTO.getSql());
+        impalaDownload.configure();
+        return impalaDownload;
+    }
 }

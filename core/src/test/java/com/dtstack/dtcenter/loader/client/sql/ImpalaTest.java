@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -9,6 +10,8 @@ import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,6 +50,17 @@ public class ImpalaTest {
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists aa_aa.shop_info").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table aa_aa.shop_info(id int, name string)").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_download").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_download(id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        List<String> data = Lists.newArrayList();
+        for (int i = 0; i < 501; i++) {
+            data.add("(" + i + ",'loader_test')");
+        }
+        String join = String.join(",", data);
+        queryDTO = SqlQueryDTO.builder().sql("insert into loader_download values " + join).build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -227,5 +241,17 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
+    }
+
+    @Test
+    public void downloadBySql () throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
+        IDownloader downloader = client.getDownloader(source, SqlQueryDTO.builder().sql("select * from loader_download").build());
+        Assert.assertEquals(2, downloader.getMetaInfo().size());
+        while (!downloader.reachedEnd()) {
+            List<List> result = (List<List>) downloader.readNext();
+            Assert.assertTrue(CollectionUtils.isNotEmpty(result));
+        }
+        downloader.close();
     }
 }
