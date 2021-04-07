@@ -28,8 +28,7 @@ import java.util.Map;
 public class ImpalaKerberosTableTest {
 
     private static ImpalaSourceDTO source = ImpalaSourceDTO.builder()
-            .url("jdbc:impala://eng-cdh3:21050;AuthMech=1;KrbServiceName=impala;KrbHostFQDN=eng-cdh3")
-            .schema("dev")
+            .url("jdbc:impala://172.16.100.208:21050;AuthMech=1;KrbRealm=DTSTACK.COM;KrbHostFQDN=master;KrbServiceName=impala")
             .build();
 
     /**
@@ -39,12 +38,12 @@ public class ImpalaKerberosTableTest {
     public static void setUp () {
         // 准备 Kerberos 参数
         Map<String, Object> kerberosConfig = new HashMap<>();
-        kerberosConfig.put(HadoopConfTool.PRINCIPAL, "impala/eng-cdh3@DTSTACK.COM");
-        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/impalad-cdh3.keytab");
+        kerberosConfig.put(HadoopConfTool.PRINCIPAL, "impala/master@DTSTACK.COM");
+        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/impala.keytab");
         kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
         source.setKerberosConfig(kerberosConfig);
 
-        String localKerberosPath = ImpalaKerberosTest.class.getResource("/eng-cdh").getPath();
+        String localKerberosPath = ImpalaKerberosTest.class.getResource("/eng-cdh3").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.IMPALA.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());

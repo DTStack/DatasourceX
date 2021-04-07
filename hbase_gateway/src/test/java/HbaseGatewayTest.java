@@ -99,9 +99,9 @@ public class HbaseGatewayTest {
         hbaseClient.getColumnMetaDataWithSql(source, SqlQueryDTO.builder().build());
     }
 
-    @Test(expected = DtLoaderException.class)
+    @Test
     public void getFlinkColumnMetaData() {
-        hbaseClient.getFlinkColumnMetaData(source, SqlQueryDTO.builder().build());
+        hbaseClient.getFlinkColumnMetaData(source, SqlQueryDTO.builder().tableName("loader_test_2").build());
     }
 
     @Test(expected = DtLoaderException.class)

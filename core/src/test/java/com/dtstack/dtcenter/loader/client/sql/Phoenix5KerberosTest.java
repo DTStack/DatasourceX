@@ -28,12 +28,13 @@ import java.util.Map;
  */
 public class Phoenix5KerberosTest {
 
+
     // 构建客户端
     private static final IClient client = ClientCache.getClient(DataSourceType.PHOENIX5.getVal());
 
     // 构建数据源信息
     private static final Phoenix5SourceDTO source = Phoenix5SourceDTO.builder()
-            .url("jdbc:phoenix:172.16.101.239:2181:/hbase")
+            .url("jdbc:phoenix:172.16.100.208,172.16.100.217,172.16.101.169:2181:/hbase")
             .build();
 
     @BeforeClass
@@ -42,10 +43,10 @@ public class Phoenix5KerberosTest {
         Map<String, Object> kerberosConfig = new HashMap<>();
         kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/hbase.keytab");
         kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
-        kerberosConfig.put(HadoopConfTool.HBASE_MASTER_PRINCIPAL, "hbase/_HOST@DTSTACK.COM");
         kerberosConfig.put(HadoopConfTool.HBASE_REGION_PRINCIPAL, "hbase/_HOST@DTSTACK.COM");
+        kerberosConfig.put(HadoopConfTool.HBASE_MASTER_PRINCIPAL, "hbase/_HOST@DTSTACK.COM");
         source.setKerberosConfig(kerberosConfig);
-        String localKerberosPath = Phoenix5KerberosTest.class.getResource("/phoenix5_kerberos").getPath();
+        String localKerberosPath = Phoenix5KerberosTest.class.getResource("/eng-cdh3").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.PHOENIX5.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
 
@@ -178,7 +179,7 @@ public class Phoenix5KerberosTest {
     public void getAllDatabases()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List databases = client.getAllDatabases(source, queryDTO);
-        Assert.assertTrue(CollectionUtils.isNotEmpty(databases));
+        Assert.assertTrue(CollectionUtils.isEmpty(databases));
     }
 
     /**

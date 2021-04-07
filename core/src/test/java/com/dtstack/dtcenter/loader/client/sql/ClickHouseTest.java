@@ -31,6 +31,8 @@ public class ClickHouseTest {
     
     private static ClickHouseSourceDTO source = ClickHouseSourceDTO.builder()
             .url("jdbc:clickhouse://172.16.100.186:8123")
+            .username("default")
+            .password("b6rCe7ZV")
             .poolConfig(new PoolConfig())
             .build();
 
@@ -45,7 +47,7 @@ public class ClickHouseTest {
         queryDTO = SqlQueryDTO.builder().sql("CREATE TABLE loader_test (id String, date Date) ENGINE = MergeTree(date, (id,date), 8192)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test values('1', toDate('2020-08-22'))").build();
-        client.executeSqlWithoutResultSet(source, queryDTO);
+        assert client.executeSqlWithoutResultSet(source, queryDTO);
     }
     
     @Test
@@ -132,7 +134,7 @@ public class ClickHouseTest {
     public void getColumnMetaData()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 
     /**

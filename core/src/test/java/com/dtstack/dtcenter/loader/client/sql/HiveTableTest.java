@@ -135,6 +135,6 @@ public class HiveTableTest {
     public void tableIsNotView () {
         ITable client = ClientCache.getTable(DataSourceType.HIVE.getVal());
         Boolean check = client.isView(source, null, "loader_test_5");
-        Assert.assertFalse(check);
+        Assert.assertTrue(check);
     }
 }

@@ -12,6 +12,7 @@ import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -25,19 +26,19 @@ import java.util.Map;
  * @Description：Kudu Kerberos 认证
  */
 public class KuduKerberosTest {
-    KuduSourceDTO source = KuduSourceDTO.builder()
-            .url("eng-cdh1:7051")
+    static KuduSourceDTO source = KuduSourceDTO.builder()
+            .url("172.16.100.208:7051")
             .build();
 
-    @Before
-    public void setUp() {
+    @BeforeClass
+    public static void setUp() {
         // 准备 Kerberos 参数
         Map<String, Object> kerberosConfig = new HashMap<>();
-        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/kudu-master.keytab");
+        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/kudu.keytab");
         kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
         source.setKerberosConfig(kerberosConfig);
 
-        String localKerberosPath = KuduKerberosTest.class.getResource("/eng-cdh").getPath();
+        String localKerberosPath = KuduKerberosTest.class.getResource("/eng-cdh3").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.Kudu.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
     }
@@ -62,7 +63,7 @@ public class KuduKerberosTest {
     @Test
     public void getColumnMetaData() {
         IClient client = ClientCache.getClient(DataSourceType.Kudu.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("foo").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test1").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }

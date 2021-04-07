@@ -29,10 +29,9 @@ public class KingbaseTest {
 
     // 构建数据源信息
     private static final KingbaseSourceDTO source = KingbaseSourceDTO.builder()
-            .url("jdbc:kingbase8://172.16.100.181:54321/TEST")
-            .username("SYSTEM")
-            .password("abc123")
-            .schema("")
+            .url("jdbc:kingbase8://172.16.100.186:54321/test_db")
+            .username("test")
+            .password("test123")
             .poolConfig(PoolConfig.builder().maximumPoolSize(2).build())
             .build();
 

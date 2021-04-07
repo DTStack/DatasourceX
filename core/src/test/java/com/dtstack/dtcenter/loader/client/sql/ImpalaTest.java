@@ -10,8 +10,9 @@ import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -74,7 +75,7 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
     @Test
     public void getColumnMetaData_0002() {
@@ -86,7 +87,7 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("aa_aa.shop_info").build();
         List<ColumnMetaDTO> tableList = client.getColumnMetaData(source, queryDTO);
-        System.out.println(tableList);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
     @Test
@@ -99,7 +100,7 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("aa_aa").tableName("aa_aa.shop_info").build();
         List<ColumnMetaDTO> tableList = client.getColumnMetaData(source, queryDTO);
-        System.out.println(tableList);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
 
@@ -108,7 +109,7 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
-        System.out.println(tableList);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
 
@@ -133,7 +134,7 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show databases").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
-        System.out.println(mapList.size());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(mapList));
     }
 
     @Test
@@ -141,7 +142,7 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("aa_aa").tableName("shop_info").build();
         List<Map<String, Object>> mapList = client.getColumnMetaData(source, queryDTO);
-        System.out.println(mapList.size());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(mapList));
     }
 
     @Test
@@ -154,21 +155,21 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<Map<String, Object>> mapList = client.getTableList(source, queryDTO);
-        System.out.println(mapList.size());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(mapList));
     }
 
     @Test
     public void getTable_0001() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         Table table = client.getTable(source, SqlQueryDTO.builder().schema("aa_aa").tableName("shop_info").build());
-        System.out.println(table);
+        Assert.assertNotNull(table);
     }
 
     @Test
     public void executeSqlWithoutResultSet() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
-        client.executeSqlWithoutResultSet(source, queryDTO);
+        Assert.assertTrue(client.executeSqlWithoutResultSet(source, queryDTO));
     }
 
     @Test
@@ -176,7 +177,7 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test2").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
-        System.out.println(columnClassInfo.size());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
     }
 
     @Test
@@ -184,7 +185,7 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test2").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 
     @Test
@@ -192,15 +193,7 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test2").build();
         String tableMetaComment = client.getTableMetaComment(source, queryDTO);
-        System.out.println(tableMetaComment);
-    }
-
-    @Test
-    public void getTableMetaComment1() {
-        IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test2").build();
-        String tableMetaComment = client.getTableMetaComment(source, queryDTO);
-        System.out.println(tableMetaComment);
+        Assert.assertTrue(StringUtils.isEmpty(tableMetaComment));
     }
 
     @Test
@@ -208,32 +201,33 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().previewNum(2).tableName("loader_test2").build();
         List preview = client.getPreview(source, queryDTO);
-        System.out.println(preview);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(preview));
     }
 
     @Test
     public void getAllDatabases() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        System.out.println(client.getAllDatabases(source, SqlQueryDTO.builder().build()));
+        Assert.assertTrue(CollectionUtils.isNotEmpty(client.getAllDatabases(source, SqlQueryDTO.builder().build())));
     }
 
     @Test
     public void getPartitionColumn() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        System.out.println(client.getPartitionColumn(source, SqlQueryDTO.builder().tableName("loader_test2").build()));
+        List<ColumnMetaDTO>  list = client.getPartitionColumn(source, SqlQueryDTO.builder().tableName("loader_test2").build());
+        Assert.assertTrue(CollectionUtils.isEmpty(list));
     }
 
     @Test
     public void getCreateSql() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        System.out.println(client.getCreateTableSql(source, SqlQueryDTO.builder().tableName("loader_test2").build()));
+        Assert.assertNotNull(client.getCreateTableSql(source, SqlQueryDTO.builder().tableName("loader_test2").build()));
     }
 
     @Test
     public void getTable() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         Table table = client.getTable(source, SqlQueryDTO.builder().tableName("loader_test2").build());
-        System.out.println(table);
+        Assert.assertNotNull(table);
     }
 
     @Test

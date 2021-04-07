@@ -145,7 +145,7 @@ public class Db2Test {
     public void getColumnMetaData()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 
     /**
