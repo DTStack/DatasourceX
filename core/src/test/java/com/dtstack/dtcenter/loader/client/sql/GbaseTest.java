@@ -42,7 +42,7 @@ public class GbaseTest {
         IClient client = ClientCache.getClient(DataSourceType.GBase_8a.getVal());
         Boolean isConnected = client.testCon(source);
         if (!isConnected) {
-            throw new DtLoaderException("数据源连接异常");
+            throw new DtLoaderException("数据源connection exception");
         }
     }
 

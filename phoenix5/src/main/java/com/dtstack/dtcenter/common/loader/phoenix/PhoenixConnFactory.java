@@ -62,10 +62,10 @@ public class PhoenixConnFactory extends ConnFactory {
             // 如果在设定超时(以秒为单位)之内，还没得到 Connection 对象，则认为连接超时，不继续阻塞
             conn = future.get(CONN_TIMEOUT, TimeUnit.SECONDS);
             if (Objects.isNull(conn)) {
-                throw new DtLoaderException("获取phoenix5连接失败！");
+                throw new DtLoaderException("get phoenix5 connection error！");
             }
         } catch (TimeoutException e) {
-            throw new DtLoaderException("获取phoenix5连接超时！", e);
+            throw new DtLoaderException("get phoenix5 connection timeout！", e);
         } catch (Exception e) {
             String errorMsg = e.getMessage();
             if (e.getCause() != null && e.getCause() instanceof DtLoaderException) {

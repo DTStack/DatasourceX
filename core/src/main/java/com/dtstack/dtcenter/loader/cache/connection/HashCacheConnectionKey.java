@@ -86,7 +86,7 @@ public class HashCacheConnectionKey {
      * @param isCheck    是否需要校验，false 则不校验，直接删除整个节点
      */
     public static void clearKey(String sessionKey, Integer sourceType, Boolean isCheck) {
-        log.info("关闭连接 sessionKey: {} sourceType: {} isCheck: {}", sessionKey, sourceType, isCheck);
+        log.info("close connection sessionKey: {} sourceType: {} isCheck: {}", sessionKey, sourceType, isCheck);
         DataSourceConnection dataNode = SESSION_CONN_MAP.get(sessionKey);
         if (dataNode == null) {
             SESSION_CONN_MAP.remove(sessionKey);

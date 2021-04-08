@@ -40,7 +40,7 @@ public class HiveDriverUtil {
         try {
             return HIVE_DRIVER.getPropertyInfo(url, properties);
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("Hive 解析 URL 异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("Hive parse URL exception : %s", e.getMessage()), e);
         }
     }
 
@@ -71,7 +71,7 @@ public class HiveDriverUtil {
             conn.setSchema(schema);
             return conn;
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("Schema 设置异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("Setting schema exception : %s", e.getMessage()), e);
         }
     }
 

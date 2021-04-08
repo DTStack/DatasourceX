@@ -232,7 +232,7 @@ public class LogAggregationIndexedFileController implements IDownloader {
                     try {
                         return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
                     } catch (Exception e) {
-                        throw new DtLoaderException("读取文件异常", e);
+                        throw new DtLoaderException("Abnormal reading file", e);
                     }
                 });
     }
@@ -439,7 +439,7 @@ public class LogAggregationIndexedFileController implements IDownloader {
      */
     private void nextLogType() {
         if (Objects.isNull(indexedFileLogMeta)) {
-            throw new DtLoaderException("获取container日志类型失败");
+            throw new DtLoaderException("get container logger type error");
         }
         currFileLength = indexedFileLogMeta.getFileSize();
         StringBuilder sb = new StringBuilder();
@@ -546,7 +546,7 @@ public class LogAggregationIndexedFileController implements IDownloader {
                     try {
                         return getContainersWithKerberos();
                     } catch (Exception e){
-                        throw new DtLoaderException("获取 taskManager container 异常", e);
+                        throw new DtLoaderException("get taskManager container exception", e);
                     }
                 });
     }

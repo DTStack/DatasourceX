@@ -65,7 +65,7 @@ public class ImpalaClient extends AbsRdbmsClient {
                 tableList.add(rs.getString(columnSize == 1 ? 1 : 2));
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取表异常：%s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("get table exception：%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, impalaSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -140,11 +140,10 @@ public class ImpalaClient extends AbsRdbmsClient {
                 }
 
                 columnList.add(dealResult(resultSet, Boolean.TRUE));
-                columnList.add(dealResult(resultSet, Boolean.TRUE));
             }
 
         } catch (SQLException e) {
-            throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
+            throw new DtLoaderException(String.format("Failed to get meta information for the fields of table :%s. Please contact the DBA to check the database table information.",
                     transferSchemaAndTableName(schema, tableName)), e);
         } finally {
             DBUtil.closeDBResources(resultSet, stmt, null);
@@ -181,7 +180,7 @@ public class ImpalaClient extends AbsRdbmsClient {
                 }
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+            throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     transferSchemaAndTableName(schema, tableName)), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, null);
@@ -234,7 +233,7 @@ public class ImpalaClient extends AbsRdbmsClient {
             // 获取表结构信息
             getTable(tableInfo, impalaSourceDTO.getConnection(), schema, queryDTO.getTableName());
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL 执行异常, %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(null, null, impalaSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -247,7 +246,7 @@ public class ImpalaClient extends AbsRdbmsClient {
         try {
             result = executeQuery(conn, SqlQueryDTO.builder().sql("DESCRIBE formatted " + transferSchemaAndTableName(schema, tableName)).build(), ConnectionClearStatus.NORMAL.getValue());
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL 执行异常, %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
         }
         boolean isTableInfo = false;
         for (Map<String, Object> row : result) {

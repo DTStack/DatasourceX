@@ -83,13 +83,13 @@ public class HdfsOperator {
      */
     public static FileSystem getFileSystem(Map<String, Object> kerberosConfig, String config, String defaultFS) {
         Configuration conf = HadoopConfUtil.getHdfsConf(defaultFS, config, kerberosConfig);
-        log.info("获取 Hdfs FileSystem 信息, defaultFS : {}, config : {}, kerberosConfig : {}", defaultFS, config, kerberosConfig);
+        log.info("get Hdfs FileSystem message, defaultFS : {}, config : {}, kerberosConfig : {}", defaultFS, config, kerberosConfig);
         return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<FileSystem>) () -> {
                     try {
                         return FileSystem.get(conf);
                     } catch (IOException e) {
-                        throw new DtLoaderException("Hdfs 校验连通性异常", e);
+                        throw new DtLoaderException("Hdfs check connect error", e);
                     }
                 }
         );
@@ -120,7 +120,7 @@ public class HdfsOperator {
         try {
             return fs.getFileStatus(new Path(location));
         } catch (IOException e) {
-            throw new DtLoaderException(String.format("获取 hdfs 文件状态异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("get hdfs  file status exception : %s", e.getMessage()), e);
         }
     }
 
@@ -133,11 +133,11 @@ public class HdfsOperator {
      * @return
      */
     public static boolean copyToLocal(FileSystem fs, String remotePath, String localFilePath) {
-        log.info("复制 HDFS 文件 : {} 到本地 : {}", remotePath, localFilePath);
+        log.info("copy HDFS file : {} to local : {}", remotePath, localFilePath);
         try {
             fs.copyToLocalFile(false, new Path(remotePath), new Path(localFilePath));
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("复制HDFS文件到本地异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("copy HDFS file to local exception : %s", e.getMessage()), e);
         }
         return true;
     }
@@ -152,11 +152,11 @@ public class HdfsOperator {
      * @return
      */
     public static boolean copyFromLocal(FileSystem fs, String localDir, String remotePath, boolean overwrite) {
-        log.info("从本地 : {} 复制文件到 HDFS : {}", localDir, remotePath);
+        log.info("from local : {} copy file to HDFS : {}", localDir, remotePath);
         try {
             fs.copyFromLocalFile(true, overwrite, new Path(localDir), new Path(remotePath));
         } catch (IOException e) {
-            throw new DtLoaderException(String.format("从本地复制文件到 HDFS时异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("copying files from local to HDFS error : %s", e.getMessage()), e);
         }
         return true;
     }
@@ -169,7 +169,7 @@ public class HdfsOperator {
      * @param remotePath
      */
     public static void uploadLocalFileToHdfs(FileSystem fs, String localFilePath, String remotePath) {
-        log.info("上传对应路径的文件 : {} 到 HDFS : {}", localFilePath, remotePath);
+        log.info("upload file : {} to HDFS : {}", localFilePath, remotePath);
         Path resP = new Path(localFilePath);
         Path destP = new Path(remotePath);
         String dir = remotePath.substring(0, remotePath.lastIndexOf("/") + 1);
@@ -179,7 +179,7 @@ public class HdfsOperator {
             }
             fs.copyFromLocalFile(resP, destP);
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("上传本地文件 到 HDFS 异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("upload local file to HDFS exception : %s", e.getMessage()), e);
         }
     }
 
@@ -192,13 +192,13 @@ public class HdfsOperator {
      * @return
      */
     public static boolean uploadInputStreamToHdfs(FileSystem fs, byte[] bytes, String remotePath) {
-        log.info("上传字节流到 HDFS : {}", remotePath);
+        log.info("upload byte stream to HDFS : {}", remotePath);
         try (ByteArrayInputStream is = new ByteArrayInputStream(bytes)) {
             Path destP = new Path(remotePath);
             FSDataOutputStream os = fs.create(destP);
             IOUtils.copyBytes(is, os, 4096, true);
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("上传字节流到 HDFS 异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("upload byte stream to HDFS exception : %s", e.getMessage()), e);
         }
         return true;
     }
@@ -213,13 +213,13 @@ public class HdfsOperator {
      * @return
      */
     public static boolean copyFile(FileSystem fs, String remotePath, String distPath, boolean isOverwrite) throws IOException {
-        log.info("复制 HDFS {} 文件 {}", remotePath, distPath);
+        log.info("copy HDFS {} file {}", remotePath, distPath);
         Path remote = new Path(remotePath);
         Path dis = new Path(distPath);
         if (fs.isDirectory(remote)) {
-            throw new DtLoaderException("不能复制目录");
+            throw new DtLoaderException("Cannot copy directory");
         } else if (fs.isDirectory(dis)) {
-            throw new DtLoaderException("复制目标不能是目录");
+            throw new DtLoaderException("Copy destination cannot be a directory");
         } else {
             if (isOverwrite) {
                 try (FSDataInputStream in = fs.open(remote);) {
@@ -229,7 +229,7 @@ public class HdfsOperator {
                     throw e;
                 }
             } else if (fs.exists(dis)) {
-                throw new DtLoaderException("文件：" + distPath + " 已存在");
+                throw new DtLoaderException("file：" + distPath + " is exits");
             }
         }
         return true;
@@ -244,7 +244,7 @@ public class HdfsOperator {
      * @return
      */
     public static boolean createDir(FileSystem fs, String remotePath, Short permission) {
-        log.info("新建目录 HDFS : {}", remotePath);
+        log.info("create dir HDFS : {}", remotePath);
         remotePath = uri(remotePath);
         try {
             if (null == permission) {
@@ -252,7 +252,7 @@ public class HdfsOperator {
             }
             return fs.mkdirs(new Path(remotePath), new FsPermission(permission));
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("创建hdfs目录异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("create hdfs dir exception : %s", e.getMessage()), e);
         }
     }
 
@@ -264,13 +264,13 @@ public class HdfsOperator {
      * @return
      */
     public static boolean isDirExist(FileSystem fs, String dir) {
-        log.info("校验文件夹是否存在 HDFS : {}", dir);
+        log.info("Check the hdfs dir is exits : {}", dir);
         dir = uri(dir);
         Path path = new Path(dir);
         try {
             return fs.exists(path) && fs.isDirectory(path);
         } catch (IOException e) {
-            throw new DtLoaderException(String.format("校验hdfs文件异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("Check the hdfs dir is exits : %s", e.getMessage()), e);
         }
     }
 
@@ -282,13 +282,13 @@ public class HdfsOperator {
      * @return
      */
     public static boolean isFileExist(FileSystem fs, String remotePath) {
-        log.info("校验文件是否存在 HDFS : {}", remotePath);
+        log.info("Check the hdfs file is exits : {}", remotePath);
         remotePath = uri(remotePath);
         Path path = new Path(remotePath);
         try {
             return fs.exists(path) || fs.isFile(path);
         } catch (IOException e) {
-            throw new DtLoaderException(String.format("校验hdfs文件是否存在异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("Check the hdfs file is exits : %s", e.getMessage()), e);
         }
     }
 
@@ -329,7 +329,7 @@ public class HdfsOperator {
      * @return
      */
     public static List<FileStatus> listStatus(FileSystem fs, String remotePath) throws IOException {
-        log.info("列出文件夹或者文件的状态 {}", remotePath);
+        log.info("List the status of a folder or file {}", remotePath);
         Path parentPath = new Path(remotePath);
         return Arrays.asList(fs.listStatus(parentPath));
     }
@@ -343,7 +343,7 @@ public class HdfsOperator {
      * @return
      */
     public static List<FileStatus> listFiles(FileSystem fs, String remotePath, boolean isIterate) throws IOException {
-        log.info("列出 HDFS {} 文件", remotePath);
+        log.info("List HDFS {} file", remotePath);
         Path parentPath = new Path(remotePath);
         if (!fs.isDirectory(parentPath)) {
             return new ArrayList();
@@ -368,7 +368,7 @@ public class HdfsOperator {
      * @return
      */
     public static List<String> listAllFilePath(FileSystem fs, String remotePath) throws IOException {
-        log.info("复制 HDFS {} 文件", remotePath);
+        log.info("copy HDFS {} file", remotePath);
         Path parentPath = new Path(remotePath);
         if (!fs.isDirectory(parentPath)) {
             return new ArrayList();
@@ -393,11 +393,11 @@ public class HdfsOperator {
      * @param mode
      */
     public static Boolean setPermission(FileSystem fs, String remotePath, String mode) {
-        log.info("设置 HDFS {} 文件权限 {}", remotePath, mode);
+        log.info("setting HDFS {} file permission {}", remotePath, mode);
         try {
             fs.setPermission(new Path(remotePath), new FsPermission(mode));
         } catch (IOException e) {
-            throw new DtLoaderException(String.format("设置 HDFS 文件权限失败 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("setting HDFS file permission failed : %s", e.getMessage()), e);
         }
         return true;
     }
@@ -410,7 +410,7 @@ public class HdfsOperator {
      * @return
      */
     public static boolean deleteFiles(FileSystem fs, List<String> fileNames) {
-        log.info("删除 HDFS 文件 : {}", fileNames);
+        log.info("delete HDFS file : {}", fileNames);
         if (CollectionUtils.isEmpty(fileNames)) {
             return true;
         }
@@ -423,10 +423,10 @@ public class HdfsOperator {
                 if (fs.exists(path)) {
                     Trash.moveToAppropriateTrash(fs, path, fs.getConf());
                 } else {
-                    log.error("HDFS 文件不存在 {}", path);
+                    log.error("HDFS file is not exist {}", path);
                 }
             } catch (Exception e) {
-                throw new DtLoaderException(String.format("判断文件是否存在时异常 : %s", e.getMessage()), e);
+                throw new DtLoaderException(String.format("judging whether the file exists : %s", e.getMessage()), e);
             }
         }
         return true;
@@ -440,7 +440,7 @@ public class HdfsOperator {
      * @return
      */
     public static boolean checkAndDelete(FileSystem fs, String remotePath) {
-        log.info("删除 HDFS 文件 : {}", remotePath);
+        log.info("delete HDFS file : {}", remotePath);
         remotePath = uri(remotePath);
         Path deletePath = new Path(remotePath);
         try {
@@ -448,7 +448,7 @@ public class HdfsOperator {
                 return Trash.moveToAppropriateTrash(fs, deletePath, fs.getConf());
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("校验或删除文件时异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("check or delete file exception : %s", e.getMessage()), e);
         }
         return true;
     }
@@ -461,7 +461,7 @@ public class HdfsOperator {
      * @return
      */
     public static long getDirSize(FileSystem fs, String remotePath) {
-        log.info("获取 HDFS 文件大小 : {}", remotePath);
+        log.info("get HDFS file size : {}", remotePath);
         long size = 0L;
 
         try {
@@ -486,11 +486,11 @@ public class HdfsOperator {
      * @return
      */
     public static boolean rename(FileSystem fs, String src, String dist) {
-        log.info("HDFS 文件重命名 : {} -> {}", src, dist);
+        log.info("HDFS file rename : {} -> {}", src, dist);
         try {
             return fs.rename(new Path(src), new Path(dist));
         } catch (IOException e) {
-            throw new DtLoaderException(String.format("重命名hdfs文件异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("rename hdfs file exception : %s", e.getMessage()), e);
         }
     }
 

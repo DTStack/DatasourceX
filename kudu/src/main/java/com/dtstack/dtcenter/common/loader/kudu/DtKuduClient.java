@@ -82,12 +82,12 @@ public class DtKuduClient<T> extends AbsNoSqlClient<T> {
     @Override
     public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         if (queryDTO == null || StringUtils.isBlank(queryDTO.getTableName())) {
-            throw new DtLoaderException("表名称不能为空");
+            throw new DtLoaderException("table  is not empty");
         }
         try (KuduClient client = getConnection(iSource);) {
             return getTableColumns(client, queryDTO.getTableName());
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("kudu客户端获取失败 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("kudu client get exception : %s", e.getMessage()), e);
         }
     }
 
@@ -121,7 +121,7 @@ public class DtKuduClient<T> extends AbsNoSqlClient<T> {
     private String dealMessageError(String errorMessage){
         Matcher passLine = TABLE_COLUMN.matcher(errorMessage);
         if (passLine.find()) {
-           return String.format("请校验字段类型,kudu表暂时不持%s等类型",COLUMN_TYPE_NOT_SUPPORT);
+           return String.format("Please verify the field type, kudu table does not hold %s and other types",COLUMN_TYPE_NOT_SUPPORT);
         }
         return errorMessage;
     }
@@ -129,7 +129,7 @@ public class DtKuduClient<T> extends AbsNoSqlClient<T> {
     private static KuduClient getConnection(ISourceDTO iSource) {
         KuduSourceDTO kuduSourceDTO = (KuduSourceDTO) iSource;
         if (kuduSourceDTO == null || StringUtils.isBlank(kuduSourceDTO.getUrl())) {
-            throw new DtLoaderException("集群地址不能为空");
+            throw new DtLoaderException("The cluster address cannot be empty");
         }
         List<String> hosts = Arrays.stream(kuduSourceDTO.getUrl().split(",")).collect(Collectors.toList());
         return KerberosLoginUtil.loginWithUGI(kuduSourceDTO.getKerberosConfig()).doAs(

@@ -66,7 +66,7 @@ public class OdpsPoolFactory implements PooledObjectFactory<Odps> {
             tables.iterator().hasNext();
             check = true;
         } catch (Exception e) {
-            log.error("检查odps连接失败..{}", e);
+            log.error("check odps connect error..{}", e.getMessage(), e);
         }
         if (Objects.nonNull(odps) && !check) {
             try {
@@ -95,7 +95,7 @@ public class OdpsPoolFactory implements PooledObjectFactory<Odps> {
             tables.iterator().hasNext();
             return true;
         } catch (Exception e) {
-            log.error("检查odps连接失败..{}", e);
+            log.error("check odps connect error..{}", e.getMessage(), e);
         }
         return false;
     }

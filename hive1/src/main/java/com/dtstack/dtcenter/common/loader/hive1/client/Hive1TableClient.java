@@ -42,7 +42,7 @@ public class Hive1TableClient extends AbsTableClient {
         String sql = String.format(TABLE_IS_VIEW_SQL, tableName);
         List<Map<String, Object>> result = executeQuery(source, sql);
         if (CollectionUtils.isEmpty(result)) {
-            throw new DtLoaderException(String.format("执行判断表是否是视图sql结果为空，sql：%s", sql));
+            throw new DtLoaderException(String.format("Execute to determine whether the table is a view sql result is empty，sql：%s", sql));
         }
         String tableType = "";
         for (Map<String, Object> row : result) {

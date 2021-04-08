@@ -82,7 +82,7 @@ public class HdfsTextDownload implements IDownloader {
 
         paths = getAllPartitionPath(tableLocation);
         if(paths.size() == 0){
-            throw new DtLoaderException("非法路径:" + tableLocation);
+            throw new DtLoaderException("Illegal path:" + tableLocation);
         }
 
         nextRecordReader();
@@ -216,7 +216,7 @@ public class HdfsTextDownload implements IDownloader {
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
-                        throw new DtLoaderException("读取文件异常", e);
+                        throw new DtLoaderException("Abnormal reading file", e);
                     }
                 });
     }
@@ -250,7 +250,7 @@ public class HdfsTextDownload implements IDownloader {
             try {
                 return recordReader == null || !nextRecord();
             } catch (Exception e){
-                throw new DtLoaderException("下载文件异常", e);
+                throw new DtLoaderException("Download file is abnormal", e);
             }
         });
 

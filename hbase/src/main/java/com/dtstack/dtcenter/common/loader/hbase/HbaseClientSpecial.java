@@ -80,7 +80,7 @@ public class HbaseClientSpecial implements IHbase {
         } catch (NamespaceNotFoundException namespaceNotFoundException) {
             log.error("namespace [{}] not found!", namespace);
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取namespace异常, namespace：'%s'", namespace), e);
+            throw new DtLoaderException(String.format("get namespace exception, namespace：'%s'", namespace), e);
         } finally {
             close(admin);
             closeConnection(connection, hbaseSourceDTO);
@@ -107,7 +107,7 @@ public class HbaseClientSpecial implements IHbase {
             connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
             admin = connection.getAdmin();
             if (admin.tableExists(tableName)) {
-                throw new DtLoaderException(String.format("当前表已经存在！:'%s'", tbName));
+                throw new DtLoaderException(String.format("The current table already exists！:'%s'", tbName));
             } else {
                 HTableDescriptor hTableDescriptor = new HTableDescriptor(tableName);
                 for (String str : colFamily) {
@@ -120,7 +120,7 @@ public class HbaseClientSpecial implements IHbase {
         } catch (DtLoaderException e) {
             throw e;
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("hbase创建表失败！namespace：'%s'，表名：'%s'，列族：'%s'", namespace, tbName, Arrays.toString(colFamily)), e);
+            throw new DtLoaderException(String.format("hbase failed to create table！namespace：'%s'，table name：'%s'，column family：'%s'", namespace, tbName, Arrays.toString(colFamily)), e);
         } finally {
             close(admin);
             closeConnection(connection, hbaseSourceDTO);
@@ -149,7 +149,7 @@ public class HbaseClientSpecial implements IHbase {
         } catch (DtLoaderException e) {
             throw e;
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("hbase根据正则扫描数据异常！,regex：%s", regex), e);
+            throw new DtLoaderException(String.format("Hbase scans data abnormally according to regular！,regex：%s", regex), e);
         } finally {
             close(rs, table);
             closeConnection(connection, hbaseSourceDTO);
@@ -163,7 +163,7 @@ public class HbaseClientSpecial implements IHbase {
         Connection connection = null;
         Table table = null;
         if (CollectionUtils.isEmpty(rowKeys)) {
-            throw new DtLoaderException("需要删除的rowKey不能为空！");
+            throw new DtLoaderException("The rowKey to be deleted cannot be empty！");
         }
         try {
             //获取hbase连接
@@ -178,7 +178,7 @@ public class HbaseClientSpecial implements IHbase {
         } catch (DtLoaderException e) {
             throw e;
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("hbase删除数据异常! rowKeys： %s", rowKeys), e);
+            throw new DtLoaderException(String.format("hbase delete data exception! rowKeys： %s", rowKeys), e);
         } finally {
             close(table);
             closeConnection(connection, hbaseSourceDTO);
@@ -201,7 +201,7 @@ public class HbaseClientSpecial implements IHbase {
         } catch (DtLoaderException e) {
             throw e;
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("hbase插入数据异常! rowKey： %s， data： %s", rowKey, data), e);
+            throw new DtLoaderException(String.format("hbase insert data exception! rowKey： %s， data： %s", rowKey, data), e);
         } finally {
             close(table);
             closeConnection(connection, hbaseSourceDTO);
@@ -225,7 +225,7 @@ public class HbaseClientSpecial implements IHbase {
         } catch (DtLoaderException e) {
             throw e;
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("hbase获取数据异常! rowKey： %s ", rowKey), e);
+            throw new DtLoaderException(String.format("Hbase gets data exception! rowKey： %s ", rowKey), e);
         } finally {
             close(table);
             closeConnection(connection, hbaseSourceDTO);
@@ -358,7 +358,7 @@ public class HbaseClientSpecial implements IHbase {
             }
             return previewList;
         } catch (Exception e) {
-            throw new DtLoaderException("数据预览失败", e);
+            throw new DtLoaderException("Data preview failed", e);
         } finally {
             close(table, rs);
             closeConnection(connection, hbaseSourceDTO);
@@ -375,7 +375,7 @@ public class HbaseClientSpecial implements IHbase {
             try {
                 connection.close();
             } catch (IOException e) {
-                log.error("hbase 关闭连接异常", e);
+                log.error("hbase Close connection exception", e);
             }
         }
     }

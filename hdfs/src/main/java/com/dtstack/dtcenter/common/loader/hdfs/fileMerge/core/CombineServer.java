@@ -71,7 +71,7 @@ public abstract class CombineServer {
         }
 
         if (CollectionUtils.isEmpty(combineFiles)) {
-            log.info("源目录下没有需要合并的小文件");
+            log.info("There are no small files to be merged in the source directory");
             return;
         }
 

@@ -45,7 +45,7 @@ public class FtpClient<T> extends AbsNoSqlClient<T> {
                             put(SFTPHandler.KEY_RSA, Optional.ofNullable(ftpSourceDTO.getPath()).orElse(""));
                         }});
             } catch (JSchException e) {
-                throw new DtLoaderException("与ftp服务器建立连接失败,请检查用户名和密码是否正确");
+                throw new DtLoaderException("Failed to establish a connection with the ftp server, please check whether the user name and password are correct");
             } finally {
                 if (instance != null) {
                     instance.close();
@@ -70,14 +70,14 @@ public class FtpClient<T> extends AbsNoSqlClient<T> {
                 int reply = ftpClient.getReplyCode();
                 if (!FTPReply.isPositiveCompletion(reply)) {
                     ftpClient.disconnect();
-                    throw new DtLoaderException("与ftp服务器建立连接失败,请检查用户名和密码是否正确");
+                    throw new DtLoaderException("Failed to establish a connection with the ftp server, please check whether the user name and password are correct");
                 }
 
                 if (ftpClient != null) {
                     ftpClient.disconnect();
                 }
             } catch (Exception e) {
-                throw new DtLoaderException("与ftp服务器建立连接失败,请检查用户名和密码是否正确");
+                throw new DtLoaderException("Failed to establish a connection with the ftp server, please check whether the user name and password are correct");
             }
         }
         return true;

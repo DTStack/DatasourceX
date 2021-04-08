@@ -106,13 +106,13 @@ public class SparkParquetDownload implements IDownloader {
         FileSystem fileSystem = FileSystem.get(conf);
         // 判断表路径是否存在
         if (!fileSystem.exists(new Path(tableLocation))) {
-            log.warn("表路径：{} 不存在", tableLocation);
+            log.warn("Table path: {} does not exist", tableLocation);
             return false;
         }
         // 递归获取表路径下所有文件
         getAllPartitionPath(tableLocation, paths);
         if(paths.size() == 0){
-            throw new DtLoaderException("非法路径:" + tableLocation);
+            throw new DtLoaderException("Illegal path:" + tableLocation);
         }
         return true;
     }
@@ -174,7 +174,7 @@ public class SparkParquetDownload implements IDownloader {
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
-                        throw new DtLoaderException("读取文件异常", e);
+                        throw new DtLoaderException("Abnormal reading file", e);
                     }
                 });
     }
@@ -320,7 +320,7 @@ public class SparkParquetDownload implements IDownloader {
                     try {
                         return !nextRecord();
                     } catch (Exception e){
-                        throw new DtLoaderException("下载文件异常", e);
+                        throw new DtLoaderException("Download file is abnormal", e);
                     }
                 });
     }

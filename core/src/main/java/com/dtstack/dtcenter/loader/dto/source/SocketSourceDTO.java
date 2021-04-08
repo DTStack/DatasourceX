@@ -47,11 +47,11 @@ public class SocketSourceDTO implements ISourceDTO {
 
     @Override
     public Connection getConnection() {
-        throw new DtLoaderException("不支持该方法");
+        throw new DtLoaderException("The method is not supported");
     }
 
     @Override
     public void setConnection(Connection connection) {
-        throw new DtLoaderException("不支持该方法");
+        throw new DtLoaderException("The method is not supported");
     }
 }

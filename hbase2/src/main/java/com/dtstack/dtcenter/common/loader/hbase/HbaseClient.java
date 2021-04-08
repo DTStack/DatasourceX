@@ -76,7 +76,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
                 }
             }
         } catch (IOException e) {
-            throw new DtLoaderException(String.format("获取 hbase table list 异常：%s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("get hbase table list exception：%s", e.getMessage()), e);
         } finally {
             closeAdmin(admin);
             closeConnection(hConn,hbaseSourceDTO);
@@ -89,7 +89,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
             try {
                 hConn.close();
             } catch (IOException e) {
-                log.error("hbase 关闭连接异常", e);
+                log.error("hbase Close connection exception", e);
             }
         }
     }
@@ -99,7 +99,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
             try {
                 admin.close();
             } catch (IOException e) {
-                log.error("hbase 关闭连接异常", e);
+                log.error("hbase Close connection exception", e);
             }
         }
     }
@@ -187,7 +187,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
             }
 
         } catch (Exception e){
-            throw new DtLoaderException("执行hbase自定义失败", e);
+            throw new DtLoaderException("Failed to execute hbase customization", e);
         } finally {
             if (hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
                 close(rs, table, connection);
@@ -285,7 +285,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
                 results.add(r);
             }
         } catch (Exception e){
-            throw new DtLoaderException("数据预览失败", e);
+            throw new DtLoaderException("Data preview failed", e);
         } finally {
             if (hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
                 close(rs, table, connection);

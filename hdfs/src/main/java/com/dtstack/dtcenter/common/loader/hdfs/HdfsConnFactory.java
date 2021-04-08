@@ -18,7 +18,7 @@ public class HdfsConnFactory {
     public Boolean testConn(ISourceDTO iSource) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
         if (StringUtils.isBlank(hdfsSourceDTO.getDefaultFS()) || !hdfsSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
-            throw new DtLoaderException("defaultFS格式不正确");
+            throw new DtLoaderException("defaultFS incorrect format");
         }
 
         return HdfsOperator.checkConnection(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());

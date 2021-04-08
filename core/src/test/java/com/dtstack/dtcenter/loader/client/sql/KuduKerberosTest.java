@@ -48,7 +48,7 @@ public class KuduKerberosTest {
         IClient client = ClientCache.getClient(DataSourceType.Kudu.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("连接异常");
+            throw new DtLoaderException("connection exception");
         }
     }
 

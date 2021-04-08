@@ -116,7 +116,7 @@ public class MysqlClient extends AbsRdbmsClient {
                 }
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+            throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, mysql5SourceDTO.clearAfterGetConnection(clearStatus));
@@ -158,9 +158,9 @@ public class MysqlClient extends AbsRdbmsClient {
 
         } catch (Exception e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
+                throw new DtLoaderException(queryDTO.getTableName() + "table not exist", e);
             } else {
-                throw new DtLoaderException(String.format("获取表:%s 的字段的注释信息时失败. 请联系 DBA 核查该库、表信息.",
+                throw new DtLoaderException(String.format("Failed to get the comment information of the field of the table: %s. Please contact the DBA to check the database and table information.",
                         queryDTO.getTableName()), e);
             }
         }finally {
@@ -182,7 +182,7 @@ public class MysqlClient extends AbsRdbmsClient {
     @Override
     public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
         if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("数据库名称不能为空");
+            throw new DtLoaderException("database name is not empty");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(SHOW_DB_LIKE, dbName)).build()));
     }
@@ -190,7 +190,7 @@ public class MysqlClient extends AbsRdbmsClient {
     @Override
     public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
         if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("数据库名称不能为空");
+            throw new DtLoaderException("database name is not empty");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_IS_IN_SCHEMA, dbName, tableName)).build()));
     }
@@ -206,16 +206,16 @@ public class MysqlClient extends AbsRdbmsClient {
         String schema = queryDTO.getSchema();
         // 如果不传scheme，默认使用当前连接使用的schema
         if (StringUtils.isBlank(schema)) {
-            log.info("schema为空，获取当前正在使用的schema!");
+            log.info("schema is empty，get current used schema!");
             // 获取当前数据库
             try {
                 schema = getCurrentDatabase(sourceDTO);
             } catch (Exception e) {
-                throw new DtLoaderException("获取当前使用数据库失败！", e);
+                throw new DtLoaderException("get current used database error！", e);
             }
 
         }
-        log.info("当前使用schema：{}", schema);
+        log.info("current used schema：{}", schema);
         StringBuilder constr = new StringBuilder();
         if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
             constr.append(String.format(SEARCH_SQL, queryDTO.getTableNamePattern()));

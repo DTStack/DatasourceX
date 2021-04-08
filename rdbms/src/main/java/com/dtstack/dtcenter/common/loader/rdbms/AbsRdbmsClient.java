@@ -18,7 +18,6 @@ import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
@@ -130,7 +129,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         try {
             return executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO, clearStatus);
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("connection调用isClosed方法异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("connection calls isClosed method exception : %s", e.getMessage()), e);
         }
     }
 
@@ -144,7 +143,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                 return false;
             }
         } catch (SQLException e) {
-            throw new DtLoaderException(String.format("connection调用isClosed方法异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("connection calls isClosed method exception : %s", e.getMessage()), e);
         }
 
         DBUtil.executeSqlWithoutResultSet(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
@@ -163,7 +162,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     protected Integer beforeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO, boolean query) {
         // 查询 SQL 不能为空
         if (query && StringUtils.isBlank(queryDTO.getSql())) {
-            throw new DtLoaderException("查询 SQL 不能为空");
+            throw new DtLoaderException("Query SQL cannot be empty");
         }
 
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
@@ -190,7 +189,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         // 查询表不能为空
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         if (queryDTO == null || StringUtils.isBlank(queryDTO.getTableName())) {
-            throw new DtLoaderException("查询 表名称 不能为空");
+            throw new DtLoaderException("Query table name cannot be empty");
         }
 
         queryDTO.setColumns(CollectionUtils.isEmpty(queryDTO.getColumns()) ? Collections.singletonList("*") :
@@ -218,7 +217,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                 tableList.add(rs.getString(3));
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取数据库表异常：%s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("Get database table exception：%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, null, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -332,9 +331,9 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
+                throw new DtLoaderException(queryDTO.getTableName() + "table not exist", e);
             } else {
-                throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息 ：%s",
+                throw new DtLoaderException(String.format("Failed to get the meta information of the fields of the table: %s. Please contact the DBA to check the database and table information: %s",
                         queryDTO.getTableName(), e.getMessage()), e);
             }
         } finally {
@@ -376,9 +375,9 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
             }
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
+                throw new DtLoaderException(queryDTO.getTableName() + "table not exist", e);
             } else {
-                throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息 ：%s",
+                throw new DtLoaderException(String.format("Failed to get the meta information of the fields of the table: %s. Please contact the DBA to check the database and table information: %s",
                         queryDTO.getTableName(), e.getMessage()), e);
             }
         } finally {
@@ -529,7 +528,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO){
         // 获取表信息需要通过show databases 语句
         String sql = getShowDbSql();
-        return queryWithSingleColumn(source, sql, 1, "获取所有库异常");
+        return queryWithSingleColumn(source, sql, 1, "get All database exception");
     }
 
     @Override

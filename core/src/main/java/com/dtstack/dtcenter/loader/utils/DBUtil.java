@@ -52,7 +52,7 @@ public class DBUtil {
                 result.add(row);
             }
         } catch (Exception e) {
-            throw new DtLoaderException("Sql 执行异常 : " + e.getMessage(), e);
+            throw new DtLoaderException("Sql execute exception : " + e.getMessage(), e);
         } finally {
             DBUtil.closeDBResources(res, statement, closeConn ? conn : null);
         }
@@ -98,7 +98,7 @@ public class DBUtil {
                 result.add(row);
             }
         } catch (Exception e) {
-            throw new DtLoaderException("Sql 执行异常 : " + e.getMessage(), e);
+            throw new DtLoaderException("Sql execute exception : " + e.getMessage(), e);
         } finally {
             DBUtil.closeDBResources(res, statement, closeConn ? conn : null);
         }
@@ -120,7 +120,7 @@ public class DBUtil {
             statement = conn.createStatement();
             statement.execute(sql);
         } catch (Exception e) {
-            throw new DtLoaderException("Sql 执行异常 : " + e.getMessage(), e);
+            throw new DtLoaderException("Sql execute exception : " + e.getMessage(), e);
         } finally {
             DBUtil.closeDBResources(null, statement, closeConn ? conn : null);
         }

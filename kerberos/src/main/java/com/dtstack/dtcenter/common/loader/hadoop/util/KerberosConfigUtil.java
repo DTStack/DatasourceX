@@ -38,7 +38,7 @@ public class KerberosConfigUtil {
      */
     public static void dealKeytab(List<File> fileList, String oppositeLocation, Map<String, Object> confMap) {
         String finalPath = dealFilePath(fileList, oppositeLocation, DtClassConsistent.PublicConsistent.KEYTAB_SUFFIX);
-        log.info("处理 Keytab 路径地址为绝对路径 -- key : {}, value : {}", HadoopConfTool.PRINCIPAL_FILE, finalPath);
+        log.info("Process Keytab path address as absolute path -- key : {}, value : {}", HadoopConfTool.PRINCIPAL_FILE, finalPath);
         confMap.put(HadoopConfTool.PRINCIPAL_FILE, finalPath);
     }
 
@@ -51,7 +51,7 @@ public class KerberosConfigUtil {
      */
     public static void dealKrb5Conf(List<File> fileList, String oppositeLocation, Map<String, Object> confMap) {
         String finalPath = dealFilePath(fileList, oppositeLocation, DtClassConsistent.PublicConsistent.KRB5CONF_FILE);
-        log.info("处理 Krb5 路径地址为绝对路径 -- key : {}, value : {}", HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);
+        log.info("Process Krb5 path address is an absolute path -- key : {}, value : {}", HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);
         confMap.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, finalPath);
     }
 
@@ -69,14 +69,14 @@ public class KerberosConfigUtil {
                 file.getName().endsWith(fileNameEnd)).findFirst();
 
         if (!krb5confOptional.isPresent()) {
-            throw new DtLoaderException(String.format("以%s结尾的文件不存在", fileNameEnd));
+            throw new DtLoaderException(String.format("Ending in %s file is not exist", fileNameEnd));
         }
 
         String canonicalPath;
         try {
             canonicalPath = krb5confOptional.get().getCanonicalPath();
         } catch (IOException e) {
-            throw new DtLoaderException(String.format("krb5文件无效 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("Invalid krb5 file : %s", e.getMessage()), e);
         }
         return StringUtils.replace(canonicalPath, oppositeLocation, "");
     }
@@ -117,11 +117,11 @@ public class KerberosConfigUtil {
         try {
             keytab = Keytab.loadKeytab(file);
         } catch (IOException e) {
-            throw new DtLoaderException("解析 keytab 文件失败", e);
+            throw new DtLoaderException("Failed to parse keytab file", e);
         }
 
         if (CollectionUtils.isEmpty(keytab.getPrincipals())) {
-            throw new DtLoaderException("keytab 中的 Principal 为空");
+            throw new DtLoaderException("Principal in keytab is empty");
         }
 
         return keytab.getPrincipals().stream().map(PrincipalName::getName).collect(Collectors.toList());
@@ -155,7 +155,7 @@ public class KerberosConfigUtil {
      */
     public static String getPrincipalFromUrl(String url) {
         if (StringUtils.isBlank(url)) {
-            throw new DtLoaderException("jdbcUrl 信息为空");
+            throw new DtLoaderException("jdbcUrl is empty");
         }
 
         log.info("get url principal : {}", url);
@@ -170,6 +170,6 @@ public class KerberosConfigUtil {
                 }
             }
         }
-        throw new DtLoaderException("jdbcUrl 中不包含 Principal 信息 : " + url);
+        throw new DtLoaderException("jdbcUrl not contain Principal information : " + url);
     }
 }

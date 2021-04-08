@@ -53,7 +53,7 @@ public class DmDownloader implements IDownloader {
     @Override
     public boolean configure() throws Exception {
         if (null == connection || StringUtils.isEmpty(sql)) {
-            throw new DtLoaderException("文件不存在");
+            throw new DtLoaderException("file is not exist");
         }
         totalLine = 0;
         pageSize = 100;
@@ -84,7 +84,7 @@ public class DmDownloader implements IDownloader {
             //获取总页数
             pageAll = (int) Math.ceil(totalLine / (double) pageSize);
         } catch (Exception e) {
-            throw new DtLoaderException("构造达梦下载器信息异常 : " + e.getMessage(), e);
+            throw new DtLoaderException("build DM downloader message exception : " + e.getMessage(), e);
         } finally {
             if (totalResultSet != null) {
                 totalResultSet.close();
@@ -118,7 +118,7 @@ public class DmDownloader implements IDownloader {
                 pageTemp.add(columns);
             }
         } catch (Exception e) {
-            throw new DtLoaderException("读取达梦信息异常 : " + e.getMessage(), e);
+            throw new DtLoaderException("read DM message exception : " + e.getMessage(), e);
         }
 
         pageNum++;

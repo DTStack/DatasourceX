@@ -49,7 +49,7 @@ public class SocketClient<T> extends AbsNoSqlClient<T> {
             myClient = new WebSocketClient(new URI(url)) {
                 @Override
                 public void onOpen(ServerHandshake handshakedata) {
-                    log.info("SOCKET 连接成功");
+                    log.info("socket connected successfully");
                 }
 
                 @Override
@@ -58,7 +58,7 @@ public class SocketClient<T> extends AbsNoSqlClient<T> {
 
                 @Override
                 public void onClose(int code, String reason, boolean remote) {
-                    log.info("SOCKET 关闭成功");
+                    log.info("socket close was succeeded");
                 }
 
                 @Override

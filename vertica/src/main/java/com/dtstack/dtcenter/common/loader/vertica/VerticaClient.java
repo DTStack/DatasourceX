@@ -70,7 +70,7 @@ public class VerticaClient extends AbsRdbmsClient {
                 tableList.add(transferSchemaAndTable(MapUtils.getString(map, "schema_name"), MapUtils.getString(map, "table_name")));
             }
         } catch (Exception e) {
-            throw new DtLoaderException("获取表异常", e);
+            throw new DtLoaderException("get table exception", e);
         } finally {
             DBUtil.closeDBResources(null, null, verticaSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -105,7 +105,7 @@ public class VerticaClient extends AbsRdbmsClient {
             Map<String, Object> commentMap = DBUtil.executeQuery(verticaSourceDTO.getConnection(), querySql, false).get(0);
             return MapUtils.getString(commentMap, "comment");
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+            throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
             DBUtil.closeDBResources(null, null, verticaSourceDTO.clearAfterGetConnection(clearStatus));
@@ -158,7 +158,7 @@ public class VerticaClient extends AbsRdbmsClient {
      */
     private String getTableFromTable(String table) {
         if (StringUtils.isBlank(table)) {
-            throw new DtLoaderException("表不能为空");
+            throw new DtLoaderException("table name cannot be empty");
         }
 
         if (table.contains("\"")) {
@@ -176,7 +176,7 @@ public class VerticaClient extends AbsRdbmsClient {
      */
     private String getSchemaFromTable(String table) {
         if (StringUtils.isBlank(table)) {
-            throw new DtLoaderException("表不能为空");
+            throw new DtLoaderException("table name cannot be empty");
         }
 
         if (table.contains("\"")) {

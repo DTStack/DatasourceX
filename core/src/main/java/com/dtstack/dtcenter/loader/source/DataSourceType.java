@@ -156,7 +156,7 @@ public enum DataSourceType {
             }
         }
 
-        throw new DtLoaderException("不支持数据源类型");
+        throw new DtLoaderException("Data source type is not supported");
     }
 
     public Integer getVal() {

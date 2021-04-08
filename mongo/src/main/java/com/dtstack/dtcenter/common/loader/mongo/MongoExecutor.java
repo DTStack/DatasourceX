@@ -112,7 +112,7 @@ public class MongoExecutor {
                     distinct(sqlQuery, list, collection);
                     break;
                 default:
-                    throw new DtLoaderException(String.format("不支持本次请求:db.%s.%s", dataBaseName, operationName));
+                    throw new DtLoaderException(String.format("not support request:db.%s.%s", dataBaseName, operationName));
             }
         }catch (Exception e){
             throw new DtLoaderException(e.getMessage(),e);
@@ -311,7 +311,7 @@ public class MongoExecutor {
             sqlQuery =  sqlQuery.replaceAll("\"", "'");
             String[] sql = sqlQuery.split("\\.");
             if (sql.length < 3) {
-                throw new DtLoaderException("不支持本次查询，请检查你的查询语句！[2]");
+                throw new DtLoaderException("This query is not supported, please check your query statement！[2]");
             }
 
             collectionName = RegExpUtil.getCollectionName(sql[1]);
@@ -321,11 +321,11 @@ public class MongoExecutor {
 
             operationName = sql[2];
             if (!operationName.contains("(")) {
-                throw new DtLoaderException("不支持本次查询，请检查你的查询语句！[3]");
+                throw new DtLoaderException("This query is not supported, please check your query statement！[3]");
             }
             operationName = operationName.substring(0, operationName.indexOf("("));
             if (!OPERATIONS.contains(operationName)) {
-                throw new DtLoaderException(String.format("不支持本次请求:db.%s.%s", collectionName, operationName));
+                throw new DtLoaderException(String.format("not supported this request:db.%s.%s", collectionName, operationName));
             }
             dataBaseName = StringUtils.isBlank(source.getSchema()) ? MongoDBUtils.dealSchema(source.getHostPort()) : source.getSchema();
             return this;

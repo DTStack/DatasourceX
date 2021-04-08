@@ -113,7 +113,7 @@ public enum ComparatorType {
                 return comparatorType;
             }
         }
-        throw new DtLoaderException("hbase自定义查询暂时不支持该比较器类型");
+        throw new DtLoaderException("Hbase custom query does not support this comparator type");
     }
 
 }

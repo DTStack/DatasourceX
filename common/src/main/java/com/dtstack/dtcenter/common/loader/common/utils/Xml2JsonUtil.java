@@ -67,7 +67,7 @@ public class Xml2JsonUtil {
             Document doc = DocumentHelper.parseText(xmlStr);
             return dom4j2Json(doc.getRootElement());
         } catch (DocumentException e) {
-            throw new DtLoaderException("XML 解析异常", e);
+            throw new DtLoaderException("XML parse exception", e);
         }
 
     }
@@ -88,9 +88,9 @@ public class Xml2JsonUtil {
                 return new String(bb.array(), "UTF8");
             }
         } catch (FileNotFoundException e) {
-            throw new DtLoaderException("文件不存在", e);
+            throw new DtLoaderException("file is not exist", e);
         } catch (IOException e) {
-            throw new DtLoaderException("文件读取异常", e);
+            throw new DtLoaderException("File reading exception", e);
         }
     }
 

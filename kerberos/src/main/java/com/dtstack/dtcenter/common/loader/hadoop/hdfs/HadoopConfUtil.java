@@ -56,7 +56,7 @@ public class HadoopConfUtil {
                 }
             }
         } catch (Exception e) {
-            log.error("默认 Hadoop 配置异常 ：", e.getMessage(), e);
+            log.error("default Hadoop setting error ：{}", e.getMessage(), e);
         }
     }
 
