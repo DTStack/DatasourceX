@@ -85,7 +85,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         return createYarnLogDownload(hdfsSourceDTO);
                     } catch (Exception e) {
-                        throw new DtLoaderException("create downloader exception", e);
+                        throw new DtLoaderException(String.format("create downloader exception,%s", e.getMessage()), e);
                     }
                 }
         );
@@ -130,7 +130,7 @@ public class HdfsFileClient implements IHdfsFile {
                         hdfsFileDownload.configure();
                         return hdfsFileDownload;
                     } catch (Exception e) {
-                        throw new DtLoaderException("Create file downloader exception", e);
+                        throw new DtLoaderException(String.format("Create file downloader exception,%s", e.getMessage()), e);
                     }
                 }
         );
@@ -205,7 +205,7 @@ public class HdfsFileClient implements IHdfsFile {
                         FileSystem fs = FileSystem.get(conf);
                         return fs.delete(new Path(remotePath), recursive);
                     } catch (Exception e) {
-                        throw new DtLoaderException("Target path deletion exception", e);
+                        throw new DtLoaderException(String.format("Target path deletion exception,%s", e.getMessage()), e);
                     }
                 }
         );
@@ -235,7 +235,7 @@ public class HdfsFileClient implements IHdfsFile {
                         }
                         return true;
                     } catch (Exception e) {
-                        throw new DtLoaderException("Target path deletion exception", e);
+                        throw new DtLoaderException(String.format("Target path deletion exception,%s", e.getMessage()), e);
                     }
                 }
         );

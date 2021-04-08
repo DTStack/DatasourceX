@@ -298,7 +298,7 @@ public class RedisUtils {
                 }
             }
         } catch (Exception e) {
-            throw new DtLoaderException("redis close resource error", e);
+            throw new DtLoaderException(String.format("redis close resource error,%s", e.getMessage()), e);
         }
     }
 }

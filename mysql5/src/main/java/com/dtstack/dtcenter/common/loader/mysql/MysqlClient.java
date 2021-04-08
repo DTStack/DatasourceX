@@ -158,7 +158,7 @@ public class MysqlClient extends AbsRdbmsClient {
 
         } catch (Exception e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtLoaderException(queryDTO.getTableName() + "table not exist", e);
+                throw new DtLoaderException(String.format(queryDTO.getTableName() + "table not exist,%s", e.getMessage()), e);
             } else {
                 throw new DtLoaderException(String.format("Failed to get the comment information of the field of the table: %s. Please contact the DBA to check the database and table information.",
                         queryDTO.getTableName()), e);
@@ -211,7 +211,7 @@ public class MysqlClient extends AbsRdbmsClient {
             try {
                 schema = getCurrentDatabase(sourceDTO);
             } catch (Exception e) {
-                throw new DtLoaderException("get current used database error！", e);
+                throw new DtLoaderException(String.format("get current used database error！,%s", e.getMessage()), e);
             }
 
         }

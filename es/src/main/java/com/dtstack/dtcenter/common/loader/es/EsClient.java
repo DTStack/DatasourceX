@@ -144,9 +144,9 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
             MappingMetaData data = res.mappings().get(index);
             typeList.add(data.type());
         } catch (NullPointerException e) {
-            throw new DtLoaderException("index not exits");
+            throw new DtLoaderException(String.format("index not exits,%s", e.getMessage()), e);
         } catch (Exception e) {
-            log.error("get type exception", e);
+            log.error(String.format("get type exception,%s", e.getMessage()), e);
         } finally {
             closeResource(null, client, esSourceDTO);
         }
@@ -176,7 +176,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
             Set<String> set = aliases.keySet();
             dbs = new ArrayList<>(set);
         } catch (Exception e) {
-            log.error("Failed to get es index", e);
+            log.error(String.format("Failed to get es index,%s", e.getMessage()), e);
         } finally {
             closeResource(null, client, esSourceDTO);
         }

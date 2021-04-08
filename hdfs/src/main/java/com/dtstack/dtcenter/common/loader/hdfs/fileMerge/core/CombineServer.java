@@ -97,7 +97,7 @@ public abstract class CombineServer {
         try {
             fileStatuses = fs.listStatus(sourcePath);
         } catch (IOException e) {
-            throw new DtLoaderException("get path [" + sourcePath + "] info error", e);
+            throw new DtLoaderException(String.format("get path [" + sourcePath + "] info error,%s", e.getMessage()), e);
         }
         for (FileStatus fileInfo : fileStatuses) {
             if (fileInfo.isDirectory()) {

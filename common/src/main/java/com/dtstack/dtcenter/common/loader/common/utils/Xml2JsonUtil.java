@@ -67,7 +67,7 @@ public class Xml2JsonUtil {
             Document doc = DocumentHelper.parseText(xmlStr);
             return dom4j2Json(doc.getRootElement());
         } catch (DocumentException e) {
-            throw new DtLoaderException("XML parse exception", e);
+            throw new DtLoaderException(String.format("XML parse exception,%s", e.getMessage()), e);
         }
 
     }
@@ -88,9 +88,9 @@ public class Xml2JsonUtil {
                 return new String(bb.array(), "UTF8");
             }
         } catch (FileNotFoundException e) {
-            throw new DtLoaderException("file is not exist", e);
+            throw new DtLoaderException(String.format("file is not exist,%s", e.getMessage()), e);
         } catch (IOException e) {
-            throw new DtLoaderException("File reading exception", e);
+            throw new DtLoaderException(String.format("File reading exception,%s", e.getMessage()), e);
         }
     }
 

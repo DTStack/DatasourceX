@@ -331,7 +331,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtLoaderException(queryDTO.getTableName() + "table not exist", e);
+                throw new DtLoaderException(String.format(queryDTO.getTableName() + "table not exist,%s", e.getMessage()), e);
             } else {
                 throw new DtLoaderException(String.format("Failed to get the meta information of the fields of the table: %s. Please contact the DBA to check the database and table information: %s",
                         queryDTO.getTableName(), e.getMessage()), e);
@@ -375,7 +375,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
             }
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtLoaderException(queryDTO.getTableName() + "table not exist", e);
+                throw new DtLoaderException(String.format(queryDTO.getTableName() + "table not exist,%s", e.getMessage()), e);
             } else {
                 throw new DtLoaderException(String.format("Failed to get the meta information of the fields of the table: %s. Please contact the DBA to check the database and table information: %s",
                         queryDTO.getTableName(), e.getMessage()), e);

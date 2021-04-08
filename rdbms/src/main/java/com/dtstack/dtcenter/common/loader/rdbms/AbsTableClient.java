@@ -69,7 +69,7 @@ public abstract class AbsTableClient implements ITable {
                 // 定义过的dtLoaderException直接抛出
                 throw e;
             } catch (Exception e){
-                throw new DtLoaderException("Get database connection exception！", e);
+                throw new DtLoaderException(String.format("Get database connection exception,%s", e.getMessage()), e);
             }
         }
 
@@ -80,7 +80,7 @@ public abstract class AbsTableClient implements ITable {
                 // 定义过的dtLoaderException直接抛出
                 throw e;
             } catch (Exception e) {
-                throw new DtLoaderException("Get database connection exception", e);
+                throw new DtLoaderException(String.format("Get database connection exception,%s", e.getMessage()), e);
             }
         });
     }

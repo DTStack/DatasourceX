@@ -47,9 +47,9 @@ public class ZipUtil {
                 }
             }
         } catch (FileNotFoundException e) {
-            throw new DtLoaderException("file not found", e);
+            throw new DtLoaderException(String.format("file not found,%s", e.getMessage()), e);
         } catch (IOException e) {
-            throw new DtLoaderException("Target file compression abnormal", e);
+            throw new DtLoaderException(String.format("Target file compression abnormal:%s", e.getMessage()), e);
         }
     }
 

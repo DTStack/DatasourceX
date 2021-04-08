@@ -125,7 +125,7 @@ public class HiveORCDownload implements IDownloader {
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
-                        throw new DtLoaderException("Abnormal reading file", e);
+                        throw new DtLoaderException(String.format("Abnormal reading file,%s", e.getMessage()), e);
                     }
                 });
     }
@@ -222,7 +222,7 @@ public class HiveORCDownload implements IDownloader {
                     try {
                         return recordReader == null || !nextRecord();
                     } catch (Exception e){
-                        throw new DtLoaderException("Download file is abnormal", e);
+                        throw new DtLoaderException(String.format("Download file is abnormal,%s", e.getMessage()), e);
                     }
                 });
     }

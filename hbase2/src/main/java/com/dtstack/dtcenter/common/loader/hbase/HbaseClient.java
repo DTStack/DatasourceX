@@ -187,7 +187,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
             }
 
         } catch (Exception e){
-            throw new DtLoaderException("Failed to execute hbase customization", e);
+            throw new DtLoaderException(String.format("Failed to execute hbase customization,%s",e.getMessage()), e);
         } finally {
             if (hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
                 close(rs, table, connection);
@@ -285,7 +285,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
                 results.add(r);
             }
         } catch (Exception e){
-            throw new DtLoaderException("Data preview failed", e);
+            throw new DtLoaderException(String.format("Data preview failed,%s", e.getMessage()), e);
         } finally {
             if (hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
                 close(rs, table, connection);
@@ -324,7 +324,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
             try {
                 table.close();
             } catch (IOException e) {
-                throw new DtLoaderException("hbase can not close table error", e);
+                throw new DtLoaderException(String.format("hbase can not close table error,%s", e.getMessage()), e);
             }
         }
     }
@@ -339,7 +339,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
                 }
             }
         } catch (Exception e) {
-            throw new DtLoaderException("hbase can not close table error", e);
+            throw new DtLoaderException(String.format("hbase can not close table error,%s", e.getMessage()), e);
         }
     }
 }

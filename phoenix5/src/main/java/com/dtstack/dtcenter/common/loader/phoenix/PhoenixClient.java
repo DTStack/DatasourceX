@@ -133,7 +133,7 @@ public class PhoenixClient extends AbsRdbmsClient {
                 }
             }
         } catch (Exception e) {
-            throw new DtLoaderException("Get database table exception", e);
+            throw new DtLoaderException(String.format("Get database table exception,%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, null, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
         }

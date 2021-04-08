@@ -89,7 +89,7 @@ public class HdfsOperator {
                     try {
                         return FileSystem.get(conf);
                     } catch (IOException e) {
-                        throw new DtLoaderException("Hdfs check connect error", e);
+                        throw new DtLoaderException(String.format("Hdfs check connect error,%s", e.getMessage()), e);
                     }
                 }
         );

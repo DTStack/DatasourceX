@@ -100,7 +100,7 @@ public class HiveClient extends AbsRdbmsClient {
                 tableList.add(rs.getString(columnSize == 1 ? 1 : 2));
             }
         } catch (Exception e) {
-            throw new DtLoaderException("get table exception", e);
+            throw new DtLoaderException(String.format("get table exception,%", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, hiveSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -252,7 +252,7 @@ public class HiveClient extends AbsRdbmsClient {
             // 如果在设定超时(以秒为单位)之内，还没得到连通性测试结果，则认为连通性测试连接超时，不继续阻塞
             return future.get(TEST_CONN_TIMEOUT, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            throw new DtLoaderException("Test connect timeout！", e);
+            throw new DtLoaderException(String.format("Test connect timeout！,%s", e.getMessage()), e);
         } catch (Exception e) {
             if (e instanceof DtLoaderException) {
                 throw new DtLoaderException(e.getMessage(), e);
@@ -367,7 +367,7 @@ public class HiveClient extends AbsRdbmsClient {
                     try {
                         return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, needIndex, queryDTO.getPartitionColumns(), hiveSourceDTO.getKerberosConfig());
                     } catch (Exception e) {
-                        throw new DtLoaderException("create downloader exception", e);
+                        throw new DtLoaderException(String.format("create downloader exception,%s", e.getMessage()), e);
                     }
                 }
         );

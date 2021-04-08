@@ -222,7 +222,7 @@ public class HdfsFileDownload implements IDownloader {
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
-                        throw new DtLoaderException("Abnormal reading file", e);
+                        throw new DtLoaderException(String.format("Abnormal reading file,%s", e.getMessage()), e);
                     }
                 });
 
@@ -250,7 +250,7 @@ public class HdfsFileDownload implements IDownloader {
                     try {
                         return recordReader == null || readNum > READ_LIMIT || !nextRecord();
                     } catch (Exception e) {
-                        throw new DtLoaderException("Abnormal reading file", e);
+                        throw new DtLoaderException(String.format("Abnormal reading file,%s", e.getMessage()), e);
                     }
                 });
     }

@@ -70,7 +70,7 @@ public class VerticaClient extends AbsRdbmsClient {
                 tableList.add(transferSchemaAndTable(MapUtils.getString(map, "schema_name"), MapUtils.getString(map, "table_name")));
             }
         } catch (Exception e) {
-            throw new DtLoaderException("get table exception", e);
+            throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(null, null, verticaSourceDTO.clearAfterGetConnection(clearStatus));
         }

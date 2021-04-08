@@ -87,7 +87,7 @@ public class KingbaseClient extends AbsRdbmsClient {
             }
             return tableList;
         } catch (Exception e) {
-            throw new DtLoaderException("get table exception", e);
+            throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, kingbaseSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -222,7 +222,7 @@ public class KingbaseClient extends AbsRdbmsClient {
 
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtLoaderException(queryDTO.getTableName() + "table not exist", e);
+                throw new DtLoaderException(String.format(queryDTO.getTableName() + "table not exist,%s", e.getMessage()), e);
             } else {
                 throw new DtLoaderException(String.format("Failed to get meta information for the fields of table :%s. Please contact the DBA to check the database table information.", queryDTO.getTableName()) , e);
             }

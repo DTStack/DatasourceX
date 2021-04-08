@@ -197,7 +197,7 @@ public class YarnTFileDownload implements IDownloader {
                     try {
                         return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
                     } catch (Exception e) {
-                        throw new DtLoaderException("Abnormal reading file", e);
+                        throw new DtLoaderException(String.format("Abnormal reading file,%s", e.getMessage()), e);
                     }
                 });
     }
@@ -390,7 +390,7 @@ public class YarnTFileDownload implements IDownloader {
                     try {
                         return getContainersWithKerberos();
                     } catch (Exception e){
-                        throw new DtLoaderException("Abnormal reading file", e);
+                        throw new DtLoaderException(String.format("Abnormal reading file,%s",e.getMessage()), e);
                     }
                 });
     }

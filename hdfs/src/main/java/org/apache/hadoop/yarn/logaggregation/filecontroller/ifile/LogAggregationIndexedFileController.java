@@ -232,7 +232,7 @@ public class LogAggregationIndexedFileController implements IDownloader {
                     try {
                         return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
                     } catch (Exception e) {
-                        throw new DtLoaderException("Abnormal reading file", e);
+                        throw new DtLoaderException(String.format("Abnormal reading file,%s", e.getMessage()), e);
                     }
                 });
     }
@@ -546,7 +546,7 @@ public class LogAggregationIndexedFileController implements IDownloader {
                     try {
                         return getContainersWithKerberos();
                     } catch (Exception e){
-                        throw new DtLoaderException("get taskManager container exception", e);
+                        throw new DtLoaderException(String.format("get taskManager container exception,%s",e.getMessage()), e);
                     }
                 });
     }

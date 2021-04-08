@@ -57,7 +57,7 @@ public class PhoenixConnFactory extends ConnFactory {
                 throw new DtLoaderException("get phoenix connection error！");
             }
         }  catch (TimeoutException e) {
-            throw new DtLoaderException("get phoenix connection timeout！", e);
+            throw new DtLoaderException(String.format("get phoenix connection timeout,%s", e.getMessage()), e);
         } catch (Exception e) {
             String errorMsg = e.getMessage();
             if (e.getCause() != null && e.getCause() instanceof DtLoaderException) {

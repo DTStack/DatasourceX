@@ -114,7 +114,7 @@ public class KafkaUtil {
             log.info("Init Kafka Kerberos:login-conf:{}\n --sasl.kerberos.service.name:{}", keytabConf, principal);
             return kafkaLoginConf;
         } catch (IOException e) {
-            throw new DtLoaderException("Writing to Kafka configuration file exception", e);
+            throw new DtLoaderException(String.format("Writing to Kafka configuration file exception,%s", e.getMessage()), e);
         }
     }
 
@@ -250,7 +250,7 @@ public class KafkaUtil {
             List<MetadataResponse.PartitionMetadata> partitionMetadata = topicMetadata.partitionMetadata();
             return partitionMetadata;
         } catch (Exception e) {
-            throw new DtLoaderException(e.getMessage());
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             if (zkUtils != null) {
                 zkUtils.close();

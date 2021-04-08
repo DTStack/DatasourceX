@@ -80,7 +80,7 @@ public class HbaseClientSpecial implements IHbase {
         } catch (NamespaceNotFoundException namespaceNotFoundException) {
             log.error("namespace [{}] not found!", namespace);
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("get namespace exception, namespace：'%s'", namespace), e);
+            throw new DtLoaderException(String.format("get namespace exception, namespace：'%s', %s", namespace, e.getMessage()), e);
         } finally {
             close(admin);
             closeConnection(connection, hbaseSourceDTO);
@@ -358,7 +358,7 @@ public class HbaseClientSpecial implements IHbase {
             }
             return previewList;
         } catch (Exception e) {
-            throw new DtLoaderException("Data preview failed", e);
+            throw new DtLoaderException(String.format("Data preview failed,%s", e.getMessage()), e);
         } finally {
             close(table, rs);
             closeConnection(connection, hbaseSourceDTO);
@@ -394,7 +394,7 @@ public class HbaseClientSpecial implements IHbase {
                 }
             }
         } catch (Exception e) {
-            throw new DtLoaderException("hbase can not close table error", e);
+            throw new DtLoaderException(String.format("hbase can not close table error,%s", e.getMessage()), e);
         }
     }
 }

@@ -228,7 +228,7 @@ public class OdpsClient<T> extends AbsNoSqlClient<T> {
                 columnList.add(columnMetaDTO);
             });
         } catch (Exception e) {
-            throw new DtLoaderException("SQL execute error", e);
+            throw new DtLoaderException(String.format("SQL execute error,%s", e.getMessage()), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -251,7 +251,7 @@ public class OdpsClient<T> extends AbsNoSqlClient<T> {
                 columnClassInfo.add(recordColumn.getTypeInfo().getTypeName());
             }
         } catch (Exception e) {
-            throw new DtLoaderException("SQL execute error", e);
+            throw new DtLoaderException(String.format("SQL execute error,%s", e.getMessage()), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }

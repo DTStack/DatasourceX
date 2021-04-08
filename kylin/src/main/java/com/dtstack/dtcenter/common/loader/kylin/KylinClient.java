@@ -64,7 +64,7 @@ public class KylinClient extends AbsRdbmsClient {
                 tableList.add(String.format(TABLE_SHOW, rs.getString(2), rs.getString(3)));
             }
         } catch (Exception e) {
-            throw new DtLoaderException("Get database table exception", e);
+            throw new DtLoaderException(String.format("Get database table exception,%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, null, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
         }

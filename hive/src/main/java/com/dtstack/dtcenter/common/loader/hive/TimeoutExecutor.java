@@ -55,9 +55,9 @@ public class TimeoutExecutor {
             future = EXEC_TIMEOUT_POOL.submit(exec);
             result = future.get(timeout, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            throw new DtLoaderException("method executed timeout !", e);
+            throw new DtLoaderException(String.format("method executed timeout !,%s", e.getMessage()), e);
         } catch (Exception e) {
-            throw new DtLoaderException("method executed error", e);
+            throw new DtLoaderException(String.format("method executed error,%s", e.getMessage()), e);
         } finally {
             if (Objects.nonNull(future)) {
                 future.cancel(true);

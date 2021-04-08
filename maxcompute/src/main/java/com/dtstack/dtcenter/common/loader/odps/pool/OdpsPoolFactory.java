@@ -72,7 +72,7 @@ public class OdpsPoolFactory implements PooledObjectFactory<Odps> {
             try {
                 odps = null;
             } catch (Exception e) {
-                throw new DtLoaderException("close client error", e);
+                throw new DtLoaderException(String.format("close client error,%s", e.getMessage()), e);
             }
         }
     }

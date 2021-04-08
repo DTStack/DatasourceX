@@ -71,7 +71,7 @@ public class SqlServerClient extends AbsRdbmsClient {
                 tableList.add(rs.getString(1));
             }
         } catch (Exception e) {
-            throw new DtLoaderException("get table exception", e);
+            throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, sqlserver2017SourceDTO.clearAfterGetConnection(clearStatus));
         }

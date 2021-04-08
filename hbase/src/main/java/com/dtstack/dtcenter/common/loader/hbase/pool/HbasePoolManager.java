@@ -99,7 +99,7 @@ public class HbasePoolManager {
                     try {
                         return ConnectionFactory.createConnection(hConfig);
                     } catch (Exception e) {
-                        throw new DtLoaderException("get hbase connection exception", e);
+                        throw new DtLoaderException(String.format("get hbase connection exception,%s", e.getMessage()), e);
                     }
                 }
         );
@@ -166,7 +166,7 @@ public class HbasePoolManager {
                 try {
                     connection.close();
                 } catch (IOException e) {
-                    throw new DtLoaderException("hbase connection closed failed", e);
+                    throw new DtLoaderException(String.format("hbase connection closed failed,%s", e.getMessage()), e);
                 }
             }
         }

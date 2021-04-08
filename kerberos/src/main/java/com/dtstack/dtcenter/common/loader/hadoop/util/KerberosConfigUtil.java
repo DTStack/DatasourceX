@@ -117,7 +117,7 @@ public class KerberosConfigUtil {
         try {
             keytab = Keytab.loadKeytab(file);
         } catch (IOException e) {
-            throw new DtLoaderException("Failed to parse keytab file", e);
+            throw new DtLoaderException(String.format("Failed to parse keytab file,%s", e.getMessage()), e);
         }
 
         if (CollectionUtils.isEmpty(keytab.getPrincipals())) {

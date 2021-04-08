@@ -79,7 +79,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
                 }
             }
         } catch (IOException e) {
-            throw new DtLoaderException("get hbase table list exception", e);
+            throw new DtLoaderException(String.format("get hbase table list exception,%s", e.getMessage()), e);
         } finally {
             closeAdmin(admin);
             closeConnection(hConn,hbaseSourceDTO);
@@ -125,7 +125,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
                 cfList.add(columnMetaDTO);
             }
         } catch (IOException e) {
-            throw new DtLoaderException("hbase list column families error", e);
+            throw new DtLoaderException(String.format("hbase list column families error,%s", e.getMessage()), e);
         } finally {
             closeTable(tb);
             closeConnection(hConn,hbaseSourceDTO);
@@ -189,7 +189,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
                 }
             }
         } catch (Exception e){
-            throw new DtLoaderException("Failed to execute hbase customization", e);
+            throw new DtLoaderException(String.format("Failed to execute hbase customization,%s", e.getMessage()), e);
         } finally {
             if (hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
                 close(rs, table, connection);
@@ -290,7 +290,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
                 results.add(r);
             }
         } catch (Exception e){
-            throw new DtLoaderException("Data preview failed", e);
+            throw new DtLoaderException(String.format("Data preview failed,%s", e.getMessage()), e);
         } finally {
             if (hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
                 close(rs, table, connection);
@@ -377,7 +377,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
             try {
                 table.close();
             } catch (IOException e) {
-                throw new DtLoaderException("hbase can not close table error", e);
+                throw new DtLoaderException(String.format("hbase can not close table error,%s", e.getMessage()), e);
             }
         }
     }
@@ -392,7 +392,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
                 }
             }
         } catch (Exception e) {
-            throw new DtLoaderException("hbase can not close table error", e);
+            throw new DtLoaderException(String.format("hbase can not close table error,%s", e.getMessage()), e);
         }
     }
 }
