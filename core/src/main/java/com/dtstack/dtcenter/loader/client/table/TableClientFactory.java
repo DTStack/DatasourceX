@@ -23,7 +23,7 @@ public class TableClientFactory {
             ServiceLoader<ITable> tables = ServiceLoader.load(ITable.class);
             Iterator<ITable> iClientIterator = tables.iterator();
             if (!iClientIterator.hasNext()) {
-                throw new DtLoaderException("暂不支持该插件类型: " + pluginName);
+                throw new DtLoaderException("This plugin type is not supported: " + pluginName);
             }
 
             ITable iTable = iClientIterator.next();

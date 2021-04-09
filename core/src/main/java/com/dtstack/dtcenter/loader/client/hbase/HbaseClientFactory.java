@@ -23,7 +23,7 @@ public class HbaseClientFactory {
             ServiceLoader<IHbase> hbases = ServiceLoader.load(IHbase.class);
             Iterator<IHbase> iClientIterator = hbases.iterator();
             if (!iClientIterator.hasNext()) {
-                throw new DtLoaderException("暂不支持该插件类型: " + pluginName);
+                throw new DtLoaderException("This plugin type is not supported: " + pluginName);
             }
             IHbase hbase = iClientIterator.next();
             return new HbaseProxy(hbase);

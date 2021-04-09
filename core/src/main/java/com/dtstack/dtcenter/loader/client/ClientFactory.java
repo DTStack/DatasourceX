@@ -76,13 +76,13 @@ public class ClientFactory {
         File[] files = file.listFiles();
         List<URL> urlList = new ArrayList<>();
         if (files.length == 0) {
-            throw new DtLoaderException("插件文件夹设置异常，请二次处理");
+            throw new DtLoaderException("The plugin folder setting is abnormal, please handle it again");
         }
 
         for (File f : files) {
             String jarName = f.getName();
             if (f.isFile() && jarName.endsWith(".jar")) {
-                log.info("数据源插件拉取 Jar 包，插件名称 : {}, Jar 包名称 : {}", pluginName, jarName);
+                log.info("Data source plugin pulls Jar package, plugin name: {}, Jar package name: {}", pluginName, jarName);
                 urlList.add(f.toURI().toURL());
             }
         }
@@ -102,7 +102,7 @@ public class ClientFactory {
                 loadClass = classLoader.loadClass("oracle.sql.TIMESTAMP");
                 SerializeConfig.getGlobalInstance().put(loadClass, DateCodec.instance);
             } catch (ClassNotFoundException e) {
-                log.error("FastJSON 序列化工具异常", e);
+                log.error("FastJSON Serialization tool exception", e);
             }
         }
     }

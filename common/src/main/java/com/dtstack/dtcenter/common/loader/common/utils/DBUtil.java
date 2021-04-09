@@ -80,7 +80,7 @@ public class DBUtil {
             }
 
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL执行异常：%s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("SQL execute exception：%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(res, statement, closeConn ? conn : null);
         }
@@ -144,7 +144,7 @@ public class DBUtil {
                 result.add(row);
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL 执行异常, %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(res, statement, closeConn ? conn : null);
         }
@@ -166,7 +166,7 @@ public class DBUtil {
             statement = conn.createStatement();
             statement.execute(sql);
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL 执行异常：%s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("SQL execute exception：%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(null, statement, closeConn ? conn : null);
         }

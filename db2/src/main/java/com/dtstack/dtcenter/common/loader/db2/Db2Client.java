@@ -60,7 +60,7 @@ public class Db2Client extends AbsRdbmsClient {
                 tableList.add(rs.getString(1));
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取表异常：%s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("get table exception：%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, db2SourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -82,7 +82,7 @@ public class Db2Client extends AbsRdbmsClient {
                 return resultSet.getString("REMARKS");
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息 ：%s",
+            throw new DtLoaderException(String.format("Failed to get the information of table: %s. Please contact DBA to check the database and table information: %s",
                     queryDTO.getTableName(), e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, db2SourceDTO.clearAfterGetConnection(clearStatus));

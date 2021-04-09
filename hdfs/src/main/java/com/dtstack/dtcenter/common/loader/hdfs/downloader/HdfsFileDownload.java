@@ -79,7 +79,7 @@ public class HdfsFileDownload implements IDownloader {
         yarnConfiguration = new YarnConfiguration(configuration);
         paths = checkPath(path);
         if (paths.size() == 0) {
-            throw new RuntimeException("非法路径:" + path);
+            throw new RuntimeException("Illegal path:" + path);
         }
         nextRecordReader();
         key = new LongWritable();
@@ -222,7 +222,7 @@ public class HdfsFileDownload implements IDownloader {
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
-                        throw new DtLoaderException("读取文件异常", e);
+                        throw new DtLoaderException(String.format("Abnormal reading file,%s", e.getMessage()), e);
                     }
                 });
 
@@ -250,7 +250,7 @@ public class HdfsFileDownload implements IDownloader {
                     try {
                         return recordReader == null || readNum > READ_LIMIT || !nextRecord();
                     } catch (Exception e) {
-                        throw new DtLoaderException("读取文件异常", e);
+                        throw new DtLoaderException(String.format("Abnormal reading file,%s", e.getMessage()), e);
                     }
                 });
     }

@@ -36,7 +36,7 @@ public class MysqlTableClient extends AbsTableClient {
 
     @Override
     public List<String> showPartitions(ISourceDTO source, String tableName) {
-        throw new DtLoaderException("该数据源不支持获取分区操作！");
+        throw new DtLoaderException("The data source does not support get partition operation！");
     }
 
     /**
@@ -49,7 +49,7 @@ public class MysqlTableClient extends AbsTableClient {
     @Override
     public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) {
         String comment = params.get("comment");
-        log.info("更改表注释，comment：{}！", comment);
+        log.info("update table comment，comment：{}！", comment);
         if (StringUtils.isEmpty(comment)) {
             return true;
         }
@@ -60,7 +60,7 @@ public class MysqlTableClient extends AbsTableClient {
     @Override
     protected String getTableSizeSql(String schema, String tableName) {
         if (StringUtils.isBlank(schema)) {
-            throw new DtLoaderException("schema不能为空");
+            throw new DtLoaderException("schema is not empty");
         }
         return String.format(TABLE_SIZE_SQL, schema, tableName);
     }

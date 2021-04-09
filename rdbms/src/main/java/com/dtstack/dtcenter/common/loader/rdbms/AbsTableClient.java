@@ -69,7 +69,7 @@ public abstract class AbsTableClient implements ITable {
                 // 定义过的dtLoaderException直接抛出
                 throw e;
             } catch (Exception e){
-                throw new DtLoaderException("获取数据库连接异常！", e);
+                throw new DtLoaderException(String.format("Get database connection exception,%s", e.getMessage()), e);
             }
         }
 
@@ -80,7 +80,7 @@ public abstract class AbsTableClient implements ITable {
                 // 定义过的dtLoaderException直接抛出
                 throw e;
             } catch (Exception e) {
-                throw new DtLoaderException("获取数据库连接异常", e);
+                throw new DtLoaderException(String.format("Get database connection exception,%s", e.getMessage()), e);
             }
         });
     }
@@ -103,7 +103,7 @@ public abstract class AbsTableClient implements ITable {
                 return Lists.newArrayList();
             }
         } catch (SQLException e) {
-            throw new DtLoaderException(String.format("检测连接是否关闭时异常:%s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("detecting whether the connection is closed exception:%s", e.getMessage()), e);
         }
         return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), sql,
                 ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
@@ -127,7 +127,7 @@ public abstract class AbsTableClient implements ITable {
                 return false;
             }
         } catch (SQLException e) {
-            throw new DtLoaderException(String.format("检测连接是否关闭时异常:%s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("detecting whether the connection is closed exception:%s", e.getMessage()), e);
         }
         DBUtil.executeSqlWithoutResultSet(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), sql,
                 ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
@@ -138,7 +138,7 @@ public abstract class AbsTableClient implements ITable {
     public List<String> showPartitions(ISourceDTO source, String tableName) {
         log.info("获取表所有分区，表名：{}", tableName);
         if (StringUtils.isBlank(tableName)) {
-            throw new DtLoaderException("表名不能为空！");
+            throw new DtLoaderException("Table name cannot be empty！");
         }
         List<Map<String, Object>> result = executeQuery(source, String.format(SHOW_PARTITIONS_SQL, tableName));
         List<String> partitions = Lists.newArrayList();
@@ -152,7 +152,7 @@ public abstract class AbsTableClient implements ITable {
     public Boolean dropTable(ISourceDTO source, String tableName) {
         log.info("删除表，表名：{}", tableName);
         if (StringUtils.isBlank(tableName)) {
-            throw new DtLoaderException("表名不能为空！");
+            throw new DtLoaderException("Table name cannot be empty！");
         }
         String dropTableSql = getDropTableSql(tableName);
         return executeSqlWithoutResultSet(source, dropTableSql);
@@ -171,7 +171,7 @@ public abstract class AbsTableClient implements ITable {
     public Boolean renameTable(ISourceDTO source, String oldTableName, String newTableName) {
         log.info("重命名表，旧表名：{}，新表名：{}", oldTableName, newTableName);
         if (StringUtils.isBlank(oldTableName) || StringUtils.isBlank(newTableName)) {
-            throw new DtLoaderException("表名不能为空！");
+            throw new DtLoaderException("Table name cannot be empty！");
         }
         String renameTableSql = String.format("alter table %s rename to %s", oldTableName, newTableName);
         return executeSqlWithoutResultSet(source, renameTableSql);
@@ -181,10 +181,10 @@ public abstract class AbsTableClient implements ITable {
     public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) {
         log.info("更改表参数，表名：{}，参数：{}", tableName, params);
         if (StringUtils.isBlank(tableName)) {
-            throw new DtLoaderException("表名不能为空！");
+            throw new DtLoaderException("Table name cannot be empty！");
         }
         if (params == null || params.isEmpty()) {
-            throw new DtLoaderException("表参数不能为空！");
+            throw new DtLoaderException("Table parameter cannot be empty！");
         }
         List<String> tableProperties = Lists.newArrayList();
         params.forEach((key, val) -> tableProperties.add(String.format("'%s'='%s'", key, val)));
@@ -196,13 +196,13 @@ public abstract class AbsTableClient implements ITable {
     public Long getTableSize(ISourceDTO source, String schema, String tableName) {
         log.info("获取表占用存储，schema：{}，表名：{}", schema, tableName);
         if (StringUtils.isBlank(tableName)) {
-            throw new DtLoaderException("表名不能为空！");
+            throw new DtLoaderException("Table name cannot be empty！");
         }
         String tableSizeSql = getTableSizeSql(schema, tableName);
         log.info("获取占用存储的sql：{}", tableSizeSql);
         List<Map<String, Object>> result = executeQuery(source, tableSizeSql);
         if (CollectionUtils.isEmpty(result) || MapUtils.isEmpty(result.get(0))) {
-            throw new DtLoaderException("获取表占用存储信息异常");
+            throw new DtLoaderException("Obtaining Table Occupied Storage Information exception");
         }
         Object tableSize = result.get(0).values().stream().findFirst().orElseThrow(() -> new DtLoaderException("获取表占用存储信息异常"));
         return MathUtil.getLongVal(tableSize);
@@ -210,7 +210,7 @@ public abstract class AbsTableClient implements ITable {
 
     @Override
     public Boolean isView(ISourceDTO source, String schema, String tableName) {
-        throw new DtLoaderException("该数据源暂时不支持该方法");
+        throw new DtLoaderException("The method is not supported");
     }
 
     /**
@@ -221,7 +221,7 @@ public abstract class AbsTableClient implements ITable {
      */
     protected void checkParamAndSetSchema (ISourceDTO source, String schema, String tableName) {
         if (StringUtils.isBlank(tableName)) {
-            throw new DtLoaderException("表名不能为空");
+            throw new DtLoaderException("Table name cannot be empty");
         }
         if (StringUtils.isNotBlank(schema)) {
             RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
@@ -236,7 +236,7 @@ public abstract class AbsTableClient implements ITable {
      * @return 占用存储sql
      */
     protected String getTableSizeSql(String schema, String tableName) {
-       throw new DtLoaderException("该数据源暂时不支持获取表占用存储");
+       throw new DtLoaderException("This data source does not support obtaining tables occupying storage");
     }
 
     /**
@@ -250,7 +250,7 @@ public abstract class AbsTableClient implements ITable {
     protected Integer beforeQuery(ISourceDTO sourceDTO, String sql, boolean query) {
         // 如果是查询操作查询 SQL 不能为空
         if (query && StringUtils.isBlank(sql)) {
-            throw new DtLoaderException("查询 SQL 不能为空");
+            throw new DtLoaderException("Query SQL cannot be empty");
         }
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) sourceDTO;
         // 设置 connection

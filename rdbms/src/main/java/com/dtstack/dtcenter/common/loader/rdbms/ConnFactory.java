@@ -75,7 +75,7 @@ public class ConnFactory {
      */
     public Connection getConn(ISourceDTO source) throws Exception {
         if (source == null) {
-            throw new DtLoaderException("数据源信息为 NULL");
+            throw new DtLoaderException(" source is null");
         }
         try {
             RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
@@ -98,7 +98,7 @@ public class ConnFactory {
     protected Connection getCpConn(ISourceDTO source) throws Exception {
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
         String poolKey = getPrimaryKey(rdbmsSourceDTO);
-        log.info("获取数据源连接(Hikari), url : {}, userName : {}, kerberosConfig : {}", rdbmsSourceDTO.getUrl(), rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getKerberosConfig());
+        log.info("datasource connected(Hikari), url : {}, userName : {}, kerberosConfig : {}", rdbmsSourceDTO.getUrl(), rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getKerberosConfig());
         HikariDataSource hikariData = (HikariDataSource) hikariDataSources.get(poolKey);
         if (hikariData == null) {
             synchronized (ConnFactory.class) {
@@ -125,7 +125,7 @@ public class ConnFactory {
         init();
         DriverManager.setLoginTimeout(30);
         String url = dealSourceUrl(rdbmsSourceDTO);
-        log.info("获取数据源连接, url : {}, userName : {}, kerberosConfig : {}", url, rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getKerberosConfig());
+        log.info("datasource connected, url : {}, userName : {}, kerberosConfig : {}", url, rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getKerberosConfig());
         if (StringUtils.isBlank(rdbmsSourceDTO.getUsername())) {
             return DriverManager.getConnection(url);
         }

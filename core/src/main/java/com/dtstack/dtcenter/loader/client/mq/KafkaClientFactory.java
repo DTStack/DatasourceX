@@ -22,7 +22,7 @@ public class KafkaClientFactory {
             ServiceLoader<IKafka> kafkas = ServiceLoader.load(IKafka.class);
             Iterator<IKafka> iClientIterator = kafkas.iterator();
             if (!iClientIterator.hasNext()) {
-                throw new DtLoaderException("暂不支持该插件类型: " + pluginName);
+                throw new DtLoaderException("This plugin type is not supported: " + pluginName);
             }
 
             IKafka kafka = iClientIterator.next();

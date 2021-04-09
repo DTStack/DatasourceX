@@ -92,7 +92,7 @@ public class KerberosLoginUtil {
                 }
                 return currentUser;
             } catch (Exception e) {
-                throw new DtLoaderException("simple login failed", e);
+                throw new DtLoaderException(String.format("simple login failed,%s", e.getMessage()), e);
             }
         }
 

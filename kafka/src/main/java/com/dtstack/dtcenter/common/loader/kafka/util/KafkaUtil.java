@@ -86,7 +86,7 @@ public class KafkaUtil {
      * @return jaas文件绝对路径
      */
     private static String writeKafkaJaas(Map<String, Object> kerberosConfig) {
-        log.info("初始化 Kafka JAAS 文件, kerberosConfig : {}", kerberosConfig);
+        log.info("Initialize Kafka JAAS file, kerberosConfig : {}", kerberosConfig);
         if (MapUtils.isEmpty(kerberosConfig)){
             return null;
         }
@@ -114,7 +114,7 @@ public class KafkaUtil {
             log.info("Init Kafka Kerberos:login-conf:{}\n --sasl.kerberos.service.name:{}", keytabConf, principal);
             return kafkaLoginConf;
         } catch (IOException e) {
-            throw new DtLoaderException("写入kafka配置文件异常", e);
+            throw new DtLoaderException(String.format("Writing to Kafka configuration file exception,%s", e.getMessage()), e);
         }
     }
 
@@ -126,9 +126,9 @@ public class KafkaUtil {
      * @throws Exception
      */
     public static String getAllBrokersAddressFromZk(String zkUrls) {
-        log.info("通过 ZK 获取 Kafka Broker 地址 : {}", zkUrls);
+        log.info("Obtain Kafka Broker address through ZK : {}", zkUrls);
         if (StringUtils.isBlank(zkUrls) || !TelUtil.checkTelnetAddr(zkUrls)) {
-            throw new DtLoaderException("请配置正确的 zookeeper 地址");
+            throw new DtLoaderException("Please configure the correct zookeeper address");
         }
 
         ZkUtils zkUtils = null;
@@ -190,7 +190,7 @@ public class KafkaUtil {
      * @return
      */
     public static List<String> getTopicListFromZk(String zkUrls) {
-        log.info("通过 ZK 获取 Kafka Topic 信息 : {}", zkUrls);
+        log.info("Get Kafka Topic information through ZK: {}", zkUrls);
         ZkUtils zkUtils = null;
         List<String> topics = Lists.newArrayList();
         try {
@@ -240,7 +240,7 @@ public class KafkaUtil {
      */
     @Deprecated
     public static List<MetadataResponse.PartitionMetadata> getAllPartitionsFromZk(String zkUrls, String topic) {
-        log.info("通过 ZK 获取 Kafka 分区信息, zkUrls : {}, topic : {}", zkUrls, topic);
+        log.info("Obtain Kafka partition information through ZK, zkUrls : {}, topic : {}", zkUrls, topic);
         ZkUtils zkUtils = null;
 
         try {
@@ -250,7 +250,7 @@ public class KafkaUtil {
             List<MetadataResponse.PartitionMetadata> partitionMetadata = topicMetadata.partitionMetadata();
             return partitionMetadata;
         } catch (Exception e) {
-            throw new DtLoaderException(e.getMessage());
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             if (zkUtils != null) {
                 zkUtils.close();
@@ -354,10 +354,10 @@ public class KafkaUtil {
      * @return
      */
     private synchronized static Properties initProperties(String brokerUrls, Map<String, Object> kerberosConfig) {
-        log.info("初始化 Kafka 配置信息, brokerUrls : {}, kerberosConfig : {}", brokerUrls, kerberosConfig);
+        log.info("Initialize Kafka configuration information, brokerUrls : {}, kerberosConfig : {}", brokerUrls, kerberosConfig);
         Properties props = new Properties();
         if (StringUtils.isBlank(brokerUrls)) {
-            throw new DtLoaderException("Kafka Broker 地址不能为空");
+            throw new DtLoaderException("Kafka Broker address cannot be empty");
         }
         /* 定义kakfa 服务的地址，不需要将所有broker指定上 */
         props.put("bootstrap.servers", brokerUrls);
@@ -399,7 +399,7 @@ public class KafkaUtil {
             Config.refresh();
             javax.security.auth.login.Configuration.setConfiguration(null);
         } catch (Exception e) {
-            log.error("kafka kerberos认证信息刷新失败！");
+            log.error("Kafka kerberos authentication information refresh failed!");
         }
         // kerberos 相关设置
         props.put("security.protocol", "SASL_PLAINTEXT");
@@ -458,7 +458,7 @@ public class KafkaUtil {
                 result.add(record.value());
             }
         } catch (Exception e) {
-            log.error("从kafka消费数据异常 zkUrls:{} \nbrokerUrls:{} \ntopic:{} \nautoReset:{} \n ", zkUrls, brokerUrls, topic, autoReset, e);
+            log.error("consumption data from Kafka zkUrls:{} \nbrokerUrls:{} \ntopic:{} \nautoReset:{} \n ", zkUrls, brokerUrls, topic, autoReset, e);
         } finally {
             destroyProperty();
         }
@@ -496,7 +496,7 @@ public class KafkaUtil {
             }
             return partitionDTOS;
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取topic：%s 分区信息异常：%s", topic, e.getMessage()), e);
+            throw new DtLoaderException(String.format("Get topic: %s partition information is exception：%s", topic, e.getMessage()), e);
         }
     }
 
@@ -597,7 +597,7 @@ public class KafkaUtil {
                 }
             }
         } catch (Exception e) {
-            log.error("从kafka消费数据异常：brokerUrls:{} \ntopic:{} \noffsetReset:{} \n timestampOffset:{} \n maxTimeWait:{} \n ", brokerUrls, topic, offsetReset, timestampOffset, maxTimeWait, e);
+            log.error("consumption data from Kafka exception：brokerUrls:{} \ntopic:{} \noffsetReset:{} \n timestampOffset:{} \n maxTimeWait:{} \n ", brokerUrls, topic, offsetReset, timestampOffset, maxTimeWait, e);
         } finally {
             destroyProperty();
         }

@@ -23,7 +23,7 @@ public class HdfsFileClientFactory {
             ServiceLoader<IHdfsFile> kafkas = ServiceLoader.load(IHdfsFile.class);
             Iterator<IHdfsFile> iClientIterator = kafkas.iterator();
             if (!iClientIterator.hasNext()) {
-                throw new DtLoaderException("暂不支持该插件类型: " + pluginName);
+                throw new DtLoaderException("This plugin type is not supported: " + pluginName);
             }
 
             IHdfsFile hdfsFile = iClientIterator.next();

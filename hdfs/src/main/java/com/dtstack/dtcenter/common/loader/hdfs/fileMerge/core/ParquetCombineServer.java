@@ -155,7 +155,7 @@ public class ParquetCombineServer extends CombineServer {
             metaData.setCompressed(metaData.geteCompressType() != null && !compressionCodec.equals(CompressionCodec.UNCOMPRESSED));
             metaData.setLimitSize(new BigDecimal(maxCombinedFileSize + "").multiply(limitRows).longValue());
         } catch (IOException e) {
-            throw new DtLoaderException("ParquetFileReader open error", e);
+            throw new DtLoaderException(String.format("ParquetFileReader open error,%s", e.getMessage()), e);
         }
         log.info("FileMeatData info   {}", metaData);
         return metaData;

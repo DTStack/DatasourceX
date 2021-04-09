@@ -66,13 +66,13 @@ public class OdpsPoolFactory implements PooledObjectFactory<Odps> {
             tables.iterator().hasNext();
             check = true;
         } catch (Exception e) {
-            log.error("检查odps连接失败..{}", e);
+            log.error("check odps connect error..{}", e.getMessage(), e);
         }
         if (Objects.nonNull(odps) && !check) {
             try {
                 odps = null;
             } catch (Exception e) {
-                throw new DtLoaderException("close client error", e);
+                throw new DtLoaderException(String.format("close client error,%s", e.getMessage()), e);
             }
         }
     }
@@ -95,7 +95,7 @@ public class OdpsPoolFactory implements PooledObjectFactory<Odps> {
             tables.iterator().hasNext();
             return true;
         } catch (Exception e) {
-            log.error("检查odps连接失败..{}", e);
+            log.error("check odps connect error..{}", e.getMessage(), e);
         }
         return false;
     }
