@@ -50,7 +50,7 @@
         <dependency>
             <groupId>com.facebook.presto</groupId>
             <artifactId>presto-jdbc</artifactId>
-            <version>0.241</version>
+            <version>0.237.1</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
