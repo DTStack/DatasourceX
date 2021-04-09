@@ -127,7 +127,7 @@ public class PrestoClient<T> extends AbsRdbmsClient<T> {
     @Override
     public Boolean isDatabaseExists(ISourceDTO source, String schema) {
         if (StringUtils.isBlank(schema)) {
-            throw new DtLoaderException("数据库schema不能为空");
+            throw new DtLoaderException("database schema not null");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(SHOW_DB_LIKE, schema)).build()));
     }
@@ -135,7 +135,7 @@ public class PrestoClient<T> extends AbsRdbmsClient<T> {
     @Override
     public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
         if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("数据库名称不能为空");
+            throw new DtLoaderException("database name is not empty");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_IS_IN_SCHEMA, dbName, tableName)).build()));
     }

@@ -52,7 +52,7 @@ public class SqlServerDownloader implements IDownloader {
     @Override
     public boolean configure() throws Exception {
         if (null == connection || StringUtils.isEmpty(sql)) {
-            throw new DtLoaderException("文件不存在");
+            throw new DtLoaderException("file is not exist");
         }
         totalLine = 0;
         pageSize = 100;
@@ -88,7 +88,7 @@ public class SqlServerDownloader implements IDownloader {
             //获取总页数
             pageAll = (int) Math.ceil(totalLine/(double)pageSize);
         } catch (Exception e) {
-            throw new DtLoaderException("构造 SqlServer 下载器信息异常 : " + e.getMessage(), e);
+            throw new DtLoaderException("build SqlServer downloader message exception: " + e.getMessage(), e);
         } finally {
             if (totalResultSet != null) {
                 totalResultSet.close();
@@ -124,7 +124,7 @@ public class SqlServerDownloader implements IDownloader {
                 pageTemp.add(columns);
             }
         } catch (Exception e) {
-            throw new DtLoaderException("读取 SqlServer 信息异常 : " + e.getMessage(), e);
+            throw new DtLoaderException("read SqlServer message exception : " + e.getMessage(), e);
         }
 
         pageNum++;

@@ -38,7 +38,7 @@ public class OracleTableClient extends AbsTableClient {
 
     @Override
     public List<String> showPartitions(ISourceDTO source, String tableName) {
-        throw new DtLoaderException("该数据源不支持获取分区操作！");
+        throw new DtLoaderException("The data source does not support get partition operation！");
     }
 
     @Override
@@ -56,7 +56,7 @@ public class OracleTableClient extends AbsTableClient {
     @Override
     public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) {
         String comment = params.get("comment");
-        log.info("更改表注释，comment：{}！", comment);
+        log.info("update table comment，comment：{}！", comment);
         if (StringUtils.isEmpty(comment)) {
             return true;
         }

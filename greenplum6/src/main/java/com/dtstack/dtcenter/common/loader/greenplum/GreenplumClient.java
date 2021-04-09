@@ -93,7 +93,7 @@ public class GreenplumClient extends AbsRdbmsClient {
         String schema = greenplum6SourceDTO.getSchema();
         if (StringUtils.isEmpty(greenplum6SourceDTO.getSchema())) {
             if (!queryDTO.getTableName().contains(".")) {
-                throw new DtLoaderException("greenplum数据源需要schema参数");
+                throw new DtLoaderException("The greenplum data source requires schema parameters");
             }
             schema = queryDTO.getTableName().split("\\.")[0];
             tableName = queryDTO.getTableName().split("\\.")[1];
@@ -109,7 +109,7 @@ public class GreenplumClient extends AbsRdbmsClient {
                 return tableDesc;
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+            throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, greenplum6SourceDTO.clearAfterGetConnection(clearStatus));
@@ -137,7 +137,7 @@ public class GreenplumClient extends AbsRdbmsClient {
                 tableList.add(resultSet.getString(1));
             }
         } catch (SQLException e) {
-            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+            throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     greenplum6SourceDTO.getSchema()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, greenplum6SourceDTO.clearAfterGetConnection(clearStatus));
@@ -179,7 +179,7 @@ public class GreenplumClient extends AbsRdbmsClient {
     @Override
     public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
         if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("schema名称不能为空");
+            throw new DtLoaderException("schema  is not empty");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(DATABASE_IS_EXISTS, dbName)).build()));
     }
@@ -195,7 +195,7 @@ public class GreenplumClient extends AbsRdbmsClient {
     @Override
     public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
         if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("schema名称不能为空");
+            throw new DtLoaderException("schema  is not empty");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLES_IS_IN_SCHEMA, dbName, tableName)).build()));
     }

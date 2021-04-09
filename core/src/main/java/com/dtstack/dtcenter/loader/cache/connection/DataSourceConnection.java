@@ -48,7 +48,7 @@ public class DataSourceConnection {
      */
     public void updateSessionKey(String sessionKey) {
         if (StringUtils.isBlank(sessionKey)) {
-            throw new DtLoaderException("数据源连接主键(sessionKey)不能为空");
+            throw new DtLoaderException("The data source connection primary key (sessionKey) cannot be empty");
         }
 
         this.sessionKey = sessionKey;

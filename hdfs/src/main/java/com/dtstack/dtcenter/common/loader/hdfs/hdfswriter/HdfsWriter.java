@@ -58,11 +58,11 @@ public class HdfsWriter {
     public static InputStreamReader getReader(String fromFileName, String oriCharSet) throws Exception {
         File fromFile = new File(fromFileName);
         if (!fromFile.exists()) {
-            throw new DtLoaderException("文件不存在");
+            throw new DtLoaderException("file is not exist");
         }
 
         if (fromFile.isDirectory()) {
-            throw new DtLoaderException("不能选择文件夹");
+            throw new DtLoaderException("Cannot select folder");
         }
 
         return new InputStreamReader(new BOMInputStream(new FileInputStream(fromFile)), oriCharSet);
@@ -72,7 +72,7 @@ public class HdfsWriter {
         char delim = DEFAULT_DELIM;
         if (delimStr != null) {
             if (delimStr.length() > 1) {
-                throw new DtLoaderException("分隔符的长度不能大于1");
+                throw new DtLoaderException("The length of the separator cannot be greater than 1");
             } else {
                 delim = delimStr.charAt(0);
             }

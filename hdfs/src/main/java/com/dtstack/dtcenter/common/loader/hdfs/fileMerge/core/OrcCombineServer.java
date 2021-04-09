@@ -134,7 +134,7 @@ public class OrcCombineServer extends CombineServer {
             return OrcFile.createWriter(new Path(combineFileName), writerOptions);
 
         } catch (IOException e) {
-            throw new DtLoaderException("switch writer failed", e);
+            throw new DtLoaderException(String.format("switch writer failed,%s", e.getMessage()), e);
         }
     }
 

@@ -30,7 +30,7 @@ public class WebSocketTest {
         IClient client = ClientCache.getClient(DataSourceType.WEB_SOCKET.getVal());
         Boolean isConnected = client.testCon(sourceDTO);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("连接异常");
+            throw new DtLoaderException("connection exception");
         }
     }
 }

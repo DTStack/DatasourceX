@@ -77,7 +77,7 @@ public class AbsKerberosClient implements IKerberos {
     public List<String> getPrincipals(Map<String, Object> kerberosConfig) {
         String keytabPath = MapUtils.getString(kerberosConfig, HadoopConfTool.PRINCIPAL_FILE);
         if (StringUtils.isBlank(keytabPath)) {
-            throw new DtLoaderException("获取 Principal 信息异常，Keytab 配置不存在");
+            throw new DtLoaderException("get Principal message，Keytab setting not exits");
         }
         return KerberosConfigUtil.getPrincipals(keytabPath);
     }

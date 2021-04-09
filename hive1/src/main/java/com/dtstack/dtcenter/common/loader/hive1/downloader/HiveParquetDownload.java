@@ -168,7 +168,7 @@ public class HiveParquetDownload implements IDownloader {
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
-                        throw new DtLoaderException("读取文件异常", e);
+                        throw new DtLoaderException(String.format("Abnormal reading file,%s", e.getMessage()), e);
                     }
                 });
     }
@@ -314,7 +314,7 @@ public class HiveParquetDownload implements IDownloader {
                     try {
                         return !nextRecord();
                     } catch (Exception e){
-                        throw new DtLoaderException("下载文件异常", e);
+                        throw new DtLoaderException(String.format("Download file is abnormal,%s", e.getMessage()), e);
                     }
                 });
 

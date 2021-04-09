@@ -43,13 +43,13 @@ public class ZipUtil {
                     zipOut.setEncoding("GBK");
                     handlerFile(zipLocation, zipOut, sourceLocation, "");
                 } else {
-                    throw new DtLoaderException(String.format("目标文件 %s 不是一个以 ZIP 结尾的文件", zipLocation));
+                    throw new DtLoaderException(String.format("The target file %s is not a file ending in ZIP", zipLocation));
                 }
             }
         } catch (FileNotFoundException e) {
-            throw new DtLoaderException("文件未找到", e);
+            throw new DtLoaderException(String.format("file not found,%s", e.getMessage()), e);
         } catch (IOException e) {
-            throw new DtLoaderException("目标文件压缩异常", e);
+            throw new DtLoaderException(String.format("Target file compression abnormal:%s", e.getMessage()), e);
         }
     }
 
@@ -89,7 +89,7 @@ public class ZipUtil {
                 }
             }
         } catch (IOException e) {
-            throw new DtLoaderException(String.format("解压缩异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("Unzip exception : %s", e.getMessage()), e);
         }
         return files;
     }

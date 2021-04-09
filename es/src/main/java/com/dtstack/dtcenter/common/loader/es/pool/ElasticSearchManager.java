@@ -77,7 +77,7 @@ public class ElasticSearchManager{
 
         ElasticSearchPool pool = new ElasticSearchPool(config);
         pool.addObjects(poolConfig.getMinimumIdle());
-        log.info("获取 ES 数据源连接(Pool), address : {}, userName : {}", esSourceDTO.getUrl(), esSourceDTO.getUsername());
+        log.info("Get ES data source connection(Pool), address : {}, userName : {}", esSourceDTO.getUrl(), esSourceDTO.getUsername());
         return pool;
     }
 

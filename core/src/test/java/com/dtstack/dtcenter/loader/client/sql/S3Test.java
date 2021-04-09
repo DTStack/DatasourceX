@@ -30,7 +30,7 @@ public class S3Test {
         IClient client = ClientCache.getClient(DataSourceType.S3.getPluginName());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("连接异常");
+            throw new DtLoaderException("connection exception");
         }
     }
 

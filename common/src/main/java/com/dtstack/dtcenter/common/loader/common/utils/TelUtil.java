@@ -23,16 +23,16 @@ public class TelUtil {
         for (String addr : addrs) {
             Matcher matcher = HOST_PORT_PATTERN.matcher(addr);
             if (!matcher.find()) {
-                throw new DtLoaderException(String.format("地址：%s 格式错误", addr));
+                throw new DtLoaderException(String.format("address：%s wrong format", addr));
             }
             String host = matcher.group("host");
             String portStr = matcher.group("port");
             if (StringUtils.isBlank(host) || StringUtils.isBlank(portStr)) {
-                throw new DtLoaderException(String.format("地址：%s 缺少ip或端口", addr));
+                throw new DtLoaderException(String.format("address：%s missing ip or port", addr));
             }
             result = AddressUtil.telnet(host.trim(), Integer.parseInt(portStr.trim()));
             if (!result) {
-                throw new DtLoaderException(String.format("地址：%s 无法连通", addr));
+                throw new DtLoaderException(String.format("address：%s can't connect", addr));
             }
         }
         return result;

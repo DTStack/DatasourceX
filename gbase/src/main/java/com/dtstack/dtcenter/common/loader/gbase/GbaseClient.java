@@ -48,8 +48,8 @@ public class GbaseClient extends AbsRdbmsClient {
                 }
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
-                    queryDTO.getTableName()), e);
+            throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.%s",
+                    queryDTO.getTableName(), e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, gBaseSourceDTO.clearAfterGetConnection(clearStatus));
         }

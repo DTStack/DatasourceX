@@ -75,7 +75,7 @@ public enum FilterType {
                 return filterType;
             }
         }
-        throw new DtLoaderException("hbase自定义查询暂时不支持该过滤器类型");
+        throw new DtLoaderException("Hbase custom query does not support this filter type");
     }
 
 }

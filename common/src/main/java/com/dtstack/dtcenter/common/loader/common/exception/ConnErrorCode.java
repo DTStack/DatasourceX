@@ -9,42 +9,90 @@ package com.dtstack.dtcenter.common.loader.common.exception;
  */
 public enum ConnErrorCode implements IErrorCode {
 
-    USERNAME_PASSWORD_ERROR(1, "数据库账号或密码错误"),
+    /**
+     * 数据库账号或密码错误
+     */
+    USERNAME_PASSWORD_ERROR(1, "Incorrect database account or password"),
 
-    MISSING_USERNAME_OR_PASSWORD(2, "缺少账号名或密码"),
+    /**
+     * 缺少账号名或密码
+     */
+    MISSING_USERNAME_OR_PASSWORD(2, "Account name or password is missing"),
 
-    DB_NOT_EXISTS(3, "数据库不存在"),
+    /**
+     * 数据库不存在
+     */
+    DB_NOT_EXISTS(3, "Database does not exist"),
 
-    UNKNOWN_HOST_ERROR(4, "不能识别该host域名，请检查host配置"),
+    /**
+     * 不能识别该host域名，请检查host配置
+     */
+    UNKNOWN_HOST_ERROR(4, "The host domain name cannot be recognized, please check the host configuration"),
 
-    JDBC_FORMAT_ERROR(5, "jdbcUrl格式错误"),
+    /**
+     * jdbcUrl格式错误
+     */
+    JDBC_FORMAT_ERROR(5, "jdbcUrl format error"),
 
-    CONNECTION_TIMEOUT(6, "数据库连接超时"),
+    /**
+     * 数据库连接超时
+     */
+    CONNECTION_TIMEOUT(6, "Database connection timed out"),
 
-    IP_PORT_FORMAT_ERROR(7, "ip或端口错误"),
+    /**
+     * ip或端口错误
+     */
+    IP_PORT_FORMAT_ERROR(7, "ip or port error"),
 
-    VERSION_ERROR(8, "数据库版本错误，请检查使用版本是否对应"),
+    /**
+     * 数据库版本错误，请检查使用版本是否对应
+     */
+    VERSION_ERROR(8, "The database version is wrong, please check whether the used version corresponds"),
 
-    DB_PERMISSION_ERROR(9, "此用户无访问权限"),
+    /**
+     * 此用户无访问权限
+     */
+    DB_PERMISSION_ERROR(9, "This user has no access rights"),
 
-    CANNOT_ACQUIRE_CONNECT(10, "应用程序服务器拒绝建立连接，请检查网络是否通畅"),
+    /**
+     * 应用程序服务器拒绝建立连接，请检查网络是否通畅
+     */
+    CANNOT_ACQUIRE_CONNECT(10, "The application server refuses to establish a connection, please check if the network is smooth"),
 
-    CANNOT_PING_IP(11, "此ip拒绝连接"),
+    /**
+     * 此ip拒绝连接
+     */
+    CANNOT_PING_IP(11, "This ip refused to connect"),
 
-    CANNOT_TELNET_PORT(12, "此端口拒绝连接"),
+    /**
+     * 此端口拒绝连接
+     */
+    CANNOT_TELNET_PORT(12, "Connection refused on this port"),
 
-    HDFS_PERMISSION_ERROR(13, "hdfs权限检查失败，请检查该用户权限"),
+    /**
+     * hdfs权限检查失败，请检查该用户权限
+     */
+    HDFS_PERMISSION_ERROR(13, "hdfs permission check failed, please check the user permission"),
 
-    ZK_NODE_NOT_EXISTS(14, "zookeeper 上不存在此节点信息，请检查znode是否正确"),
+    /**
+     * zookeeper 上不存在此节点信息，请检查znode是否正确
+     */
+    ZK_NODE_NOT_EXISTS(14, "This node information does not exist on zookeeper, please check whether the znode is correct"),
 
-    ZK_IS_NOT_CONNECT(15, "zookeeper 服务拒绝连接，请检查zk地址、端口是否正确或zookeeper服务是否正常"),
+    /**
+     * zookeeper 服务拒绝连接，请检查zk地址、端口是否正确或zookeeper服务是否正常
+     */
+    ZK_IS_NOT_CONNECT(15, "The zookeeper service refused to connect, please check whether the zk address and port are correct or whether the zookeeper service is normal"),
 
-    MISSING_USERNAME(16, "缺少用户名信息"),
+    /**
+     * 缺少用户名信息
+     */
+    MISSING_USERNAME(16, "Missing username information"),
 
     /**
      * 未定义异常
      */
-    UNDEFINED_ERROR(0, "获取数据库连接失败");
+    UNDEFINED_ERROR(0, "Failed to get database connection");
 
     @Override
     public Integer getCode() {

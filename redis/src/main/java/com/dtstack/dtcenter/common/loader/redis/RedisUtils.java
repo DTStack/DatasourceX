@@ -54,7 +54,7 @@ public class RedisUtils {
 
     public static boolean checkConnection(ISourceDTO iSource) {
         RedisSourceDTO redisSourceDTO = (RedisSourceDTO) iSource;
-        log.info("获取 Redis 数据源连接, host : {}, port : {}", redisSourceDTO.getMaster(), redisSourceDTO.getHostPort());
+        log.info("get Redis connected, host : {}, port : {}", redisSourceDTO.getMaster(), redisSourceDTO.getHostPort());
         RedisMode redisMode = redisSourceDTO.getRedisMode() != null ? redisSourceDTO.getRedisMode() : RedisMode.Standalone;
         try {
             switch (redisMode) {
@@ -65,7 +65,7 @@ public class RedisUtils {
                 case Cluster:
                     return checkRedisConnectionCluster(redisSourceDTO);
                 default:
-                    throw new DtLoaderException("暂不支持的模式");
+                    throw new DtLoaderException("Unsupported mode");
             }
         } catch (Exception e) {
             String errorMsg = e.getMessage();
@@ -80,9 +80,9 @@ public class RedisUtils {
         RedisSourceDTO redisSourceDTO = (RedisSourceDTO) source;
         String tableName = queryDTO.getTableName();
         if (StringUtils.isBlank(tableName)) {
-            throw new DtLoaderException("预览数据表名不能为空");
+            throw new DtLoaderException("preview table name not empty");
         }
-        log.info("获取 Redis 数据源连接, host : {}, port : {}", redisSourceDTO.getMaster(), redisSourceDTO.getHostPort());
+        log.info("get Redis connected, host : {}, port : {}", redisSourceDTO.getMaster(), redisSourceDTO.getHostPort());
         RedisMode redisMode = redisSourceDTO.getRedisMode() != null ? redisSourceDTO.getRedisMode() : RedisMode.Standalone;
         List<List<Object>> result = Lists.newArrayList();
 
@@ -130,7 +130,7 @@ public class RedisUtils {
         }
 
         if (fieldKey.size() != values.size()) {
-            throw new DtLoaderException("获取redis hash数据异常");
+            throw new DtLoaderException("get redis hash data exception");
         }
         for (int index = 0; index < values.size(); index++) {
             resultMap.put(fieldKey.get(index), values.get(index));
@@ -200,9 +200,9 @@ public class RedisUtils {
         String masterName = redisSourceDTO.getMaster();
         String hostPorts = redisSourceDTO.getHostPort();
         String password = redisSourceDTO.getPassword();
-        Preconditions.checkArgument(StringUtils.isNotBlank(hostPorts), "hostPort不能为空");
+        Preconditions.checkArgument(StringUtils.isNotBlank(hostPorts), "hostPort not empty");
         Set<HostAndPort> nodes = getHostAndPorts(hostPorts);
-        Preconditions.checkArgument(CollectionUtils.isNotEmpty(nodes), "没有有效ip和端口");
+        Preconditions.checkArgument(CollectionUtils.isNotEmpty(nodes), "invalid ip and port");
 
         Set<String> sentinels = nodes.stream().map(hostAndPort -> hostAndPort.getHost() + ":" + hostAndPort.getPort())
                 .collect(Collectors.toSet());
@@ -228,7 +228,7 @@ public class RedisUtils {
         int db = StringUtils.isNotEmpty(redisSourceDTO.getSchema()) ? Integer.parseInt(redisSourceDTO.getSchema()) : 0;
         Matcher matcher = HOST_PORT_PATTERN.matcher(hostPort);
 
-        Preconditions.checkArgument(matcher.find(), "hostPort格式异常");
+        Preconditions.checkArgument(matcher.find(), "hostPort Format exception");
 
         String host = matcher.group("host");
         String portStr = matcher.group("port");
@@ -256,11 +256,11 @@ public class RedisUtils {
         poolConfig.setMaxIdle(2);
         poolConfig.setMaxWaitMillis(1000);
         JedisCluster cluster;
-        Preconditions.checkArgument(StringUtils.isNotBlank(hostPorts), "hostPort不能为空");
+        Preconditions.checkArgument(StringUtils.isNotBlank(hostPorts), "hostPort not empty");
 
         Set<HostAndPort> nodes = getHostAndPorts(hostPorts);
 
-        Preconditions.checkArgument(CollectionUtils.isNotEmpty(nodes), "没有有效ip和端口");
+        Preconditions.checkArgument(CollectionUtils.isNotEmpty(nodes), "invalid ip and port");
 
         if (StringUtils.isNotBlank(password)) {
             cluster = new JedisCluster(nodes, 1000, 1000, 100, password, poolConfig);
@@ -298,7 +298,7 @@ public class RedisUtils {
                 }
             }
         } catch (Exception e) {
-            throw new DtLoaderException("redis close resource error", e);
+            throw new DtLoaderException(String.format("redis close resource error,%s", e.getMessage()), e);
         }
     }
 }

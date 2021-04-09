@@ -42,7 +42,7 @@ public class KafkaTest {
         IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("连接异常");
+            throw new DtLoaderException("connection exception");
         }
     }
 
@@ -51,7 +51,7 @@ public class KafkaTest {
         IClient client = ClientCache.getClient(DataSourceType.KAFKA_09.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("连接异常");
+            throw new DtLoaderException("connection exception");
         }
     }
 

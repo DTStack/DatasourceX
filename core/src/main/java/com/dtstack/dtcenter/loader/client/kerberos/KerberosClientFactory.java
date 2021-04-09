@@ -22,7 +22,7 @@ public class KerberosClientFactory {
             ServiceLoader<IKerberos> kerberos = ServiceLoader.load(IKerberos.class);
             Iterator<IKerberos> iClientIterator = kerberos.iterator();
             if (!iClientIterator.hasNext()) {
-                throw new DtLoaderException("暂不支持该插件类型: " + pluginName);
+                throw new DtLoaderException("This plugin type is not supported: " + pluginName);
             }
 
             IKerberos iKerberos = iClientIterator.next();

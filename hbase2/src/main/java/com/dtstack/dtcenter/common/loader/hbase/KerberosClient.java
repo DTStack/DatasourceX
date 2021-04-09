@@ -20,7 +20,7 @@ public class KerberosClient extends AbsKerberosClient {
         // 设置principal账号
         if (!conf.containsKey(HadoopConfTool.PRINCIPAL)) {
             String principal = getPrincipals(conf).get(0);
-            log.info("手动设置 principal 为 {}", principal);
+            log.info("setting principal 为 {}", principal);
             conf.put(HadoopConfTool.PRINCIPAL, principal);
         }
         return true;

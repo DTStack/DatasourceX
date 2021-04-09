@@ -24,7 +24,7 @@ public enum ComparatorType {
 
         @Override
         public ByteArrayComparable getComparator(com.dtstack.dtcenter.loader.dto.comparator.ByteArrayComparable comparable) {
-            throw new DtLoaderException("hbase 1.x版本不支持该比较器");
+            throw new DtLoaderException("hbase 1.x version does not support this comparator");
         }
     },
 
@@ -111,7 +111,7 @@ public enum ComparatorType {
                 return comparatorType;
             }
         }
-        throw new DtLoaderException("hbase自定义查询暂时不支持该比较器类型");
+        throw new DtLoaderException("Hbase custom query does not support this comparator type");
     }
 
 }

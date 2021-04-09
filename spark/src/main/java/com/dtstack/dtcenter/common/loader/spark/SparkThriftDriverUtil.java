@@ -40,7 +40,7 @@ public class SparkThriftDriverUtil {
         try {
             return HIVE_DRIVER.getPropertyInfo(url, properties);
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("Spark 解析 URL 异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("Spark parse URL exception : %s", e.getMessage()), e);
         }
     }
 
@@ -70,7 +70,7 @@ public class SparkThriftDriverUtil {
         try {
             conn.setSchema(schema);
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("Schema 设置异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("Setting schema exception : %s", e.getMessage()), e);
         }
         return conn;
     }
