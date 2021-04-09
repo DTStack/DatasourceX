@@ -178,7 +178,7 @@ public class HbaseClientSpecial implements IHbase {
         } catch (DtLoaderException e) {
             throw e;
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("hbase delete data exception! rowKeys： %s", rowKeys), e);
+            throw new DtLoaderException(String.format("hbase delete data exception! rowKeys： %s,%s", rowKeys, e.getMessage()), e);
         } finally {
             close(table);
             closeConnection(connection, hbaseSourceDTO);
@@ -201,7 +201,7 @@ public class HbaseClientSpecial implements IHbase {
         } catch (DtLoaderException e) {
             throw e;
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("hbase insert data exception! rowKey： %s， data： %s", rowKey, data), e);
+            throw new DtLoaderException(String.format("hbase insert data exception! rowKey： %s， data： %s, error: %s", rowKey, data, e.getMessage()), e);
         } finally {
             close(table);
             closeConnection(connection, hbaseSourceDTO);
@@ -225,7 +225,7 @@ public class HbaseClientSpecial implements IHbase {
         } catch (DtLoaderException e) {
             throw e;
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("Hbase gets data exception! rowKey： %s ", rowKey), e);
+            throw new DtLoaderException(String.format("Hbase gets data exception! rowKey： %s , %s", rowKey, e.getMessage()), e);
         } finally {
             close(table);
             closeConnection(connection, hbaseSourceDTO);

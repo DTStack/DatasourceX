@@ -182,8 +182,8 @@ public class SparkClient extends AbsRdbmsClient {
                 }
             }
         } catch (SQLException e) {
-            throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
-                    tableName), e);
+            throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information. %s",
+                    tableName, e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, null);
         }
@@ -250,7 +250,7 @@ public class SparkClient extends AbsRdbmsClient {
 
             return columnMetaDTOS.stream().filter(column -> !filterPartitionColumns || !column.getPart()).collect(Collectors.toList());
         } catch (SQLException e) {
-            throw new DtLoaderException(String.format("Failed to get meta information for the fields of table :%s. Please contact the DBA to check the database table information.", tableName), e);
+            throw new DtLoaderException(String.format("Failed to get meta information for the fields of table :%s. Please contact the DBA to check the database table information,%s", tableName, e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, stmt, null);
         }
