@@ -87,6 +87,8 @@ public class HiveParquetDownload implements IDownloader {
      */
     private Map<String, String> filterPartition;
 
+    private static final String IMPALA_INSERT_STAGING = "_impala_insert_staging";
+
     public HiveParquetDownload(Configuration conf, String tableLocation, List<String> columnNames,
                                List<String> partitionColumns, List<Integer> needIndex, Map<String, String> filterPartition, Map<String, Object> kerberosConfig){
         this.tableLocation = tableLocation;
@@ -103,17 +105,9 @@ public class HiveParquetDownload implements IDownloader {
 
         jobConf = new JobConf(conf);
         paths = Lists.newArrayList();
-        FileSystem fileSystem = FileSystem.get(conf);
-        // 判断表路径是否存在
-        if (!fileSystem.exists(new Path(tableLocation))) {
-            log.warn("表路径：{} 不存在", tableLocation);
-            return false;
-        }
+        FileSystem fs =  FileSystem.get(conf);
         // 递归获取表路径下所有文件
-        getAllPartitionPath(tableLocation, paths);
-        if(paths.size() == 0){
-            throw new DtLoaderException("非法路径:" + tableLocation);
-        }
+        getAllPartitionPath(tableLocation, paths, fs);
         return true;
     }
 
@@ -344,21 +338,24 @@ public class HiveParquetDownload implements IDownloader {
      *
      * @param tableLocation hdfs文件路径
      * @param pathList 所有文件集合
+     * @param fs HDFS 文件系统
      */
-    private void getAllPartitionPath(String tableLocation, List<String> pathList) throws IOException {
+    public static void getAllPartitionPath(String tableLocation, List<String> pathList, FileSystem fs) throws IOException {
         Path inputPath = new Path(tableLocation);
-        FileSystem fs =  FileSystem.get(jobConf);
+        // 路径不存在直接返回
+        if (!fs.exists(inputPath)) {
+            return;
+        }
         //剔除隐藏系统文件和无关文件
-        FileStatus[] fsStatus = fs.listStatus(inputPath, path -> !path.getName().startsWith(".") && !path.getName().startsWith("_SUCCESS") && !path.getName().startsWith("_common_metadata"));
+        FileStatus[] fsStatus = fs.listStatus(inputPath, path -> !path.getName().startsWith(".") && !path.getName().startsWith("_SUCCESS") && !path.getName().startsWith(IMPALA_INSERT_STAGING) && !path.getName().startsWith("_common_metadata"));
         if(fsStatus == null || fsStatus.length == 0){
-            pathList.add(tableLocation);
             return;
         }
         for (FileStatus status : fsStatus) {
             if (status.isFile()) {
                 pathList.add(status.getPath().toString());
             }else {
-                getAllPartitionPath(status.getPath().toString(), pathList);
+                getAllPartitionPath(status.getPath().toString(), pathList, fs);
             }
         }
     }
