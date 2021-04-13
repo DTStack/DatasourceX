@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client;
 
+import com.dtstack.dtcenter.loader.dto.KafkaConsumerDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
@@ -116,4 +117,21 @@ public interface IKafka<T> {
      * @return kafka数据
      */
     List<String> consumeData(ISourceDTO source, String topic, Integer collectNum, String offsetReset, Long timestampOffset, Integer maxTimeWait);
+
+    /**
+     * 获取所有的消费者组
+     *
+     * @param source 数据源信息
+     * @return 消费者组列表
+     */
+    List<String> listConsumerGroup(ISourceDTO source);
+
+    /**
+     * 获取 kafka 消费者组详细信息
+     *
+     * @param source  数据源信息
+     * @param groupId 消费者组
+     * @return 消费者组详细信息
+     */
+    List<KafkaConsumerDTO> getGroupInfoByGroupId(ISourceDTO source, String groupId);
 }

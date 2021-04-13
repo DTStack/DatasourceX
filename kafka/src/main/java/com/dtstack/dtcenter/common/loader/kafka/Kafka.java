@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.kafka;
 
 import com.dtstack.dtcenter.common.loader.kafka.util.KafkaUtil;
 import com.dtstack.dtcenter.loader.client.IKafka;
+import com.dtstack.dtcenter.loader.dto.KafkaConsumerDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
@@ -110,5 +111,19 @@ public class Kafka<T> implements IKafka<T> {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
         String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
         return KafkaUtil.consumeData(brokerUrl, topic, collectNum, offsetReset, timestampOffset, maxTimeWait, kafkaSourceDTO.getKerberosConfig());
+    }
+
+    @Override
+    public List<String> listConsumerGroup(ISourceDTO source) {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
+        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
+        return KafkaUtil.listConsumerGroup(brokerUrl, kafkaSourceDTO.getKerberosConfig());
+    }
+
+    @Override
+    public List<KafkaConsumerDTO> getGroupInfoByGroupId(ISourceDTO source, String groupId) {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
+        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
+        return KafkaUtil.getGroupInfoByGroupId(brokerUrl, groupId, kafkaSourceDTO.getKerberosConfig());
     }
 }

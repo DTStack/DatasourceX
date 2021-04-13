@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.mq;
 
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
 import com.dtstack.dtcenter.loader.client.IKafka;
+import com.dtstack.dtcenter.loader.dto.KafkaConsumerDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
@@ -83,6 +84,18 @@ public class KafkaClientProxy<T> implements IKafka<T> {
     @Override
     public List<String> consumeData(ISourceDTO source, String topic, Integer collectNum, String offsetReset, Long timestampOffset, Integer maxTimeWait) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.consumeData(source, topic, collectNum, offsetReset, timestampOffset, maxTimeWait),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public List<String> listConsumerGroup(ISourceDTO source) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.listConsumerGroup(source),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public List<KafkaConsumerDTO> getGroupInfoByGroupId(ISourceDTO source, String groupId) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getGroupInfoByGroupId(source, groupId),
                 targetClient.getClass().getClassLoader());
     }
 }
