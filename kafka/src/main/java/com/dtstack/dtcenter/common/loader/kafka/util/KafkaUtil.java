@@ -645,7 +645,7 @@ public class KafkaUtil {
         kafka.admin.AdminClient adminClient = kafka.admin.AdminClient.create(prop);
         kafka.admin.AdminClient.ConsumerGroupSummary groupSummary = adminClient.describeConsumerGroup(groupId, 5000L);
         // 消费者组不存在的情况
-        if (groupSummary.state().equals("Dead")) {
+        if (Objects.isNull(groupSummary) || "Dead".equals(groupSummary.state())) {
             return result;
         }
         Map<TopicPartition, Object> offsets = JavaConversions.mapAsJavaMap(adminClient.listGroupOffsets(groupId));
