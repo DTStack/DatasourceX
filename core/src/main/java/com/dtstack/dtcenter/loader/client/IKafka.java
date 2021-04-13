@@ -127,6 +127,14 @@ public interface IKafka<T> {
     List<String> listConsumerGroup(ISourceDTO source);
 
     /**
+     * 获取指定topic下的所有的消费者组
+     *
+     * @param source 数据源信息
+     * @return 消费者组列表
+     */
+    List<String> listConsumerGroupByTopic(ISourceDTO source, String topic);
+
+    /**
      * 获取 kafka 消费者组详细信息
      *
      * @param source  数据源信息
@@ -134,4 +142,14 @@ public interface IKafka<T> {
      * @return 消费者组详细信息
      */
     List<KafkaConsumerDTO> getGroupInfoByGroupId(ISourceDTO source, String groupId);
+
+    /**
+     * 获取 kafka 指定topic下消费者组详细信息
+     *
+     * @param source  数据源信息
+     * @param groupId 消费者组
+     * @param topic   kafka主题
+     * @return 消费者组详细信息
+     */
+    List<KafkaConsumerDTO> getGroupInfoByGroupIdAndTopic(ISourceDTO source, String groupId, String topic);
 }

@@ -94,8 +94,20 @@ public class KafkaClientProxy<T> implements IKafka<T> {
     }
 
     @Override
+    public List<String> listConsumerGroupByTopic(ISourceDTO source, String topic) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.listConsumerGroupByTopic(source, topic),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
     public List<KafkaConsumerDTO> getGroupInfoByGroupId(ISourceDTO source, String groupId) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getGroupInfoByGroupId(source, groupId),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public List<KafkaConsumerDTO> getGroupInfoByGroupIdAndTopic(ISourceDTO source, String groupId, String topic) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getGroupInfoByGroupIdAndTopic(source, groupId, topic),
                 targetClient.getClass().getClassLoader());
     }
 }
