@@ -171,7 +171,6 @@ public class ConnFactory {
     protected HikariDataSource transHikari(ISourceDTO source) {
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
         HikariDataSource hikariData = new HikariDataSource();
-        hikariData.setDriverClassName(driverName);
         hikariData.setUsername(rdbmsSourceDTO.getUsername());
         hikariData.setPassword(rdbmsSourceDTO.getPassword());
         hikariData.setJdbcUrl(rdbmsSourceDTO.getUrl());
