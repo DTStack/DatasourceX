@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.loader.client.sql;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.IKafka;
+import com.dtstack.dtcenter.loader.dto.KafkaConsumerDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
@@ -128,4 +129,36 @@ public class KafkaTest {
         Assert.assertEquals(100, result.size());
     }
 
+    @Test
+    public void listConsumerGroup() {
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA.getVal());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(client.listConsumerGroup(source)));
+    }
+
+    @Test
+    public void listConsumerGroupByTopic() {
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA.getVal());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(client.listConsumerGroupByTopic(source, "loader_test")));
+    }
+
+    @Test
+    public void getGroupInfoByGroupId() {
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA.getVal());
+        List<KafkaConsumerDTO> info = client.getGroupInfoByGroupId(source, "test_loader222");
+        Assert.assertTrue(CollectionUtils.isNotEmpty(info));
+    }
+
+    @Test
+    public void getGroupInfoByTopic() {
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA.getVal());
+        List<KafkaConsumerDTO> info = client.getGroupInfoByTopic(source, "loader_test");
+        Assert.assertTrue(CollectionUtils.isNotEmpty(info));
+    }
+
+    @Test
+    public void getGroupInfoByGroupIdAndTopic() {
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA.getVal());
+        List<KafkaConsumerDTO> info = client.getGroupInfoByGroupIdAndTopic(source, "test_loader222", "loader_test");
+        Assert.assertTrue(CollectionUtils.isNotEmpty(info));
+    }
 }

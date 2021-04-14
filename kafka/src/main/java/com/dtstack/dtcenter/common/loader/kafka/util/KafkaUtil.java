@@ -7,6 +7,7 @@ import com.dtstack.dtcenter.common.loader.common.utils.TelUtil;
 import com.dtstack.dtcenter.common.loader.kafka.KafkaConsistent;
 import com.dtstack.dtcenter.common.loader.kafka.KafkaErrorPattern;
 import com.dtstack.dtcenter.common.loader.kafka.enums.EConsumeType;
+import com.dtstack.dtcenter.loader.dto.KafkaConsumerDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -16,6 +17,7 @@ import com.google.common.collect.Maps;
 import kafka.admin.AdminUtils;
 import kafka.cluster.Broker;
 import kafka.cluster.EndPoint;
+import kafka.coordinator.group.GroupOverview;
 import kafka.utils.ZkUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -370,7 +372,7 @@ public class KafkaUtil {
         //heart beat 默认3s
         props.put("session.timeout.ms", "10000");
         //一次性的最大拉取条数
-        props.put("max.poll.records", 5);
+        props.put("max.poll.records", "5");
         props.put("auto.offset.reset", "earliest");
         /* key的序列化类 */
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
@@ -599,6 +601,147 @@ public class KafkaUtil {
         } catch (Exception e) {
             log.error("consumption data from Kafka exception：brokerUrls:{} \ntopic:{} \noffsetReset:{} \n timestampOffset:{} \n maxTimeWait:{} \n ", brokerUrls, topic, offsetReset, timestampOffset, maxTimeWait, e);
         } finally {
+            destroyProperty();
+        }
+        return result;
+    }
+
+    /**
+     * 获取 kafka 消费者组列表
+     *
+     * @param brokerUrls     kafka broker节点信息
+     * @param topic          kafka 主题
+     * @param kerberosConfig kerberos 配置信息
+     * @return 消费者组列表
+     */
+    public static List<String> listConsumerGroup(String brokerUrls, String topic, Map<String, Object> kerberosConfig) {
+        List<String> consumerGroups = new ArrayList<>();
+        Properties prop = initProperties(brokerUrls, kerberosConfig);
+        // 获取kafka client
+        kafka.admin.AdminClient adminClient = kafka.admin.AdminClient.create(prop);
+        try {
+            // scala seq 转 java list
+            List<GroupOverview> groups = JavaConversions.seqAsJavaList(adminClient.listAllConsumerGroupsFlattened().toSeq());
+            groups.forEach(group -> consumerGroups.add(group.groupId()));
+            // 不指定topic 全部返回
+            if (StringUtils.isBlank(topic)) {
+                return consumerGroups;
+            }
+            List<String> consumerGroupsByTopic = Lists.newArrayList();
+            for (String groupId : consumerGroups) {
+                kafka.admin.AdminClient.ConsumerGroupSummary groupSummary = adminClient.describeConsumerGroup(groupId, 5000L);
+                // 消费者组不存在的情况
+                if (Objects.isNull(groupSummary) || "Dead".equals(groupSummary.state())) {
+                    continue;
+                }
+                Map<TopicPartition, Object> offsets = JavaConversions.mapAsJavaMap(adminClient.listGroupOffsets(groupId));
+                for (TopicPartition topicPartition : offsets.keySet()) {
+                    if (topic.equals(topicPartition.topic())) {
+                        consumerGroupsByTopic.add(groupId);
+                        break;
+                    }
+                }
+            }
+            return consumerGroupsByTopic;
+        } catch (Exception e){
+            log.error("listConsumerGroup error:{}", e.getMessage(), e);
+        } finally {
+            if (Objects.nonNull(adminClient)) {
+                adminClient.close();
+            }
+            destroyProperty();
+        }
+        return Lists.newArrayList();
+    }
+
+    /**
+     * 获取 kafka 消费者组详细信息
+     *
+     * @param brokerUrls     kafka broker 地址信息
+     * @param groupId        消费者组
+     * @param srcTopic       kafka 主题
+     * @param kerberosConfig kerberos 配置信息哦
+     * @return 消费者组详细信息
+     */
+    public static List<KafkaConsumerDTO> getGroupInfoByGroupId(String brokerUrls, String groupId, String srcTopic, Map<String, Object> kerberosConfig) {
+        List<KafkaConsumerDTO> result = Lists.newArrayList();
+        Properties prop = initProperties(brokerUrls, kerberosConfig);
+        // 获取kafka client
+        kafka.admin.AdminClient adminClient = kafka.admin.AdminClient.create(prop);
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(prop)){
+
+            if (StringUtils.isNotBlank(groupId)) {
+                kafka.admin.AdminClient.ConsumerGroupSummary groupSummary = adminClient.describeConsumerGroup(groupId, 5000L);
+                // 消费者组不存在的情况
+                if (Objects.isNull(groupSummary) || "Dead".equals(groupSummary.state())) {
+                    return result;
+                }
+            }else {
+                // groupId 为空的时候获取所有的分区
+                List<PartitionInfo> allPartitions = consumer.partitionsFor(srcTopic);
+                for (PartitionInfo partitionInfo : allPartitions) {
+                    TopicPartition topicPartition = new TopicPartition(partitionInfo.topic(), partitionInfo.partition());
+                    // 指定当前分区
+                    consumer.assign(Lists.newArrayList(topicPartition));
+                    consumer.seekToEnd(Lists.newArrayList(topicPartition));
+                    long logEndOffset = consumer.position(topicPartition);
+                    String brokerHost = Objects.isNull(partitionInfo.leader()) ? null : partitionInfo.leader().host();
+                    // 组装kafka consumer 信息
+                    KafkaConsumerDTO kafkaConsumerDTO = KafkaConsumerDTO.builder()
+                            .groupId(groupId)
+                            .topic(partitionInfo.topic())
+                            .partition(partitionInfo.partition())
+                            .logEndOffset(logEndOffset)
+                            .brokerHost(brokerHost)
+                            .build();
+                    result.add(kafkaConsumerDTO);
+                }
+                return result;
+            }
+
+            Map<TopicPartition, Object> offsets = JavaConversions.mapAsJavaMap(adminClient.listGroupOffsets(groupId));
+            for (TopicPartition topicPartition : offsets.keySet()) {
+                String topic = topicPartition.topic();
+                // 过滤指定topic 下的 partition
+                if (StringUtils.isNotBlank(srcTopic) && !srcTopic.equals(topic)) {
+                    continue;
+                }
+                int partition = topicPartition.partition();
+                // 当前消费位置
+                Long currentOffset = (Long) offsets.get(topicPartition);
+                List<TopicPartition> singleTopicPartition = Lists.newArrayList(topicPartition);
+                // 指定当前分区
+                consumer.assign(singleTopicPartition);
+                consumer.seekToEnd(singleTopicPartition);
+                long logEndOffset = consumer.position(topicPartition);
+
+                List<PartitionInfo> partitions = consumer.partitionsFor(topic);
+
+                // 组装kafka consumer 信息
+                KafkaConsumerDTO kafkaConsumerDTO = KafkaConsumerDTO.builder()
+                        .groupId(groupId)
+                        .topic(topic)
+                        .partition(partition)
+                        .currentOffset(currentOffset)
+                        .logEndOffset(logEndOffset)
+                        .lag(logEndOffset - currentOffset)
+                        .build();
+
+                // 查询当前分区 leader 所在机器的host
+                for (PartitionInfo partitionInfo : partitions) {
+                    if (partition == partitionInfo.partition() && Objects.nonNull(partitionInfo.leader())) {
+                        kafkaConsumerDTO.setBrokerHost(partitionInfo.leader().host());
+                        break;
+                    }
+                }
+                result.add(kafkaConsumerDTO);
+            }
+        } catch (Exception e) {
+            log.error("getGroupInfoByGroupId error:{}", e.getMessage(), e);
+        } finally {
+            if (Objects.nonNull(adminClient)) {
+                adminClient.close();
+            }
             destroyProperty();
         }
         return result;

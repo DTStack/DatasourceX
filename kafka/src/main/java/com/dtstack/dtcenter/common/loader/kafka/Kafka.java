@@ -2,11 +2,13 @@ package com.dtstack.dtcenter.common.loader.kafka;
 
 import com.dtstack.dtcenter.common.loader.kafka.util.KafkaUtil;
 import com.dtstack.dtcenter.loader.client.IKafka;
+import com.dtstack.dtcenter.loader.dto.KafkaConsumerDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaTopicDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.KafkaSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -110,5 +112,49 @@ public class Kafka<T> implements IKafka<T> {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
         String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
         return KafkaUtil.consumeData(brokerUrl, topic, collectNum, offsetReset, timestampOffset, maxTimeWait, kafkaSourceDTO.getKerberosConfig());
+    }
+
+    @Override
+    public List<String> listConsumerGroup(ISourceDTO source) {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
+        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
+        return KafkaUtil.listConsumerGroup(brokerUrl, null, kafkaSourceDTO.getKerberosConfig());
+    }
+
+    @Override
+    public List<String> listConsumerGroupByTopic(ISourceDTO source, String topic) {
+        if (StringUtils.isBlank(topic)) {
+            throw new DtLoaderException("topic cannot be empty...");
+        }
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
+        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
+        return KafkaUtil.listConsumerGroup(brokerUrl, topic, kafkaSourceDTO.getKerberosConfig());
+    }
+
+    @Override
+    public List<KafkaConsumerDTO> getGroupInfoByGroupId(ISourceDTO source, String groupId) {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
+        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
+        return KafkaUtil.getGroupInfoByGroupId(brokerUrl, groupId, null, kafkaSourceDTO.getKerberosConfig());
+    }
+
+    @Override
+    public List<KafkaConsumerDTO> getGroupInfoByTopic(ISourceDTO source, String topic) {
+        if (StringUtils.isBlank(topic)) {
+            throw new DtLoaderException("topic cannot be empty...");
+        }
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
+        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
+        return KafkaUtil.getGroupInfoByGroupId(brokerUrl, null, topic, kafkaSourceDTO.getKerberosConfig());
+    }
+
+    @Override
+    public List<KafkaConsumerDTO> getGroupInfoByGroupIdAndTopic(ISourceDTO source, String groupId, String topic) {
+        if (StringUtils.isBlank(topic)) {
+            throw new DtLoaderException("topic cannot be empty...");
+        }
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
+        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
+        return KafkaUtil.getGroupInfoByGroupId(brokerUrl, groupId, topic, kafkaSourceDTO.getKerberosConfig());
     }
 }
