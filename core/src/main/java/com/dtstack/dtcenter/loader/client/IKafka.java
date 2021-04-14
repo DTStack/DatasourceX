@@ -144,7 +144,16 @@ public interface IKafka<T> {
     List<KafkaConsumerDTO> getGroupInfoByGroupId(ISourceDTO source, String groupId);
 
     /**
-     * 获取 kafka 指定topic下消费者组详细信息
+     * 获取 kafka 指定topic 下消费者组详细信息
+     *
+     * @param source 数据源信息
+     * @param topic  kafka主题
+     * @return 消费者组详细信息
+     */
+    List<KafkaConsumerDTO> getGroupInfoByTopic(ISourceDTO source, String topic);
+
+    /**
+     * 获取 kafka 指定topic下指定消费者组详细信息
      *
      * @param source  数据源信息
      * @param groupId 消费者组

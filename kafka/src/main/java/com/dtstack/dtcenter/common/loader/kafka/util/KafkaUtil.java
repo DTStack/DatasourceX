@@ -669,11 +669,36 @@ public class KafkaUtil {
         // 获取kafka client
         kafka.admin.AdminClient adminClient = kafka.admin.AdminClient.create(prop);
         try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(prop)){
-            kafka.admin.AdminClient.ConsumerGroupSummary groupSummary = adminClient.describeConsumerGroup(groupId, 5000L);
-            // 消费者组不存在的情况
-            if (Objects.isNull(groupSummary) || "Dead".equals(groupSummary.state())) {
+
+            if (StringUtils.isNotBlank(groupId)) {
+                kafka.admin.AdminClient.ConsumerGroupSummary groupSummary = adminClient.describeConsumerGroup(groupId, 5000L);
+                // 消费者组不存在的情况
+                if (Objects.isNull(groupSummary) || "Dead".equals(groupSummary.state())) {
+                    return result;
+                }
+            }else {
+                // groupId 为空的时候获取所有的分区
+                List<PartitionInfo> allPartitions = consumer.partitionsFor(srcTopic);
+                for (PartitionInfo partitionInfo : allPartitions) {
+                    TopicPartition topicPartition = new TopicPartition(partitionInfo.topic(), partitionInfo.partition());
+                    // 指定当前分区
+                    consumer.assign(Lists.newArrayList(topicPartition));
+                    consumer.seekToEnd(Lists.newArrayList(topicPartition));
+                    long logEndOffset = consumer.position(topicPartition);
+                    String brokerHost = Objects.isNull(partitionInfo.leader()) ? null : partitionInfo.leader().host();
+                    // 组装kafka consumer 信息
+                    KafkaConsumerDTO kafkaConsumerDTO = KafkaConsumerDTO.builder()
+                            .groupId(groupId)
+                            .topic(partitionInfo.topic())
+                            .partition(partitionInfo.partition())
+                            .logEndOffset(logEndOffset)
+                            .brokerHost(brokerHost)
+                            .build();
+                    result.add(kafkaConsumerDTO);
+                }
                 return result;
             }
+
             Map<TopicPartition, Object> offsets = JavaConversions.mapAsJavaMap(adminClient.listGroupOffsets(groupId));
             for (TopicPartition topicPartition : offsets.keySet()) {
                 String topic = topicPartition.topic();

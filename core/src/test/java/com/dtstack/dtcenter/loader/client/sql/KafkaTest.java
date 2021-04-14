@@ -149,6 +149,13 @@ public class KafkaTest {
     }
 
     @Test
+    public void getGroupInfoByTopic() {
+        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA.getVal());
+        List<KafkaConsumerDTO> info = client.getGroupInfoByTopic(source, "loader_test");
+        Assert.assertTrue(CollectionUtils.isNotEmpty(info));
+    }
+
+    @Test
     public void getGroupInfoByGroupIdAndTopic() {
         IKafka client = ClientCache.getKafka(DataSourceType.KAFKA.getVal());
         List<KafkaConsumerDTO> info = client.getGroupInfoByGroupIdAndTopic(source, "test_loader222", "loader_test");

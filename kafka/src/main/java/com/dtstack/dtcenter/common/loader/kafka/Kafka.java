@@ -139,6 +139,16 @@ public class Kafka<T> implements IKafka<T> {
     }
 
     @Override
+    public List<KafkaConsumerDTO> getGroupInfoByTopic(ISourceDTO source, String topic) {
+        if (StringUtils.isBlank(topic)) {
+            throw new DtLoaderException("topic cannot be empty...");
+        }
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
+        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
+        return KafkaUtil.getGroupInfoByGroupId(brokerUrl, null, topic, kafkaSourceDTO.getKerberosConfig());
+    }
+
+    @Override
     public List<KafkaConsumerDTO> getGroupInfoByGroupIdAndTopic(ISourceDTO source, String groupId, String topic) {
         if (StringUtils.isBlank(topic)) {
             throw new DtLoaderException("topic cannot be empty...");
