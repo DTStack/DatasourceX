@@ -93,6 +93,33 @@ public class SQLServerTest {
         Assert.assertTrue(isConnected);
     }
 
+    @Test
+    public void getTableListBySchema_001() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        List<String> tableList = client.getTableListBySchema(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+    }
+
+    @Test
+    public void getTableListBySchema_002() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("dev").build();
+        List<String> tableList = client.getTableListBySchema(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+    }
+
+    @Test
+    public void getTableListBySchema_003() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("dev").tableNamePattern("d").limit(1).build();
+        List<String> tableList = client.getTableListBySchema(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+    }
+
+    @Test
+    public void getTableListBySchema_004() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableNamePattern("d").limit(1).build();
+        List<String> tableList = client.getTableListBySchema(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+    }
     /**
      * 预编译查询
      */
