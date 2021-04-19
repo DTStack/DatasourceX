@@ -12,6 +12,7 @@ import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SqlserverSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -48,6 +49,11 @@ public class SqlServerClient extends AbsRdbmsClient {
             "FROM sys.tables LEFT JOIN sys.schemas ON sys.tables.schema_id=sys.schemas.schema_id \n" +
             "WHERE sys.tables.type='U' AND sys.tables.is_tracked_by_cdc =1\n" +
             "AND sys.schemas.name = '%s'";
+
+    private static final String SEARCH_LIMIT_SQL = "select top %s table_name from information_schema.tables where 1=1";
+    private static final String SEARCH_SQL = "select table_name from information_schema.tables where 1=1";
+    private static final String SCHEMA_SQL = " and table_schema='%s'";
+    private static final String TABLE_NAME_SQL = " and charIndex('%s',table_name) > 0";
 
     private static final String SCHEMAS_QUERY = "select distinct(sys.schemas.name) as schema_name from sys.objects,sys.schemas where sys.objects.type='U' and sys.objects.schema_id=sys.schemas.schema_id";
     private static String SQL_SERVER_COLUMN_NAME = "column_name";
@@ -150,7 +156,21 @@ public class SqlServerClient extends AbsRdbmsClient {
 
     @Override
     protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
-        return String.format(TABLE_BY_SCHEMA, queryDTO.getSchema());
+        StringBuilder constr = new StringBuilder();
+        if(queryDTO.getLimit() != null) {
+            constr.append(String.format(SEARCH_LIMIT_SQL, queryDTO.getLimit()));
+        }else {
+            constr.append(SEARCH_SQL);
+        }
+        //判断是否需要schema
+        if(StringUtils.isNotBlank(queryDTO.getSchema())){
+            constr.append(String.format(SCHEMA_SQL, queryDTO.getSchema()));
+        }
+        // 根据name 模糊查询
+        if(StringUtils.isNotBlank(queryDTO.getTableNamePattern())){
+            constr.append(String.format(TABLE_NAME_SQL, queryDTO.getTableNamePattern()));
+        }
+        return constr.toString();
     }
 
     @Override
