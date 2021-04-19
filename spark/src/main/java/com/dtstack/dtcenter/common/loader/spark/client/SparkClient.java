@@ -362,6 +362,10 @@ public class SparkClient extends AbsRdbmsClient {
         if (CollectionUtils.isNotEmpty(columns) && !columns.contains("*")) {
             // 保证查询字段的顺序!
             for (String column : columns) {
+                if (column.equalsIgnoreCase("null")) {
+                    needIndex.add(Integer.MAX_VALUE);
+                    continue;
+                }
                 // 判断查询字段是否存在
                 boolean check = false;
                 for (int j = 0; j < columnMetaData.size(); j++) {
