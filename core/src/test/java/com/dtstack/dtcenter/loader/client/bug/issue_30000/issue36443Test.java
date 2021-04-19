@@ -90,7 +90,6 @@ public class issue36443Test {
         IDownloader textDownload = CLIENT.getDownloader(HIVE_SOURCE_DTO, SqlQueryDTO.builder().tableName("loader_test_36443_text").columns(QUERY_COLUMNS).build());
         while (!textDownload.reachedEnd()) {
             List<String> row = (List<String>) textDownload.readNext();
-            System.out.println("******" + row);
             Assert.assertEquals(4, row.size());
             Assert.assertNull(row.get(2));
             Assert.assertNull(row.get(3));
@@ -102,7 +101,6 @@ public class issue36443Test {
         IDownloader parquetDownload = CLIENT.getDownloader(HIVE_SOURCE_DTO, SqlQueryDTO.builder().tableName("loader_test_36443_parquet").columns(QUERY_COLUMNS).build());
         while (!parquetDownload.reachedEnd()) {
             List<String> row = (List<String>) parquetDownload.readNext();
-            System.out.println("******" + row);
             Assert.assertEquals(4, row.size());
             Assert.assertNull(row.get(2));
             Assert.assertNull(row.get(3));
@@ -114,7 +112,6 @@ public class issue36443Test {
         IDownloader orcDownload = CLIENT.getDownloader(HIVE_SOURCE_DTO, SqlQueryDTO.builder().tableName("loader_test_36443_orc").columns(QUERY_COLUMNS).build());
         while (!orcDownload.reachedEnd()) {
             List<String> row = (List<String>) orcDownload.readNext();
-            System.out.println("******" + row);
             Assert.assertEquals(4, row.size());
             Assert.assertNull(row.get(2));
             Assert.assertNull(row.get(3));

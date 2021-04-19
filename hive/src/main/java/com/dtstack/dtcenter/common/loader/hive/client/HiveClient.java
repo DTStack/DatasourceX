@@ -323,7 +323,7 @@ public class HiveClient extends AbsRdbmsClient {
         if (CollectionUtils.isNotEmpty(columns) && !columns.contains("*")) {
             // 保证查询字段的顺序!
             for (String column : columns) {
-                if (column.equalsIgnoreCase(NULL_COLUMN)) {
+                if (NULL_COLUMN.equalsIgnoreCase(column)) {
                     needIndex.add(Integer.MAX_VALUE);
                     continue;
                 }
