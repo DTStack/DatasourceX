@@ -26,7 +26,7 @@ import java.util.List;
  * date：Created in 下午3:02 2021/4/19
  * company: www.dtstack.com
  */
-public class issue36443 {
+public class issue36443Test {
 
     /**
      * 构造hive客户端

@@ -73,6 +73,9 @@ public class SparkClient extends AbsRdbmsClient {
     // 模糊查询database
     private static final String SHOW_DB_LIKE = "show databases like '%s'";
 
+    // null 名称的字段名
+    private static final String NULL_COLUMN = "null";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new SparkConnFactory();
@@ -362,7 +365,7 @@ public class SparkClient extends AbsRdbmsClient {
         if (CollectionUtils.isNotEmpty(columns) && !columns.contains("*")) {
             // 保证查询字段的顺序!
             for (String column : columns) {
-                if (column.equalsIgnoreCase("null")) {
+                if (column.equalsIgnoreCase(NULL_COLUMN)) {
                     needIndex.add(Integer.MAX_VALUE);
                     continue;
                 }
