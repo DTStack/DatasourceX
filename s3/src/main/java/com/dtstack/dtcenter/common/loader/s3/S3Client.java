@@ -28,6 +28,11 @@ public class S3Client<T> extends AbsNoSqlClient<T> {
     }
 
     @Override
+    public Connection getCon(ISourceDTO source, String taskParams) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
     public Boolean testCon(ISourceDTO source) {
         AmazonS3Client amazonS3Client = null;
         try {

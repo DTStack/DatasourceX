@@ -18,6 +18,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +83,23 @@ public class HiveTest {
     public void getCon() throws Exception {
         Connection con = client.getCon(source);
         Assert.assertNotNull(con);
+        con.close();
+    }
+
+    /**
+     * 获取连接测试
+     */
+    @Test
+    public void getConWithTaskParams() throws Exception {
+        client.executeQuery(source, SqlQueryDTO.builder().sql("drop table if exists loader_nonstrict").build());
+        client.executeQuery(source, SqlQueryDTO.builder().sql("create table if not exists loader_nonstrict (id int) partitioned by(name string)").build());
+        Connection con = client.getCon(source, "hive.exec.dynamic.partition.mode=nonstrict\n" +
+                "loader.age=2\n" +
+                "loader.null=");
+        Statement statement = con.createStatement();
+        statement.execute("insert overwrite table loader_nonstrict partition(name) select id ,name from loader_test_1");
+        Assert.assertNotNull(con);
+        statement.close();
         con.close();
     }
 

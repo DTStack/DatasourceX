@@ -28,6 +28,11 @@ public abstract class AbsNoSqlClient<T> implements IClient<T> {
     }
 
     @Override
+    public Connection getCon(ISourceDTO source, String taskParams) {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
+
+    @Override
     public List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }

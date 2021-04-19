@@ -409,6 +409,11 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
     }
 
     @Override
+    public Connection getCon(ISourceDTO source, String taskParams) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
     public List<String> getTableListBySchema(ISourceDTO iSource, SqlQueryDTO sqlQueryDTO) {
         throw new DtLoaderException("Not Support");
     }

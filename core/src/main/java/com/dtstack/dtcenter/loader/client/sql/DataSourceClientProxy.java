@@ -35,6 +35,12 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     }
 
     @Override
+    public Connection getCon(ISourceDTO source, String taskParams) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getCon(source, taskParams),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
     public Boolean testCon(ISourceDTO source) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.testCon(source),
                 targetClient.getClass().getClassLoader());
