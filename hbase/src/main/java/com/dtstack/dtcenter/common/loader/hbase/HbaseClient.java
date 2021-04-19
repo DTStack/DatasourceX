@@ -288,6 +288,9 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
             rs = table.getScanner(scan);
             for (Result r : rs) {
                 results.add(r);
+                if (results.size() >= queryDTO.getPreviewNum()) {
+                    break;
+                }
             }
         } catch (Exception e){
             throw new DtLoaderException(String.format("Data preview failed,%s", e.getMessage()), e);
