@@ -75,10 +75,15 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      */
     @Override
     public Connection getCon(ISourceDTO iSource) {
+        return getCon(iSource, null);
+    }
+
+    @Override
+    public Connection getCon(ISourceDTO iSource, String taskParams) {
         log.info("-------getting connection....-----");
         if (!CacheConnectionHelper.isStart()) {
             try {
-                return connFactory.getConn(iSource);
+                return connFactory.getConn(iSource, taskParams);
             } catch (Exception e){
                 throw new DtLoaderException(e.getMessage(), e);
             }
@@ -86,7 +91,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
         return CacheConnectionHelper.getConnection(getSourceType().getVal(), con -> {
             try {
-                return connFactory.getConn(iSource);
+                return connFactory.getConn(iSource, taskParams);
             } catch (Exception e) {
                 throw new DtLoaderException(e.getMessage(), e);
             }

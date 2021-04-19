@@ -69,16 +69,28 @@ public class ConnFactory {
     /**
      * 获取连接，对抛出异常进行统一处理
      *
-     * @param source
+     * @param iSource
      * @return
      * @throws Exception
      */
-    public Connection getConn(ISourceDTO source) throws Exception {
-        if (source == null) {
+    public Connection getConn(ISourceDTO iSource) throws Exception {
+        return getConn(iSource, StringUtils.EMPTY);
+    }
+
+    /**
+     * 获取连接，对抛出异常进行统一处理
+     *
+     * @param iSource
+     * @param taskParams
+     * @return
+     * @throws Exception
+     */
+    public Connection getConn(ISourceDTO iSource, String taskParams) throws Exception {
+        if (iSource == null) {
             throw new DtLoaderException(" source is null");
         }
         try {
-            RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+            RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
             boolean isStart = rdbmsSourceDTO.getPoolConfig() != null;
             return isStart && MapUtils.isEmpty(rdbmsSourceDTO.getKerberosConfig()) ?
                     getCpConn(rdbmsSourceDTO) : getSimpleConn(rdbmsSourceDTO);

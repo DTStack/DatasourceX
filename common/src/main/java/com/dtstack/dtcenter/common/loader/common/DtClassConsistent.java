@@ -16,6 +16,16 @@ public interface DtClassConsistent {
         public static final String USER_NAME = "userName";
 
         /**
+         * Driver Properties 用户信息
+         */
+        public static final String USER = "user";
+
+        /**
+         * Driver Properties 密码信息
+         */
+        public static final String PASSWORD = "password";
+
+        /**
          * 密码
          */
         public static final String PWD = "pwd";
