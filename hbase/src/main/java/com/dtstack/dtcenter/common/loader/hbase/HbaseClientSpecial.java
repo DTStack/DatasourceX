@@ -288,6 +288,9 @@ public class HbaseClientSpecial implements IHbase {
                     continue;
                 }
                 results.add(row);
+                if (results.size() >= previewNum) {
+                    break;
+                }
             }
             if (CollectionUtils.isEmpty(results)) {
                 return previewList;
