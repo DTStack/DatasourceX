@@ -20,7 +20,7 @@ import org.junit.Test;
  * date：Created in 4:52 下午 2021/2/8
  * company: www.dtstack.com
  */
-public class Bug1477 {
+public class Bug1477Test {
 
     /**
      * 构造hive客户端

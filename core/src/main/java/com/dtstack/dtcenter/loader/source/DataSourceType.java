@@ -55,6 +55,7 @@ public enum DataSourceType {
     ADS(15, 86, "AnalyticDB", "mysql5"),
     Kylin(23, 87, "Kylin", "kylin"),
     Presto(48, 88, "Presto", "presto"),
+    OceanBase(49, 89, "OceanBase", "oceanbase"),
 
     // NoSQL
     HBASE(8, 100, "HBase", "hbase"),
@@ -118,6 +119,7 @@ public enum DataSourceType {
         RDBM_S.add(Phoenix.val);
         RDBM_S.add(PHOENIX5.val);
         RDBM_S.add(IMPALA.val);
+        RDBM_S.add(OceanBase.val);
 
         KAFKA_S.add(KAFKA.val);
         KAFKA_S.add(KAFKA_09.val);

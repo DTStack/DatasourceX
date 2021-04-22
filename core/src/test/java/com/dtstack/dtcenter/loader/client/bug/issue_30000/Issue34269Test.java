@@ -26,7 +26,7 @@ import java.util.Map;
  * company: www.dtstack.com
  */
 @Ignore
-public class Issue34269 {
+public class Issue34269Test {
 
     private static HdfsSourceDTO source = HdfsSourceDTO.builder()
             .defaultFS("hdfs://172.16.101.23:8020")
@@ -41,7 +41,7 @@ public class Issue34269 {
         kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
         kerberosConfig.put("dfs.namenode.kerberos.principal", "hdfs/_HOST@DTSTACK.COM");
         source.setKerberosConfig(kerberosConfig);
-        String localKerberosPath = Issue34269.class.getResource("/cdp").getPath();
+        String localKerberosPath = Issue34269Test.class.getResource("/cdp").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HDFS.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
         HashMap<String, Object> yarnConf = Maps.newHashMap();

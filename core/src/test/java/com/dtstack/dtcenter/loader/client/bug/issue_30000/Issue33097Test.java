@@ -12,19 +12,19 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * bug描述：进行从hdfs下载hive表数据的时候，表存储格式parquet，如果表数据文件中有的字段不存在，会导致
- *        下载数据时发生数据越界异常
- * bug连接：<a>http://redmine.prod.dtstack.cn/issues/33045</>
+ * bug描述：进行从hdfs下载hive表数据的时候，如果表路径下第一个文件是_SUCCESS，会导致
+ *        获取该路径下所有文件出错，导致下载失败
+ * bug连接：<a>http://redmine.prod.dtstack.cn/issues/33097</>
  *
- * bug解决：读取parquet的适合，读取每一行的适合都要度获取该行的字段
+ * bug解决：修改递归获取hdfs指定文件夹下所有文件的方法逻辑
  *
  * @author ：wangchuan
- * date：Created in 3:13 下午 2020/12/7
+ * date：Created in 5:13 下午 2020/12/2
  * company: www.dtstack.com
  */
-public class Issue33045 {
+public class Issue33097Test {
 
-    private static final String localKerberosPath = Issue33097.class.getResource("/bug/issue_33045").getPath();
+    private static final String localKerberosPath = Issue33097Test.class.getResource("/bug/issue_33097").getPath();
 
     private static HiveSourceDTO hiveSourceDTO = HiveSourceDTO.builder()
             .url("jdbc:hive2://172.16.100.214:10000/default")
@@ -57,23 +57,23 @@ public class Issue33045 {
     @BeforeClass
     public static void setUp () throws Exception {
         System.setProperty("HADOOP_USER_NAME", "admin");
-        IHdfsFile hdfsClient = ClientCache.getHdfs(DataSourceType.HDFS.getVal());
-        hdfsClient.checkAndDelete(hdfsSourceDTO, "/tmp/bug_33045");
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists bug_33045").build();
+        IHdfsFile hdfsClient = ClientCache.getHdfs(DataSourceType.HDFS.getVal());
+        hdfsClient.checkAndDelete(hdfsSourceDTO, "/tmp/bug_33097");
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists bug_33097").build();
         client.executeSqlWithoutResultSet(hiveSourceDTO, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create external table bug_33045 (id int, name string) stored as parquet location '/tmp/bug_33045/'").build();
+        queryDTO = SqlQueryDTO.builder().sql("create external table bug_33097 (id int, name string) partitioned by (pt string) stored as parquet location '/tmp/bug_33097/'").build();
         client.executeSqlWithoutResultSet(hiveSourceDTO, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into bug_33045 values (1, 'wangchuan'), (2, 'wangchuan2'), (3, null)").build();
+        queryDTO = SqlQueryDTO.builder().sql("insert into bug_33097 partition (pt='2020_12_02') values (1, 'wangchuan') ").build();
         client.executeSqlWithoutResultSet(hiveSourceDTO, queryDTO);
-        // 上传z.parquet文件到hdfs
-        hdfsClient.uploadLocalFileToHdfs(hdfsSourceDTO, localKerberosPath + "/z.parquet", "/tmp/bug_33045/");
+        // 上传_SUCCESS文件到hdfs
+        hdfsClient.uploadLocalFileToHdfs(hdfsSourceDTO, localKerberosPath + "/_SUCCESS", "/tmp/bug_33097/");
     }
 
     @Test
     public void test_for_issue() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
-        IDownloader download = client.getDownloader(hiveSourceDTO, SqlQueryDTO.builder().tableName("bug_33045").build());
+        IDownloader download = client.getDownloader(hiveSourceDTO, SqlQueryDTO.builder().tableName("bug_33097").build());
         while (!download.reachedEnd()) {
             System.out.println("---------------------------------");
             System.out.println(download.readNext());
