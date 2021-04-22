@@ -38,7 +38,7 @@ public enum DataBaseType {
     Phoenix5("Phoenix5", "org.apache.phoenix.jdbc.PhoenixDriver"),
     KINGBASE8("kingbase8", "com.kingbase8.Driver"),
     Presto("presto", "com.facebook.presto.jdbc.PrestoDriver", "select 1111"),
-    OceanBase("oceanbase","com.alipay.oceanbase.jdbc.Driver","show tables");
+    OceanBase("oceanbase","com.alipay.oceanbase.jdbc.Driver","select 1111");
 
     private String typeName;
     private String driverClassName;
