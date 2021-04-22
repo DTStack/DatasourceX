@@ -98,8 +98,7 @@ public class OceanBaseClient<T> extends AbsRdbmsClient<T> {
 
     @Override
     public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
-        OceanBaseSourceDTO oceanBaseSourceDTO = (OceanBaseSourceDTO) source;
-        OceanBaseDownloader oceanBaseDownloader = new OceanBaseDownloader(getCon(source), queryDTO.getSql(), oceanBaseSourceDTO.getSchema());
+        OceanBaseDownloader oceanBaseDownloader = new OceanBaseDownloader(getCon(source), queryDTO.getSql());
         oceanBaseDownloader.configure();
         return oceanBaseDownloader;
     }

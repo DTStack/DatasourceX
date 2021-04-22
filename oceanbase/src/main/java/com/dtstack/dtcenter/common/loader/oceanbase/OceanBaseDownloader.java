@@ -35,7 +35,6 @@ public class OceanBaseDownloader implements IDownloader {
 
     private String sql;
 
-    private String schema;
 
     private Statement statement;
 
@@ -43,10 +42,9 @@ public class OceanBaseDownloader implements IDownloader {
 
     private int columnCount;
 
-    public OceanBaseDownloader(Connection connection, String sql, String schema) {
+    public OceanBaseDownloader(Connection connection, String sql) {
         this.connection = connection;
         this.sql = SqlFormatUtil.formatSql(sql);
-        this.schema = schema;
     }
 
     @Override
@@ -59,11 +57,6 @@ public class OceanBaseDownloader implements IDownloader {
         pageNum = 1;
         statement = connection.createStatement();
 
-        if (StringUtils.isNotEmpty(schema)) {
-            //选择schema
-            String useSchema = String.format("USE %s", schema);
-            statement.execute(useSchema);
-        }
         String countSQL = String.format("SELECT COUNT(*) FROM (%s) temp", sql);
         String showColumns = String.format("SELECT * FROM (%s) t limit 1", sql);
 
