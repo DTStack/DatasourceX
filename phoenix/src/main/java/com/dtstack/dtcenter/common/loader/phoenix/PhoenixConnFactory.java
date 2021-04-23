@@ -42,14 +42,14 @@ public class PhoenixConnFactory extends ConnFactory {
      * @throws Exception
      */
     @Override
-    public Connection getConn(ISourceDTO source) throws Exception {
+    public Connection getConn(ISourceDTO source, String taskParams) throws Exception {
         init();
         PhoenixSourceDTO phoenixSourceDTO = (PhoenixSourceDTO) source;
         Connection conn;
         Future<Connection> future = null;
         try {
             // Phoenix不支持直接设置连接超时，所以这里使用线程池的方式来控制数据库连接超时
-            Callable<Connection> call = () -> PhoenixConnFactory.super.getConn(phoenixSourceDTO);
+            Callable<Connection> call = () -> PhoenixConnFactory.super.getConn(phoenixSourceDTO, taskParams);
             future = executor.submit(call);
             // 如果在设定超时(以秒为单位)之内，还没得到 Connection 对象，则认为连接超时，不继续阻塞
             conn = future.get(CONN_TIMEOUT, TimeUnit.SECONDS);

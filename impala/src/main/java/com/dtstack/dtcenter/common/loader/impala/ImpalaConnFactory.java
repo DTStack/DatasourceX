@@ -25,13 +25,13 @@ public class ImpalaConnFactory extends ConnFactory {
     }
 
     @Override
-    public Connection getConn(ISourceDTO iSource) throws Exception {
+    public Connection getConn(ISourceDTO iSource, String taskParams) throws Exception {
         init();
         ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
         Connection connection = KerberosLoginUtil.loginWithUGI(impalaSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<Connection>) () -> {
                     try {
-                        return super.getConn(impalaSourceDTO);
+                        return super.getConn(impalaSourceDTO, taskParams);
                     } catch (Exception e) {
                         throw new DtLoaderException(e.getMessage(), e);
                     }
