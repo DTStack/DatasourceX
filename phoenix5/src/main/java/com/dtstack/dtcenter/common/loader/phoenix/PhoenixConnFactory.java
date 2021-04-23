@@ -50,7 +50,7 @@ public class PhoenixConnFactory extends ConnFactory {
      * @throws Exception
      */
     @Override
-    public Connection getConn(ISourceDTO source) throws Exception {
+    public Connection getConn(ISourceDTO source, String taskParams) throws Exception {
         init();
         Phoenix5SourceDTO phoenix5SourceDTO = (Phoenix5SourceDTO) source;
         Connection conn;

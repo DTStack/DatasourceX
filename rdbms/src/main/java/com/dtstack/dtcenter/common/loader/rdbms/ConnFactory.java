@@ -73,6 +73,7 @@ public class ConnFactory {
      * @return
      * @throws Exception
      */
+    @Deprecated
     public Connection getConn(ISourceDTO iSource) throws Exception {
         return getConn(iSource, StringUtils.EMPTY);
     }
@@ -159,7 +160,7 @@ public class ConnFactory {
         Connection conn = null;
         Statement statement = null;
         try {
-            conn = getConn(source);
+            conn = getConn(source, StringUtils.EMPTY);
             if (StringUtils.isBlank(testSql)) {
                 conn.isValid(5);
             } else {

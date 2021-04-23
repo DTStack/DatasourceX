@@ -64,7 +64,7 @@ public abstract class AbsTableClient implements ITable {
         log.info("-------getting connection....-----");
         if (!CacheConnectionHelper.isStart()) {
             try {
-                return connFactory.getConn(sourceDTO);
+                return connFactory.getConn(sourceDTO, StringUtils.EMPTY);
             } catch (DtLoaderException e) {
                 // 定义过的dtLoaderException直接抛出
                 throw e;
@@ -75,7 +75,7 @@ public abstract class AbsTableClient implements ITable {
 
         return CacheConnectionHelper.getConnection(dataSourceType.getVal(), con -> {
             try {
-                return connFactory.getConn(sourceDTO);
+                return connFactory.getConn(sourceDTO, StringUtils.EMPTY);
             } catch (DtLoaderException e) {
                 // 定义过的dtLoaderException直接抛出
                 throw e;
