@@ -49,7 +49,7 @@ public class ImpalaKerberosTableTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan_partitions_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_partitions_test (id int, name string) partitioned by (pt1 string,pt2 string, pt3 string)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_partitions_test (id int comment 'ID', name string comment '姓名_name') partitioned by (pt1 string,pt2 string, pt3 string)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into  wangchuan_partitions_test partition (pt1 = 'a1', pt2 = 'b1', pt3 = 'c1') values(1, 'wangcahun')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -59,7 +59,7 @@ public class ImpalaKerberosTableTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan_test2").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_test2 (id int, name string)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_test2 (id int comment 'ID', name string comment '姓名_name')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan_test3").build();
         client.executeSqlWithoutResultSet(source, queryDTO);

@@ -103,7 +103,7 @@ public class DownloadTest {
         // 创建 textfile 存储格式的表
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_downloader_text").build();
         HIVE_CLIENT.executeSqlWithoutResultSet(HIVE_SOURCE_DTO, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_downloader_text (id int, name string) partitioned by (pt string) row format delimited fields terminated by ','  stored as textfile ").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_downloader_text (id int comment 'ID', name string comment '姓名_name') partitioned by (pt string) row format delimited fields terminated by ','  stored as textfile ").build();
         HIVE_CLIENT.executeSqlWithoutResultSet(HIVE_SOURCE_DTO, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_downloader_text partition (pt = '2020') values (1, 'loader_test_1')").build();
         HIVE_CLIENT.executeSqlWithoutResultSet(HIVE_SOURCE_DTO, queryDTO);
@@ -111,7 +111,7 @@ public class DownloadTest {
         // 创建 parquet 存储格式的表
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_downloader_parquet").build();
         HIVE_CLIENT.executeSqlWithoutResultSet(HIVE_SOURCE_DTO, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_downloader_parquet (id int, name string) partitioned by (pt string) stored as parquet").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_downloader_parquet (id int comment 'ID', name string comment '姓名_name') partitioned by (pt string) stored as parquet").build();
         HIVE_CLIENT.executeSqlWithoutResultSet(HIVE_SOURCE_DTO, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_downloader_parquet partition (pt = '2020') values (1, 'loader_test_1')").build();
         HIVE_CLIENT.executeSqlWithoutResultSet(HIVE_SOURCE_DTO, queryDTO);
@@ -119,7 +119,7 @@ public class DownloadTest {
         // 创建 orc 存储格式的表
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_downloader_orc").build();
         HIVE_CLIENT.executeSqlWithoutResultSet(HIVE_SOURCE_DTO, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_downloader_orc (id int, name string) partitioned by (pt string) stored as orc").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_downloader_orc (id int comment 'ID', name string comment '姓名_name') partitioned by (pt string) stored as orc").build();
         HIVE_CLIENT.executeSqlWithoutResultSet(HIVE_SOURCE_DTO, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_downloader_orc partition (pt = '2020') values (1, 'loader_test_1')").build();
         HIVE_CLIENT.executeSqlWithoutResultSet(HIVE_SOURCE_DTO, queryDTO);

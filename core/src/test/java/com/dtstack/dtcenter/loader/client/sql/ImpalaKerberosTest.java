@@ -9,6 +9,8 @@ import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -46,7 +48,7 @@ public class ImpalaKerberosTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int, name string) comment 'table comment'").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int comment 'ID', name string comment '姓名_name') comment 'table comment'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -96,7 +98,8 @@ public class ImpalaKerberosTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
-        System.out.println(columnClassInfo.size());
+        Assert.assertEquals("java.lang.Integer", columnClassInfo.get(0));
+        Assert.assertEquals("java.lang.String", columnClassInfo.get(1));
     }
 
     @Test
@@ -104,7 +107,9 @@ public class ImpalaKerberosTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        Assert.assertEquals("int", columnMetaData.get(0).getType());
+        Assert.assertEquals("string", columnMetaData.get(1).getType());
+
     }
 
     @Test
@@ -112,7 +117,7 @@ public class ImpalaKerberosTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String tableMetaComment = client.getTableMetaComment(source, queryDTO);
-        System.out.println(tableMetaComment);
+        Assert.assertTrue(StringUtils.isNotEmpty(tableMetaComment));
     }
 
     @Test
@@ -126,7 +131,8 @@ public class ImpalaKerberosTest {
     @Test
     public void getAllDatabases() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        System.out.println(client.getAllDatabases(source, SqlQueryDTO.builder().build()));
+        List<String> list = client.getAllDatabases(source, SqlQueryDTO.builder().build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
     }
 
     @Test
@@ -138,7 +144,8 @@ public class ImpalaKerberosTest {
     @Test
     public void getCreateSql() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        System.out.println(client.getCreateTableSql(source, SqlQueryDTO.builder().tableName("nanqi").build()));
+        String createSql = client.getCreateTableSql(source, SqlQueryDTO.builder().tableName("nanqi").build());
+        Assert.assertNotNull(createSql);
     }
 
 

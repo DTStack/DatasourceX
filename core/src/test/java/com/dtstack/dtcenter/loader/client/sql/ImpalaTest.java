@@ -40,21 +40,21 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test2").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test2(id int, name string)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test2(id int comment 'ID', name string comment '姓名_name') COMMENT '中文_table_comment'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test3").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test3(id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test3(id int comment 'ID', name string comment '姓名_name') COMMENT 'table comment' row format delimited fields terminated by ','").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test2 values(1, 'loader_test')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists aa_aa.shop_info").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table aa_aa.shop_info(id int, name string)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table aa_aa.shop_info(id int comment 'ID', name string comment '姓名_name')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_download").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_download(id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_download(id int comment 'ID', name string comment '姓名_name') COMMENT 'table comment' row format delimited fields terminated by ','").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         List<String> data = Lists.newArrayList();
         for (int i = 0; i < 501; i++) {
@@ -193,7 +193,7 @@ public class ImpalaTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test2").build();
         String tableMetaComment = client.getTableMetaComment(source, queryDTO);
-        Assert.assertTrue(StringUtils.isEmpty(tableMetaComment));
+        Assert.assertTrue(StringUtils.isNotEmpty(tableMetaComment));
     }
 
     @Test
