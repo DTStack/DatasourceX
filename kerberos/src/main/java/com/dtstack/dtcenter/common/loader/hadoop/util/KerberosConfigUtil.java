@@ -78,7 +78,14 @@ public class KerberosConfigUtil {
         } catch (IOException e) {
             throw new DtLoaderException(String.format("Invalid krb5 file : %s", e.getMessage()), e);
         }
-        return StringUtils.replace(canonicalPath, oppositeLocation, "");
+        // 文件相对于解压位置的相对路径，传入的解压本地路径可能不是以 "/" 结尾，这样替换后的相对路径就会以 "/" 开头，需要处理
+        String relativePath = StringUtils.replace(canonicalPath, oppositeLocation, "");
+        String fileRelativePath = relativePath.startsWith("/") ? relativePath.substring(1) : relativePath;
+        // keytab、krb5文件不可以在放置目录下
+        if (fileRelativePath.contains("/")) {
+            throw new DtLoaderException(String.format("file ending with '%s' in the zip package cannot be placed in the directory", fileNameEnd));
+        }
+        return fileRelativePath;
     }
 
     /**

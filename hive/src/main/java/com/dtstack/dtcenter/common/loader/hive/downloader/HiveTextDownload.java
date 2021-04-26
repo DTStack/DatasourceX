@@ -250,7 +250,7 @@ public class HiveTextDownload implements IDownloader {
             List<String> rowNew = Lists.newArrayList();
             for (Integer index : needIndex) {
                 if (index > row.size() -1) {
-                    rowNew.add("");
+                    rowNew.add(null);
                 } else {
                     rowNew.add(row.get(index));
                 }

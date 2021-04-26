@@ -73,6 +73,9 @@ public class HiveClient extends AbsRdbmsClient {
     // 模糊查询database
     private static final String SHOW_DB_LIKE = "show databases like '%s'";
 
+    // null 名称的字段名
+    private static final String NULL_COLUMN = "null";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new HiveConnFactory();
@@ -329,6 +332,10 @@ public class HiveClient extends AbsRdbmsClient {
         if (CollectionUtils.isNotEmpty(columns) && !columns.contains("*")) {
             // 保证查询字段的顺序!
             for (String column : columns) {
+                if (NULL_COLUMN.equalsIgnoreCase(column)) {
+                    needIndex.add(Integer.MAX_VALUE);
+                    continue;
+                }
                 // 判断查询字段是否存在
                 boolean check = false;
                 for (int j = 0; j < columnMetaData.size(); j++) {
