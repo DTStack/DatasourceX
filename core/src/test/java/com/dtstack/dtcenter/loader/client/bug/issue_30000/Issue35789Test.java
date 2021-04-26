@@ -23,7 +23,7 @@ import java.util.Objects;
  * date：Created in 下午5:18 2021/3/24
  * company: www.dtstack.com
  */
-public class Issue35789 {
+public class Issue35789Test {
 
     private static final ImpalaSourceDTO IMPALA_SOURCE_DTO = ImpalaSourceDTO.builder()
             .url("jdbc:impala://172.16.101.17:21050/default")

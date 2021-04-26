@@ -21,7 +21,7 @@ import java.util.Map;
  * company: www.dtstack.com
  */
 @Ignore
-public class Issue34667 {
+public class Issue34667Test {
 
     private static final HiveSourceDTO source = HiveSourceDTO.builder()
             .url("jdbc:hive2://krbt3:10000/default;principal=hdfs/krbt3@DTSTACK.COM")
@@ -33,7 +33,7 @@ public class Issue34667 {
      */
     @Test
     public void test_for_issue () throws Exception{
-        String localKerberosPath = Issue34667.class.getResource("/bug/issue_34667/").getPath();
+        String localKerberosPath = Issue34667Test.class.getResource("/bug/issue_34667/").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HIVE.getVal());
         Map<String, Object> kerberosMap = kerberos.parseKerberosFromUpload(localKerberosPath + "kerberos_dir.zip", localKerberosPath);
         kerberos.prepareKerberosForConnect(kerberosMap, localKerberosPath);
@@ -47,7 +47,7 @@ public class Issue34667 {
      */
     @Test
     public void test_for_issue2 () throws Exception{
-        String localKerberosPath = Issue34667.class.getResource("/bug/issue_34667/").getPath();
+        String localKerberosPath = Issue34667Test.class.getResource("/bug/issue_34667/").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HIVE.getVal());
         Map<String, Object> kerberosMap = kerberos.parseKerberosFromUpload(localKerberosPath + "kerberos_nodir.zip", localKerberosPath);
         kerberos.prepareKerberosForConnect(kerberosMap, localKerberosPath);
@@ -61,7 +61,7 @@ public class Issue34667 {
      */
     @Test
     public void test_for_issue3 () throws Exception{
-        String localKerberosPath = Issue34667.class.getResource("/bug/issue_34667/").getPath();
+        String localKerberosPath = Issue34667Test.class.getResource("/bug/issue_34667/").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HIVE.getVal());
         Map<String, Object> kerberosMap = kerberos.parseKerberosFromUpload(localKerberosPath + "kerberos_dir.zip", localKerberosPath);
         kerberos.prepareKerberosForConnect(kerberosMap, localKerberosPath);

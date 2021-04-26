@@ -17,7 +17,7 @@ import java.util.List;
  * date：Created in 下午7:23 2021/3/2
  * company: www.dtstack.com
  */
-public class Issue35498 {
+public class Issue35498Test {
 
     private static HiveSourceDTO source = HiveSourceDTO.builder()
             .url("jdbc:hive2://kudu3:10000/dev")

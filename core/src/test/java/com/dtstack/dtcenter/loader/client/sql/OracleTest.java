@@ -54,9 +54,17 @@ public class OracleTest {
         }
         queryDTO = SqlQueryDTO.builder().sql("create table LOADER_TEST (id int, name VARCHAR2(50), xmlColumn xmltype)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("comment on table LOADER_TEST is 'table comment'").build();
+        queryDTO = SqlQueryDTO.builder().sql("comment on table LOADER_TEST is 'table comment中文'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into LOADER_TEST values (1, 'LOADER_TEST', '<?xml version=\"1.0\" encoding=\"UTF-8\"?><configuration/>')").build();
+
+        queryDTO = SqlQueryDTO.builder().sql("comment on column LOADER_TEST.id is '中文id'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("comment on column LOADER_TEST.name is '中文name'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("comment on column LOADER_TEST.xmlColumn is '中文xmlColumn'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+
+        queryDTO = SqlQueryDTO.builder().sql("insert into LOADER_TEST values (1, 'LOADER_TEST中文', '<?xml version=\"1.0\" encoding=\"UTF-8\"?><configuration/>')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
 
     }
@@ -158,7 +166,7 @@ public class OracleTest {
     public void getColumnMetaData()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData);
+        assert CollectionUtils.isNotEmpty(columnMetaData);
     }
 
     /**

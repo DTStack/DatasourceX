@@ -18,7 +18,7 @@ import java.util.List;
  * @Date ：Created in 10:58 2021/03/22
  * @Description：Oracle Blob & Clob 测试
  */
-public class Issue35748 {
+public class Issue35748Test {
     private static OracleSourceDTO source = OracleSourceDTO.builder()
             .url("jdbc:oracle:thin:@172.16.100.243:1521:orcl")
             .username("oracle")

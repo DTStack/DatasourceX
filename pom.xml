@@ -49,6 +49,7 @@
         <module>vertica</module>
         <module>socket</module>
         <module>presto</module>
+        <module>oceanbase</module>
     </modules>
     <packaging>pom</packaging>
 

@@ -44,7 +44,7 @@ public class ClickHouseTest {
         IClient client = ClientCache.getClient(DataSourceType.Clickhouse.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("CREATE TABLE loader_test (id String, date Date) ENGINE = MergeTree(date, (id,date), 8192)").build();
+        queryDTO = SqlQueryDTO.builder().sql("CREATE TABLE loader_test (id String comment '表ID', date Date comment '日期') ENGINE = MergeTree(date, (id,date), 8192)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test values('1', toDate('2020-08-22'))").build();
         assert client.executeSqlWithoutResultSet(source, queryDTO);

@@ -31,7 +31,7 @@ public class HbaseClientKerberosTest {
     private static final IHbase HBASE_CLIENT = ClientCache.getHbase(DataSourceType.HBASE.getVal());
 
     private static final HbaseSourceDTO source = HbaseSourceDTO.builder()
-            .url("172.16.101.239:2181")
+            .url("172.16.100.208:2181,172.16.100.217:2181,172.16.101.169:2181")
             .path("/hbase")
             .build();
 
@@ -47,7 +47,7 @@ public class HbaseClientKerberosTest {
         kerberosConfig.put(HadoopConfTool.HBASE_MASTER_PRINCIPAL, "hbase/_HOST@DTSTACK.COM");
         kerberosConfig.put(HadoopConfTool.HBASE_REGION_PRINCIPAL, "hbase/_HOST@DTSTACK.COM");
         source.setKerberosConfig(kerberosConfig);
-        String localKerberosPath = HbaseClientKerberosTest.class.getResource("/phoenix5_kerberos").getPath();
+        String localKerberosPath = HbaseClientKerberosTest.class.getResource("/eng-cdh3").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HBASE.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
 
