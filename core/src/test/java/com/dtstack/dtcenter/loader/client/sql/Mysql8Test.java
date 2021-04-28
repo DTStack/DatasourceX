@@ -43,7 +43,7 @@ public class Mysql8Test {
     public static void beforeClass() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists LOADER_TEST").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table LOADER_TEST (id int COMMENT 'id', name varchar(50) COMMENT '姓名') comment 'table comment'").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table LOADER_TEST (id int COMMENT 'id', name varchar(50) COMMENT '姓名') comment '中文_comment'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into LOADER_TEST values (1, 'LOADER_TEST')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -203,7 +203,7 @@ public class Mysql8Test {
     public void getTableMetaComment() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
-        Assert.assertTrue(StringUtils.isNotBlank(metaComment));
+        Assert.assertEquals("中文_comment", metaComment);
     }
 
     @Test

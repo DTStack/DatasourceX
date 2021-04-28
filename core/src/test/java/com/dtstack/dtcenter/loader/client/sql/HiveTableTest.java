@@ -56,7 +56,7 @@ public class HiveTableTest {
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_part").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_part (id int, name string) partitioned by (pt1 string,pt2 string, pt3 string)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_part (id int comment 'ID', name string comment '姓名_name') partitioned by (pt1 string,pt2 string, pt3 string)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into  loader_test_part partition (pt1 = 'a1', pt2 = 'b1', pt3 = 'c1') values(1, 'wangcahun')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -66,11 +66,11 @@ public class HiveTableTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_2").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_2 (id int, name string)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_2 (id int comment 'ID', name string comment '姓名_name')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_3").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_3 (id int, name string)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_3 (id int comment 'ID', name string comment '姓名_name')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop view if exists loader_test_5").build();
         client.executeSqlWithoutResultSet(source, queryDTO);

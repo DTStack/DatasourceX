@@ -142,7 +142,8 @@ public class PostgreSQLTest {
     public void getColumnMetaData()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData);
+        Assert.assertEquals("int4",columnMetaData.get(0).getType());
+        Assert.assertEquals("text",columnMetaData.get(1).getType());
     }
 
     /**

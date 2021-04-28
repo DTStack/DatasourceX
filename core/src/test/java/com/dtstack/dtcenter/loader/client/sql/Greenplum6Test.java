@@ -47,7 +47,11 @@ public class Greenplum6Test {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table loader_test (id int, name text)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("comment on table loader_test is 'table comment'").build();
+        queryDTO = SqlQueryDTO.builder().sql("comment on column loader_test.id is 'id'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("comment on column loader_test.name is '名字'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("comment on table loader_test is '中文_table_comment'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test values (1, 'nanqi')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -121,6 +125,8 @@ public class Greenplum6Test {
     public void getColumnClassInfo()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
+        Assert.assertEquals("java.lang.Integer", columnClassInfo.get(0));
+        Assert.assertEquals("java.lang.String", columnClassInfo.get(1));
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
     }
 
@@ -131,7 +137,8 @@ public class Greenplum6Test {
     public void getColumnMetaData()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData);
+        Assert.assertEquals("INTEGER", columnMetaData.get(0).getType());
+        Assert.assertEquals("TEXT", columnMetaData.get(1).getType());
     }
 
     /**
@@ -141,7 +148,7 @@ public class Greenplum6Test {
     public void getTableMetaComment()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
-        Assert.assertTrue(StringUtils.isNotBlank(metaComment));
+        Assert.assertEquals("中文_table_comment", metaComment);
     }
 
     /**

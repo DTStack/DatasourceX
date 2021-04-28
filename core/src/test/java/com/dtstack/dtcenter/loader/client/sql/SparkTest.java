@@ -61,13 +61,13 @@ public class SparkTest {
         System.setProperty("HADOOP_USER_NAME", "admin");
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_1").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int comment 'id comment', name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int comment '中文_id', name string comment '中文_name') COMMENT '中文_comment' row format delimited fields terminated by ','").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_1 values (1, 'loader_test_1')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_parquet").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_parquet (id int, name string) STORED AS PARQUET").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_parquet (id int comment '中文_id', name string comment '中文_name') STORED AS PARQUET").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_parquet values (1, 'wc1'),(2,'wc2')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -145,6 +145,8 @@ public class SparkTest {
     public void getColumnClassInfo()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_1").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
+        Assert.assertEquals("java.lang.Integer", columnClassInfo.get(0));
+        Assert.assertEquals("java.lang.String", columnClassInfo.get(1));
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
     }
 
@@ -155,6 +157,8 @@ public class SparkTest {
     public void getColumnMetaData()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_1").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
+        Assert.assertEquals("中文_id", columnMetaData.get(0).getComment());
+        Assert.assertEquals("中文_name", columnMetaData.get(1).getComment());
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 

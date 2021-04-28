@@ -54,13 +54,13 @@ public class HiveKerberosTest {
 
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists test_001").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table test_001(uid string,name string)row format delimited fields terminated by '/t'").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table test_001(uid int comment 'ID', name string comment '姓名_name')row format delimited fields terminated by '/t'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
 
 
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_1").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int comment 'ID', name string comment '姓名_name') COMMENT 'table comment' row format delimited fields terminated by ','").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
 
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_1 values (1, 'loader_test_1')").build();
@@ -68,7 +68,7 @@ public class HiveKerberosTest {
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_parquet").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
 
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_parquet (id int, name string) STORED AS PARQUET").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_parquet (id int comment 'ID', name string comment '姓名_name') STORED AS PARQUET").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_parquet values (1, 'wc1'),(2,'wc2')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);

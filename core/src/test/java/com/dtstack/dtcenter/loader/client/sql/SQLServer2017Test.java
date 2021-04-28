@@ -55,7 +55,7 @@ public class SQLServer2017Test {
         queryDTO = SqlQueryDTO.builder().sql("insert into LOADER_TEST values (1, 'LOADER_TEST')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         // 添加表注释
-        String commentSql = "exec sp_addextendedproperty 'MS_Description', 'a', 'SCHEMA', 'dev', 'TABLE', 'LOADER_TEST'";
+        String commentSql = "exec sp_addextendedproperty N'MS_Description', N'中文_comment', N'SCHEMA', N'dev', N'TABLE', N'LOADER_TEST'";
         queryDTO = SqlQueryDTO.builder().sql(commentSql).build();
         client.executeSqlWithoutResultSet(source, queryDTO);
 
@@ -163,6 +163,8 @@ public class SQLServer2017Test {
     public void getColumnMetaData() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
+        Assert.assertEquals("int", columnMetaData.get(0).getType());
+        Assert.assertEquals("varchar", columnMetaData.get(1).getType());
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 
@@ -173,6 +175,7 @@ public class SQLServer2017Test {
     public void getTableMetaComment() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
+        Assert.assertEquals("中文_comment", metaComment);
         Assert.assertTrue(StringUtils.isNotBlank(metaComment));
     }
 
