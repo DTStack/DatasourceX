@@ -44,7 +44,7 @@ public class ClickHouseTest {
         IClient client = ClientCache.getClient(DataSourceType.Clickhouse.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("CREATE TABLE loader_test (id String comment '表ID', date Date comment '日期') ENGINE = MergeTree(date, (id,date), 8192)").build();
+        queryDTO = SqlQueryDTO.builder().sql("CREATE TABLE loader_test (id String  COMMENT 'ID编码', date Date  COMMENT '日期') ENGINE = MergeTree(date, (id,date), 8192)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test values('1', toDate('2020-08-22'))").build();
         assert client.executeSqlWithoutResultSet(source, queryDTO);
@@ -124,6 +124,8 @@ public class ClickHouseTest {
     public void getColumnClassInfo()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
+        Assert.assertEquals("java.lang.String", columnClassInfo.get(0));
+        Assert.assertEquals("java.sql.Date", columnClassInfo.get(1));
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
     }
 
@@ -134,16 +136,18 @@ public class ClickHouseTest {
     public void getColumnMetaData()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
+        Assert.assertEquals("String", columnMetaData.get(0).getType());
+        Assert.assertEquals("Date", columnMetaData.get(1).getType());
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 
     /**
-     * 获取表注释
+     * 获取表注释,clickHouse 暂时不支持获取表注释
      */
     @Test
     public void getTableMetaComment()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
-        client.getTableMetaComment(source, queryDTO);
+        Assert.assertTrue(StringUtils.isEmpty(client.getTableMetaComment(source, queryDTO)));
     }
 
     /**

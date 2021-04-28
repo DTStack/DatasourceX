@@ -48,6 +48,10 @@ public class LibraTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("comment on table loader_test is 'table comment'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("comment on column loader_test.id is 'ID';").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("comment on column loader_test.name is '名字';").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test values (1, 'nanqi')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
@@ -180,7 +184,9 @@ public class LibraTest {
     @Test
     public void getColumnMetaDataWithSql() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from loader_test ").build();
-        List result = client.getColumnMetaDataWithSql(source, queryDTO);
+        List<ColumnMetaDTO> result = client.getColumnMetaDataWithSql(source, queryDTO);
+        Assert.assertEquals("int4", result.get(0).getType());
+        Assert.assertEquals("text", result.get(1).getType());
         Assert.assertTrue(CollectionUtils.isNotEmpty(result));
     }
 

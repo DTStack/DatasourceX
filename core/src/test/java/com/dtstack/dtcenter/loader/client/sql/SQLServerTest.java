@@ -51,12 +51,12 @@ public class SQLServerTest {
         }
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists LOADER_TEST").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table LOADER_TEST (id int, name varchar(50))").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table LOADER_TEST (id int, name nvarchar(50))").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into LOADER_TEST values (1, 'LOADER_TEST')").build();
+        queryDTO = SqlQueryDTO.builder().sql("insert into LOADER_TEST values (1, '中文LOADER_TEST')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         // 添加表注释
-        String commentSql = "exec sp_addextendedproperty 'MS_Description', 'a', 'SCHEMA', 'dev', 'TABLE', 'LOADER_TEST'";
+        String commentSql = "exec sp_addextendedproperty N'MS_Description', N'中文_comment', N'SCHEMA', N'dev', N'TABLE', N'LOADER_TEST'";
         queryDTO = SqlQueryDTO.builder().sql(commentSql).build();
         client.executeSqlWithoutResultSet(source, queryDTO);
 
@@ -181,6 +181,8 @@ public class SQLServerTest {
     public void getColumnClassInfo() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
+        Assert.assertEquals("java.lang.Integer", columnClassInfo.get(0));
+        Assert.assertEquals("java.lang.String", columnClassInfo.get(1));
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
     }
 
@@ -191,6 +193,8 @@ public class SQLServerTest {
     public void getColumnMetaData() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
+        Assert.assertEquals("int", columnMetaData.get(0).getType());
+        Assert.assertEquals("varchar", columnMetaData.get(1).getType());
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 
@@ -201,6 +205,7 @@ public class SQLServerTest {
     public void getTableMetaComment() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
+        Assert.assertEquals("中文_comment", metaComment);
         Assert.assertTrue(StringUtils.isNotBlank(metaComment));
     }
 
