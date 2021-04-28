@@ -10,6 +10,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.KuduSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -70,11 +72,17 @@ public class DtKuduClient<T> extends AbsNoSqlClient<T> {
 
     @Override
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        List<String> tableList = null;
+        List<String> tableList = Lists.newArrayList();
         try (KuduClient client = getConnection(iSource);){
             tableList = client.getTablesList().getTablesList();
         } catch (KuduException e) {
             log.error(e.getMessage(), e);
+        }
+        if (Objects.nonNull(queryDTO) && StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+            tableList = tableList.stream().filter(table -> table.contains(queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
+        }
+        if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
+            tableList = tableList.stream().limit(queryDTO.getLimit()).collect(Collectors.toList());
         }
         return tableList;
     }

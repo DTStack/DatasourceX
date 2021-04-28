@@ -8,8 +8,10 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Db2SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
@@ -17,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -24,15 +27,22 @@ import java.util.List;
  * @Date ：Created in 16:09 2020/1/7
  * @Description：Db2 客户端
  */
+@Slf4j
 public class Db2Client extends AbsRdbmsClient {
     private static final String TABLE_QUERY = "select tabname from syscat.tables where tabschema = '%s'";
 
     private static final String DATABASE_QUERY = "select schemaname from syscat.schemata where ownertype != 'S'";
 
-    private static final String TABLE_BY_SCHEMA = "select TABLE_NAME AS Name from SYSIBM.TABLES where TABLE_SCHEMA='%s'";
+    private static final String TABLE_BY_SCHEMA = "select TABLE_NAME AS Name from SYSIBM.TABLES where TABLE_SCHEMA='%s' %s";
 
     // 获取db2的当前database
     private static final String CURRENT_DB = "select CURRENT schema from sysibm.sysdummy1";
+
+    // 根据schema选表表名模糊查询
+    private static final String SEARCH_SQL = " AND TABLE_NAME LIKE '%s' ";
+
+    // 限制条数语句
+    private static final String LIMIT_SQL = " ROWNUM = %s ";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -118,7 +128,28 @@ public class Db2Client extends AbsRdbmsClient {
 
     @Override
     protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
-        return String.format(TABLE_BY_SCHEMA, queryDTO.getSchema());
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) sourceDTO;
+        String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : rdbmsSourceDTO.getSchema();
+        // 如果不传scheme，默认使用当前连接使用的schema
+        if (StringUtils.isBlank(schema)) {
+            log.info("schema is empty，get current used schema!");
+            // 获取当前数据库
+            try {
+                schema = getCurrentDatabase(sourceDTO);
+            } catch (Exception e) {
+                throw new DtLoaderException(String.format("get current used database error！,%s", e.getMessage()), e);
+            }
+
+        }
+        log.info("current used schema：{}", schema);
+        StringBuilder constr = new StringBuilder();
+        if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+            constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
+        }
+        if (Objects.nonNull(queryDTO.getLimit())) {
+            constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));
+        }
+        return String.format(TABLE_BY_SCHEMA, schema, constr.toString());
     }
 
     @Override

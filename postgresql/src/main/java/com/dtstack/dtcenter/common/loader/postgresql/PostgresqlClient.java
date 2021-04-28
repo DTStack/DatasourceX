@@ -8,6 +8,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -38,16 +40,22 @@ public class PostgresqlClient extends AbsRdbmsClient {
     private static final String SHOW_TABLE_AND_VIEW_BY_SCHEMA_SQL = "SELECT table_name FROM information_schema.tables WHERE table_schema = '%s' ";
 
     // 获取指定schema下的表，不包括视图
-    private static final String SHOW_TABLE_BY_SCHEMA_SQL = "SELECT table_name FROM information_schema.tables WHERE table_schema = '%s' AND table_type = 'BASE TABLE' ";
+    private static final String SHOW_TABLE_BY_SCHEMA_SQL = "SELECT table_name FROM information_schema.tables WHERE table_schema = '%s' AND table_type = 'BASE TABLE' %s";
 
     //获取所有表名，包括视图，表名前拼接schema，并对schema和tableName进行增加双引号处理
-    private static final String ALL_TABLE_AND_VIEW_SQL = "SELECT '\"'||table_schema||'\".\"'||table_name||'\"' AS schema_table FROM information_schema.tables order by schema_table ";
+    private static final String ALL_TABLE_AND_VIEW_SQL = "SELECT '\"'||table_schema||'\".\"'||table_name||'\"' AS schema_table FROM information_schema.tables WHERE 1 = 1 %s order by schema_table ";
 
     //获取所有表名，不包括视图，表名前拼接schema，并对schema和tableName进行增加双引号处理
-    private static final String ALL_TABLE_SQL = "SELECT '\"'||table_schema||'\".\"'||table_name||'\"' AS schema_table FROM information_schema.tables WHERE table_type = 'BASE TABLE'  order by schema_table ";
+    private static final String ALL_TABLE_SQL = "SELECT '\"'||table_schema||'\".\"'||table_name||'\"' AS schema_table FROM information_schema.tables WHERE table_type = 'BASE TABLE' %s order by schema_table ";
 
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select current_database()";
+
+    // 根据schema选表表名模糊查询
+    private static final String SEARCH_SQL = " AND table_name LIKE '%s' ";
+
+    // 限制条数语句
+    private static final String LIMIT_SQL = " LIMIT %s ";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -67,12 +75,20 @@ public class PostgresqlClient extends AbsRdbmsClient {
         ResultSet rs = null;
         try {
             statement = postgresqlSourceDTO.getConnection().createStatement();
+            if (Objects.nonNull(queryDTO.getLimit())) {
+                // 设置最大条数
+                statement.setMaxRows(queryDTO.getLimit());
+            }
+            StringBuilder constr = new StringBuilder();
+            if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+                constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
+            }
             //大小写区分，不传schema默认获取所有表，并且表名签名拼接schema，格式："schema"."tableName"
             String querySql;
             if (StringUtils.isNotBlank(postgresqlSourceDTO.getSchema())) {
-                querySql = queryDTO.getView() ? String.format(SHOW_TABLE_AND_VIEW_BY_SCHEMA_SQL, postgresqlSourceDTO.getSchema()) : String.format(SHOW_TABLE_BY_SCHEMA_SQL, postgresqlSourceDTO.getSchema());
+                querySql = queryDTO.getView() ? String.format(SHOW_TABLE_AND_VIEW_BY_SCHEMA_SQL, postgresqlSourceDTO.getSchema()) : String.format(SHOW_TABLE_BY_SCHEMA_SQL, postgresqlSourceDTO.getSchema(), constr.toString());
             }else {
-                querySql = queryDTO.getView() ? ALL_TABLE_AND_VIEW_SQL : ALL_TABLE_SQL;
+                querySql = queryDTO.getView() ? String.format(ALL_TABLE_AND_VIEW_SQL, constr.toString()) : String.format(ALL_TABLE_SQL, constr.toString());
             }
             rs = statement.executeQuery(querySql);
             List<String> tableList = new ArrayList<>();
@@ -201,7 +217,21 @@ public class PostgresqlClient extends AbsRdbmsClient {
 
     @Override
     protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
-        return String.format(SHOW_TABLE_BY_SCHEMA_SQL, queryDTO.getSchema());
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) sourceDTO;
+        String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : rdbmsSourceDTO.getSchema();
+        // 如果不传scheme，默认使用当前连接使用的schema
+        if (StringUtils.isBlank(schema)) {
+            throw new DtLoaderException("schema is not empty...");
+        }
+        log.info("current used schema：{}", schema);
+        StringBuilder constr = new StringBuilder();
+        if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+            constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
+        }
+        if (Objects.nonNull(queryDTO.getLimit())) {
+            constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));
+        }
+        return String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema, constr.toString());
     }
 
     /**

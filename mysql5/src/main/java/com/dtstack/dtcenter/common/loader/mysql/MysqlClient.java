@@ -74,6 +74,11 @@ public class MysqlClient extends AbsRdbmsClient {
     }
 
     @Override
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+        return getTableListBySchema(iSource, queryDTO);
+    }
+
+    @Override
     protected String doDealType(ResultSetMetaData rsMetaData, Integer los) throws SQLException {
         int columnType = rsMetaData.getColumnType(los + 1);
         // text,mediumtext,longtext的jdbc类型名都是varchar，需要区分。不同的编码下，最大存储长度也不同。考虑1，2，3，4字节的编码

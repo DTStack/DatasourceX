@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -44,18 +45,30 @@ public class ClickhouseClient extends AbsRdbmsClient {
 
     private static final String DONT_EXIST = "doesn't exist";
 
+    private static final String SHOW_TABLE_SQL = "show tables %s";
+
+    // 根据schema选表表名模糊查询
+    private static final String SEARCH_SQL = " LIKE '%s' ";
+
     @Override
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         ClickHouseSourceDTO clickHouseSourceDTO = (ClickHouseSourceDTO) iSource;
-
+        StringBuilder constr = new StringBuilder();
+        if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+            constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
+        }
         // 获取表信息需要通过show tables 语句
-        String sql = "show tables";
+        String sql = String.format(SHOW_TABLE_SQL, constr.toString());
         Statement statement = null;
         ResultSet rs = null;
         List<String> tableList = new ArrayList<>();
         try {
             statement = clickHouseSourceDTO.getConnection().createStatement();
+            if (Objects.nonNull(queryDTO.getLimit())) {
+                // 设置最大条数
+                statement.setMaxRows(queryDTO.getLimit());
+            }
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
@@ -67,6 +80,11 @@ public class ClickhouseClient extends AbsRdbmsClient {
             DBUtil.closeDBResources(rs, statement, clickHouseSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return tableList;
+    }
+
+    @Override
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
+        return getTableList(source, queryDTO);
     }
 
     @Override
