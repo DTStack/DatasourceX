@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -37,6 +38,11 @@ public class ImpalaClient extends AbsRdbmsClient {
 
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select current_database()";
+
+    private static final String SHOW_TABLE_SQL = "show tables %s";
+
+    // 根据schema选表表名模糊查询
+    private static final String SEARCH_SQL = " LIKE '%s' ";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -52,13 +58,21 @@ public class ImpalaClient extends AbsRdbmsClient {
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
+        StringBuilder constr = new StringBuilder();
+        if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+            constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
+        }
         // 获取表信息需要通过show tables 语句
-        String sql = "show tables";
+        String sql = String.format(SHOW_TABLE_SQL, constr.toString());
         Statement statement = null;
         ResultSet rs = null;
         List<String> tableList = new ArrayList<>();
         try {
             statement = impalaSourceDTO.getConnection().createStatement();
+            if (Objects.nonNull(queryDTO.getLimit())) {
+                // 设置最大条数
+                statement.setMaxRows(queryDTO.getLimit());
+            }
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
@@ -70,6 +84,11 @@ public class ImpalaClient extends AbsRdbmsClient {
             DBUtil.closeDBResources(rs, statement, impalaSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return tableList;
+    }
+
+    @Override
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
+        return getTableList(source, queryDTO);
     }
 
     @Override
@@ -338,5 +357,10 @@ public class ImpalaClient extends AbsRdbmsClient {
         ImpalaDownload impalaDownload = new ImpalaDownload(getCon(source), queryDTO.getSql());
         impalaDownload.configure();
         return impalaDownload;
+    }
+
+    @Override
+    protected String addPercentSign(String str) {
+        return "*" + str + "*";
     }
 }

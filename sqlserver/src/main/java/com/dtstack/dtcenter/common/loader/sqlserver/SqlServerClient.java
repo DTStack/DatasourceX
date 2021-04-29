@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -30,6 +31,8 @@ import java.util.Map;
 public class SqlServerClient extends AbsRdbmsClient {
     private static final String TABLE_QUERY_ALL = "select a.name, b.name from sys.objects a left join sys.schemas b on a.schema_id = b.schema_id where a.type='U' or a.type='V'";
     private static final String TABLE_QUERY = "select a.name, b.name from sys.objects a left join sys.schemas b on a.schema_id = b.schema_id where a.type='U'";
+
+    private static final String SEARCH_BY_COLUMN_SQL = " and charIndex('%s',%s) > 0 ";
 
     private static final String TABLE_SHOW = "[%s].[%s]";
 
@@ -80,7 +83,13 @@ public class SqlServerClient extends AbsRdbmsClient {
         List<String> tableList = new ArrayList<>();
         try {
             String sql = queryDTO.getView() ? TABLE_QUERY_ALL : TABLE_QUERY;
+            if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+                sql = sql + String.format(SEARCH_BY_COLUMN_SQL, queryDTO.getTableNamePattern(), "b.name");
+            }
             statement = sqlserverSourceDTO.getConnection().createStatement();
+            if (Objects.nonNull(queryDTO.getLimit())) {
+                statement.setMaxRows(queryDTO.getLimit());
+            }
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
@@ -132,14 +141,12 @@ public class SqlServerClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected String dealSql(ISourceDTO iSourceDTO, SqlQueryDTO sqlQueryDTO) {
-        return "select * from " + transferTableName(sqlQueryDTO.getTableName());
-    }
-
-    @Override
-    protected String transferTableName(String tableName) {
+    protected String transferSchemaAndTableName(String schema, String tableName) {
         //如果传过来是[tableName]格式直接当成表名
         if (tableName.startsWith("[") && tableName.endsWith("]")){
+            if (StringUtils.isNotBlank(schema)) {
+                return String.format("%s.%s", schema, tableName);
+            }
             return tableName;
         }
         //如果不是上述格式，判断有没有"."符号，有的话，第一个"."之前的当成schema，后面的当成表名进行[tableName]处理
@@ -151,6 +158,9 @@ public class SqlServerClient extends AbsRdbmsClient {
                     tableName));
         }
         //判断表名
+        if (StringUtils.isNotBlank(schema)) {
+            return String.format("%s.[%s]", schema, tableName);
+        }
         return String.format("[%s]", tableName);
     }
 

@@ -29,8 +29,10 @@ import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -149,11 +151,12 @@ public class MongoDBUtils {
     /**
      * 获取指定库下的表名
      *
-     * @param iSource
-     * @return
+     * @param sourceDTO 数据源信息
+     * @param queryDTO  查询条件
+     * @return 表名集合
      */
-    public static List<String> getTableList(ISourceDTO iSource) {
-        MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
+    public static List<String> getTableList(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) sourceDTO;
         List<String> tableList = Lists.newArrayList();
         MongoClient mongoClient = null;
         try {
@@ -170,6 +173,12 @@ public class MongoDBUtils {
             if (!BooleanUtils.isTrue(IS_OPEN_POOL.get()) && mongoClient != null) {
                 mongoClient.close();
             }
+        }
+        if (Objects.nonNull(queryDTO) && StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+            tableList = tableList.stream().filter(table -> table.contains(queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
+        }
+        if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
+            tableList = tableList.stream().limit(queryDTO.getLimit()).collect(Collectors.toList());
         }
         return tableList;
     }

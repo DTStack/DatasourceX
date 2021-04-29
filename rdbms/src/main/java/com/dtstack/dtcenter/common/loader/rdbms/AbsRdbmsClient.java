@@ -35,6 +35,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -214,7 +215,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                 rs = meta.getTables(null, null, null, null);
             } else {
                 rs = meta.getTables(null, rdbmsSourceDTO.getSchema(),
-                        StringUtils.isBlank(queryDTO.getTableNamePattern()) ? queryDTO.getTableNamePattern() :
+                        StringUtils.isNotBlank(queryDTO.getTableNamePattern()) ? queryDTO.getTableNamePattern() :
                                 queryDTO.getTableName(),
                         DBUtil.getTableTypes(queryDTO));
             }
@@ -225,6 +226,9 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
             throw new DtLoaderException(String.format("Get database table exception：%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, null, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
+            tableList = tableList.stream().limit(queryDTO.getLimit()).collect(Collectors.toList());
         }
         return tableList;
     }
@@ -478,8 +482,10 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @param sqlQueryDTO 查询条件
      * @return 处理后的查询sql
      */
-    protected String dealSql(ISourceDTO iSource, SqlQueryDTO sqlQueryDTO){
-        return "select * from " + transferTableName(sqlQueryDTO.getTableName());
+    protected String dealSql(ISourceDTO sourceDTO, SqlQueryDTO sqlQueryDTO){
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) sourceDTO;
+        String schema = StringUtils.isNotBlank(sqlQueryDTO.getSchema()) ? sqlQueryDTO.getSchema() : rdbmsSourceDTO.getSchema();
+        return "select * from " + transferSchemaAndTableName(schema, sqlQueryDTO.getTableName());
     }
 
     /**
@@ -499,6 +505,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @param tableName
      * @return
      */
+    @Deprecated
     protected String transferTableName(String tableName) {
         return tableName;
     }
@@ -647,5 +654,15 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      */
     protected String getCatalogSql() {
         throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
+
+    /**
+     * 在字符串前后添加 %
+     *
+     * @param str 需要添加 % 的字符串
+     * @return 添加 % 后的字符串
+     */
+    protected String addPercentSign(String str) {
+        return "%" + str + "%";
     }
 }
