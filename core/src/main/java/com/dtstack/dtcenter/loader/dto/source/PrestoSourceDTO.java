@@ -13,5 +13,6 @@ import lombok.experimental.SuperBuilder;
 @ToString
 @SuperBuilder
 public class PrestoSourceDTO extends RdbmsSourceDTO {
-
+    @Deprecated
+    private String catalog;
 }
