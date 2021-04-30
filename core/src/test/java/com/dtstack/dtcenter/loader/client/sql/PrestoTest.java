@@ -142,7 +142,9 @@ public class PrestoTest {
     public void getColumnMetaData() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("\"default\".\"LOADER_TEST\"").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
+        List<ColumnMetaDTO> columnMetaData1 = client.getColumnMetaData(source,  SqlQueryDTO.builder().schema("default").tableName("LOADER_TEST").build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData1));
     }
 
     /**

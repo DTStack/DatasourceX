@@ -214,14 +214,8 @@ public class PrestoClient<T> extends AbsRdbmsClient<T> {
      */
     @Override
     protected String transferSchemaAndTableName(String schema, String tableName) {
-        if (!tableName.startsWith("\"") || !tableName.endsWith("\"")) {
-            tableName = String.format("\"%s\"", tableName);
-        }
         if (StringUtils.isBlank(schema)) {
             return tableName;
-        }
-        if (!schema.startsWith("\"") || !schema.endsWith("\"")) {
-            schema = String.format("\"%s\"", schema);
         }
         return String.format("%s.%s", schema, tableName);
     }
