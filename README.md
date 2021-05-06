@@ -56,7 +56,8 @@
 | Database Type               | Client doc                                   |
 |:---------------------------:|:---------------------------------------------:|
 | HDFS                        | [doc](docs/fs/hdfs.md)                   |
-| S3                          | [doc](docs/fs/s3.md)                     |
+| S3(此为中国移动版本)           | [doc](docs/fs/s3.md)                     |
+| AWS_S3                      | [doc](docs/fs/aws_s3.md)                 |
 | FTP                         | [doc](docs/fs/ftp.md)                    |
 
 ### 2.4 消息队列
