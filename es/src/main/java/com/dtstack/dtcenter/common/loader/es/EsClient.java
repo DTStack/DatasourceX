@@ -366,7 +366,8 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
     }
 
     private void closeResource(RestClient lowLevelClient, RestHighLevelClient restHighLevelClient, ESSourceDTO esSourceDTO) {
-        if (!BooleanUtils.isTrue(IS_OPEN_POOL.get()) && restHighLevelClient != null) {
+        if (BooleanUtils.isFalse(IS_OPEN_POOL.get())) {
+            //未开启线程池
             try {
                 if (Objects.nonNull(lowLevelClient)) {
                     lowLevelClient.close();
@@ -379,6 +380,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
             }
             IS_OPEN_POOL.remove();
         } else {
+            //开启连接池
             ElasticSearchPool elasticSearchPool = elasticSearchManager.getConnection(esSourceDTO);
             try {
                 if (Objects.nonNull(lowLevelClient)) {
