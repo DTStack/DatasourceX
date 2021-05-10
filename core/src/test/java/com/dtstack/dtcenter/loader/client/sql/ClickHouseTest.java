@@ -31,6 +31,8 @@ public class ClickHouseTest {
     
     private static ClickHouseSourceDTO source = ClickHouseSourceDTO.builder()
             .url("jdbc:clickhouse://172.16.100.186:8123")
+            .username("default")
+            .password("b6rCe7ZV")
             .poolConfig(new PoolConfig())
             .build();
 
@@ -42,10 +44,10 @@ public class ClickHouseTest {
         IClient client = ClientCache.getClient(DataSourceType.Clickhouse.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("CREATE TABLE loader_test (id String, date Date) ENGINE = MergeTree(date, (id,date), 8192)").build();
+        queryDTO = SqlQueryDTO.builder().sql("CREATE TABLE loader_test (id String  COMMENT 'ID编码', date Date  COMMENT '日期') ENGINE = MergeTree(date, (id,date), 8192)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test values('1', toDate('2020-08-22'))").build();
-        client.executeSqlWithoutResultSet(source, queryDTO);
+        assert client.executeSqlWithoutResultSet(source, queryDTO);
     }
     
     @Test
@@ -72,7 +74,7 @@ public class ClickHouseTest {
     public void testCon()  {
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("连接异常");
+            throw new DtLoaderException("connection exception");
         }
     }
 
@@ -122,6 +124,8 @@ public class ClickHouseTest {
     public void getColumnClassInfo()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
+        Assert.assertEquals("java.lang.String", columnClassInfo.get(0));
+        Assert.assertEquals("java.sql.Date", columnClassInfo.get(1));
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
     }
 
@@ -132,16 +136,18 @@ public class ClickHouseTest {
     public void getColumnMetaData()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData);
+        Assert.assertEquals("String", columnMetaData.get(0).getType());
+        Assert.assertEquals("Date", columnMetaData.get(1).getType());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 
     /**
-     * 获取表注释
+     * 获取表注释,clickHouse 暂时不支持获取表注释
      */
     @Test
     public void getTableMetaComment()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
-        client.getTableMetaComment(source, queryDTO);
+        Assert.assertTrue(StringUtils.isEmpty(client.getTableMetaComment(source, queryDTO)));
     }
 
     /**

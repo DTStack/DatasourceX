@@ -36,18 +36,18 @@ public class Hive1KerberosTest {
     private static final IClient client = ClientCache.getClient(DataSourceType.HIVE1X.getVal());
 
     private static Hive1SourceDTO source = Hive1SourceDTO.builder()
-            .url("jdbc:hive2://eng-cdh3:10001/default;principal=hive/eng-cdh3@DTSTACK.COM")
-            .defaultFS("hdfs://eng-cdh1:8020")
+            .url("jdbc:hive2://172.16.100.208:10000/default;principal=hive/master@DTSTACK.COM")
+            .defaultFS("hdfs://master:8020")
             .build();
 
     @BeforeClass
     public static void beforeClass() {
         // 准备 Kerberos 参数
         Map<String, Object> kerberosConfig = new HashMap<>();
-        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/hive-cdh03.keytab");
+        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/hive.keytab");
         kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
         source.setKerberosConfig(kerberosConfig);
-        String localKerberosPath = Hive1KerberosTest.class.getResource("/eng-cdh").getPath();
+        String localKerberosPath = Hive1KerberosTest.class.getResource("/eng-cdh3").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HIVE1X.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
 
@@ -82,7 +82,7 @@ public class Hive1KerberosTest {
     public void testCon()  {
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("连接异常");
+            throw new DtLoaderException("connection exception");
         }
     }
 

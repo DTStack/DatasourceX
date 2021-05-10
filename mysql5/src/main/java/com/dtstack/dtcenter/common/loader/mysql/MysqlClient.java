@@ -74,6 +74,11 @@ public class MysqlClient extends AbsRdbmsClient {
     }
 
     @Override
+    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+        return getTableListBySchema(iSource, queryDTO);
+    }
+
+    @Override
     protected String doDealType(ResultSetMetaData rsMetaData, Integer los) throws SQLException {
         int columnType = rsMetaData.getColumnType(los + 1);
         // text,mediumtext,longtext的jdbc类型名都是varchar，需要区分。不同的编码下，最大存储长度也不同。考虑1，2，3，4字节的编码
@@ -116,7 +121,7 @@ public class MysqlClient extends AbsRdbmsClient {
                 }
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+            throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, mysql5SourceDTO.clearAfterGetConnection(clearStatus));
@@ -143,10 +148,12 @@ public class MysqlClient extends AbsRdbmsClient {
         Statement statement = null;
         ResultSet rs = null;
         Map<String, String> columnComments = new HashMap<>();
+        // schema 先从queryDTO中获取
+        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? sourceDTO.getSchema() : queryDTO.getSchema();
         try {
             statement = sourceDTO.getConnection().createStatement();
             String queryColumnCommentSql =
-                    "show full columns from " + transferTableName(queryDTO.getTableName());
+                    "show full columns from " + transferSchemaAndTableName(schema, queryDTO.getTableName());
             rs = statement.executeQuery(queryColumnCommentSql);
             while (rs.next()) {
                 String columnName = rs.getString("Field");
@@ -156,9 +163,9 @@ public class MysqlClient extends AbsRdbmsClient {
 
         } catch (Exception e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
+                throw new DtLoaderException(String.format(queryDTO.getTableName() + "table not exist,%s", e.getMessage()), e);
             } else {
-                throw new DtLoaderException(String.format("获取表:%s 的字段的注释信息时失败. 请联系 DBA 核查该库、表信息.",
+                throw new DtLoaderException(String.format("Failed to get the comment information of the field of the table: %s. Please contact the DBA to check the database and table information.",
                         queryDTO.getTableName()), e);
             }
         }finally {
@@ -180,7 +187,7 @@ public class MysqlClient extends AbsRdbmsClient {
     @Override
     public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
         if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("数据库名称不能为空");
+            throw new DtLoaderException("database name is not empty");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(SHOW_DB_LIKE, dbName)).build()));
     }
@@ -188,7 +195,7 @@ public class MysqlClient extends AbsRdbmsClient {
     @Override
     public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
         if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("数据库名称不能为空");
+            throw new DtLoaderException("database name is not empty");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_IS_IN_SCHEMA, dbName, tableName)).build()));
     }
@@ -204,16 +211,16 @@ public class MysqlClient extends AbsRdbmsClient {
         String schema = queryDTO.getSchema();
         // 如果不传scheme，默认使用当前连接使用的schema
         if (StringUtils.isBlank(schema)) {
-            log.info("schema为空，获取当前正在使用的schema!");
+            log.info("schema is empty，get current used schema!");
             // 获取当前数据库
             try {
                 schema = getCurrentDatabase(sourceDTO);
             } catch (Exception e) {
-                throw new DtLoaderException("获取当前使用数据库失败！", e);
+                throw new DtLoaderException(String.format("get current used database error！,%s", e.getMessage()), e);
             }
 
         }
-        log.info("当前使用schema：{}", schema);
+        log.info("current used schema：{}", schema);
         StringBuilder constr = new StringBuilder();
         if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
             constr.append(String.format(SEARCH_SQL, queryDTO.getTableNamePattern()));
@@ -222,5 +229,25 @@ public class MysqlClient extends AbsRdbmsClient {
             constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));
         }
         return String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema, constr.toString());
+    }
+
+    /**
+     * 处理 schema和tableName，适配schema和tableName中有.的情况
+     * @param schema
+     * @param tableName
+     * @return
+     */
+    @Override
+    protected String transferSchemaAndTableName(String schema, String tableName) {
+        if (!tableName.startsWith("`") || !tableName.endsWith("`")) {
+            tableName = String.format("`%s`", tableName);
+        }
+        if (StringUtils.isBlank(schema)) {
+            return tableName;
+        }
+        if (!schema.startsWith("`") || !schema.endsWith("`")){
+            schema = String.format("`%s`", schema);
+        }
+        return String.format("%s.%s", schema, tableName);
     }
 }

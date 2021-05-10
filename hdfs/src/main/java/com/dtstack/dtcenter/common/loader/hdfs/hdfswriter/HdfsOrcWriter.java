@@ -105,7 +105,7 @@ public class HdfsOrcWriter {
                 writeLineNum++;
             }
         } catch (Exception e) {
-            throw new DtLoaderException("第" + (currLineNum - (topLineIsTitle ? 1 : 0)) + "行数据异常,请检查");
+            throw new DtLoaderException("The" + (currLineNum - (topLineIsTitle ? 1 : 0)) + " row of data is abnormal, please check");
         } finally {
             try {
                 if (writer != null) {
@@ -120,7 +120,7 @@ public class HdfsOrcWriter {
                     reader.close();
                 }
             } catch (Exception e) {
-                logger.error("关闭连接异常", e);
+                logger.error("Close connection exception", e);
             }
         }
 
@@ -217,7 +217,7 @@ public class HdfsOrcWriter {
                 writeLineNum++;
             }
         } catch (Exception e) {
-            throw new DtLoaderException("第" + currLineNum + "行数据异常,请检查");
+            throw new DtLoaderException("The" + currLineNum + "Row data is abnormal, please check");
         } finally {
             try {
                 if (writer != null) {
@@ -232,7 +232,7 @@ public class HdfsOrcWriter {
                     reader.close();
                 }
             } catch (Exception e) {
-                logger.error("连接关闭异常", e);
+                logger.error("Close connection exception", e);
             }
         }
 

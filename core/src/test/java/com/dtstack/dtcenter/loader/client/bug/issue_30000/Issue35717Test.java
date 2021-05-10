@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * date：Created in 上午11:01 2021/3/22
  * company: www.dtstack.com
  */
-public class Issue35717 {
+public class Issue35717Test {
 
     private static final KafkaSourceDTO SOURCE_DTO = KafkaSourceDTO.builder()
             .brokerUrls("eng-cdh2:9092")

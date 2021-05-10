@@ -49,6 +49,8 @@
         <module>vertica</module>
         <module>socket</module>
         <module>presto</module>
+        <module>oceanbase</module>
+        <module>aws_s3</module>
     </modules>
     <packaging>pom</packaging>
 

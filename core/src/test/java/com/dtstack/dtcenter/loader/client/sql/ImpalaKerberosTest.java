@@ -9,6 +9,8 @@ import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,27 +28,27 @@ import java.util.Map;
  */
 public class ImpalaKerberosTest {
     private static ImpalaSourceDTO source = ImpalaSourceDTO.builder()
-            .url("jdbc:impala://eng-cdh3:21050;AuthMech=1;KrbServiceName=impala;KrbHostFQDN=eng-cdh3")
-            .schema("dev")
+            .url("jdbc:impala://172.16.100.208:21050;AuthMech=1;KrbRealm=DTSTACK.COM;KrbHostFQDN=master;KrbServiceName=impala")
+            .username("admin")
             .build();
 
     @BeforeClass
     public static void beforeClass() {
         // 准备 Kerberos 参数
         Map<String, Object> kerberosConfig = new HashMap<>();
-        kerberosConfig.put(HadoopConfTool.PRINCIPAL, "impala/eng-cdh3@DTSTACK.COM");
-        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/impalad-cdh3.keytab");
+        kerberosConfig.put(HadoopConfTool.PRINCIPAL, "impala/master@DTSTACK.COM");
+        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/impala.keytab");
         kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
         source.setKerberosConfig(kerberosConfig);
 
-        String localKerberosPath = ImpalaKerberosTest.class.getResource("/eng-cdh").getPath();
+        String localKerberosPath = ImpalaKerberosTest.class.getResource("/eng-cdh3").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.IMPALA.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
 
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int, name string) comment 'table comment'").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int comment 'ID', name string comment '姓名_name') comment 'table comment'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -64,14 +66,14 @@ public class ImpalaKerberosTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("连接异常");
+            throw new DtLoaderException("connection exception");
         }
     }
 
     @Test
     public void executeQuery() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show tables").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("show databases").build();
         List<Map<String, Object>> mapList = client.executeQuery(source, queryDTO);
         System.out.println(mapList.size());
     }
@@ -96,7 +98,8 @@ public class ImpalaKerberosTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
-        System.out.println(columnClassInfo.size());
+        Assert.assertEquals("java.lang.Integer", columnClassInfo.get(0));
+        Assert.assertEquals("java.lang.String", columnClassInfo.get(1));
     }
 
     @Test
@@ -104,7 +107,9 @@ public class ImpalaKerberosTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData.size());
+        Assert.assertEquals("int", columnMetaData.get(0).getType());
+        Assert.assertEquals("string", columnMetaData.get(1).getType());
+
     }
 
     @Test
@@ -112,7 +117,7 @@ public class ImpalaKerberosTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("nanqi").build();
         String tableMetaComment = client.getTableMetaComment(source, queryDTO);
-        System.out.println(tableMetaComment);
+        Assert.assertTrue(StringUtils.isNotEmpty(tableMetaComment));
     }
 
     @Test
@@ -126,7 +131,8 @@ public class ImpalaKerberosTest {
     @Test
     public void getAllDatabases() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        System.out.println(client.getAllDatabases(source, SqlQueryDTO.builder().build()));
+        List<String> list = client.getAllDatabases(source, SqlQueryDTO.builder().build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
     }
 
     @Test
@@ -138,7 +144,8 @@ public class ImpalaKerberosTest {
     @Test
     public void getCreateSql() {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
-        System.out.println(client.getCreateTableSql(source, SqlQueryDTO.builder().tableName("nanqi").build()));
+        String createSql = client.getCreateTableSql(source, SqlQueryDTO.builder().tableName("nanqi").build());
+        Assert.assertNotNull(createSql);
     }
 
 

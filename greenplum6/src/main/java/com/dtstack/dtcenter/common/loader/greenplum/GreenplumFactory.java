@@ -25,10 +25,10 @@ public class GreenplumFactory extends ConnFactory {
     }
 
     @Override
-    public Connection getConn(ISourceDTO iSource) throws Exception {
+    public Connection getConn(ISourceDTO iSource, String taskParams) throws Exception {
         init();
         Greenplum6SourceDTO greenplum6SourceDTO = (Greenplum6SourceDTO) iSource;
-        Connection connection = super.getConn(greenplum6SourceDTO);
+        Connection connection = super.getConn(greenplum6SourceDTO, taskParams);
         if (!StringUtils.isBlank(greenplum6SourceDTO.getSchema())) {
             DBUtil.executeSqlWithoutResultSet(connection, String.format(SCHEMA_SET, greenplum6SourceDTO.getSchema()), false);
         }

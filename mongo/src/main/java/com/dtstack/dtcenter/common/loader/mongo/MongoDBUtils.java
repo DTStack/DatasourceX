@@ -29,8 +29,10 @@ import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -149,11 +151,12 @@ public class MongoDBUtils {
     /**
      * 获取指定库下的表名
      *
-     * @param iSource
-     * @return
+     * @param sourceDTO 数据源信息
+     * @param queryDTO  查询条件
+     * @return 表名集合
      */
-    public static List<String> getTableList(ISourceDTO iSource) {
-        MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) iSource;
+    public static List<String> getTableList(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        MongoSourceDTO mongoSourceDTO = (MongoSourceDTO) sourceDTO;
         List<String> tableList = Lists.newArrayList();
         MongoClient mongoClient = null;
         try {
@@ -165,11 +168,17 @@ public class MongoDBUtils {
                 tableList.add(s);
             }
         } catch (Exception e) {
-            log.error("获取tablelist异常  {}", mongoSourceDTO, e);
+            log.error("get tablelist exception  {}", mongoSourceDTO, e);
         } finally {
             if (!BooleanUtils.isTrue(IS_OPEN_POOL.get()) && mongoClient != null) {
                 mongoClient.close();
             }
+        }
+        if (Objects.nonNull(queryDTO) && StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+            tableList = tableList.stream().filter(table -> table.contains(queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
+        }
+        if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
+            tableList = tableList.stream().limit(queryDTO.getLimit()).collect(Collectors.toList());
         }
         return tableList;
     }
@@ -201,7 +210,7 @@ public class MongoDBUtils {
         }
 
         if (!isTelnet) {
-            throw new DtLoaderException("数据库服务器端口连接失败,请检查您的数据库配置或服务状态 : 连接信息：" + errorHost.toString());
+            throw new DtLoaderException("The database server port connection failed, please check your database configuration or service status: connection information：" + errorHost.toString());
         }
 
         return addresses;
@@ -222,7 +231,7 @@ public class MongoDBUtils {
             }
         }
         IS_OPEN_POOL.set(check);
-        log.info("获取 MongoDB 数据源连接, url : {}, username : {}", hostPorts, username);
+        log.info("get MongoDB connected, url : {}, username : {}", hostPorts, username);
         //不开启连接池
         if (!check) {
             return getClient(hostPorts, username, password, schema);

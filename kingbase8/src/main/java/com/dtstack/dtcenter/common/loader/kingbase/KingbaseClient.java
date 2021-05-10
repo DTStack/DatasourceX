@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * company: www.dtstack.com
@@ -38,7 +39,7 @@ public class KingbaseClient extends AbsRdbmsClient {
     /**
      * 获取某个schema下的所有表
      */
-    private static final String SCHEMA_TABLE_SQL = "SELECT tablename FROM SYS_CATALOG.sys_tables WHERE schemaname = '%s' ";
+    private static final String SCHEMA_TABLE_SQL = "SELECT tablename FROM SYS_CATALOG.sys_tables WHERE schemaname = '%s' %s";
 
     /**
      * 获取所有表名，表名前拼接schema，并对schema和tableName进行增加双引号处理
@@ -59,6 +60,12 @@ public class KingbaseClient extends AbsRdbmsClient {
     private static final String CURRENT_DB = "select current_database()";
 
     private static final String DONT_EXIST = "doesn't exist";
+
+    // 根据schema选表表名模糊查询
+    private static final String SEARCH_SQL = " AND tablename LIKE '%s' ";
+
+    // 限制条数语句
+    private static final String LIMIT_SQL = " LIMIT %s ";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -87,7 +94,7 @@ public class KingbaseClient extends AbsRdbmsClient {
             }
             return tableList;
         } catch (Exception e) {
-            throw new DtLoaderException("获取表异常", e);
+            throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, kingbaseSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -114,7 +121,7 @@ public class KingbaseClient extends AbsRdbmsClient {
                 return resultSet.getString(1);
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息 ：%s",
+            throw new DtLoaderException(String.format("Failed to get the information of table: %s. Please contact DBA to check the database and table information: %s",
                     queryDTO.getTableName(), e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, kingbaseSourceDTO.clearAfterGetConnection(clearStatus));
@@ -174,7 +181,7 @@ public class KingbaseClient extends AbsRdbmsClient {
             }
 
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取表:%s 的字段的注释信息时失败. 请联系 DBA 核查该库、表信息.",
+            throw new DtLoaderException(String.format("Failed to get the comment information of the field of the table: %s. Please contact the DBA to check the database and table information.",
                     queryDTO.getTableName()), e);
         }finally {
             DBUtil.closeDBResources(rs, statement, sourceDTO.clearAfterGetConnection(clearStatus));
@@ -222,9 +229,9 @@ public class KingbaseClient extends AbsRdbmsClient {
 
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
+                throw new DtLoaderException(String.format(queryDTO.getTableName() + "table not exist,%s", e.getMessage()), e);
             } else {
-                throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", queryDTO.getTableName()) , e);
+                throw new DtLoaderException(String.format("Failed to get meta information for the fields of table :%s. Please contact the DBA to check the database table information.", queryDTO.getTableName()) , e);
             }
         } finally {
             DBUtil.closeDBResources(rs, statement, kingbaseSourceDTO.clearAfterGetConnection(clearStatus));
@@ -261,6 +268,19 @@ public class KingbaseClient extends AbsRdbmsClient {
 
     @Override
     protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
-        return String.format(SCHEMA_TABLE_SQL, queryDTO.getSchema());
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) sourceDTO;
+        String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : rdbmsSourceDTO.getSchema();
+        // 如果不传scheme，默认使用当前连接使用的schema
+        if (StringUtils.isBlank(schema)) {
+            throw new DtLoaderException("schema is not empty...");
+        }
+        StringBuilder constr = new StringBuilder();
+        if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+            constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
+        }
+        if (Objects.nonNull(queryDTO.getLimit())) {
+            constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));
+        }
+        return String.format(SCHEMA_TABLE_SQL, schema, constr.toString());
     }
 }

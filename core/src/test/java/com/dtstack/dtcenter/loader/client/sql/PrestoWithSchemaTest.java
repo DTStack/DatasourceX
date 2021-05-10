@@ -131,6 +131,9 @@ public class PrestoWithSchemaTest {
     public void getColumnClassInfo() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
+        Assert.assertEquals("java.lang.Integer", columnClassInfo.get(0));
+        Assert.assertEquals("java.lang.String", columnClassInfo.get(1));
+        Assert.assertEquals("java.lang.String", columnClassInfo.get(2));
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
     }
 
@@ -141,6 +144,12 @@ public class PrestoWithSchemaTest {
     public void getColumnMetaData() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
+        Assert.assertEquals("INTEGER",columnMetaData.get(0).getType());
+        Assert.assertEquals("varchar",columnMetaData.get(1).getType());
+        Assert.assertEquals("varchar",columnMetaData.get(2).getType());
+        Assert.assertEquals("id",columnMetaData.get(0).getComment());
+        Assert.assertEquals("姓名",columnMetaData.get(1).getComment());
+        Assert.assertEquals("分区",columnMetaData.get(2).getComment());
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 

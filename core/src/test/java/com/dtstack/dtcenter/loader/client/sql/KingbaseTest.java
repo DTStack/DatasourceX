@@ -29,10 +29,9 @@ public class KingbaseTest {
 
     // 构建数据源信息
     private static final KingbaseSourceDTO source = KingbaseSourceDTO.builder()
-            .url("jdbc:kingbase8://172.16.100.181:54321/TEST")
-            .username("SYSTEM")
-            .password("abc123")
-            .schema("")
+            .url("jdbc:kingbase8://172.16.100.186:54321/test_db")
+            .username("test")
+            .password("test123")
             .poolConfig(PoolConfig.builder().maximumPoolSize(2).build())
             .build();
 
@@ -44,6 +43,10 @@ public class KingbaseTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists LOADER_TEST").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table LOADER_TEST (id int, name varchar(50))").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("comment on column LOADER_TEST.id is 'id';").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("comment on column LOADER_TEST.name is '名字';").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into LOADER_TEST values (1, 'LOADER_TEST')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);

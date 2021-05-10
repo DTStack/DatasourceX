@@ -39,7 +39,7 @@ public class HbaseKerberosTest {
 
     // 构建数据源信息
     private static final HbaseSourceDTO source = HbaseSourceDTO.builder()
-            .url("172.16.101.239:2181")
+            .url("172.16.100.208:2181,172.16.100.217:2181,172.16.101.169:2181")
             .path("/hbase")
             .build();
     /**
@@ -54,7 +54,7 @@ public class HbaseKerberosTest {
         kerberosConfig.put(HadoopConfTool.HBASE_MASTER_PRINCIPAL, "hbase/_HOST@DTSTACK.COM");
         kerberosConfig.put(HadoopConfTool.HBASE_REGION_PRINCIPAL, "hbase/_HOST@DTSTACK.COM");
         source.setKerberosConfig(kerberosConfig);
-        String localKerberosPath = HbaseKerberosTest.class.getResource("/phoenix5_kerberos").getPath();
+        String localKerberosPath = HbaseKerberosTest.class.getResource("/eng-cdh3").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HBASE.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
 
@@ -72,7 +72,7 @@ public class HbaseKerberosTest {
     public void testCon() throws Exception {
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("连接异常");
+            throw new DtLoaderException("connection exception");
         }
     }
 

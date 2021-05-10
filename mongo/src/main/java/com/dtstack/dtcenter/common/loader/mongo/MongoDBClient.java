@@ -25,8 +25,8 @@ public class MongoDBClient<T> extends AbsNoSqlClient<T> {
     }
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        return MongoDBUtils.getTableList(iSource);
+    public List<String> getTableList(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        return MongoDBUtils.getTableList(sourceDTO, queryDTO);
     }
 
     @Override

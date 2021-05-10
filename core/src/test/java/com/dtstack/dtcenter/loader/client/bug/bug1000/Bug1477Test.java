@@ -14,13 +14,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * bug内容：当hive表存在但是hive表在hdfs上的路径文件不存在时，调用Client.getDownloader方法会报错 {@link IClient#getDownloader}
+ * bug内容：当hive表存在但是hive表在hdfs上的路径file is not exist时，调用Client.getDownloader方法会报错 {@link IClient#getDownloader}
  *
  * @author ：wangchuan
  * date：Created in 4:52 下午 2021/2/8
  * company: www.dtstack.com
  */
-public class Bug1477 {
+public class Bug1477Test {
 
     /**
      * 构造hive客户端

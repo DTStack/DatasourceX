@@ -64,7 +64,7 @@ public class SFTPHandler {
         }
         Session session = jsch.getSession(username, host, port);
         if (session == null) {
-            throw new DtLoaderException("与ftp服务器建立连接失败,请检查用户名和密码是否正确");
+            throw new DtLoaderException("Failed to establish a connection with the ftp server, please check whether the user name and password are correct");
         }
 
         if (StringUtils.isBlank(authType) || SftpAuthType.PASSWORD.getType().toString().equals(authType)) {

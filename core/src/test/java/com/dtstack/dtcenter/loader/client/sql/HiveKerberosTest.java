@@ -29,7 +29,6 @@ import java.util.Map;
  * @Date ：Created in 13:49 2020/9/8
  * @Description：hive Kerberos 测试
  */
-@Ignore
 public class HiveKerberosTest {
 
     /**
@@ -38,35 +37,52 @@ public class HiveKerberosTest {
     private static final IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
 
     private static HiveSourceDTO source = HiveSourceDTO.builder()
-            .url("jdbc:hive2://eng-cdh3:10001/default;principal=hive/eng-cdh3@DTSTACK.COM")
-            .defaultFS("hdfs://eng-cdh1:8020")
+            .url("jdbc:hive2://172.16.100.208:10000/default;principal=hive/master@DTSTACK.COM")
+            .defaultFS("hdfs://master:8020")
             .build();
 
     @BeforeClass
     public static void beforeClass() {
         // 准备 Kerberos 参数
         Map<String, Object> kerberosConfig = new HashMap<>();
-        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/hive-cdh03.keytab");
+        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/hive.keytab");
         kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
         source.setKerberosConfig(kerberosConfig);
-        String localKerberosPath = HiveKerberosTest.class.getResource("/eng-cdh").getPath();
+        String localKerberosPath = HiveKerberosTest.class.getResource("/eng-cdh3").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.HIVE.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
 
-        System.setProperty("HADOOP_USER_NAME", "admin");
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_1").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists test_001").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int, name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table test_001(uid int comment 'ID', name string comment '姓名_name')row format delimited fields terminated by '/t'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
+
+
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_1").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int comment 'ID', name string comment '姓名_name') COMMENT 'table comment' row format delimited fields terminated by ','").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_1 values (1, 'loader_test_1')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_parquet").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_parquet (id int, name string) STORED AS PARQUET").build();
+
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_parquet (id int comment 'ID', name string comment '姓名_name') STORED AS PARQUET").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_parquet values (1, 'wc1'),(2,'wc2')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
+
+    /**
+     * 获取表字段详细信息
+     */
+    @Test
+    public void getTable_0001()  {
+        Table table = client.getTable(source, SqlQueryDTO.builder().tableName("test_001").build());
+        Assert.assertNotNull(table.getDelim());
+    }
+
     /**
      * 获取连接测试
      */
@@ -84,7 +100,7 @@ public class HiveKerberosTest {
     public void testCon()  {
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("连接异常");
+            throw new DtLoaderException("connection exception");
         }
     }
 

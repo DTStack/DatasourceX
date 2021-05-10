@@ -7,6 +7,7 @@ import com.dtstack.dtcenter.common.loader.common.utils.TelUtil;
 import com.dtstack.dtcenter.common.loader.kafka.KafkaConsistent;
 import com.dtstack.dtcenter.common.loader.kafka.KafkaErrorPattern;
 import com.dtstack.dtcenter.common.loader.kafka.enums.EConsumeType;
+import com.dtstack.dtcenter.loader.dto.KafkaConsumerDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -16,6 +17,7 @@ import com.google.common.collect.Maps;
 import kafka.admin.AdminUtils;
 import kafka.cluster.Broker;
 import kafka.cluster.EndPoint;
+import kafka.coordinator.group.GroupOverview;
 import kafka.utils.ZkUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -86,7 +88,7 @@ public class KafkaUtil {
      * @return jaas文件绝对路径
      */
     private static String writeKafkaJaas(Map<String, Object> kerberosConfig) {
-        log.info("初始化 Kafka JAAS 文件, kerberosConfig : {}", kerberosConfig);
+        log.info("Initialize Kafka JAAS file, kerberosConfig : {}", kerberosConfig);
         if (MapUtils.isEmpty(kerberosConfig)){
             return null;
         }
@@ -114,7 +116,7 @@ public class KafkaUtil {
             log.info("Init Kafka Kerberos:login-conf:{}\n --sasl.kerberos.service.name:{}", keytabConf, principal);
             return kafkaLoginConf;
         } catch (IOException e) {
-            throw new DtLoaderException("写入kafka配置文件异常", e);
+            throw new DtLoaderException(String.format("Writing to Kafka configuration file exception,%s", e.getMessage()), e);
         }
     }
 
@@ -126,9 +128,9 @@ public class KafkaUtil {
      * @throws Exception
      */
     public static String getAllBrokersAddressFromZk(String zkUrls) {
-        log.info("通过 ZK 获取 Kafka Broker 地址 : {}", zkUrls);
+        log.info("Obtain Kafka Broker address through ZK : {}", zkUrls);
         if (StringUtils.isBlank(zkUrls) || !TelUtil.checkTelnetAddr(zkUrls)) {
-            throw new DtLoaderException("请配置正确的 zookeeper 地址");
+            throw new DtLoaderException("Please configure the correct zookeeper address");
         }
 
         ZkUtils zkUtils = null;
@@ -190,7 +192,7 @@ public class KafkaUtil {
      * @return
      */
     public static List<String> getTopicListFromZk(String zkUrls) {
-        log.info("通过 ZK 获取 Kafka Topic 信息 : {}", zkUrls);
+        log.info("Get Kafka Topic information through ZK: {}", zkUrls);
         ZkUtils zkUtils = null;
         List<String> topics = Lists.newArrayList();
         try {
@@ -240,7 +242,7 @@ public class KafkaUtil {
      */
     @Deprecated
     public static List<MetadataResponse.PartitionMetadata> getAllPartitionsFromZk(String zkUrls, String topic) {
-        log.info("通过 ZK 获取 Kafka 分区信息, zkUrls : {}, topic : {}", zkUrls, topic);
+        log.info("Obtain Kafka partition information through ZK, zkUrls : {}, topic : {}", zkUrls, topic);
         ZkUtils zkUtils = null;
 
         try {
@@ -250,7 +252,7 @@ public class KafkaUtil {
             List<MetadataResponse.PartitionMetadata> partitionMetadata = topicMetadata.partitionMetadata();
             return partitionMetadata;
         } catch (Exception e) {
-            throw new DtLoaderException(e.getMessage());
+            throw new DtLoaderException(e.getMessage(), e);
         } finally {
             if (zkUtils != null) {
                 zkUtils.close();
@@ -354,10 +356,10 @@ public class KafkaUtil {
      * @return
      */
     private synchronized static Properties initProperties(String brokerUrls, Map<String, Object> kerberosConfig) {
-        log.info("初始化 Kafka 配置信息, brokerUrls : {}, kerberosConfig : {}", brokerUrls, kerberosConfig);
+        log.info("Initialize Kafka configuration information, brokerUrls : {}, kerberosConfig : {}", brokerUrls, kerberosConfig);
         Properties props = new Properties();
         if (StringUtils.isBlank(brokerUrls)) {
-            throw new DtLoaderException("Kafka Broker 地址不能为空");
+            throw new DtLoaderException("Kafka Broker address cannot be empty");
         }
         /* 定义kakfa 服务的地址，不需要将所有broker指定上 */
         props.put("bootstrap.servers", brokerUrls);
@@ -370,7 +372,7 @@ public class KafkaUtil {
         //heart beat 默认3s
         props.put("session.timeout.ms", "10000");
         //一次性的最大拉取条数
-        props.put("max.poll.records", 5);
+        props.put("max.poll.records", "5");
         props.put("auto.offset.reset", "earliest");
         /* key的序列化类 */
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
@@ -399,7 +401,7 @@ public class KafkaUtil {
             Config.refresh();
             javax.security.auth.login.Configuration.setConfiguration(null);
         } catch (Exception e) {
-            log.error("kafka kerberos认证信息刷新失败！");
+            log.error("Kafka kerberos authentication information refresh failed!");
         }
         // kerberos 相关设置
         props.put("security.protocol", "SASL_PLAINTEXT");
@@ -458,7 +460,7 @@ public class KafkaUtil {
                 result.add(record.value());
             }
         } catch (Exception e) {
-            log.error("从kafka消费数据异常 zkUrls:{} \nbrokerUrls:{} \ntopic:{} \nautoReset:{} \n ", zkUrls, brokerUrls, topic, autoReset, e);
+            log.error("consumption data from Kafka zkUrls:{} \nbrokerUrls:{} \ntopic:{} \nautoReset:{} \n ", zkUrls, brokerUrls, topic, autoReset, e);
         } finally {
             destroyProperty();
         }
@@ -496,7 +498,7 @@ public class KafkaUtil {
             }
             return partitionDTOS;
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取topic：%s 分区信息异常：%s", topic, e.getMessage()), e);
+            throw new DtLoaderException(String.format("Get topic: %s partition information is exception：%s", topic, e.getMessage()), e);
         }
     }
 
@@ -597,8 +599,149 @@ public class KafkaUtil {
                 }
             }
         } catch (Exception e) {
-            log.error("从kafka消费数据异常：brokerUrls:{} \ntopic:{} \noffsetReset:{} \n timestampOffset:{} \n maxTimeWait:{} \n ", brokerUrls, topic, offsetReset, timestampOffset, maxTimeWait, e);
+            log.error("consumption data from Kafka exception：brokerUrls:{} \ntopic:{} \noffsetReset:{} \n timestampOffset:{} \n maxTimeWait:{} \n ", brokerUrls, topic, offsetReset, timestampOffset, maxTimeWait, e);
         } finally {
+            destroyProperty();
+        }
+        return result;
+    }
+
+    /**
+     * 获取 kafka 消费者组列表
+     *
+     * @param brokerUrls     kafka broker节点信息
+     * @param topic          kafka 主题
+     * @param kerberosConfig kerberos 配置信息
+     * @return 消费者组列表
+     */
+    public static List<String> listConsumerGroup(String brokerUrls, String topic, Map<String, Object> kerberosConfig) {
+        List<String> consumerGroups = new ArrayList<>();
+        Properties prop = initProperties(brokerUrls, kerberosConfig);
+        // 获取kafka client
+        kafka.admin.AdminClient adminClient = kafka.admin.AdminClient.create(prop);
+        try {
+            // scala seq 转 java list
+            List<GroupOverview> groups = JavaConversions.seqAsJavaList(adminClient.listAllConsumerGroupsFlattened().toSeq());
+            groups.forEach(group -> consumerGroups.add(group.groupId()));
+            // 不指定topic 全部返回
+            if (StringUtils.isBlank(topic)) {
+                return consumerGroups;
+            }
+            List<String> consumerGroupsByTopic = Lists.newArrayList();
+            for (String groupId : consumerGroups) {
+                kafka.admin.AdminClient.ConsumerGroupSummary groupSummary = adminClient.describeConsumerGroup(groupId, 5000L);
+                // 消费者组不存在的情况
+                if (Objects.isNull(groupSummary) || "Dead".equals(groupSummary.state())) {
+                    continue;
+                }
+                Map<TopicPartition, Object> offsets = JavaConversions.mapAsJavaMap(adminClient.listGroupOffsets(groupId));
+                for (TopicPartition topicPartition : offsets.keySet()) {
+                    if (topic.equals(topicPartition.topic())) {
+                        consumerGroupsByTopic.add(groupId);
+                        break;
+                    }
+                }
+            }
+            return consumerGroupsByTopic;
+        } catch (Exception e){
+            log.error("listConsumerGroup error:{}", e.getMessage(), e);
+        } finally {
+            if (Objects.nonNull(adminClient)) {
+                adminClient.close();
+            }
+            destroyProperty();
+        }
+        return Lists.newArrayList();
+    }
+
+    /**
+     * 获取 kafka 消费者组详细信息
+     *
+     * @param brokerUrls     kafka broker 地址信息
+     * @param groupId        消费者组
+     * @param srcTopic       kafka 主题
+     * @param kerberosConfig kerberos 配置信息哦
+     * @return 消费者组详细信息
+     */
+    public static List<KafkaConsumerDTO> getGroupInfoByGroupId(String brokerUrls, String groupId, String srcTopic, Map<String, Object> kerberosConfig) {
+        List<KafkaConsumerDTO> result = Lists.newArrayList();
+        Properties prop = initProperties(brokerUrls, kerberosConfig);
+        // 获取kafka client
+        kafka.admin.AdminClient adminClient = kafka.admin.AdminClient.create(prop);
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(prop)){
+
+            if (StringUtils.isNotBlank(groupId)) {
+                kafka.admin.AdminClient.ConsumerGroupSummary groupSummary = adminClient.describeConsumerGroup(groupId, 5000L);
+                // 消费者组不存在的情况
+                if (Objects.isNull(groupSummary) || "Dead".equals(groupSummary.state())) {
+                    return result;
+                }
+            }else {
+                // groupId 为空的时候获取所有的分区
+                List<PartitionInfo> allPartitions = consumer.partitionsFor(srcTopic);
+                for (PartitionInfo partitionInfo : allPartitions) {
+                    TopicPartition topicPartition = new TopicPartition(partitionInfo.topic(), partitionInfo.partition());
+                    // 指定当前分区
+                    consumer.assign(Lists.newArrayList(topicPartition));
+                    consumer.seekToEnd(Lists.newArrayList(topicPartition));
+                    long logEndOffset = consumer.position(topicPartition);
+                    String brokerHost = Objects.isNull(partitionInfo.leader()) ? null : partitionInfo.leader().host();
+                    // 组装kafka consumer 信息
+                    KafkaConsumerDTO kafkaConsumerDTO = KafkaConsumerDTO.builder()
+                            .groupId(groupId)
+                            .topic(partitionInfo.topic())
+                            .partition(partitionInfo.partition())
+                            .logEndOffset(logEndOffset)
+                            .brokerHost(brokerHost)
+                            .build();
+                    result.add(kafkaConsumerDTO);
+                }
+                return result;
+            }
+
+            Map<TopicPartition, Object> offsets = JavaConversions.mapAsJavaMap(adminClient.listGroupOffsets(groupId));
+            for (TopicPartition topicPartition : offsets.keySet()) {
+                String topic = topicPartition.topic();
+                // 过滤指定topic 下的 partition
+                if (StringUtils.isNotBlank(srcTopic) && !srcTopic.equals(topic)) {
+                    continue;
+                }
+                int partition = topicPartition.partition();
+                // 当前消费位置
+                Long currentOffset = (Long) offsets.get(topicPartition);
+                List<TopicPartition> singleTopicPartition = Lists.newArrayList(topicPartition);
+                // 指定当前分区
+                consumer.assign(singleTopicPartition);
+                consumer.seekToEnd(singleTopicPartition);
+                long logEndOffset = consumer.position(topicPartition);
+
+                List<PartitionInfo> partitions = consumer.partitionsFor(topic);
+
+                // 组装kafka consumer 信息
+                KafkaConsumerDTO kafkaConsumerDTO = KafkaConsumerDTO.builder()
+                        .groupId(groupId)
+                        .topic(topic)
+                        .partition(partition)
+                        .currentOffset(currentOffset)
+                        .logEndOffset(logEndOffset)
+                        .lag(logEndOffset - currentOffset)
+                        .build();
+
+                // 查询当前分区 leader 所在机器的host
+                for (PartitionInfo partitionInfo : partitions) {
+                    if (partition == partitionInfo.partition() && Objects.nonNull(partitionInfo.leader())) {
+                        kafkaConsumerDTO.setBrokerHost(partitionInfo.leader().host());
+                        break;
+                    }
+                }
+                result.add(kafkaConsumerDTO);
+            }
+        } catch (Exception e) {
+            log.error("getGroupInfoByGroupId error:{}", e.getMessage(), e);
+        } finally {
+            if (Objects.nonNull(adminClient)) {
+                adminClient.close();
+            }
             destroyProperty();
         }
         return result;

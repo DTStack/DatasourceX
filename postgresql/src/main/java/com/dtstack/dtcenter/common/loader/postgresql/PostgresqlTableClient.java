@@ -41,7 +41,7 @@ public class PostgresqlTableClient extends AbsTableClient {
 
     @Override
     public List<String> showPartitions(ISourceDTO source, String tableName) {
-        throw new DtLoaderException("postgresql不支持获取分区操作！");
+        throw new DtLoaderException("postgresql not supported fetch partition operation");
     }
 
     @Override
@@ -51,13 +51,13 @@ public class PostgresqlTableClient extends AbsTableClient {
 
     @Override
     public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) {
-        throw new DtLoaderException("postgresql暂时不支持更改表参数操作！");
+        throw new DtLoaderException("postgresql not currently support change table parameter ！");
     }
 
     @Override
     protected String getTableSizeSql(String schema, String tableName) {
         if (StringUtils.isBlank(schema)) {
-            throw new DtLoaderException("schema不能为空");
+            throw new DtLoaderException("schema is not empty");
         }
         return String.format(TABLE_SIZE_SQL, schema, tableName);
     }

@@ -17,6 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,13 +83,30 @@ public class Hive1Test {
     }
 
     /**
+     * 获取连接测试
+     */
+    @Test
+    public void getConWithTaskParams() throws Exception {
+        client.executeQuery(source, SqlQueryDTO.builder().sql("drop table if exists loader_nonstrict").build());
+        client.executeQuery(source, SqlQueryDTO.builder().sql("create table if not exists loader_nonstrict (id int) partitioned by(name string)").build());
+        Connection con = client.getCon(source, "hive.exec.dynamic.partition.mode=nonstrict\n" +
+                "loader.age=2\n" +
+                "loader.null=");
+        Statement statement = con.createStatement();
+        statement.execute("insert overwrite table loader_nonstrict partition(name) select id ,name from loader_test_1");
+        Assert.assertNotNull(con);
+        statement.close();
+        con.close();
+    }
+
+    /**
      * 连通性测试
      */
     @Test
     public void testCon()  {
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("连接异常");
+            throw new DtLoaderException("connection exception");
         }
     }
 
@@ -128,6 +146,8 @@ public class Hive1Test {
     public void getColumnClassInfo()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_1").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
+        Assert.assertEquals("java.lang.Integer", columnClassInfo.get(0));
+        Assert.assertEquals("java.lang.String", columnClassInfo.get(1));
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
     }
 
@@ -138,6 +158,8 @@ public class Hive1Test {
     public void getColumnMetaData()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_1").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
+        Assert.assertEquals("int", columnMetaData.get(0).getType());
+        Assert.assertEquals("string", columnMetaData.get(1).getType());
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 

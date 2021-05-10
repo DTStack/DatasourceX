@@ -160,7 +160,7 @@ public class HdfsParquetWriter {
                 writeLineNum++;
             }
         } catch (Exception e) {
-            throw new DtLoaderException("第" + currLineNum + "行数据异常:" + e.getMessage());
+            throw new DtLoaderException("The" + currLineNum + "row data is abnormal:" + e.getMessage(), e);
         } finally {
             closeResource(writer, inputStreamReader, reader);
         }
@@ -289,7 +289,7 @@ public class HdfsParquetWriter {
                 writeLineNum++;
             }
         } catch (Exception e) {
-            throw new DtLoaderException("第" + currLineNum + "行数据异常:" + e.getMessage());
+            throw new DtLoaderException("the" + currLineNum + "row data is abnormal:" + e.getMessage(), e);
         } finally {
             closeResource(writer, inputStreamReader, reader);
         }

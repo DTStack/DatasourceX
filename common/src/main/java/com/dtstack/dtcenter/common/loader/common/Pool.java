@@ -41,7 +41,7 @@ public class Pool<T> implements Cloneable {
         try {
             internalPool.close();
         } catch (Exception e) {
-            throw new DtLoaderException("Could not destroy the pool", e);
+            throw new DtLoaderException(String.format("Could not destroy the pool:%s", e.getMessage()), e);
         }
     }
 
@@ -53,7 +53,7 @@ public class Pool<T> implements Cloneable {
         try {
             return internalPool.borrowObject();
         } catch (Exception e) {
-            throw new DtLoaderException("Could not get a resource from the pool", e);
+            throw new DtLoaderException(String.format("Could not get a resource from the pool:%s", e.getMessage()), e);
         }
     }
 
@@ -74,7 +74,7 @@ public class Pool<T> implements Cloneable {
         try {
             internalPool.returnObject(resource);
         } catch (Exception e) {
-            throw new DtLoaderException("Could not return the resource to the pool", e);
+            throw new DtLoaderException(String.format("Could not return the resource to the pool,%s", e.getMessage()), e);
         }
     }
 
@@ -92,7 +92,7 @@ public class Pool<T> implements Cloneable {
         try {
             internalPool.invalidateObject(resource);
         } catch (Exception e) {
-            throw new DtLoaderException("Could not return the resource to the pool", e);
+            throw new DtLoaderException(String.format("Could not return the resource to the pool, %s",e.getMessage()), e);
         }
     }
 
@@ -156,7 +156,7 @@ public class Pool<T> implements Cloneable {
                 this.internalPool.addObject();
             }
         } catch (Exception e) {
-            throw new DtLoaderException("Error trying to add idle objects", e);
+            throw new DtLoaderException(String.format("Error trying to add idle objects,%s", e.getMessage()), e);
         }
     }
 }

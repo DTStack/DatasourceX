@@ -18,7 +18,6 @@ import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
@@ -36,6 +35,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -76,10 +76,15 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      */
     @Override
     public Connection getCon(ISourceDTO iSource) {
+        return getCon(iSource, null);
+    }
+
+    @Override
+    public Connection getCon(ISourceDTO iSource, String taskParams) {
         log.info("-------getting connection....-----");
         if (!CacheConnectionHelper.isStart()) {
             try {
-                return connFactory.getConn(iSource);
+                return connFactory.getConn(iSource, taskParams);
             } catch (Exception e){
                 throw new DtLoaderException(e.getMessage(), e);
             }
@@ -87,7 +92,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
         return CacheConnectionHelper.getConnection(getSourceType().getVal(), con -> {
             try {
-                return connFactory.getConn(iSource);
+                return connFactory.getConn(iSource, taskParams);
             } catch (Exception e) {
                 throw new DtLoaderException(e.getMessage(), e);
             }
@@ -130,7 +135,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         try {
             return executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO, clearStatus);
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("connection调用isClosed方法异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("connection calls isClosed method exception : %s", e.getMessage()), e);
         }
     }
 
@@ -144,7 +149,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                 return false;
             }
         } catch (SQLException e) {
-            throw new DtLoaderException(String.format("connection调用isClosed方法异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("connection calls isClosed method exception : %s", e.getMessage()), e);
         }
 
         DBUtil.executeSqlWithoutResultSet(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), queryDTO.getSql(),
@@ -163,7 +168,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     protected Integer beforeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO, boolean query) {
         // 查询 SQL 不能为空
         if (query && StringUtils.isBlank(queryDTO.getSql())) {
-            throw new DtLoaderException("查询 SQL 不能为空");
+            throw new DtLoaderException("Query SQL cannot be empty");
         }
 
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
@@ -190,7 +195,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         // 查询表不能为空
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         if (queryDTO == null || StringUtils.isBlank(queryDTO.getTableName())) {
-            throw new DtLoaderException("查询 表名称 不能为空");
+            throw new DtLoaderException("Query table name cannot be empty");
         }
 
         queryDTO.setColumns(CollectionUtils.isEmpty(queryDTO.getColumns()) ? Collections.singletonList("*") :
@@ -210,7 +215,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                 rs = meta.getTables(null, null, null, null);
             } else {
                 rs = meta.getTables(null, rdbmsSourceDTO.getSchema(),
-                        StringUtils.isBlank(queryDTO.getTableNamePattern()) ? queryDTO.getTableNamePattern() :
+                        StringUtils.isNotBlank(queryDTO.getTableNamePattern()) ? queryDTO.getTableNamePattern() :
                                 queryDTO.getTableName(),
                         DBUtil.getTableTypes(queryDTO));
             }
@@ -218,9 +223,12 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                 tableList.add(rs.getString(3));
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取数据库表异常：%s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("Get database table exception：%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, null, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
+            tableList = tableList.stream().limit(queryDTO.getLimit()).collect(Collectors.toList());
         }
         return tableList;
     }
@@ -275,10 +283,12 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
         Statement stmt = null;
         ResultSet rs = null;
+        // schema 先从queryDTO中获取
+        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? rdbmsSourceDTO.getSchema() : queryDTO.getSchema();
         try {
             stmt = rdbmsSourceDTO.getConnection().createStatement();
             String queryColumnSql =
-                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(rdbmsSourceDTO.getSchema(), queryDTO.getTableName())
+                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(schema, queryDTO.getTableName())
                             + " where 1=2";
             rs = stmt.executeQuery(queryColumnSql);
             ResultSetMetaData rsmd = rs.getMetaData();
@@ -330,9 +340,9 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
+                throw new DtLoaderException(String.format(queryDTO.getTableName() + "table not exist,%s", e.getMessage()), e);
             } else {
-                throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息 ：%s",
+                throw new DtLoaderException(String.format("Failed to get the meta information of the fields of the table: %s. Please contact the DBA to check the database and table information: %s",
                         queryDTO.getTableName(), e.getMessage()), e);
             }
         } finally {
@@ -347,10 +357,12 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         Statement statement = null;
         ResultSet rs = null;
         List<ColumnMetaDTO> columns = new ArrayList<>();
+        // schema 先从queryDTO中获取
+        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? rdbmsSourceDTO.getSchema() : queryDTO.getSchema();
         try {
             statement = rdbmsSourceDTO.getConnection().createStatement();
             String queryColumnSql =
-                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(rdbmsSourceDTO.getSchema(), queryDTO.getTableName()) + " where 1=2";
+                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(schema, queryDTO.getTableName()) + " where 1=2";
 
             rs = statement.executeQuery(queryColumnSql);
             ResultSetMetaData rsMetaData = rs.getMetaData();
@@ -372,9 +384,9 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
             }
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
+                throw new DtLoaderException(String.format(queryDTO.getTableName() + "table not exist,%s", e.getMessage()), e);
             } else {
-                throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息 ：%s",
+                throw new DtLoaderException(String.format("Failed to get the meta information of the fields of the table: %s. Please contact the DBA to check the database and table information: %s",
                         queryDTO.getTableName(), e.getMessage()), e);
             }
         } finally {
@@ -470,8 +482,10 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @param sqlQueryDTO 查询条件
      * @return 处理后的查询sql
      */
-    protected String dealSql(ISourceDTO iSource, SqlQueryDTO sqlQueryDTO){
-        return "select * from " + transferTableName(sqlQueryDTO.getTableName());
+    protected String dealSql(ISourceDTO sourceDTO, SqlQueryDTO sqlQueryDTO){
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) sourceDTO;
+        String schema = StringUtils.isNotBlank(sqlQueryDTO.getSchema()) ? sqlQueryDTO.getSchema() : rdbmsSourceDTO.getSchema();
+        return "select * from " + transferSchemaAndTableName(schema, sqlQueryDTO.getTableName());
     }
 
     /**
@@ -491,6 +505,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @param tableName
      * @return
      */
+    @Deprecated
     protected String transferTableName(String tableName) {
         return tableName;
     }
@@ -525,7 +540,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO){
         // 获取表信息需要通过show databases 语句
         String sql = getShowDbSql();
-        return queryWithSingleColumn(source, sql, 1, "获取所有库异常");
+        return queryWithSingleColumn(source, sql, 1, "get All database exception");
     }
 
     @Override
@@ -639,5 +654,15 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      */
     protected String getCatalogSql() {
         throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
+
+    /**
+     * 在字符串前后添加 %
+     *
+     * @param str 需要添加 % 的字符串
+     * @return 添加 % 后的字符串
+     */
+    protected String addPercentSign(String str) {
+        return "%" + str + "%";
     }
 }

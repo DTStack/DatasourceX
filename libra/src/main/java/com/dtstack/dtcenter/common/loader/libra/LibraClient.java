@@ -71,7 +71,7 @@ public class LibraClient extends AbsRdbmsClient {
             }
             return tableList;
         } catch (Exception e) {
-            throw new DtLoaderException("获取表异常", e);
+            throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, libraSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -119,7 +119,7 @@ public class LibraClient extends AbsRdbmsClient {
     @Override
     public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
         if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("schema名称不能为空");
+            throw new DtLoaderException("schema is not empty");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(DATABASE_IS_EXISTS, dbName)).build()));
     }
@@ -135,7 +135,7 @@ public class LibraClient extends AbsRdbmsClient {
     @Override
     public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
         if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("schema名称不能为空");
+            throw new DtLoaderException("schema is not empty");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLES_IS_IN_SCHEMA, dbName, tableName)).build()));
     }

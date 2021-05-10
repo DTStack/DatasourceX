@@ -31,7 +31,7 @@ public class YarnConfUtil extends HadoopConfUtil {
             yarnConf = new YarnConfiguration(configuration);
             initYarnConfiguration((YarnConfiguration) yarnConf, yarnConfig);
         } catch (Exception e) {
-            throw new DtLoaderException("获取yarn配置信息失败", e);
+            throw new DtLoaderException(String.format("Failed to obtain yarn configuration information,%s", e.getMessage()), e);
         }
         return (YarnConfiguration) yarnConf;
     }

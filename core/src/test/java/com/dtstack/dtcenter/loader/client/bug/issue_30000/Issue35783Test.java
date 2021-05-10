@@ -22,7 +22,7 @@ import java.util.List;
  * @Author ：Nanqi
  * @Date ：Created in 09:42 2021/03/23
  */
-public class Issue35783 {
+public class Issue35783Test {
     // 获取数据源 client
     private static final IClient client = ClientCache.getClient(DataSourceType.MySQL.getVal());
 

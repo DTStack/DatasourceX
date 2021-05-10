@@ -33,7 +33,7 @@ public class PrestoTest {
 
     // 构建数据源信息
     private static final PrestoSourceDTO source = PrestoSourceDTO.builder()
-            .url("jdbc:presto://172.16.101.236:8080/hive")
+            .url("jdbc:presto://172.16.23.23:8080/hive")
             .username("root")
             .poolConfig(PoolConfig.builder().build())
             .build();
@@ -120,7 +120,7 @@ public class PrestoTest {
      */
     @Test
     public void getTableListBySchema() {
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("lianlian02").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("default").build();
         List<String> tableList = client.getTableListBySchema(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
@@ -142,7 +142,9 @@ public class PrestoTest {
     public void getColumnMetaData() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("\"default\".\"LOADER_TEST\"").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
+        List<ColumnMetaDTO> columnMetaData1 = client.getColumnMetaData(source,  SqlQueryDTO.builder().schema("default").tableName("LOADER_TEST").build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData1));
     }
 
     /**

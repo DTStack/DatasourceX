@@ -7,7 +7,10 @@ import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,6 +18,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 
 /**
  * @company: www.dtstack.com
@@ -80,7 +84,7 @@ public class DBUtil {
             }
 
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL执行异常：%s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("SQL execute exception：%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(res, statement, closeConn ? conn : null);
         }
@@ -144,7 +148,7 @@ public class DBUtil {
                 result.add(row);
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL 执行异常, %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(res, statement, closeConn ? conn : null);
         }
@@ -166,7 +170,7 @@ public class DBUtil {
             statement = conn.createStatement();
             statement.execute(sql);
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL 执行异常：%s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("SQL execute exception：%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(null, statement, closeConn ? conn : null);
         }
@@ -215,5 +219,27 @@ public class DBUtil {
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
         }
+    }
+
+    /**
+     * 环境变量转化
+     *
+     * @param taskParams
+     * @return
+     */
+    public static Properties stringToProperties (String taskParams) {
+        Properties properties = new Properties();
+
+        // 空指针判断
+        if (StringUtils.isBlank(taskParams)) {
+            return properties;
+        }
+
+        try {
+            properties.load(new ByteArrayInputStream(taskParams.replace("hiveconf:", "").getBytes("UTF-8")));
+        } catch (IOException e) {
+            log.error("taskParams change error : {}", e.getMessage(), e);
+        }
+        return properties;
     }
 }

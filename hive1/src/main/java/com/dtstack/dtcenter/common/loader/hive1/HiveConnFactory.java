@@ -1,5 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hive1;
 
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
@@ -12,6 +14,8 @@ import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * @company: www.dtstack.com
@@ -21,6 +25,9 @@ import java.sql.SQLException;
  */
 @Slf4j
 public class HiveConnFactory extends ConnFactory {
+    // Hive 属性前缀
+    private static final String HIVE_CONF_PREFIX = "hiveconf:";
+
     public HiveConnFactory() {
         this.driverName = DataBaseType.HIVE1X.getDriverClassName();
         this.testSql = DataBaseType.HIVE1X.getTestSql();
@@ -28,7 +35,7 @@ public class HiveConnFactory extends ConnFactory {
     }
 
     @Override
-    public Connection getConn(ISourceDTO iSource) throws Exception {
+    public Connection getConn(ISourceDTO iSource, String taskParams) throws Exception {
         init();
         Hive1SourceDTO hive1SourceDTO = (Hive1SourceDTO) iSource;
 
@@ -36,9 +43,13 @@ public class HiveConnFactory extends ConnFactory {
                 (PrivilegedAction<Connection>) () -> {
                     try {
                         DriverManager.setLoginTimeout(30);
+                        Properties properties = DBUtil.stringToProperties(taskParams);
+                        // 特殊处理 properties 属性
+                        dealProperties(properties);
+                        properties.put(DtClassConsistent.PublicConsistent.USER, hive1SourceDTO.getUsername() == null ? "" : hive1SourceDTO.getUsername());
+                        properties.put(DtClassConsistent.PublicConsistent.PASSWORD, hive1SourceDTO.getPassword() == null ? "" : hive1SourceDTO.getPassword());
                         String urlWithoutSchema = HiveDriverUtil.removeSchema(hive1SourceDTO.getUrl());
-                        return DriverManager.getConnection(urlWithoutSchema, hive1SourceDTO.getUsername(),
-                                hive1SourceDTO.getPassword());
+                        return DriverManager.getConnection(urlWithoutSchema, properties);
                     } catch (SQLException e) {
                         // 对异常进行统一处理
                         throw new DtLoaderException(errorAdapter.connAdapter(e.getMessage(), errorPattern), e);
@@ -47,5 +58,23 @@ public class HiveConnFactory extends ConnFactory {
         );
 
         return HiveDriverUtil.setSchema(connection, hive1SourceDTO.getUrl(), hive1SourceDTO.getSchema());
+    }
+
+    /**
+     * 处理 Hive 的 Properties 属性
+     *
+     * @param properties
+     */
+    private void dealProperties (Properties properties) {
+        if (properties == null || properties.isEmpty()) {
+            return;
+        }
+
+        // 特殊处理 hive 的 key，增加 hiveconf: 属性 key 前缀
+        Set<String> keys = properties.stringPropertyNames();
+        for (String key : keys) {
+            properties.put(HIVE_CONF_PREFIX + key, properties.getProperty(key));
+            properties.remove(key);
+        }
     }
 }

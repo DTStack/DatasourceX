@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.es.pool;
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Maps;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -61,6 +63,9 @@ public class ElasticSearchManager{
     public ElasticSearchPool initSource(ISourceDTO source) {
         ESSourceDTO esSourceDTO = (ESSourceDTO) source;
         PoolConfig poolConfig = esSourceDTO.getPoolConfig();
+        if (Objects.isNull(poolConfig)) {
+            throw new DtLoaderException("init ElasticSearchPool fail ,poolConfig can't null");
+        }
         ElasticSearchPoolConfig config = new ElasticSearchPoolConfig();
         config.setMaxWaitMillis(poolConfig.getConnectionTimeout());
         config.setMinIdle(poolConfig.getMinimumIdle());
@@ -77,7 +82,7 @@ public class ElasticSearchManager{
 
         ElasticSearchPool pool = new ElasticSearchPool(config);
         pool.addObjects(poolConfig.getMinimumIdle());
-        log.info("获取 ES 数据源连接(Pool), address : {}, userName : {}", esSourceDTO.getUrl(), esSourceDTO.getUsername());
+        log.info("Get ES data source connection(Pool), address : {}, userName : {}", esSourceDTO.getUrl(), esSourceDTO.getUsername());
         return pool;
     }
 

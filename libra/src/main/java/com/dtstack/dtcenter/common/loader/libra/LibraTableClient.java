@@ -41,7 +41,7 @@ public class LibraTableClient extends AbsTableClient {
 
     @Override
     public List<String> showPartitions(ISourceDTO source, String tableName) {
-        throw new DtLoaderException("Libra不支持获取分区操作！");
+        throw new DtLoaderException("Libra not support get partition operation！");
     }
 
     @Override
@@ -59,7 +59,7 @@ public class LibraTableClient extends AbsTableClient {
     @Override
     public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) {
         String comment = params.get("comment");
-        log.info("libra更改表注释，comment：{}！", comment);
+        log.info("libra update comment，comment：{}！", comment);
         if (StringUtils.isEmpty(comment)) {
             return true;
         }
@@ -70,7 +70,7 @@ public class LibraTableClient extends AbsTableClient {
     @Override
     protected String getTableSizeSql(String schema, String tableName) {
         if (StringUtils.isBlank(schema)) {
-            throw new DtLoaderException("schema不能为空");
+            throw new DtLoaderException("schema is not empty");
         }
         return String.format(TABLE_SIZE_SQL, schema, tableName);
     }

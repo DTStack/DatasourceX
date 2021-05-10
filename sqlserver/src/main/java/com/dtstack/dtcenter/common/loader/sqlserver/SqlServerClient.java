@@ -12,6 +12,7 @@ import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SqlserverSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -29,6 +31,8 @@ import java.util.Map;
 public class SqlServerClient extends AbsRdbmsClient {
     private static final String TABLE_QUERY_ALL = "select a.name, b.name from sys.objects a left join sys.schemas b on a.schema_id = b.schema_id where a.type='U' or a.type='V'";
     private static final String TABLE_QUERY = "select a.name, b.name from sys.objects a left join sys.schemas b on a.schema_id = b.schema_id where a.type='U'";
+
+    private static final String SEARCH_BY_COLUMN_SQL = " and charIndex('%s',%s) > 0 ";
 
     private static final String TABLE_SHOW = "[%s].[%s]";
 
@@ -48,6 +52,11 @@ public class SqlServerClient extends AbsRdbmsClient {
             "FROM sys.tables LEFT JOIN sys.schemas ON sys.tables.schema_id=sys.schemas.schema_id \n" +
             "WHERE sys.tables.type='U' AND sys.tables.is_tracked_by_cdc =1\n" +
             "AND sys.schemas.name = '%s'";
+
+    private static final String SEARCH_LIMIT_SQL = "select top %s table_name from information_schema.tables where 1=1";
+    private static final String SEARCH_SQL = "select table_name from information_schema.tables where 1=1";
+    private static final String SCHEMA_SQL = " and table_schema='%s'";
+    private static final String TABLE_NAME_SQL = " and charIndex('%s',table_name) > 0";
 
     private static final String SCHEMAS_QUERY = "select distinct(sys.schemas.name) as schema_name from sys.objects,sys.schemas where sys.objects.type='U' and sys.objects.schema_id=sys.schemas.schema_id";
     private static String SQL_SERVER_COLUMN_NAME = "column_name";
@@ -74,14 +83,20 @@ public class SqlServerClient extends AbsRdbmsClient {
         List<String> tableList = new ArrayList<>();
         try {
             String sql = queryDTO.getView() ? TABLE_QUERY_ALL : TABLE_QUERY;
+            if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+                sql = sql + String.format(SEARCH_BY_COLUMN_SQL, queryDTO.getTableNamePattern(), "b.name");
+            }
             statement = sqlserverSourceDTO.getConnection().createStatement();
+            if (Objects.nonNull(queryDTO.getLimit())) {
+                statement.setMaxRows(queryDTO.getLimit());
+            }
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
                 tableList.add(String.format(TABLE_SHOW, rs.getString(2), rs.getString(1)));
             }
         } catch (Exception e) {
-            throw new DtLoaderException("获取表异常", e);
+            throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, sqlserverSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -109,7 +124,7 @@ public class SqlServerClient extends AbsRdbmsClient {
                 }
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+            throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, sqlserverSourceDTO.clearAfterGetConnection(clearStatus));
@@ -126,14 +141,12 @@ public class SqlServerClient extends AbsRdbmsClient {
     }
 
     @Override
-    protected String dealSql(ISourceDTO iSourceDTO, SqlQueryDTO sqlQueryDTO) {
-        return "select * from " + transferTableName(sqlQueryDTO.getTableName());
-    }
-
-    @Override
-    protected String transferTableName(String tableName) {
+    protected String transferSchemaAndTableName(String schema, String tableName) {
         //如果传过来是[tableName]格式直接当成表名
         if (tableName.startsWith("[") && tableName.endsWith("]")){
+            if (StringUtils.isNotBlank(schema)) {
+                return String.format("%s.%s", schema, tableName);
+            }
             return tableName;
         }
         //如果不是上述格式，判断有没有"."符号，有的话，第一个"."之前的当成schema，后面的当成表名进行[tableName]处理
@@ -145,12 +158,29 @@ public class SqlServerClient extends AbsRdbmsClient {
                     tableName));
         }
         //判断表名
+        if (StringUtils.isNotBlank(schema)) {
+            return String.format("%s.[%s]", schema, tableName);
+        }
         return String.format("[%s]", tableName);
     }
 
     @Override
     protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
-        return String.format(TABLE_BY_SCHEMA, queryDTO.getSchema());
+        StringBuilder constr = new StringBuilder();
+        if(queryDTO.getLimit() != null) {
+            constr.append(String.format(SEARCH_LIMIT_SQL, queryDTO.getLimit()));
+        }else {
+            constr.append(SEARCH_SQL);
+        }
+        //判断是否需要schema
+        if(StringUtils.isNotBlank(queryDTO.getSchema())){
+            constr.append(String.format(SCHEMA_SQL, queryDTO.getSchema()));
+        }
+        // 根据name 模糊查询
+        if(StringUtils.isNotBlank(queryDTO.getTableNamePattern())){
+            constr.append(String.format(TABLE_NAME_SQL, queryDTO.getTableNamePattern()));
+        }
+        return constr.toString();
     }
 
     @Override

@@ -103,7 +103,7 @@ public class HiveClient extends AbsRdbmsClient {
                 tableList.add(rs.getString(columnSize == 1 ? 1 : 2));
             }
         } catch (Exception e) {
-            throw new DtLoaderException("获取表异常", e);
+            throw new DtLoaderException(String.format("get table exception,%", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, hiveSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -158,7 +158,7 @@ public class HiveClient extends AbsRdbmsClient {
                 }
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+            throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     tableName), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, null);
@@ -237,7 +237,7 @@ public class HiveClient extends AbsRdbmsClient {
 
             return columnMetaDTOS.stream().filter(column -> !filterPartitionColumns || !column.getPart()).collect(Collectors.toList());
         } catch (SQLException e) {
-            throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
+            throw new DtLoaderException(String.format("Failed to get meta information for the fields of table :%s. Please contact the DBA to check the database table information.",
                     tableName), e);
         } finally {
             DBUtil.closeDBResources(resultSet, stmt, null);
@@ -255,7 +255,7 @@ public class HiveClient extends AbsRdbmsClient {
             // 如果在设定超时(以秒为单位)之内，还没得到连通性测试结果，则认为连通性测试连接超时，不继续阻塞
             return future.get(TEST_CONN_TIMEOUT, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            throw new DtLoaderException("测试连通性超时！", e);
+            throw new DtLoaderException(String.format("Test connect timeout！,%s", e.getMessage()), e);
         } catch (Exception e) {
             if (e instanceof DtLoaderException) {
                 throw new DtLoaderException(e.getMessage(), e);
@@ -354,14 +354,14 @@ public class HiveClient extends AbsRdbmsClient {
                     }
                 }
                 if (!check) {
-                    throw new DtLoaderException("查询字段不存在！字段名：" + column);
+                    throw new DtLoaderException("The query field does not exist! Field name：" + column);
                 }
             }
         }
 
         // 校验高可用配置
         if (StringUtils.isBlank(hiveSourceDTO.getDefaultFS()) || !hiveSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
-            throw new DtLoaderException("defaultFS格式不正确");
+            throw new DtLoaderException("defaultFS incorrect format");
         }
         Configuration conf = HadoopConfUtil.getHdfsConf(hiveSourceDTO.getDefaultFS(), hiveSourceDTO.getConfig(), hiveSourceDTO.getKerberosConfig());
 
@@ -374,7 +374,7 @@ public class HiveClient extends AbsRdbmsClient {
                     try {
                         return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, needIndex, queryDTO.getPartitionColumns(), hiveSourceDTO.getKerberosConfig());
                     } catch (Exception e) {
-                        throw new DtLoaderException("创建下载器异常", e);
+                        throw new DtLoaderException(String.format("create downloader exception,%s", e.getMessage()), e);
                     }
                 }
         );
@@ -395,7 +395,7 @@ public class HiveClient extends AbsRdbmsClient {
     private @NotNull IDownloader createDownloader(String storageMode, Configuration conf, String tableLocation, ArrayList<String> columnNames, String fieldDelimiter, ArrayList<String> partitionColumns, List<Integer> needIndex, Map<String, String> filterPartitions, Map<String, Object> kerberosConfig) throws Exception {
         // 根据存储格式创建对应的hiveDownloader
         if (StringUtils.isBlank(storageMode)) {
-            throw new DtLoaderException("不支持该存储类型的hive表读取");
+            throw new DtLoaderException("Hive table reads for this storage type are not supported");
         }
 
         if (storageMode.contains("Text")) {
@@ -416,7 +416,7 @@ public class HiveClient extends AbsRdbmsClient {
             return hiveParquetDownload;
         }
 
-        throw new DtLoaderException("不支持该存储类型的hive表读取");
+        throw new DtLoaderException("Hive table reads for this storage type are not supported");
     }
 
     /**
@@ -474,7 +474,7 @@ public class HiveClient extends AbsRdbmsClient {
             // 获取表结构信息
             getTable(tableInfo, hiveSourceDTO.getConnection(), queryDTO.getTableName());
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL 执行异常, %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(null, null, hiveSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -486,17 +486,16 @@ public class HiveClient extends AbsRdbmsClient {
         try {
             result = executeQuery(conn, SqlQueryDTO.builder().sql("desc formatted " + tableName).build(), ConnectionClearStatus.NORMAL.getValue());
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL 执行异常, %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
         }
         boolean isTableInfo = false;
         for (Map<String, Object> row : result) {
-            String colName = MapUtils.getString(row, "col_name");
-            String dataType = MapUtils.getString(row, "data_type");
+            String colName = MapUtils.getString(row, "col_name", "");
+            String dataType = MapUtils.getString(row, "data_type", "");
             if (StringUtils.isBlank(colName) || StringUtils.isBlank(dataType)) {
                 if (StringUtils.isNotBlank(colName) && colName.contains("# Detailed Table Information")) {
                     isTableInfo = true;
                 }
-                continue;
             }
             // 去空格处理
             dataType = dataType.trim();
@@ -516,6 +515,11 @@ public class HiveClient extends AbsRdbmsClient {
 
             if (colName.contains("field.delim")) {
                 tableInfo.setDelim(dataType);
+                continue;
+            }
+
+            if (dataType.contains("field.delim")) {
+                tableInfo.setDelim(MapUtils.getString(row, "comment", "\001").trim());
                 continue;
             }
 
@@ -568,7 +572,7 @@ public class HiveClient extends AbsRdbmsClient {
     @Override
     public Boolean isDatabaseExists(ISourceDTO source, String dbName) {
         if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("数据库名称不能为空！");
+            throw new DtLoaderException("database name cannot be empty!");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(SHOW_DB_LIKE, dbName)).build()));
     }
@@ -576,7 +580,7 @@ public class HiveClient extends AbsRdbmsClient {
     @Override
     public Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName) {
         if (StringUtils.isBlank(dbName)) {
-            throw new DtLoaderException("数据库名称不能为空！");
+            throw new DtLoaderException("database name cannot be empty!");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_BY_SCHEMA_LIKE, dbName, tableName)).build()));
     }

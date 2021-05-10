@@ -84,22 +84,22 @@ public class HbasePoolManager {
         Map<String, Object> kerberosConfig = source.getKerberosConfig();
         if (MapUtils.isNotEmpty(kerberosConfig)) {
             if (!kerberosConfig.containsKey(HadoopConfTool.HBASE_MASTER_PRINCIPAL)) {
-                throw new DtLoaderException(String.format("HBASE 需要配置 %s 的值", HadoopConfTool.HBASE_MASTER_PRINCIPAL));
+                throw new DtLoaderException(String.format("HBASE   must setting %s ", HadoopConfTool.HBASE_MASTER_PRINCIPAL));
             }
 
             if (!kerberosConfig.containsKey(HadoopConfTool.HBASE_REGION_PRINCIPAL)) {
-                log.info("手动设置 hbase.regionserver.kerberos.principal 为 {}", kerberosConfig.get(HadoopConfTool.HBASE_MASTER_PRINCIPAL));
+                log.info("setting hbase.regionserver.kerberos.principal 为 {}", kerberosConfig.get(HadoopConfTool.HBASE_MASTER_PRINCIPAL));
                 kerberosConfig.put(HadoopConfTool.HBASE_REGION_PRINCIPAL, kerberosConfig.get(HadoopConfTool.HBASE_MASTER_PRINCIPAL));
             }
         }
 
-        log.info("获取 Hbase 数据源连接, url : {}, path : {}, kerberosConfig : {}", source.getUrl(), source.getUsername(), source.getKerberosConfig());
+        log.info("get Hbase connection, url : {}, path : {}, kerberosConfig : {}", source.getUrl(), source.getUsername(), source.getKerberosConfig());
         return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Connection>) () -> {
                     try {
                         return ConnectionFactory.createConnection(hConfig);
                     } catch (Exception e) {
-                        throw new DtLoaderException("获取 hbase 连接异常", e);
+                        throw new DtLoaderException(String.format("get hbase connection exception,%s", e.getMessage()), e);
                     }
                 }
         );
@@ -122,7 +122,7 @@ public class HbasePoolManager {
         } else {
 
             if (StringUtils.isBlank(hbaseSourceDTO.getUrl())) {
-                throw new DtLoaderException("集群地址不能为空");
+                throw new DtLoaderException("The cluster address cannot be empty");
             }
             // 设置集群地址
             hbaseMap.put(DtClassConsistent.HBaseConsistent.KEY_HBASE_ZOOKEEPER_QUORUM, hbaseSourceDTO.getUrl());
@@ -166,7 +166,7 @@ public class HbasePoolManager {
                 try {
                     connection.close();
                 } catch (IOException e) {
-                    throw new DtLoaderException("hbase连接关闭失败", e);
+                    throw new DtLoaderException(String.format("hbase connection closed failed,%s", e.getMessage()), e);
                 }
             }
         }

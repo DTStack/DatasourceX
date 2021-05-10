@@ -40,6 +40,10 @@ public class GreenplumTableTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table gp_test (id integer, name text)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("comment on column loader_test.id is 'id'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("comment on column loader_test.name is '名字'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into gp_test values (1, 'gpp')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create view gp_test_view as select * from gp_test").build();

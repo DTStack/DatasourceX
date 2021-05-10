@@ -24,8 +24,6 @@ import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.odps.common.OdpsFields;
 import com.dtstack.dtcenter.common.loader.odps.pool.OdpsManager;
 import com.dtstack.dtcenter.common.loader.odps.pool.OdpsPool;
-import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -40,7 +38,6 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -97,7 +94,7 @@ public class OdpsClient<T> extends AbsNoSqlClient<T> {
         OdpsPool odpsPool = odpsManager.getConnection(odpsSourceDTO);
         Odps odps = odpsPool.getResource();
         if (Objects.isNull(odps)) {
-            throw new DtLoaderException("没有可用的数据库连接");
+            throw new DtLoaderException("No database connection available");
         }
         return odps;
     }
@@ -231,7 +228,7 @@ public class OdpsClient<T> extends AbsNoSqlClient<T> {
                 columnList.add(columnMetaDTO);
             });
         } catch (Exception e) {
-            throw new DtLoaderException("SQL 执行异常", e);
+            throw new DtLoaderException(String.format("SQL execute error,%s", e.getMessage()), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -254,7 +251,7 @@ public class OdpsClient<T> extends AbsNoSqlClient<T> {
                 columnClassInfo.add(recordColumn.getTypeInfo().getTypeName());
             }
         } catch (Exception e) {
-            throw new DtLoaderException("SQL 执行异常", e);
+            throw new DtLoaderException(String.format("SQL execute error,%s", e.getMessage()), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -328,7 +325,7 @@ public class OdpsClient<T> extends AbsNoSqlClient<T> {
                 result.add(row);
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL 执行异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("SQL execute error : %s", e.getMessage()), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -373,7 +370,7 @@ public class OdpsClient<T> extends AbsNoSqlClient<T> {
             Instance instance = runOdpsTask(odps, queryDTO);
             isSuccessful = instance.isSuccessful();
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL 执行异常 : %s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("SQL execute error : %s", e.getMessage()), e);
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
@@ -425,7 +422,7 @@ public class OdpsClient<T> extends AbsNoSqlClient<T> {
     protected Integer beforeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO, boolean query) {
         // 查询 SQL 不能为空
         if (query && StringUtils.isBlank(queryDTO.getSql())) {
-            throw new DtLoaderException("查询 SQL 不能为空");
+            throw new DtLoaderException("SQL is not null");
         }
 
         return ConnectionClearStatus.CLOSE.getValue();
@@ -435,7 +432,7 @@ public class OdpsClient<T> extends AbsNoSqlClient<T> {
         OdpsSourceDTO odpsSourceDTO = (OdpsSourceDTO) iSource;
         Integer clearStatus = beforeQuery(odpsSourceDTO, queryDTO, false);
         if (queryDTO == null || StringUtils.isBlank(queryDTO.getTableName())) {
-            throw new DtLoaderException("查询 表名称 不能为空");
+            throw new DtLoaderException("Query table name cannot be empty");
         }
 
         queryDTO.setColumns(CollectionUtils.isEmpty(queryDTO.getColumns()) ? Collections.singletonList("*") :

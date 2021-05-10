@@ -10,7 +10,7 @@ package com.dtstack.dtcenter.common.loader.common.exception;
 public enum ErrorCode implements IErrorCode {
 
     /**
-     * 不支持该方法
+     * The method is not supported
      */
     NOT_SUPPORT(0, "This method is not supported by this data source...");
 

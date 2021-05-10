@@ -35,6 +35,7 @@ public enum DataSourceType {
     HIVE1X(27, 21, "Hive1.x", "hive1"),
     MAXCOMPUTE(10, 22, "MaxCompute", "maxcompute"),
     S3(41, 23, "S3", "s3"),
+    AWS_S3(51, 24, "AWS_S3", "aws_s3"),
 
     // MPP
     GREENPLUM6(36, 40, "Greenplum", "greenplum6"),
@@ -46,7 +47,7 @@ public enum DataSourceType {
     FTP(9, 61, "FTP", "ftp"),
 
     // Analytic
-    SparkThrift2_1(45, 80, "SparkThrift2.1.x", "spark"),
+    SparkThrift2_1(45, 80, "SparkThrift2.x", "spark"),
     IMPALA(29, 81, "Impala", "impala"),
     Clickhouse(25, 82, "ClickHouse", "clickhouse"),
     TiDB(31, 83, "TiDB", "mysql5"),
@@ -55,6 +56,7 @@ public enum DataSourceType {
     ADS(15, 86, "AnalyticDB", "mysql5"),
     Kylin(23, 87, "Kylin", "kylin"),
     Presto(48, 88, "Presto", "presto"),
+    OceanBase(49, 89, "OceanBase", "oceanbase"),
 
     // NoSQL
     HBASE(8, 100, "HBase", "hbase"),
@@ -118,6 +120,7 @@ public enum DataSourceType {
         RDBM_S.add(Phoenix.val);
         RDBM_S.add(PHOENIX5.val);
         RDBM_S.add(IMPALA.val);
+        RDBM_S.add(OceanBase.val);
 
         KAFKA_S.add(KAFKA.val);
         KAFKA_S.add(KAFKA_09.val);
@@ -156,7 +159,7 @@ public enum DataSourceType {
             }
         }
 
-        throw new DtLoaderException("不支持数据源类型");
+        throw new DtLoaderException("Data source type is not supported");
     }
 
     public Integer getVal() {

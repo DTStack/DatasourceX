@@ -33,36 +33,29 @@ public class SocketClient<T> extends AbsNoSqlClient<T> {
         SocketSourceDTO socketSourceDTO = (SocketSourceDTO) source;
         String hostPort = socketSourceDTO.getHostPort();
         if (StringUtils.isBlank(hostPort)) {
-            throw new DtLoaderException("socket数据源ip和端口不能为空");
+            throw new DtLoaderException("socket datasource ip and port not empty");
         }
         Matcher matcher = HOST_PORT_PATTERN.matcher(hostPort);
-        Socket socket = null;
         if (matcher.find()) {
             String host = matcher.group("host");
             String portStr = matcher.group("port");
             if (StringUtils.isBlank(portStr)) {
-                throw new DtLoaderException("socket数据源端口不能为空");
+                throw new DtLoaderException("socket datasource port is not empty");
             }
             // 转化为int格式的端口
             int port = Integer.parseInt(portStr);
+            InetAddress address = null;
             try {
                 // 方法内支持ipv6
-                InetAddress address = InetAddress.getByName(host);
-                socket = new Socket(address, port);
+                address = InetAddress.getByName(host);
+            } catch (UnknownHostException e) {
+                throw new DtLoaderException(String.format("socket connection exception：UnknownHostException：%s", e.getMessage()), e);
+            }
+            try(Socket socket = new Socket(address, port)) {
                 // 往输出流发送一个字节的数据，Socket的SO_OOBINLINE属性没有打开，就会自动舍弃这个字节，该属性默认关闭
                 socket.sendUrgentData(0xFF);
-            } catch (UnknownHostException e) {
-                throw new DtLoaderException(String.format("socket连接异常：UnknownHostException：%s", e.getMessage()), e);
             } catch (IOException e) {
-                throw new DtLoaderException(String.format("socket连接异常：%s", e.getMessage()), e);
-            } finally {
-                if (Objects.nonNull(socket) && socket.isClosed()){
-                    try {
-                        socket.close();
-                    } catch (IOException e) {
-                        log.error("关闭socket连接异常", e);
-                    }
-                }
+                throw new DtLoaderException(String.format("socket connection exception：%s", e.getMessage()), e);
             }
         }
         return true;

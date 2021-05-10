@@ -72,7 +72,7 @@ public class PostgreSQLTest {
     public void testCon()  {
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("连接异常");
+            throw new DtLoaderException("connection exception");
         }
     }
 
@@ -142,7 +142,8 @@ public class PostgreSQLTest {
     public void getColumnMetaData()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData);
+        Assert.assertEquals("int4",columnMetaData.get(0).getType());
+        Assert.assertEquals("text",columnMetaData.get(1).getType());
     }
 
     /**

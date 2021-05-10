@@ -44,7 +44,7 @@ public class TiDBTest {
     public static void beforeClass() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists LOADER_TEST").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table LOADER_TEST (id int COMMENT 'id', name varchar(50) COMMENT '姓名') comment 'table comment'").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table LOADER_TEST (id int COMMENT 'id', name varchar(50) COMMENT '姓名') comment '中文_table_comment'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into LOADER_TEST values (1, 'LOADER_TEST')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -130,6 +130,8 @@ public class TiDBTest {
     public void getColumnClassInfo() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
+        Assert.assertEquals("java.lang.Integer", columnClassInfo.get(0));
+        Assert.assertEquals("java.lang.String", columnClassInfo.get(1));
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
     }
 
@@ -140,6 +142,8 @@ public class TiDBTest {
     public void getColumnMetaData() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
+        Assert.assertEquals("id",columnMetaData.get(0).getComment());
+        Assert.assertEquals("姓名",columnMetaData.get(1).getComment());
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 
@@ -150,6 +154,7 @@ public class TiDBTest {
     public void getTableMetaComment() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
+        Assert.assertEquals("中文_table_comment", metaComment);
         Assert.assertTrue(StringUtils.isNotBlank(metaComment));
     }
 

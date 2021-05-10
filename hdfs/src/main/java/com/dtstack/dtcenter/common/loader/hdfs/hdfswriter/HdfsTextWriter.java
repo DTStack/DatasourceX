@@ -91,7 +91,7 @@ public class HdfsTextWriter {
                 writeLineNum++;
             }
         } catch (final Exception e) {
-            throw new DtLoaderException("第" + currLineNum + "行数据异常,请检查, 数据导入失败");
+            throw new DtLoaderException("the" + currLineNum + "row data is abnormal, please check, data import failed");
         } finally {
             stream.close();
 
@@ -197,7 +197,7 @@ public class HdfsTextWriter {
                 writeLineNum++;
             }
         } catch (final Exception e) {
-            throw new DtLoaderException("(第" + currLineNum + "行数据异常,请检查。数据导入失败)");
+            throw new DtLoaderException("(The" + currLineNum + "row data is abnormal, please check, data import failed)");
         } finally {
             stream.close();
 
@@ -215,7 +215,7 @@ public class HdfsTextWriter {
     private static String transformColumn(final List<ColumnMetaDTO> tableColumns, final List<HDFSImportColumn> keyList, final String[] columnValArr, final String delimiter) throws ParseException {
 
         if (columnValArr == null) {
-            throw new DtLoaderException("记录不应该为空");
+            throw new DtLoaderException("Record not be empty");
         }
 
         final int length = columnValArr.length > tableColumns.size() ? tableColumns.size() : columnValArr.length;

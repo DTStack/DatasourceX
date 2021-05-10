@@ -28,8 +28,7 @@ import java.util.Map;
 public class ImpalaKerberosTableTest {
 
     private static ImpalaSourceDTO source = ImpalaSourceDTO.builder()
-            .url("jdbc:impala://eng-cdh3:21050;AuthMech=1;KrbServiceName=impala;KrbHostFQDN=eng-cdh3")
-            .schema("dev")
+            .url("jdbc:impala://172.16.100.208:21050;AuthMech=1;KrbRealm=DTSTACK.COM;KrbHostFQDN=master;KrbServiceName=impala")
             .build();
 
     /**
@@ -39,18 +38,18 @@ public class ImpalaKerberosTableTest {
     public static void setUp () {
         // 准备 Kerberos 参数
         Map<String, Object> kerberosConfig = new HashMap<>();
-        kerberosConfig.put(HadoopConfTool.PRINCIPAL, "impala/eng-cdh3@DTSTACK.COM");
-        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/impalad-cdh3.keytab");
+        kerberosConfig.put(HadoopConfTool.PRINCIPAL, "impala/master@DTSTACK.COM");
+        kerberosConfig.put(HadoopConfTool.PRINCIPAL_FILE, "/impala.keytab");
         kerberosConfig.put(HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF, "/krb5.conf");
         source.setKerberosConfig(kerberosConfig);
 
-        String localKerberosPath = ImpalaKerberosTest.class.getResource("/eng-cdh").getPath();
+        String localKerberosPath = ImpalaKerberosTest.class.getResource("/eng-cdh3").getPath();
         IKerberos kerberos = ClientCache.getKerberos(DataSourceType.IMPALA.getVal());
         kerberos.prepareKerberosForConnect(kerberosConfig, localKerberosPath);
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan_partitions_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_partitions_test (id int, name string) partitioned by (pt1 string,pt2 string, pt3 string)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_partitions_test (id int comment 'ID', name string comment '姓名_name') partitioned by (pt1 string,pt2 string, pt3 string)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into  wangchuan_partitions_test partition (pt1 = 'a1', pt2 = 'b1', pt3 = 'c1') values(1, 'wangcahun')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -60,7 +59,7 @@ public class ImpalaKerberosTableTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan_test2").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_test2 (id int, name string)").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table wangchuan_test2 (id int comment 'ID', name string comment '姓名_name')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists wangchuan_test3").build();
         client.executeSqlWithoutResultSet(source, queryDTO);

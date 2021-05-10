@@ -51,8 +51,13 @@ public class Db2Test {
         }
         queryDTO = SqlQueryDTO.builder().sql("create table LOADER_TEST (id int, name varchar(50))").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("comment on table LOADER_TEST is 'table comment'").build();
+        queryDTO = SqlQueryDTO.builder().sql("COMMENT ON COLUMN LOADER_TEST.id IS 'id'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("COMMENT ON COLUMN LOADER_TEST.name IS '姓名'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("comment on table LOADER_TEST is '中文_table_comment'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+
         queryDTO = SqlQueryDTO.builder().sql("insert into LOADER_TEST values (1, 'nanqi')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
@@ -75,7 +80,7 @@ public class Db2Test {
     public void testCon()  {
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("连接异常");
+            throw new DtLoaderException("connection exception");
         }
     }
 
@@ -135,6 +140,8 @@ public class Db2Test {
     public void getColumnClassInfo()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
+        Assert.assertEquals("java.lang.Integer", columnClassInfo.get(0));
+        Assert.assertEquals("java.lang.String", columnClassInfo.get(1));
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
     }
 
@@ -145,7 +152,9 @@ public class Db2Test {
     public void getColumnMetaData()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
-        System.out.println(columnMetaData);
+        Assert.assertEquals("INTEGER", columnMetaData.get(0).getType());
+        Assert.assertEquals("VARCHAR", columnMetaData.get(1).getType());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 
     /**
@@ -155,7 +164,7 @@ public class Db2Test {
     public void getTableMetaComment()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
-        Assert.assertTrue(StringUtils.isNotBlank(metaComment));
+        Assert.assertEquals("中文_table_comment", metaComment);
     }
 
     /**

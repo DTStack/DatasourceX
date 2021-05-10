@@ -109,7 +109,7 @@ public class OracleClient extends AbsRdbmsClient {
                 return comment;
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("获取表:%s 的信息时失败. 请联系 DBA 核查该库、表信息.",
+            throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
             DBUtil.closeDBResources(resultSet, statement, oracleSourceDTO.clearAfterGetConnection(clearStatus));
@@ -136,7 +136,7 @@ public class OracleClient extends AbsRdbmsClient {
                 columnMetaDTO.setKey(rsMetaData.getColumnName(i + 1));
                 String flinkSqlType = OracleDbAdapter.mapColumnTypeJdbc2Java(rsMetaData.getColumnType(i + 1), rsMetaData.getPrecision(i + 1), rsMetaData.getScale(i + 1));
                 if (StringUtils.isBlank(flinkSqlType)) {
-                    throw new DtLoaderException(String.format("oracle不支持%s类型字段的采集", rsMetaData.getColumnTypeName(i + 1)));
+                    throw new DtLoaderException(String.format("oracle not support %s type fields's collection", rsMetaData.getColumnTypeName(i + 1)));
                 }
                 columnMetaDTO.setType(flinkSqlType);
                 columnMetaDTO.setPart(false);
@@ -155,9 +155,9 @@ public class OracleClient extends AbsRdbmsClient {
 
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
+                throw new DtLoaderException(String.format(queryDTO.getTableName() + "table not exist,%s", e.getMessage()), e);
             } else {
-                throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.",
+                throw new DtLoaderException(String.format("Failed to get meta information for the fields of table :%s. Please contact the DBA to check the database table information.",
                         queryDTO.getTableName()), e);
             }
         } finally {
@@ -184,9 +184,9 @@ public class OracleClient extends AbsRdbmsClient {
 
         } catch (Exception e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
+                throw new DtLoaderException(String.format(queryDTO.getTableName() + "table not exist,%s", e.getMessage()), e);
             } else {
-                throw new DtLoaderException(String.format("获取表:%s 的字段的注释信息时失败. 请联系 DBA 核查该库、表信息.",
+                throw new DtLoaderException(String.format("Failed to get the comment information of the field of the table: %s. Please contact the DBA to check the database and table information.",
                         queryDTO.getTableName()), e);
             }
         }finally {
@@ -241,7 +241,7 @@ public class OracleClient extends AbsRdbmsClient {
                 XMLType xmlResult = (XMLType) result;
                 return xmlResult.getString();
             } catch (Exception e) {
-                log.error("oracle xml格式转string异常！", e);
+                log.error("oracle xml format transform string exception！", e);
                 return "";
             }
         }
@@ -252,7 +252,7 @@ public class OracleClient extends AbsRdbmsClient {
                 BLOB blobResult = (BLOB) result;
                 return blobResult.toString();
             } catch (Exception e) {
-                log.error("oracle Blob 格式转 String 异常！", e);
+                log.error("oracle Blob format transform String exception！", e);
                 return "";
             }
         }
@@ -263,7 +263,7 @@ public class OracleClient extends AbsRdbmsClient {
             try {
                 return clobResult.toSQLXML().getString();
             } catch (Exception e) {
-                log.error("oracle Clob 格式转 String 异常！", e);
+                log.error("oracle Clob format transform String exception！", e);
                 return "";
             }
         }
@@ -287,12 +287,12 @@ public class OracleClient extends AbsRdbmsClient {
         // schema若为空，则查询所有schema下的表
         String searchSql;
         if (StringUtils.isBlank(schema)) {
-            log.info("schema为空，获取所有表！");
+            log.info("schema is null，get all table！");
             searchSql = queryDTO.getView() ? String.format(SHOW_ALL_TABLE_SQL + SHOW_ALL_VIEW_SQL, tableConstr, viewConstr) : String.format(SHOW_ALL_TABLE_SQL, tableConstr);
         } else {
             searchSql = queryDTO.getView() ?  String.format(SHOW_TABLE_BY_SCHEMA_SQL + SHOW_VIEW_BY_SCHEMA_SQL, schema, tableConstr, schema, viewConstr) : String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema, tableConstr);
         }
-        log.info("当前使用schema：{}", schema);
+        log.info("current used schema：{}", schema);
 
         return String.format(TABLE_BASE_SQL, searchSql, tableConstr);
     }

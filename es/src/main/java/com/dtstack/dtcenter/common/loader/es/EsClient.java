@@ -133,7 +133,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         String index = queryDTO.getTableName();
         //不指定index抛异常
         if (StringUtils.isBlank(index)) {
-            throw new DtLoaderException("未指定es的index，获取失败");
+            throw new DtLoaderException("The index of es is not specified, and the acquisition fails");
         }
         try {
             GetMappingsRequest request = new GetMappingsRequest();
@@ -144,9 +144,9 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
             MappingMetaData data = res.mappings().get(index);
             typeList.add(data.type());
         } catch (NullPointerException e) {
-            throw new DtLoaderException("index不存在");
+            throw new DtLoaderException(String.format("index not exits,%s", e.getMessage()), e);
         } catch (Exception e) {
-            log.error("获取type异常", e);
+            log.error(String.format("get type exception,%s", e.getMessage()), e);
         } finally {
             closeResource(null, client, esSourceDTO);
         }
@@ -176,7 +176,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
             Set<String> set = aliases.keySet();
             dbs = new ArrayList<>(set);
         } catch (Exception e) {
-            log.error("获取es索引失败", e);
+            log.error(String.format("Failed to get es index,%s", e.getMessage()), e);
         } finally {
             closeResource(null, client, esSourceDTO);
         }
@@ -200,7 +200,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         //索引
         String index = queryDTO.getTableName();
         if (StringUtils.isBlank(index)) {
-            throw new DtLoaderException("未指定es的index，数据预览失败");
+            throw new DtLoaderException("The index of es is not specified，Data preview failed");
         }
         //限制条数，最大10000条
         int previewNum = queryDTO.getPreviewNum() > MAX_NUM ? MAX_NUM : queryDTO.getPreviewNum();
@@ -224,7 +224,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
                 documentList.add(document);
             }
         } catch (Exception e) {
-            log.error("获取文档异常", e);
+            log.error("doc acquisition exception", e);
         } finally {
             closeResource(null, client, esSourceDTO);
         }
@@ -249,7 +249,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         //索引
         String index = queryDTO.getTableName();
         if (StringUtils.isBlank(index)) {
-            throw new DtLoaderException("未指定es的index,获取字段信息失败");
+            throw new DtLoaderException("The index of es is not specified, and the field information fails to be obtained");
         }
         List<ColumnMetaDTO> columnMetaDTOS = new ArrayList<>();
         try {
@@ -271,7 +271,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
                 columnMetaDTOS.add(columnMetaDTO);
             }
         } catch (Exception e) {
-            log.error("获取文档异常", e);
+            log.error("doc acquisition exception", e);
         } finally {
             closeResource(null, client, esSourceDTO);
         }
@@ -290,7 +290,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         //索引
         String index = queryDTO.getTableName();
         if (StringUtils.isBlank(index)) {
-            throw new DtLoaderException("未指定es的index,获取字段信息失败,请在sqlQueryDTO中指定tableName作为索引");
+            throw new DtLoaderException("The index of es is not specified, and the field information fails to be obtained. Please specify tableName as the index in sqlQueryDTO");
         }
         RestHighLevelClient client = null;
         RestClient lowLevelClient = null;
@@ -298,7 +298,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         try (NStringEntity entity = new NStringEntity(dsl, ContentType.APPLICATION_JSON)) {
             client = getClient(esSourceDTO);
             if (Objects.isNull(client)) {
-                throw new DtLoaderException("没有可用的数据库连接");
+                throw new DtLoaderException("No database connection available");
             }
             lowLevelClient = client.getLowLevelClient();
             Request request = new Request(POST, String.format(ENDPOINT_SEARCH_FORMAT, index));
@@ -325,7 +325,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         ElasticSearchPool elasticSearchPool = elasticSearchManager.getConnection(esSourceDTO);
         RestHighLevelClient restHighLevelClient = elasticSearchPool.getResource();
         if (Objects.isNull(restHighLevelClient)) {
-            throw new DtLoaderException("没有可用的数据库连接");
+            throw new DtLoaderException("No database connection available");
         }
         return restHighLevelClient;
 
@@ -341,7 +341,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
      * @return
      */
     private static RestHighLevelClient getClient(String address, String username, String password) {
-        log.info("获取 ES 数据源连接, address : {}, userName : {}", address, username);
+        log.info("Get ES data source connection, address : {}, userName : {}", address, username);
         List<HttpHost> httpHosts = dealHost(address);
         //有用户名密码情况
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
@@ -366,7 +366,8 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
     }
 
     private void closeResource(RestClient lowLevelClient, RestHighLevelClient restHighLevelClient, ESSourceDTO esSourceDTO) {
-        if (!BooleanUtils.isTrue(IS_OPEN_POOL.get()) && restHighLevelClient != null) {
+        if (BooleanUtils.isFalse(IS_OPEN_POOL.get())) {
+            //未开启线程池
             try {
                 if (Objects.nonNull(lowLevelClient)) {
                     lowLevelClient.close();
@@ -379,6 +380,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
             }
             IS_OPEN_POOL.remove();
         } else {
+            //开启连接池
             ElasticSearchPool elasticSearchPool = elasticSearchManager.getConnection(esSourceDTO);
             try {
                 if (Objects.nonNull(lowLevelClient)) {
@@ -405,6 +407,11 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
     /******************** 未支持的方法 **********************/
     @Override
     public Connection getCon(ISourceDTO iSource) {
+        throw new DtLoaderException("Not Support");
+    }
+
+    @Override
+    public Connection getCon(ISourceDTO source, String taskParams) {
         throw new DtLoaderException("Not Support");
     }
 
@@ -450,7 +457,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         try {
             client = getClient(esSourceDTO);
             if (Objects.isNull(client)) {
-                throw new DtLoaderException("没有可用的数据库连接");
+                throw new DtLoaderException("No database connection available");
             }
             lowLevelClient = client.getLowLevelClient();
 

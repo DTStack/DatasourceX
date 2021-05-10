@@ -18,6 +18,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,20 +60,20 @@ public class HiveTest {
      */
     @BeforeClass
     public static void beforeClass()  {
-        System.setProperty("HADOOP_USER_NAME", "admin");
-        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_1").build();
-        client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int comment 'id comment', name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
-        client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_1 values (1, 'loader_test_1')").build();
-        client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_parquet").build();
-        client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_parquet (id int, name string) STORED AS PARQUET").build();
-        client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_parquet values (1, 'wc1'),(2,'wc2')").build();
-        client.executeSqlWithoutResultSet(source, queryDTO);
+//        System.setProperty("HADOOP_USER_NAME", "admin");
+//        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+//        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_1").build();
+//        client.executeSqlWithoutResultSet(source, queryDTO);
+//        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int comment 'id comment', name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
+//        client.executeSqlWithoutResultSet(source, queryDTO);
+//        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_1 values (1, 'loader_test_1')").build();
+//        client.executeSqlWithoutResultSet(source, queryDTO);
+//        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_parquet").build();
+//        client.executeSqlWithoutResultSet(source, queryDTO);
+//        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_parquet (id int comment 'ID', name string comment '姓名_name') STORED AS PARQUET").build();
+//        client.executeSqlWithoutResultSet(source, queryDTO);
+//        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_parquet values (1, 'wc1'),(2,'wc2')").build();
+//        client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     /**
@@ -86,13 +87,30 @@ public class HiveTest {
     }
 
     /**
+     * 获取连接测试
+     */
+    @Test
+    public void getConWithTaskParams() throws Exception {
+        client.executeQuery(source, SqlQueryDTO.builder().sql("drop table if exists loader_nonstrict").build());
+        client.executeQuery(source, SqlQueryDTO.builder().sql("create table if not exists loader_nonstrict (id int) partitioned by(name string)").build());
+        Connection con = client.getCon(source, "hive.exec.dynamic.partition.mode=nonstrict\n" +
+                "loader.age=2\n" +
+                "loader.null=");
+        Statement statement = con.createStatement();
+        statement.execute("insert overwrite table loader_nonstrict partition(name) select id ,name from loader_test_1");
+        Assert.assertNotNull(con);
+        statement.close();
+        con.close();
+    }
+
+    /**
      * 连通性测试
      */
     @Test
     public void testCon()  {
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("连接异常");
+            throw new DtLoaderException("connection exception");
         }
     }
 
@@ -142,6 +160,8 @@ public class HiveTest {
     public void getColumnMetaData()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_1").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
+        Assert.assertEquals("int", columnMetaData.get(0).getType());
+        Assert.assertEquals("string", columnMetaData.get(1).getType());
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 
@@ -151,7 +171,8 @@ public class HiveTest {
     @Test
     public void getTableMetaComment()  {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_1").build();
-        client.getTableMetaComment(source, queryDTO);
+        String comment =  client.getTableMetaComment(source, queryDTO);
+        Assert.assertEquals("table comment", comment);
     }
 
     @Test

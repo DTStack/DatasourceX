@@ -61,7 +61,7 @@ public class DmClient extends AbsRdbmsClient {
                 tableList.add(rs.getString(1));
             }
         } catch (Exception e) {
-            throw new DtLoaderException("获取表异常", e);
+            throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, dmSourceDTO.clearAfterGetConnection(clearStatus));
         }

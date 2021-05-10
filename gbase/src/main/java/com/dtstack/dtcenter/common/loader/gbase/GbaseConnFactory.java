@@ -22,8 +22,8 @@ public class GbaseConnFactory extends ConnFactory {
     }
 
     @Override
-    public Connection getConn(ISourceDTO source) throws Exception {
-        Connection conn = super.getConn(source);
+    public Connection getConn(ISourceDTO source, String taskParams) throws Exception {
+        Connection conn = super.getConn(source, taskParams);
         GBaseSourceDTO gBaseSourceDTO = (GBaseSourceDTO) source;
         if (StringUtils.isBlank(gBaseSourceDTO.getSchema())) {
             return conn;

@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -44,29 +45,46 @@ public class ClickhouseClient extends AbsRdbmsClient {
 
     private static final String DONT_EXIST = "doesn't exist";
 
+    private static final String SHOW_TABLE_SQL = "show tables %s";
+
+    // 根据schema选表表名模糊查询
+    private static final String SEARCH_SQL = " LIKE '%s' ";
+
     @Override
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         ClickHouseSourceDTO clickHouseSourceDTO = (ClickHouseSourceDTO) iSource;
-
+        StringBuilder constr = new StringBuilder();
+        if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+            constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
+        }
         // 获取表信息需要通过show tables 语句
-        String sql = "show tables";
+        String sql = String.format(SHOW_TABLE_SQL, constr.toString());
         Statement statement = null;
         ResultSet rs = null;
         List<String> tableList = new ArrayList<>();
         try {
             statement = clickHouseSourceDTO.getConnection().createStatement();
+            if (Objects.nonNull(queryDTO.getLimit())) {
+                // 设置最大条数
+                statement.setMaxRows(queryDTO.getLimit());
+            }
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
                 tableList.add(rs.getString(columnSize == 1 ? 1 : 2));
             }
         } catch (Exception e) {
-            throw new DtLoaderException("获取表异常", e);
+            throw new DtLoaderException("get table exception" + e.getMessage(), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, clickHouseSourceDTO.clearAfterGetConnection(clearStatus));
         }
         return tableList;
+    }
+
+    @Override
+    public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
+        return getTableList(source, queryDTO);
     }
 
     @Override
@@ -89,7 +107,7 @@ public class ClickhouseClient extends AbsRdbmsClient {
                 columnList.add(columnMetaDTO);
             }
         } catch (Exception e) {
-            throw new DtLoaderException("获取表异常", e);
+            throw new DtLoaderException("get table exception" + e.getMessage(), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, clickHouseSourceDTO.clearAfterGetConnection(clearStatus));
         }
@@ -136,9 +154,9 @@ public class ClickhouseClient extends AbsRdbmsClient {
 
         } catch (SQLException e) {
             if (e.getMessage().contains(DONT_EXIST)) {
-                throw new DtLoaderException(queryDTO.getTableName() + "表不存在", e);
+                throw new DtLoaderException(queryDTO.getTableName() + "table not exist" + e.getMessage(), e);
             } else {
-                throw new DtLoaderException(String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", queryDTO.getTableName()), e);
+                throw new DtLoaderException(String.format("Failed to get meta information for the fields of table :%s. Please contact the DBA to check the database table information.%s", queryDTO.getTableName(), e.getMessage()), e);
             }
         } finally {
             DBUtil.closeDBResources(rs, statement, postgresqlSourceDTO.clearAfterGetConnection(clearStatus));

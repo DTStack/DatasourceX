@@ -20,11 +20,22 @@ public interface IClient<T> {
     /**
      * 获取 连接
      *
-     * @param source
+     * @param source 数据源信息
      * @return
      * @throws Exception
      */
     Connection getCon(ISourceDTO source);
+
+    /**
+     * 获取 连接
+     *
+     * @param source 数据源信息
+     * @param taskParams 任务环境变量
+     *
+     * @return
+     * @throws Exception
+     */
+    Connection getCon(ISourceDTO source, String taskParams);
 
     /**
      * 校验 连接
@@ -232,6 +243,7 @@ public interface IClient<T> {
     /**
      * 获取数据源/数据库目录列表，目前presto使用，后续pgSql等可以实现该方法用于获取所有库
      *
+     * @param source
      * @return 数据源目录
      */
     List<String> getCatalogs(ISourceDTO source);
