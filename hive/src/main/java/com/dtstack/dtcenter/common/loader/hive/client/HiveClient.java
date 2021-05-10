@@ -296,8 +296,8 @@ public class HiveClient extends AbsRdbmsClient {
         for (Map<String, Object> map : list) {
             String colName = MapUtils.getString(map, "col_name");
             String dataType = MapUtils.getString(map, "data_type");
-            if (colName.contains("Location")) {
-                tableLocation = dataType;
+            if (colName.contains("Location") && StringUtils.isNotBlank(dataType)) {
+                tableLocation = dataType.trim();
                 continue;
             }
 
