@@ -51,6 +51,7 @@
         <module>presto</module>
         <module>oceanbase</module>
         <module>aws_s3</module>
+        <module>inceptor</module>
     </modules>
     <packaging>pom</packaging>
 

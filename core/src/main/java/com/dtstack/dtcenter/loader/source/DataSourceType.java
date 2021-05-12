@@ -36,6 +36,7 @@ public enum DataSourceType {
     MAXCOMPUTE(10, 22, "MaxCompute", "maxcompute"),
     S3(41, 23, "S3", "s3"),
     AWS_S3(51, 24, "AWS_S3", "aws_s3"),
+    INCEPTOR(52, 24, "Inceptor", "inceptor"),
 
     // MPP
     GREENPLUM6(36, 40, "Greenplum", "greenplum6"),
