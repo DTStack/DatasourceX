@@ -35,6 +35,7 @@ public enum DataSourceType {
     HIVE1X(27, 21, "Hive1.x", "hive1"),
     MAXCOMPUTE(10, 22, "MaxCompute", "maxcompute"),
     S3(41, 23, "S3", "s3"),
+    INCEPTOR(52, 24, "Inceptor", "inceptor"),
 
     // MPP
     GREENPLUM6(36, 40, "Greenplum", "greenplum6"),

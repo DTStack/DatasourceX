@@ -10,6 +10,7 @@ common-loader支持开启kerberos认证的插件：
 - kudu
 - phoenix5
 - kafka
+- inceptor
 
 ### Kerberos证书认证方式
 

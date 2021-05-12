@@ -50,6 +50,7 @@
         <module>socket</module>
         <module>presto</module>
         <module>oceanbase</module>
+        <module>inceptor</module>
     </modules>
     <packaging>pom</packaging>
 
