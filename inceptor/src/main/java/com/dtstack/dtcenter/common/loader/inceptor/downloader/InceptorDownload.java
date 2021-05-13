@@ -92,7 +92,7 @@ public class InceptorDownload implements IDownloader {
             return true;
         }
         if (null == connection || StringUtils.isEmpty(sql)) {
-            throw new DtLoaderException("impala connection acquisition failed or execution SQL is empty");
+            throw new DtLoaderException("inceptor connection acquisition failed or execution SQL is empty");
         }
         statement = connection.createStatement();
 
@@ -121,7 +121,7 @@ public class InceptorDownload implements IDownloader {
             pageAll = (int) Math.ceil(totalLine / (double) pageSize);
         }
         isConfigure = true;
-        log.info("impalaDownload: executed SQL:{}, totalLine:{}, columnNames:{}, columnCount{}", sql, totalLine, columnNames, columnCount);
+        log.info("inceptorDownload: executed SQL:{}, totalLine:{}, columnNames:{}, columnCount{}", sql, totalLine, columnNames, columnCount);
         return true;
     }
 
@@ -148,7 +148,7 @@ public class InceptorDownload implements IDownloader {
                 pageTemp.add(columns);
             }
         } catch (Exception e) {
-            throw new DtLoaderException("read Mysql message exception : " + e.getMessage(), e);
+            throw new DtLoaderException("read inceptor message exception : " + e.getMessage(), e);
         }
 
         pageNum++;
