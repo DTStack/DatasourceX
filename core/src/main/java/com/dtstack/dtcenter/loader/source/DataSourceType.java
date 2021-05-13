@@ -34,17 +34,17 @@ public enum DataSourceType {
     HIVE(7, 20, "Hive2.x", "hive"),
     HIVE1X(27, 21, "Hive1.x", "hive1"),
     MAXCOMPUTE(10, 22, "MaxCompute", "maxcompute"),
-    S3(41, 23, "S3", "s3"),
-    AWS_S3(51, 24, "AWS_S3", "aws_s3"),
 
     // MPP
     GREENPLUM6(36, 40, "Greenplum", "greenplum6"),
     LIBRA(21, 41, "LibrA", "libra"),
     GBase_8a(22, 42, "GBase_8a", "gbase"),
 
-    // UnStructed
+    // FileSystem
     HDFS(6, 60, "HDFS", "hdfs"),
     FTP(9, 61, "FTP", "ftp"),
+    S3(41, 62, "S3", "s3"),
+    AWS_S3(51, 63, "AWS S3", "aws_s3"),
 
     // Analytic
     SparkThrift2_1(45, 80, "SparkThrift2.x", "spark"),
