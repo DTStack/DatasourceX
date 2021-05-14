@@ -5,6 +5,8 @@
 
 ### 二、对应数据源sourceDTO及参数说明
 
+hive3对应sourceDTO：[Hive3SourceDTO](/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/Hive3SourceDTO.java)
+
 hive2对应sourceDTO：[HiveSourceDTO](/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/HiveSourceDTO.java)
 
 hive1对应sourceDTO：[Hive1SourceDTO](/core/src/main/java/com/dtstack/dtcenter/loader/dto/source/Hive1SourceDTO.java)

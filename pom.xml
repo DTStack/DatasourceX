@@ -20,6 +20,7 @@
         <module>hdfs</module>
         <module>hive</module>
         <module>hive1</module>
+        <module>hive3</module>
         <module>impala</module>
         <module>kudu</module>
         <module>kylin</module>
