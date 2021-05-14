@@ -33,9 +33,10 @@ public enum DataSourceType {
     // Hadoop
     HIVE(7, 20, "Hive2.x", "hive"),
     HIVE1X(27, 21, "Hive1.x", "hive1"),
-    MAXCOMPUTE(10, 22, "MaxCompute", "maxcompute"),
-    S3(41, 23, "S3", "s3"),
-    AWS_S3(51, 24, "AWS_S3", "aws_s3"),
+    HIVE3X(50, 22, "Hive3.x", "hive3"),
+    MAXCOMPUTE(10, 23, "MaxCompute", "maxcompute"),
+    S3(41, 24, "S3", "s3"),
+    AWS_S3(51, 25, "AWS_S3", "aws_s3"),
 
     // MPP
     GREENPLUM6(36, 40, "Greenplum", "greenplum6"),
@@ -110,6 +111,7 @@ public enum DataSourceType {
         RDBM_S.add(RDBMS.val);
         RDBM_S.add(HIVE.val);
         RDBM_S.add(HIVE1X.val);
+        RDBM_S.add(HIVE3X.val);
         RDBM_S.add(GREENPLUM6.val);
         RDBM_S.add(LIBRA.val);
         RDBM_S.add(GBase_8a.val);
