@@ -26,7 +26,7 @@ public class AwsS3Test {
     private static final AwsS3SourceDTO SOURCE_DTO = AwsS3SourceDTO.builder()
             .accessKey("AKIAVCE7XHFIL4ZA3652")
             .secretKey("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")
-            .region("cn-north-1")
+            .region("cn-northwest-1")
             .build();
 
     @Test
@@ -36,7 +36,19 @@ public class AwsS3Test {
 
     @Test
     public void listBuckets() {
-        List<String> buckets = CLIENT.getTableList(SOURCE_DTO, SqlQueryDTO.builder().build());
+        List<String> buckets = CLIENT.getAllDatabases(SOURCE_DTO, SqlQueryDTO.builder().build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(buckets));
+    }
+
+    @Test
+    public void listBucketsSearchLimit() {
+        List<String> buckets = CLIENT.getAllDatabases(SOURCE_DTO, SqlQueryDTO.builder().schema("s3").limit(3).build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(buckets));
+    }
+
+    @Test
+    public void listObjectsByBucket() {
+        List<String> buckets = CLIENT.getTableList(SOURCE_DTO, SqlQueryDTO.builder().schema("s3-smartdi-01").tableNamePattern("dt.*").limit(3).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(buckets));
     }
 }
