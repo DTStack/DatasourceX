@@ -35,17 +35,17 @@ public enum DataSourceType {
     HIVE1X(27, 21, "Hive1.x", "hive1"),
     HIVE3X(50, 22, "Hive3.x", "hive3"),
     MAXCOMPUTE(10, 23, "MaxCompute", "maxcompute"),
-    S3(41, 24, "S3", "s3"),
-    AWS_S3(51, 25, "AWS_S3", "aws_s3"),
 
     // MPP
     GREENPLUM6(36, 40, "Greenplum", "greenplum6"),
     LIBRA(21, 41, "LibrA", "libra"),
     GBase_8a(22, 42, "GBase_8a", "gbase"),
 
-    // UnStructed
+    // FileSystem
     HDFS(6, 60, "HDFS", "hdfs"),
     FTP(9, 61, "FTP", "ftp"),
+    S3(41, 62, "S3", "s3"),
+    AWS_S3(51, 63, "AWS S3", "aws_s3"),
 
     // Analytic
     SparkThrift2_1(45, 80, "SparkThrift2.x", "spark"),
@@ -124,6 +124,7 @@ public enum DataSourceType {
         RDBM_S.add(PHOENIX5.val);
         RDBM_S.add(IMPALA.val);
         RDBM_S.add(OceanBase.val);
+        RDBM_S.add(INCEPTOR.val);
 
         KAFKA_S.add(KAFKA.val);
         KAFKA_S.add(KAFKA_09.val);
