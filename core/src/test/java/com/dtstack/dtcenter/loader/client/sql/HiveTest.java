@@ -320,4 +320,17 @@ public class HiveTest {
     public void tableNotInDb()  {
         assert !client.isTableExistsInDatabase(source, "test_n", "default");
     }
+
+    /**
+     * 获取表详细信息，表分隔符为 制表符情况
+     */
+    @Test
+    public void getTableTest() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_issue_120").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_issue_120 (id int, name string) row format delimited fields terminated by '    '").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        Table table = client.getTable(source, SqlQueryDTO.builder().tableName("loader_test_issue_120").build());
+        Assert.assertEquals("    ", table.getDelim());
+    }
 }
