@@ -20,6 +20,7 @@ public enum DataBaseType {
     HIVE3("hive3", "org.apache.hive.jdbc.HiveDriver"),
     CarbonData("carbonData", "org.apache.hive.jdbc.HiveDriver"),
     Spark("hive", "org.apache.hive.jdbc.HiveDriver"),
+    INCEPTOR("inceptor", "org.apache.hive.jdbc.HiveDriver"),
     ADS("mysql", "com.mysql.jdbc.Driver"),
     RDS("mysql", "com.mysql.jdbc.Driver"),
     MaxCompute("maxcompute", "com.aliyun.odps.jdbc.OdpsDriver"),

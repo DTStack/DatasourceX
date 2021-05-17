@@ -28,6 +28,7 @@
 | HIVE2.X                    | [doc](docs/rdbms/hive.md)                |
 | SPARK                      | [doc](docs/rdbms/hive.md)                |
 | IMPALA                     | [doc](docs/rdbms/rdbm.md)               |
+| INCEPTOR                   | [doc](docs/rdbms/rdbm.md)               |
 | Clickhouse                 | [doc](docs/rdbms/rdbm.md)           |
 | TiDB(同mysql5)             | [doc](docs/rdbms/mysql5.md)               |
 | CarbonData(同hive2.X)      | [doc](docs/rdbms/hive.md)                |

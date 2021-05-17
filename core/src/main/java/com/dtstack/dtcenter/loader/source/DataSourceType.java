@@ -58,6 +58,7 @@ public enum DataSourceType {
     Kylin(23, 87, "Kylin", "kylin"),
     Presto(48, 88, "Presto", "presto"),
     OceanBase(49, 89, "OceanBase", "oceanbase"),
+    INCEPTOR(52, 90, "Inceptor", "inceptor"),
 
     // NoSQL
     HBASE(8, 100, "HBase", "hbase"),
