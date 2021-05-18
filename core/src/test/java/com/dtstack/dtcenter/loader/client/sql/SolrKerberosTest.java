@@ -64,8 +64,8 @@ public class SolrKerberosTest {
     }
 
     @Test
-    public void getAllDb () {
-        List<String> databases = client.getAllDatabases(source, SqlQueryDTO.builder().build());
+    public void getTableList () {
+        List<String> databases = client.getTableList(source, SqlQueryDTO.builder().build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(databases));
     }
 

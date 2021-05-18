@@ -10,6 +10,7 @@ import com.dtstack.dtcenter.loader.dto.source.SolrSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author ：qianyi
@@ -51,7 +53,7 @@ public class DtSolrClient extends AbsNoSqlClient {
     public Boolean testCon(ISourceDTO source) {
         SolrSourceDTO solrSourceDTO = (SolrSourceDTO) source;
         if (solrSourceDTO == null || StringUtils.isBlank(solrSourceDTO.getZkHost())) {
-            return false;
+            throw new DtLoaderException("zkHost can not be blank");
         }
         CloudSolrClient client = null;
         try {
@@ -99,38 +101,51 @@ public class DtSolrClient extends AbsNoSqlClient {
 
 
     private void closeResource(CloudSolrClient solrClient, SolrSourceDTO solrSourceDTO) {
-        if (BooleanUtils.isFalse(IS_OPEN_POOL.get())) {
-            //not open pool
-            try {
+        try {
+            if (BooleanUtils.isFalse(IS_OPEN_POOL.get())) {
+                //not open pool
                 if (Objects.nonNull(solrClient)) {
                     solrClient.close();
                 }
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
-            }
-        } else {
-            //open pool
-            SolrPool solrPool = solrManager.getConnection(solrSourceDTO);
-            try {
-
+            } else {
+                //open pool
+                SolrPool solrPool = solrManager.getConnection(solrSourceDTO);
                 if (Objects.nonNull(solrClient) && Objects.nonNull(solrPool)) {
                     solrPool.returnResource(solrClient);
                 }
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
             }
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            IS_OPEN_POOL.remove();
         }
+
     }
 
+    /**
+     * collection 》》table
+     * @param source
+     * @param queryDTO
+     * @return
+     */
     @Override
-    public List<String> getAllDatabases(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        SolrSourceDTO solrSourceDTO = (SolrSourceDTO) iSource;
+    public List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) {
+        SolrSourceDTO solrSourceDTO = (SolrSourceDTO) source;
         if (solrSourceDTO == null || StringUtils.isBlank(solrSourceDTO.getZkHost())) {
             return new ArrayList<>();
         }
         CloudSolrClient solrClient = getClient(solrSourceDTO);
         try {
-            return CollectionAdminRequest.listCollections(solrClient);
+            List<String> tableList = CollectionAdminRequest.listCollections(solrClient);
+            if (CollectionUtils.isNotEmpty(tableList)) {
+                if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+                    tableList = tableList.stream().filter(table -> table.contains(queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
+                }
+                if (Objects.nonNull(queryDTO.getLimit())) {
+                    tableList = tableList.stream().limit(queryDTO.getLimit()).collect(Collectors.toList());
+                }
+            }
+            return tableList;
         } catch (Exception e) {
             throw new DtLoaderException(String.format("get solr collections error, Cause by: %s", e.getMessage()), e);
         } finally {
@@ -196,8 +211,8 @@ public class DtSolrClient extends AbsNoSqlClient {
             List<Map<String, Object>> responseFields = fieldsResponse.getFields();
             for (Map<String, Object> map : responseFields) {
                 ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
-                columnMetaDTO.setKey((String) map.get("name"));
-                columnMetaDTO.setType((String) map.get("type"));
+                columnMetaDTO.setKey(MapUtils.getString(map, "name"));
+                columnMetaDTO.setType(MapUtils.getString(map, "type"));
                 columnMetaList.add(columnMetaDTO);
             }
             return columnMetaList;
