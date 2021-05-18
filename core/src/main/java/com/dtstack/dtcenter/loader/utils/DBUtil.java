@@ -75,7 +75,11 @@ public class DBUtil {
             statement = conn.prepareStatement(sql);
             //设置查询超时时间
             if (queryTimeout != null) {
-                statement.setQueryTimeout(queryTimeout);
+                try {
+                    statement.setQueryTimeout(queryTimeout);
+                } catch (Exception e) {
+                    log.debug(String.format("statement set QueryTimeout exception,%s", e.getMessage()), e);
+                }
             }
             //todo 支持预编译sql
             if (preFields != null && !preFields.isEmpty()) {

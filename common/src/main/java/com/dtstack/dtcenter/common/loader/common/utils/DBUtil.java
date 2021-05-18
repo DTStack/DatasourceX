@@ -57,7 +57,11 @@ public class DBUtil {
         try {
             statement = conn.createStatement();
             if (queryTimeout != null) {
-                statement.setQueryTimeout(queryTimeout);
+                try {
+                    statement.setQueryTimeout(queryTimeout);
+                } catch (Exception e) {
+                    log.debug(String.format("statement set QueryTimeout exception,%s", e.getMessage()), e);
+                }
             }
             // 设置返回最大条数
             statement.setMaxRows(Objects.isNull(limit) ? MAX_QUERY_ROW : limit);
@@ -118,7 +122,11 @@ public class DBUtil {
             statement = conn.prepareStatement(sql);
             //设置查询超时时间
             if (queryTimeout != null) {
-                statement.setQueryTimeout(queryTimeout);
+                try {
+                    statement.setQueryTimeout(queryTimeout);
+                } catch (Exception e) {
+                    log.debug(String.format("statement set QueryTimeout exception,%s", e.getMessage()), e);
+                }
             }
             // 设置返回最大条数
             statement.setMaxRows(Objects.isNull(limit) ? MAX_QUERY_ROW : limit);
