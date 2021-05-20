@@ -107,13 +107,15 @@ public class DtKuduClient<T> extends AbsNoSqlClient<T> {
         List<ColumnMetaDTO> metaDTOS = new ArrayList<>();
         try {
             KuduTable kuduTable = client.openTable(tableName);
-            Schema schema = kuduTable == null ? null : kuduTable.getSchema();
-            List<ColumnSchema> columnSchemas = kuduTable == null ? null : schema.getColumns();
+            if (Objects.isNull(kuduTable) || Objects.isNull(kuduTable.getSchema())) {
+                return metaDTOS;
+            }
+            List<ColumnSchema> columnSchemas = kuduTable.getSchema().getColumns();
             if (CollectionUtils.isEmpty(columnSchemas)) {
                 return Collections.emptyList();
             }
 
-            columnSchemas.stream().forEach(record -> {
+            columnSchemas.forEach(record -> {
                 ColumnMetaDTO metaDTO = new ColumnMetaDTO();
                 metaDTO.setKey(record.getName());
                 metaDTO.setType(record.getType().getName());
