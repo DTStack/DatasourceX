@@ -62,6 +62,23 @@ public class PrestoTest {
     }
 
     /**
+     * presto 获取分区字段
+     * @throws Exception
+     */
+    @Test
+    public void getColumnMetaData_part() throws Exception {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("default").tableName("LOADER_TEST").build();
+        List<ColumnMetaDTO> list = client.getColumnMetaData(source, queryDTO);
+        Assert.assertTrue(list.size() > 0);
+        for (ColumnMetaDTO columnMetaDTO : list) {
+            if("pt".equals(columnMetaDTO.getKey())) {
+                Assert.assertTrue(columnMetaDTO.getPart());
+            }
+        }
+
+    }
+
+    /**
      * 连通性测试
      */
     @Test

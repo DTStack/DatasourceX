@@ -1,8 +1,10 @@
 package com.dtstack.dtcenter.common.loader.presto;
 
 import com.dtstack.dtcenter.common.loader.common.exception.ErrorCode;
+import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
+import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.PrestoSourceDTO;
@@ -16,6 +18,11 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -167,6 +174,49 @@ public class PrestoClient<T> extends AbsRdbmsClient<T> {
                 return String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema);
             }
         }
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+        Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
+        PrestoSourceDTO prestoSourceDTO = (PrestoSourceDTO) iSource;
+        // schema 先从queryDTO中获取
+        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? prestoSourceDTO.getSchema() : queryDTO.getSchema();
+        try {
+            return getColumnMetaData(prestoSourceDTO.getConnection(), schema, queryDTO.getTableName());
+        } finally {
+            DBUtil.closeDBResources(null, null, prestoSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+    }
+
+    private List<ColumnMetaDTO> getColumnMetaData(Connection conn, String schema, String tableName) {
+        List<ColumnMetaDTO> columnList = new ArrayList<>();
+        Statement stmt = null;
+        ResultSet resultSet = null;
+        try {
+            stmt = conn.createStatement();
+            resultSet = stmt.executeQuery("DESCRIBE " + transferSchemaAndTableName(schema, tableName));
+            while (resultSet.next()) {
+                String colName = resultSet.getString("Column");
+                String dataType = resultSet.getString("Type");
+                String extra = resultSet.getString("Extra");
+                String comment = resultSet.getString("Comment");
+                ColumnMetaDTO metaDTO = new ColumnMetaDTO();
+                metaDTO.setKey(colName);
+                metaDTO.setType(dataType.trim());
+                metaDTO.setComment(comment);
+                if (StringUtils.isNotBlank(extra) && extra.contains("partition key")) {
+                    metaDTO.setPart(true);
+                }
+                columnList.add(metaDTO);
+            }
+        } catch (SQLException e) {
+            throw new DtLoaderException(String.format("Failed to get meta information for the fields of table :%s. Please contact the DBA to check the database table information.",
+                    transferSchemaAndTableName(schema, tableName)), e);
+        } finally {
+            DBUtil.closeDBResources(resultSet, stmt, null);
+        }
+        return columnList;
     }
 
     @Override
