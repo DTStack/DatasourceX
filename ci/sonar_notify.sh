@@ -26,7 +26,7 @@
      \"msgtype\": \"markdown\",
      \"markdown\": {
          \"title\":\"sonar代码质量\",
-         \"text\": \"## sonar代码质量报告: [sonar地址](http://172.16.100.158:9001/dashboard?id=dt-common-loader) \n
+         \"text\": \"## sonar代码质量报告: [sonar地址](http://172.16.100.158:9001/dashboard?id=dt_center_common_loader) \n
 > 状态: ${alert_status} \n
 > bug: ${bugs} \n
 > 漏洞: ${vulnerabilities} \n
