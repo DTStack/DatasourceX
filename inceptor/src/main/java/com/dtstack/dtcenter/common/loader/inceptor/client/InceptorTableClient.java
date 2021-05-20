@@ -32,12 +32,12 @@ public class InceptorTableClient extends AbsTableClient {
         return DataSourceType.INCEPTOR;
     }
 
-    private static final String TABLE_IS_VIEW_SQL = "desc formatted %s";
+    private static final String DESC_FORMATTED_SQL = "desc formatted %s";
 
     @Override
     public Boolean isView(ISourceDTO source, String schema, String tableName) {
         checkParamAndSetSchema(source, schema, tableName);
-        String sql = String.format(TABLE_IS_VIEW_SQL, tableName);
+        String sql = String.format(DESC_FORMATTED_SQL, tableName);
         List<Map<String, Object>> result = executeQuery(source, sql);
         if (CollectionUtils.isEmpty(result)) {
             throw new DtLoaderException(String.format("Execute to determine whether the table is a view sql result is empty，sql：%s", sql));

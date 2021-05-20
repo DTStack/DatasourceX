@@ -72,4 +72,14 @@ public class Table {
      * 字段
      */
     private List<ColumnMetaDTO> columns = Lists.newArrayList();
+
+    /**
+     * 是否是事务表
+     */
+    private Boolean isTransTable = false;
+
+    /**
+     * 是否是视图
+     */
+    private Boolean isView = false;
 }

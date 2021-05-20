@@ -141,5 +141,4 @@ public class InceptorTableTest {
         Boolean check = INCEPTOR_Table.isView(INCEPTOR_SOURCE_DTO, null, "loader_test_5");
         Assert.assertTrue(check);
     }
-
 }
