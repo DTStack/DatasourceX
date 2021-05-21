@@ -459,8 +459,10 @@ public class InceptorClient extends AbsRdbmsClient {
                 continue;
             }
 
-            if (StringUtils.containsIgnoreCase(category, "Transactional Information")) {
-                tableInfo.setIsTransTable(true);
+            if (StringUtils.containsIgnoreCase(category, "transactional")) {
+                if (StringUtils.containsIgnoreCase(attribute, "true")) {
+                    tableInfo.setIsTransTable(true);
+                }
                 continue;
             }
 
