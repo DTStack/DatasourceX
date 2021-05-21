@@ -56,7 +56,10 @@ public class SolrUtils {
             File file = new File(keytabPath);
             File jaas = new File(file.getParent() + File.separator + "solr_jaas.conf");
             if (jaas.exists()) {
-                jaas.delete();
+                boolean checkDelete = jaas.delete();
+                if (!checkDelete) {
+                    log.error("delete file [{}] fail...", jaas.getAbsolutePath());
+                }
             }
 
             //如果没有设置principal,默认读keytab取第一个

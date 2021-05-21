@@ -297,9 +297,6 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         JSONObject resultJsonObject = null;
         try (NStringEntity entity = new NStringEntity(dsl, ContentType.APPLICATION_JSON)) {
             client = getClient(esSourceDTO);
-            if (Objects.isNull(client)) {
-                throw new DtLoaderException("No database connection available");
-            }
             lowLevelClient = client.getLowLevelClient();
             Request request = new Request(POST, String.format(ENDPOINT_SEARCH_FORMAT, index));
             request.setEntity(entity);
@@ -456,9 +453,6 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         NStringEntity entity = null;
         try {
             client = getClient(esSourceDTO);
-            if (Objects.isNull(client)) {
-                throw new DtLoaderException("No database connection available");
-            }
             lowLevelClient = client.getLowLevelClient();
 
             if (queryDTO.getSql() != null) {

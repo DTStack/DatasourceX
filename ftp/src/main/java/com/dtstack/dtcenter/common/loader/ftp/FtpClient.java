@@ -5,12 +5,13 @@ import com.dtstack.dtcenter.common.loader.common.utils.AddressUtil;
 import com.dtstack.dtcenter.loader.dto.source.FtpSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.google.common.collect.Maps;
 import com.jcraft.jsch.JSchException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -34,16 +35,15 @@ public class FtpClient<T> extends AbsNoSqlClient<T> {
             SFTPHandler instance = null;
             try {
                 Integer finalPort = Integer.valueOf(ftpSourceDTO.getHostPort());
-                instance = SFTPHandler.getInstance(
-                        new HashMap<String, String>() {{
-                            put(SFTPHandler.KEY_HOST, ftpSourceDTO.getUrl());
-                            put(SFTPHandler.KEY_PORT, String.valueOf(finalPort));
-                            put(SFTPHandler.KEY_USERNAME, ftpSourceDTO.getUsername());
-                            put(SFTPHandler.KEY_PASSWORD, ftpSourceDTO.getPassword());
-                            put(SFTPHandler.KEY_TIMEOUT, String.valueOf(TIMEOUT));
-                            put(SFTPHandler.KEY_AUTHENTICATION, Optional.ofNullable(ftpSourceDTO.getAuth()).orElse(""));
-                            put(SFTPHandler.KEY_RSA, Optional.ofNullable(ftpSourceDTO.getPath()).orElse(""));
-                        }});
+                Map<String, String> sftpConfig = Maps.newHashMap();
+                sftpConfig.put(SFTPHandler.KEY_HOST, ftpSourceDTO.getUrl());
+                sftpConfig.put(SFTPHandler.KEY_PORT, String.valueOf(finalPort));
+                sftpConfig.put(SFTPHandler.KEY_USERNAME, ftpSourceDTO.getUsername());
+                sftpConfig.put(SFTPHandler.KEY_PASSWORD, ftpSourceDTO.getPassword());
+                sftpConfig.put(SFTPHandler.KEY_TIMEOUT, String.valueOf(TIMEOUT));
+                sftpConfig.put(SFTPHandler.KEY_AUTHENTICATION, Optional.ofNullable(ftpSourceDTO.getAuth()).orElse(""));
+                sftpConfig.put(SFTPHandler.KEY_RSA, Optional.ofNullable(ftpSourceDTO.getPath()).orElse(""));
+                instance = SFTPHandler.getInstance(sftpConfig);
             } catch (JSchException e) {
                 throw new DtLoaderException("Failed to establish a connection with the ftp server, please check whether the user name and password are correct");
             } finally {
