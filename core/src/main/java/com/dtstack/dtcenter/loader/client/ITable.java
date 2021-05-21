@@ -96,5 +96,6 @@ public interface ITable {
      * @param tableName 表名
      * @return 是否是分区表
      */
+    @Deprecated
     Boolean isView (ISourceDTO source, String schema, String tableName);
 }

@@ -39,7 +39,7 @@ public class Hive1Test extends BaseTest {
      * 构建数据源信息 - em创建的数据源连不上
      */
     private static final Hive1SourceDTO source = Hive1SourceDTO.builder()
-            .url("jdbc:hive2://172.16.100.214:10000/default")
+            .url("jdbc:hive2://172.16.101.17:10000/default")
             .schema("default")
             .defaultFS("hdfs://ns1")
             .username("admin")
@@ -63,13 +63,23 @@ public class Hive1Test extends BaseTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int comment 'id comment', name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_1 values (1, 'loader_test_1')").build();
-        client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_parquet").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table loader_test_parquet (id int, name string) STORED AS PARQUET").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_parquet values (1, 'wc1'),(2,'wc2')").build();
+
+        /* 创建 hive orc 事务表 */
+        try {
+            queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_orc_tran").build();
+            client.executeSqlWithoutResultSet(source, queryDTO);
+            queryDTO = SqlQueryDTO.builder().sql("create table loader_test_orc_tran (id int, name string) CLUSTERED BY (id) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES (\"transactional\"=\"true\")").build();
+            client.executeSqlWithoutResultSet(source, queryDTO);
+        } catch (Exception e) {
+            //
+        }
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_orc_not_tran").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_orc_not_tran (id int, name string) STORED AS ORC").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -306,5 +316,21 @@ public class Hive1Test extends BaseTest {
     @Test
     public void tableNotInDb()  {
         assert !client.isTableExistsInDatabase(source, "test_n", "default");
+    }
+
+    /**
+     * 表为事务表
+     */
+    @Test
+    public void tableIsTransTable() {
+        Assert.assertTrue(client.getTable(source, SqlQueryDTO.builder().tableName("loader_test_orc_tran").build()).getIsTransTable());
+    }
+
+    /**
+     * 表为非事务表
+     */
+    @Test
+    public void tableIsNotTransTable() {
+        Assert.assertFalse(client.getTable(source, SqlQueryDTO.builder().tableName("loader_test_orc_not_tran").build()).getIsTransTable());
     }
 }

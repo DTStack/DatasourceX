@@ -31,4 +31,9 @@ public class InceptorSourceDTO extends RdbmsSourceDTO {
      * Hadoop 配置信息
      */
     private String config;
+
+    /**
+     * hive metaStore 连接地址
+     */
+    private String metaStoreUris;
 }

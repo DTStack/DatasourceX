@@ -17,6 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +51,7 @@ public class Hive3Test extends BaseTest {
                     "    \"dfs.nameservices\": \"dtstack\"\n" +
                     "}")
             .username("hive")
+            .poolConfig(PoolConfig.builder().build())
             .build();
 
     /**
@@ -70,6 +72,23 @@ public class Hive3Test extends BaseTest {
         queryDTO = SqlQueryDTO.builder().sql("create table loader_test_parquet (id int comment 'ID', name string comment '姓名_name') STORED AS PARQUET").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_parquet values (1, 'wc1'),(2,'wc2')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+
+        /* 创建 hive orc 事务表 */
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_orc_tran").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        try (Connection con = client.getCon(source);
+             Statement conStatement = con.createStatement()) {
+            conStatement.execute("set hive.support.concurrency=true");
+            conStatement.execute("set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+            conStatement.execute("create table loader_test_orc_tran (id int, name string) CLUSTERED BY (id) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES (\"transactional\"=\"true\")");
+        } catch (SQLException e) {
+            // 不处理
+        }
+
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_orc_not_tran").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_orc_not_tran (id int, name string) STORED AS ORC").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -316,5 +335,21 @@ public class Hive3Test extends BaseTest {
     @Test
     public void tableNotInDb()  {
         assert !client.isTableExistsInDatabase(source, "test_n", "default");
+    }
+
+    /**
+     * 表为事务表
+     */
+    @Test
+    public void tableIsTransTable() {
+        Assert.assertTrue(client.getTable(source, SqlQueryDTO.builder().tableName("loader_test_orc_tran").build()).getIsTransTable());
+    }
+
+    /**
+     * 表为非事务表
+     */
+    @Test
+    public void tableIsNotTransTable() {
+        Assert.assertFalse(client.getTable(source, SqlQueryDTO.builder().tableName("loader_test_orc_not_tran").build()).getIsTransTable());
     }
 }

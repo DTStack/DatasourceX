@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.spark.client;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
@@ -524,6 +525,7 @@ public class SparkClient extends AbsRdbmsClient {
         boolean isTableInfo = false;
         for (Map<String, Object> row : result) {
             String colName = MapUtils.getString(row, "col_name");
+            String comment = MapUtils.getString(row, "comment", "");
             String dataTypeOrigin = MapUtils.getString(row, "data_type");
             if (StringUtils.isBlank(colName) || StringUtils.isBlank(dataTypeOrigin)) {
                 if (StringUtils.isNotBlank(colName) && colName.contains("# Detailed Table Information")) {
@@ -595,6 +597,13 @@ public class SparkClient extends AbsRdbmsClient {
 
             if (colName.contains("Database")) {
                 tableInfo.setDb(dataType);
+                continue;
+            }
+
+            if (StringUtils.containsIgnoreCase(dataType, "transactional")) {
+                if (ReflectUtil.fieldExists(Table.class, "isTransTable") && StringUtils.containsIgnoreCase(comment, "true")) {
+                    tableInfo.setIsTransTable(true);
+                }
                 continue;
             }
 

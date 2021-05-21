@@ -46,6 +46,7 @@ public class InceptorTest extends BaseTest {
                     "    \"dfs.client.failover.proxy.provider.nameservice1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
                     "    \"dfs.nameservices\": \"nameservice1\"\n" +
                     "}")
+            .metaStoreUris("thrift://tdh6-node3:9083,thrift://tdh6-node2:9083")
             .build();
 
     /**
@@ -80,6 +81,15 @@ public class InceptorTest extends BaseTest {
         queryDTO = SqlQueryDTO.builder().sql("create table loader_test_csv stored as CSVFILE as select id,name from loader_test_text").build();
         INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
         /*------------暂时不考虑es、hbase、orc事务表--------------*/
+
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_orc_tran").build();
+        INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_orc_tran (id int, name string) CLUSTERED BY (id) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES (\"transactional\"=\"true\")").build();
+        INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_orc_not_tran").build();
+        INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_orc_not_tran (id int, name string) STORED AS ORC").build();
+        INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
     }
 
     /**
@@ -261,5 +271,21 @@ public class InceptorTest extends BaseTest {
     @Test
     public void tableNotInDb() {
         assert !INCEPTOR_CLIENT.isTableExistsInDatabase(INCEPTOR_SOURCE_DTO, UUID.randomUUID().toString(), "default");
+    }
+
+    /**
+     * 表为事务表
+     */
+    @Test
+    public void tableIsTransTable() {
+        Assert.assertTrue(INCEPTOR_CLIENT.getTable(INCEPTOR_SOURCE_DTO, SqlQueryDTO.builder().tableName("loader_test_orc_tran").build()).getIsTransTable());
+    }
+
+    /**
+     * 表为非事务表
+     */
+    @Test
+    public void tableIsNotTransTable() {
+        Assert.assertFalse(INCEPTOR_CLIENT.getTable(INCEPTOR_SOURCE_DTO, SqlQueryDTO.builder().tableName("loader_test_orc_not_tran").build()).getIsTransTable());
     }
 }

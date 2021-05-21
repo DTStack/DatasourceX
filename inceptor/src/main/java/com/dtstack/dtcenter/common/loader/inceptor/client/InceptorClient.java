@@ -4,7 +4,10 @@ import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosConfigUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.inceptor.InceptorConnFactory;
+import com.dtstack.dtcenter.common.loader.inceptor.InceptorDriverUtil;
 import com.dtstack.dtcenter.common.loader.inceptor.downloader.InceptorDownload;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
@@ -16,11 +19,16 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.InceptorSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 
+import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -44,6 +52,7 @@ import java.util.stream.Collectors;
  * date：Created in 下午2:19 2021/5/6
  * company: www.dtstack.com
  */
+@Slf4j
 public class InceptorClient extends AbsRdbmsClient {
 
     // 创建库指定注释
@@ -70,6 +79,15 @@ public class InceptorClient extends AbsRdbmsClient {
 
     // 测试连通性超时时间。单位：秒
     private final static int TEST_CONN_TIMEOUT = 30;
+
+    // metaStore 地址 key
+    private final static String META_STORE_URIS_KEY = "hive.metastore.uris";
+
+    // 是否启用 kerberos 认证
+    private final static String META_STORE_SASL_ENABLED = "hive.metastore.sasl.enabled";
+
+    // metaStore 地址 principal 地址
+    private final static String META_STORE_KERBEROS_PRINCIPAL = "hive.metastore.kerberos.principal";
 
     @Override
     public List<String> getTableList(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
@@ -260,8 +278,54 @@ public class InceptorClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(inceptorSourceDTO.getDefaultFS())) {
             return Boolean.TRUE;
         }
-
+        // 检查 metaStore 连通性
+        checkMetaStoreConnect(inceptorSourceDTO.getMetaStoreUris(), inceptorSourceDTO.getKerberosConfig());
         return HdfsOperator.checkConnection(inceptorSourceDTO.getDefaultFS(), inceptorSourceDTO.getConfig(), inceptorSourceDTO.getKerberosConfig());
+    }
+
+    /**
+     * 检查 metaStore 连通性
+     *
+     * @param metaStoreUris  metaStore 地址
+     * @param kerberosConfig kerberos 配置
+     */
+    private void checkMetaStoreConnect(String metaStoreUris, Map<String, Object> kerberosConfig) {
+        if (StringUtils.isBlank(metaStoreUris)) {
+            return;
+        }
+        HiveConf hiveConf = new HiveConf();
+        hiveConf.set(META_STORE_URIS_KEY, metaStoreUris);
+        if (MapUtils.isNotEmpty(kerberosConfig)) {
+            // metaStore kerberos 认证需要
+            hiveConf.setBoolean(META_STORE_SASL_ENABLED, true);
+            // 做两步兼容：先取 hive.metastore.kerberos.principal 的值，再取 principal，最后再取 keytab 中的第一个 principal
+            String metaStorePrincipal = MapUtils.getString(kerberosConfig, META_STORE_KERBEROS_PRINCIPAL, MapUtils.getString(kerberosConfig, HadoopConfTool.PRINCIPAL));
+            if (StringUtils.isBlank(metaStorePrincipal)) {
+                String keytabPath = MapUtils.getString(kerberosConfig, HadoopConfTool.PRINCIPAL_FILE);
+                metaStorePrincipal = KerberosConfigUtil.getPrincipals(keytabPath).get(0);
+                if (StringUtils.isBlank(metaStorePrincipal)) {
+                    throw new DtLoaderException("hive.metastore.kerberos.principal is not null...");
+                }
+            }
+            log.info("hive.metastore.kerberos.principal:{}", metaStorePrincipal);
+            hiveConf.set(META_STORE_KERBEROS_PRINCIPAL, metaStorePrincipal);
+        }
+        KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    HiveMetaStoreClient client = null;
+                    try {
+                        client = new HiveMetaStoreClient(hiveConf);
+                        client.getAllDatabases();
+                    } catch (Exception e) {
+                        throw new DtLoaderException(String.format("metastore connection failed.:%s", e.getMessage()));
+                    } finally {
+                        if (Objects.nonNull(client)) {
+                            client.close();
+                        }
+                    }
+                    return true;
+                }
+        );
     }
 
     @Override
@@ -392,6 +456,18 @@ public class InceptorClient extends AbsRdbmsClient {
 
             if (StringUtils.containsIgnoreCase(category, "Database")) {
                 tableInfo.setDb(attribute);
+                continue;
+            }
+
+            if (StringUtils.containsIgnoreCase(category, "transactional")) {
+                if (StringUtils.containsIgnoreCase(attribute, "true")) {
+                    tableInfo.setIsTransTable(true);
+                }
+                continue;
+            }
+
+            if (StringUtils.containsIgnoreCase(category, "Type")) {
+                tableInfo.setIsView(StringUtils.containsIgnoreCase(attribute, "VIEW"));
                 continue;
             }
 

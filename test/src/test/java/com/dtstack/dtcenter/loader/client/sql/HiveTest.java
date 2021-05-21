@@ -61,20 +61,20 @@ public class HiveTest extends BaseTest {
      */
     @BeforeClass
     public static void beforeClass()  {
-//        System.setProperty("HADOOP_USER_NAME", "admin");
-//        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
-//        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_1").build();
-//        client.executeSqlWithoutResultSet(source, queryDTO);
-//        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int comment 'id comment', name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
-//        client.executeSqlWithoutResultSet(source, queryDTO);
-//        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_1 values (1, 'loader_test_1')").build();
-//        client.executeSqlWithoutResultSet(source, queryDTO);
-//        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_parquet").build();
-//        client.executeSqlWithoutResultSet(source, queryDTO);
-//        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_parquet (id int comment 'ID', name string comment '姓名_name') STORED AS PARQUET").build();
-//        client.executeSqlWithoutResultSet(source, queryDTO);
-//        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_parquet values (1, 'wc1'),(2,'wc2')").build();
-//        client.executeSqlWithoutResultSet(source, queryDTO);
+        System.setProperty("HADOOP_USER_NAME", "admin");
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_1").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_1 (id int comment 'id comment', name string) COMMENT 'table comment' row format delimited fields terminated by ','").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_1 values (1, 'loader_test_1')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_parquet").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_parquet (id int comment 'ID', name string comment '姓名_name') STORED AS PARQUET").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_parquet values (1, 'wc1'),(2,'wc2')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     /**
