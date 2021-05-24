@@ -51,7 +51,6 @@ public class Hive3Test extends BaseTest {
                     "    \"dfs.nameservices\": \"dtstack\"\n" +
                     "}")
             .username("hive")
-            .poolConfig(PoolConfig.builder().build())
             .build();
 
     /**
