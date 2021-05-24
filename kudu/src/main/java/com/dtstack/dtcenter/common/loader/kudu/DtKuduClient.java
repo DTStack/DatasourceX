@@ -101,7 +101,7 @@ public class DtKuduClient<T> extends AbsNoSqlClient<T> {
 
     private List<ColumnMetaDTO> getTableColumns(org.apache.kudu.client.KuduClient client, String tableName) {
         if (StringUtils.isBlank(tableName)) {
-            return null;
+            return Collections.emptyList();
         }
 
         List<ColumnMetaDTO> metaDTOS = new ArrayList<>();

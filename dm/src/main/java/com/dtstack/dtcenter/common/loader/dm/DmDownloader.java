@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -101,7 +102,7 @@ public class DmDownloader implements IDownloader {
         if (CollectionUtils.isNotEmpty(columnNames)) {
             return columnNames.stream().map(Column::getName).collect(Collectors.toList());
         }
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -144,6 +145,6 @@ public class DmDownloader implements IDownloader {
 
     @Override
     public List<String> getContainers() {
-        return null;
+        return Collections.emptyList();
     }
 }

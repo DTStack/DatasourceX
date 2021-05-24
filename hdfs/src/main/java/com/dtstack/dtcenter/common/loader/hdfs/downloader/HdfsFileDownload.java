@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.PrivilegedAction;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -212,7 +213,7 @@ public class HdfsFileDownload implements IDownloader {
 
     @Override
     public List<String> getMetaInfo() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -270,7 +271,7 @@ public class HdfsFileDownload implements IDownloader {
 
     @Override
     public List<String> getContainers() {
-        return null;
+        return Collections.emptyList();
     }
 
 }

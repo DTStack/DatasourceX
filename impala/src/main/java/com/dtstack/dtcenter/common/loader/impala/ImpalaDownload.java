@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -128,7 +129,7 @@ public class ImpalaDownload implements IDownloader {
     @Override
     public List<String> getMetaInfo() {
         if (CollectionUtils.isEmpty(columnNames)) {
-            return null;
+            return Collections.emptyList();
         }
         return columnNames.stream().map(Column::getName).collect(Collectors.toList());
     }

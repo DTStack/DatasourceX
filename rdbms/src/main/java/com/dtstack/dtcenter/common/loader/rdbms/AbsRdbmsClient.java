@@ -518,7 +518,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) {
-        return null;
+        return Collections.emptyMap();
     }
 
     /**
