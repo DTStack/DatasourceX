@@ -49,6 +49,10 @@ public class Mysql5Test {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into LOADER_TEST values (1, 'LOADER_TEST')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("drop view if exists LOADER_TEST_VIEW").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create view LOADER_TEST_VIEW as select * from LOADER_TEST").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     /**
@@ -226,5 +230,23 @@ public class Mysql5Test {
     public void getTableBySchema () {
         List tableListBySchema = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("dev").tableNamePattern("").limit(5).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableListBySchema));
+    }
+
+    /**
+     * 获取表 - 无视图
+     */
+    @Test
+    public void tableListNotView() {
+        List tableListBySchema = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("dev").tableNamePattern("").limit(5).build());
+        Assert.assertFalse(tableListBySchema.contains("LOADER_TEST_VIEW"));
+    }
+
+    /**
+     * 获取表 - 有视图
+     */
+    @Test
+    public void tableListContainView() {
+        List tableListBySchema = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("dev").tableNamePattern("").view(true).limit(5).build());
+        Assert.assertTrue(tableListBySchema.contains("LOADER_TEST_VIEW"));
     }
 }
