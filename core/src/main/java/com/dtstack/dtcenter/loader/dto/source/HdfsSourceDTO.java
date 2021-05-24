@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -65,6 +66,12 @@ public class HdfsSourceDTO extends RdbmsSourceDTO {
      * taskmanager id
      */
     private String containerId;
+
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.HDFS.getVal();
+    }
 
     @Override
     public Connection getConnection() {

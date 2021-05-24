@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.dto.source;
 
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -57,6 +58,13 @@ public class MongoSourceDTO  implements ISourceDTO {
      * 连接池配置信息，如果传入则认为开启连接池
      */
     private PoolConfig poolConfig;
+
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.MONGODB.getVal();
+    }
+
 
     @Override
     public Connection getConnection() {

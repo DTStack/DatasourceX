@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
@@ -25,4 +26,9 @@ public class ImpalaSourceDTO extends RdbmsSourceDTO {
      * Hadoop/ Hbase 配置信息
      */
     private String config;
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.IMPALA.getVal();
+    }
 }

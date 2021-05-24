@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,4 +28,10 @@ public class ESSourceDTO extends RdbmsSourceDTO {
      * es文档id
      */
     private String id;
+
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.ES.getVal();
+    }
 }

@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
@@ -15,4 +16,9 @@ import lombok.experimental.SuperBuilder;
 public class PrestoSourceDTO extends RdbmsSourceDTO {
     @Deprecated
     private String catalog;
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.Presto.getVal();
+    }
 }

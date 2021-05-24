@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,4 +30,9 @@ public class Hive1SourceDTO extends RdbmsSourceDTO {
      * Hadoop/ Hbase 配置信息
      */
     private String config;
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.HIVE1X.getVal();
+    }
 }
