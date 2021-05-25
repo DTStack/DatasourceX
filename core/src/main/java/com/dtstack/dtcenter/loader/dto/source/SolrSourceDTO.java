@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,5 +28,12 @@ public class SolrSourceDTO extends RdbmsSourceDTO {
      * chroot
      */
     private String chroot;
+
+
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.SOLR.getVal();
+    }
 
 }

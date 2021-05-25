@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
@@ -15,5 +16,11 @@ import lombok.experimental.SuperBuilder;
 @ToString
 @SuperBuilder
 public class KingbaseSourceDTO extends RdbmsSourceDTO {
+
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.KINGBASE8.getVal();
+    }
 
 }

@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -36,4 +37,9 @@ public class InceptorSourceDTO extends RdbmsSourceDTO {
      * hive metaStore 连接地址
      */
     private String metaStoreUris;
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.INCEPTOR.getVal();
+    }
 }

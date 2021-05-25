@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -72,6 +73,12 @@ public class FtpSourceDTO implements ISourceDTO {
      * 连接模式
      */
     private String connectMode;
+
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.FTP.getVal();
+    }
 
     @Override
     public Connection getConnection() {

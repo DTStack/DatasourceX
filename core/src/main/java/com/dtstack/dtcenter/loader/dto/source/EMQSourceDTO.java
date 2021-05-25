@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -46,6 +47,11 @@ public class EMQSourceDTO implements ISourceDTO {
      * 地址
      */
     protected String url;
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.EMQ.getVal();
+    }
 
     @Override
     public Connection getConnection() {

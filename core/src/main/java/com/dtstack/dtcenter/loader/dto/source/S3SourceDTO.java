@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -40,6 +41,12 @@ public class S3SourceDTO implements ISourceDTO {
      * 域名信息
      */
     private String hostname;
+
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.S3.getVal();
+    }
 
     @Override
     public Connection getConnection() {
