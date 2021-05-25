@@ -30,6 +30,7 @@ import java.math.BigInteger;
 import java.security.PrivilegedAction;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -304,6 +305,6 @@ public class HdfsParquetDownload implements IDownloader {
 
     @Override
     public List<String> getContainers() {
-        return null;
+        return Collections.emptyList();
     }
 }
