@@ -110,15 +110,13 @@ public class ImpalaDownload implements IDownloader {
         String showColumns = String.format("SELECT * FROM (%s) t LIMIT 1", sql);
         try (ResultSet resultSet = statement.executeQuery(showColumns)) {
             columnNames = new ArrayList<>();
-            while (resultSet.next()) {
-                columnCount = resultSet.getMetaData().getColumnCount();
-                for (int i = 1; i <= columnCount; i++) {
-                    Column column = new Column();
-                    column.setName(resultSet.getMetaData().getColumnName(i));
-                    column.setType(resultSet.getMetaData().getColumnTypeName(i));
-                    column.setIndex(i);
-                    columnNames.add(column);
-                }
+            columnCount = resultSet.getMetaData().getColumnCount();
+            for (int i = 1; i <= columnCount; i++) {
+                Column column = new Column();
+                column.setName(resultSet.getMetaData().getColumnName(i));
+                column.setType(resultSet.getMetaData().getColumnTypeName(i));
+                column.setIndex(i);
+                columnNames.add(column);
             }
         }
         isConfigure = true;

@@ -188,6 +188,20 @@ public class InceptorTest extends BaseTest {
         }
     }
 
+    /**
+     * loader_test_orc_not_tran 为空表时，判断是否能够获取元数据信息
+     * @throws Exception
+     */
+    @Test
+    public void getDownloader_001() throws Exception {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from loader_test_orc_not_tran").build();
+        IDownloader downloader = INCEPTOR_CLIENT.getDownloader(INCEPTOR_SOURCE_DTO, queryDTO);
+        List<String> list = downloader.getMetaInfo();
+        Assert.assertEquals(2, list.size());
+        Assert.assertTrue(list.contains("id"));
+        Assert.assertTrue(list.contains("name"));
+    }
+
     @Test
     public void getPartitionColumn() {
         List<ColumnMetaDTO> data = INCEPTOR_CLIENT.getColumnMetaData(INCEPTOR_SOURCE_DTO, SqlQueryDTO.builder().tableName("loader_test_text").build());
