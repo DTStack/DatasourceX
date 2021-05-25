@@ -65,6 +65,12 @@
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
             <version>7.4.0</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-math3</artifactId>
+                    <groupId>org.apache.commons</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
