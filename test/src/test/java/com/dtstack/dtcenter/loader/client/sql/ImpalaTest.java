@@ -64,6 +64,11 @@ public class ImpalaTest extends BaseTest {
         String join = String.join(",", data);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_download values " + join).build();
         client.executeSqlWithoutResultSet(source, queryDTO);
+
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_download_1").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_download_1(id int comment 'ID', name string comment '姓名_name') COMMENT 'table comment' row format delimited fields terminated by ','").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     @Test
@@ -247,6 +252,22 @@ public class ImpalaTest extends BaseTest {
             List<List> result = (List<List>) downloader.readNext();
             Assert.assertTrue(CollectionUtils.isNotEmpty(result));
         }
+        downloader.close();
+    }
+
+
+    /**
+     * 不插入数据，查询元数据信息
+     * @throws Exception
+     */
+    @Test
+    public void download() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
+        IDownloader downloader = client.getDownloader(source, SqlQueryDTO.builder().sql("select * from loader_download_1").build());
+        List<String> list = downloader.getMetaInfo();
+        Assert.assertEquals(2, list.size());
+        Assert.assertTrue(list.contains("id"));
+        Assert.assertTrue(list.contains("name"));
         downloader.close();
     }
 }
