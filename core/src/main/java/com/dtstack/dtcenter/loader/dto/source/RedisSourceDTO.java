@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.loader.dto.source;
 
 import com.dtstack.dtcenter.loader.enums.RedisMode;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -63,6 +64,12 @@ public class RedisSourceDTO implements ISourceDTO {
      * 如果为 master slave 的则为 master 的地址
      */
     private String master;
+
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.REDIS.getVal();
+    }
 
     @Override
     public Connection getConnection() {

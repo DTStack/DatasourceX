@@ -67,18 +67,13 @@ public class KafkaUtil {
 
 
     public static boolean checkConnection(String zkUrls, String brokerUrls, Map<String, Object> kerberosConfig) {
-        ZkUtils zkUtils = null;
         try {
             if (StringUtils.isEmpty(brokerUrls)) {
                 brokerUrls = getAllBrokersAddressFromZk(zkUrls);
             }
-            return StringUtils.isNotBlank(brokerUrls) ? checkKafkaConnection(brokerUrls, kerberosConfig) : false;
+            return StringUtils.isNotBlank(brokerUrls) && checkKafkaConnection(brokerUrls, kerberosConfig);
         } catch (Exception e) {
             throw new DtLoaderException(ERROR_ADAPTER.connAdapter(e.getMessage(), ERROR_PATTERN), e);
-        } finally {
-            if (zkUtils != null) {
-                zkUtils.close();
-            }
         }
     }
 
@@ -105,7 +100,10 @@ public class KafkaUtil {
             File file = new File(keytabConf);
             File jaas = new File(file.getParent() + File.separator + "kafka_jaas.conf");
             if (jaas.exists()) {
-                jaas.delete();
+                boolean checkDelete = jaas.delete();
+                if (!checkDelete) {
+                    log.error("delete file [{}] fail....", jaas.getAbsolutePath());
+                }
             }
 
             String principal = MapUtils.getString(kerberosConfig, HadoopConfTool.PRINCIPAL);

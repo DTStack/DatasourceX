@@ -52,6 +52,9 @@
         <module>presto</module>
         <module>oceanbase</module>
         <module>aws_s3</module>
+        <module>solr</module>
+        <module>inceptor</module>
+        <module>test</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -61,9 +64,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <dtstack.common>4.0.3-SNAPSHOT</dtstack.common>
         <spring.version>5.2.9.RELEASE</spring.version>
-
-        <!--将所有jacoco定位到同样的父目录位置-->
-        <sonar.jacoco.reportPaths>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPaths>
+        <aggregate.report.dir>test/target/site/jacoco/jacoco.xml</aggregate.report.dir>
     </properties>
 
     <dependencyManagement>
@@ -305,38 +306,24 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.5</version>
-                <executions>
-                    <execution>
-                        <id>pre-unit-test</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                        <configuration>
-                            <propertyName>jacocoArgLine</propertyName>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>post-unit-test</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <!--使用前面定义的位置-->
-                    <destFile>${sonar.jacoco.reportPaths}</destFile>
-                    <!--重要！用追加的模式-->
-                    <append>true</append>
-                </configuration>
-            </plugin>
         </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>3.7.0.1746</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.8.6</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
+
     <reporting>
         <plugins>
             <plugin>
@@ -352,6 +339,32 @@
             </plugin>
         </plugins>
     </reporting>
+
+    <profiles>
+        <profile>
+            <id>coverage</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <distributionManagement>
         <repository>
             <id>releases</id>

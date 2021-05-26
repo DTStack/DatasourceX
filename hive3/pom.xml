@@ -419,6 +419,12 @@
             <groupId>com.dtstack.dtcenter</groupId>
             <artifactId>common.loader.kerberos</artifactId>
         </dependency>
+
+        <dependency>
+            <artifactId>snappy-java</artifactId>
+            <groupId>org.xerial.snappy</groupId>
+            <version>1.1.2.6</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -519,10 +525,8 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <move file="${basedir}/target/${project.name}-${project.version}.jar"
-                                      tofile="${basedir}/target/${jar.name}--${git.branch}.jar"/>
-                                <copy todir="${basedir}/../core/pluginLibs/${jar.package.name}/"
-                                      file="${basedir}/target/${jar.name}--${git.branch}.jar"/>
+                                <copy file="${basedir}/target/${project.name}-${project.version}.jar"
+                                      tofile="${basedir}/../core/pluginLibs/${jar.package.name}/${jar.name}--${git.branch}.jar" />
                                 <delete>
                                     <fileset dir="${basedir}/../core/pluginLibs/${jar.package.name}/"
                                              includes="${jar.name}-*.jar"

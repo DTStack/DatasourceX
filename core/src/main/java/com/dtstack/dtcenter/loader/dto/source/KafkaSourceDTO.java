@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -58,6 +59,11 @@ public class KafkaSourceDTO implements ISourceDTO {
      * kerberos 配置信息
      */
     private Map<String, Object> kerberosConfig;
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.KAFKA.getVal();
+    }
 
     @Override
     public Connection getConnection() {

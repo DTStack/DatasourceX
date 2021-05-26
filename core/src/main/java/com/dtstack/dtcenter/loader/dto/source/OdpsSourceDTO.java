@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
 
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,12 @@ public class OdpsSourceDTO extends RdbmsSourceDTO{
      * 配置信息
      */
     private String config;
+
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.MAXCOMPUTE.getVal();
+    }
 
 
 }

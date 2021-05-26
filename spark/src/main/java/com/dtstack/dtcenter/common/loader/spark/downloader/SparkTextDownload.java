@@ -23,6 +23,7 @@ import org.apache.hadoop.mapred.TextInputFormat;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -317,6 +318,6 @@ public class SparkTextDownload implements IDownloader {
 
     @Override
     public List<String> getContainers() {
-        return null;
+        return Collections.emptyList();
     }
 }

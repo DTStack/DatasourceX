@@ -11,6 +11,7 @@ common-loader支持开启kerberos认证的插件：
 - phoenix5
 - kafka
 - solr
+- inceptor
 
 ### Kerberos证书认证方式
 

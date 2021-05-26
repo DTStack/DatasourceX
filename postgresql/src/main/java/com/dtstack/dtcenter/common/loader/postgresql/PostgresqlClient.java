@@ -75,12 +75,12 @@ public class PostgresqlClient extends AbsRdbmsClient {
         ResultSet rs = null;
         try {
             statement = postgresqlSourceDTO.getConnection().createStatement();
-            if (Objects.nonNull(queryDTO.getLimit())) {
+            if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
                 // 设置最大条数
                 statement.setMaxRows(queryDTO.getLimit());
             }
             StringBuilder constr = new StringBuilder();
-            if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+            if (Objects.nonNull(queryDTO) && StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
                 constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
             }
             //大小写区分，不传schema默认获取所有表，并且表名签名拼接schema，格式："schema"."tableName"

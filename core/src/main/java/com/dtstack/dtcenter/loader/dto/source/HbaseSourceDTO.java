@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,4 +34,10 @@ public class HbaseSourceDTO extends RdbmsSourceDTO {
      * 其他配置信息
      */
     private String others;
+
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.HBASE.getVal();
+    }
 }

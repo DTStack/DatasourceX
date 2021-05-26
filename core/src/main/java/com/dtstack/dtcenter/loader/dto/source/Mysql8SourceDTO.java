@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
 
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
@@ -15,5 +16,11 @@ import lombok.experimental.SuperBuilder;
 @ToString
 @SuperBuilder
 public class Mysql8SourceDTO extends RdbmsSourceDTO {
+
+
+    @Override
+    public Integer getSourceType() {
+        return DataSourceType.MySQL8.getVal();
+    }
 
 }

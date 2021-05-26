@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -109,15 +110,13 @@ public class ImpalaDownload implements IDownloader {
         String showColumns = String.format("SELECT * FROM (%s) t LIMIT 1", sql);
         try (ResultSet resultSet = statement.executeQuery(showColumns)) {
             columnNames = new ArrayList<>();
-            while (resultSet.next()) {
-                columnCount = resultSet.getMetaData().getColumnCount();
-                for (int i = 1; i <= columnCount; i++) {
-                    Column column = new Column();
-                    column.setName(resultSet.getMetaData().getColumnName(i));
-                    column.setType(resultSet.getMetaData().getColumnTypeName(i));
-                    column.setIndex(i);
-                    columnNames.add(column);
-                }
+            columnCount = resultSet.getMetaData().getColumnCount();
+            for (int i = 1; i <= columnCount; i++) {
+                Column column = new Column();
+                column.setName(resultSet.getMetaData().getColumnName(i));
+                column.setType(resultSet.getMetaData().getColumnTypeName(i));
+                column.setIndex(i);
+                columnNames.add(column);
             }
         }
         isConfigure = true;
@@ -128,7 +127,7 @@ public class ImpalaDownload implements IDownloader {
     @Override
     public List<String> getMetaInfo() {
         if (CollectionUtils.isEmpty(columnNames)) {
-            return null;
+            return Collections.emptyList();
         }
         return columnNames.stream().map(Column::getName).collect(Collectors.toList());
     }
