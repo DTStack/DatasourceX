@@ -59,7 +59,7 @@ public class ImpalaClient extends AbsRdbmsClient {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
         ImpalaSourceDTO impalaSourceDTO = (ImpalaSourceDTO) iSource;
         StringBuilder constr = new StringBuilder();
-        if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+        if (Objects.nonNull(queryDTO) && StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
             constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
         }
         // 获取表信息需要通过show tables 语句
@@ -69,7 +69,7 @@ public class ImpalaClient extends AbsRdbmsClient {
         List<String> tableList = new ArrayList<>();
         try {
             statement = impalaSourceDTO.getConnection().createStatement();
-            if (Objects.nonNull(queryDTO.getLimit())) {
+            if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
                 // 设置最大条数
                 statement.setMaxRows(queryDTO.getLimit());
             }

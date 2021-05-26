@@ -138,10 +138,10 @@ public class DtSolrClient extends AbsNoSqlClient {
         try {
             List<String> tableList = CollectionAdminRequest.listCollections(solrClient);
             if (CollectionUtils.isNotEmpty(tableList)) {
-                if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+                if (Objects.nonNull(queryDTO) && StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
                     tableList = tableList.stream().filter(table -> table.contains(queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
                 }
-                if (Objects.nonNull(queryDTO.getLimit())) {
+                if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
                     tableList = tableList.stream().limit(queryDTO.getLimit()).collect(Collectors.toList());
                 }
             }
