@@ -99,7 +99,7 @@ public class InceptorClient extends AbsRdbmsClient {
         Integer clearStatus = beforeQuery(sourceDTO, queryDTO, false);
         InceptorSourceDTO inceptorSourceDTO = (InceptorSourceDTO) sourceDTO;
         StringBuilder constr = new StringBuilder();
-        if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+        if (Objects.nonNull(queryDTO) && StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
             constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
         }
         // 获取表信息需要通过show tables 语句
@@ -110,7 +110,7 @@ public class InceptorClient extends AbsRdbmsClient {
         try {
             statement = inceptorSourceDTO.getConnection().createStatement();
             int maxLimit = 0;
-            if (Objects.nonNull(queryDTO.getLimit())) {
+            if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
                 // 设置最大条数
                 maxLimit = queryDTO.getLimit();
             }
