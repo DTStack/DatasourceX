@@ -12,8 +12,10 @@ import com.dtstack.dtcenter.loader.dto.source.Mysql5SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
@@ -44,7 +46,13 @@ public class MysqlClient extends AbsRdbmsClient {
     private static final String DONT_EXIST = "doesn't exist";
 
     // 获取指定数据库下的表
-    private static final String SHOW_TABLE_BY_SCHEMA_SQL = "select table_name from information_schema.tables where table_schema='%s' and table_type='BASE TABLE' %s";
+    private static final String SHOW_TABLE_BY_SCHEMA_SQL = "select table_name from information_schema.tables where table_schema='%s' and table_type in (%s) %s";
+
+    // 视图
+    private static final String VIEW = "'VIEW'";
+
+    // 普通表
+    private static final String BASE_TABLE = "'BASE TABLE'";
 
     // 表名正则匹配模糊查询
     private static final String SEARCH_SQL = " AND table_name REGEXP '%s' ";
@@ -228,7 +236,12 @@ public class MysqlClient extends AbsRdbmsClient {
         if (Objects.nonNull(queryDTO.getLimit())) {
             constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));
         }
-        return String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema, constr.toString());
+        List<String> tableType = Lists.newArrayList(BASE_TABLE);
+        // 获取视图
+        if (BooleanUtils.isTrue(queryDTO.getView())) {
+            tableType.add(VIEW);
+        }
+        return String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema, String.join(",", tableType), constr.toString());
     }
 
     /**
