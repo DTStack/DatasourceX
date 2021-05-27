@@ -7,6 +7,7 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -242,7 +243,7 @@ public class SparkTextDownload implements IDownloader {
         readNum++;
         String line = value.toString();
         value.clear();
-        String[] fields = line.split(fieldDelimiter, -1);
+        String[] fields = StringUtils.splitPreserveAllTokens(line, fieldDelimiter);
         List<String> row = Lists.newArrayList(fields);
         if(CollectionUtils.isNotEmpty(partitionColumns)){
             row.addAll(currentPartData);
