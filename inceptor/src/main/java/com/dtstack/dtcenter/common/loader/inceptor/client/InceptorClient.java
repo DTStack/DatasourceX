@@ -67,6 +67,11 @@ public class InceptorClient extends AbsRdbmsClient {
     // 模糊查询database
     private static final String SHOW_DB_LIKE = "show databases like '%s'";
 
+    private static final String SHOW_TABLE_SQL = "show tables %s";
+
+    // 根据schema选表表名模糊查询
+    private static final String SEARCH_SQL = " like '%s' ";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new InceptorConnFactory();
@@ -93,16 +98,30 @@ public class InceptorClient extends AbsRdbmsClient {
     public List<String> getTableList(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(sourceDTO, queryDTO, false);
         InceptorSourceDTO inceptorSourceDTO = (InceptorSourceDTO) sourceDTO;
+        StringBuilder constr = new StringBuilder();
+        if (Objects.nonNull(queryDTO) && StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+            constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
+        }
         // 获取表信息需要通过show tables 语句
-        String sql = "show tables";
+        String sql = String.format(SHOW_TABLE_SQL, constr.toString());
         Statement statement = null;
         ResultSet rs = null;
         List<String> tableList = new ArrayList<>();
         try {
             statement = inceptorSourceDTO.getConnection().createStatement();
+            int maxLimit = 0;
+            if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
+                // 设置最大条数
+                maxLimit = queryDTO.getLimit();
+            }
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
+            int cnt = 0;
             while (rs.next()) {
+                if(maxLimit > 0 && cnt >= maxLimit) {
+                   break;
+                }
+                ++cnt;
                 tableList.add(rs.getString(columnSize == 1 ? 1 : 2));
             }
         } catch (Exception e) {
@@ -500,5 +519,10 @@ public class InceptorClient extends AbsRdbmsClient {
             throw new DtLoaderException("database name cannot be empty!");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_BY_SCHEMA_LIKE, dbName, tableName)).build()));
+    }
+
+    @Override
+    protected String addPercentSign(String str) {
+        return "*" + str + "*";
     }
 }

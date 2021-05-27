@@ -141,11 +141,18 @@ public class InceptorTest extends BaseTest {
         }
     }
 
+    /**
+     * 支持模糊查询，和limit
+     */
     @Test
     public void getTableList() {
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().limit(3).tableNamePattern("test").build();
         List<String> tableList = INCEPTOR_CLIENT.getTableList(INCEPTOR_SOURCE_DTO, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+        Assert.assertEquals(3, tableList.size());
+        for (String table : tableList) {
+            Assert.assertTrue(table.contains("test"));
+        }
     }
 
     @Test
