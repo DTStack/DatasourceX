@@ -19,6 +19,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.Hive3SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
@@ -600,5 +601,34 @@ public class Hive3Client extends AbsRdbmsClient {
             throw new DtLoaderException("database name cannot be empty!");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_BY_SCHEMA_LIKE, dbName, tableName)).build()));
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        // 获取表信息需要通过show databases 语句
+        String tableName ;
+        if (StringUtils.isNotEmpty(rdbmsSourceDTO.getSchema())) {
+            tableName = String.format("%s.%s", rdbmsSourceDTO.getSchema(), queryDTO.getTableName());
+        } else {
+            tableName = queryDTO.getTableName();
+        }
+        String sql = String.format("show create table %s", tableName);
+        Statement statement = null;
+        ResultSet rs = null;
+        StringBuilder createTableSql = new StringBuilder();
+        try {
+            statement = rdbmsSourceDTO.getConnection().createStatement();
+            rs = statement.executeQuery(sql);
+            while (rs.next()) {
+                createTableSql.append(rs.getString(1));
+            }
+        } catch (Exception e) {
+            throw new DtLoaderException(String.format("failed to get the create table sql：%s", e.getMessage()), e);
+        } finally {
+            DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        return createTableSql.toString();
     }
 }

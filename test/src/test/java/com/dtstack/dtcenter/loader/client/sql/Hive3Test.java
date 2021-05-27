@@ -259,7 +259,7 @@ public class Hive3Test extends BaseTest {
         IClient client = ClientCache.getClient(DataSourceType.HIVE3X.getVal());
         SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("loader_test_1").build();
         String createTableSql = client.getCreateTableSql(source, sqlQueryDTO);
-        Assert.assertTrue(StringUtils.isNotBlank(createTableSql));
+        Assert.assertEquals("CREATE TABLE `default.loader_test_1`(  `id` int COMMENT 'id comment',   `name` string)COMMENT 'table comment'ROW FORMAT SERDE   'org.apache.hadoop.hive.ql.io.orc.OrcSerde' WITH SERDEPROPERTIES (   'field.delim'=',',   'serialization.format'=',') STORED AS INPUTFORMAT   'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' OUTPUTFORMAT   'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'LOCATION  'hdfs://dtstack/warehouse/tablespace/managed/hive/loader_test_1'TBLPROPERTIES (  'bucketing_version'='2',   'transient_lastDdlTime'='1621585185')", createTableSql);
     }
 
     /**
