@@ -105,7 +105,7 @@ public abstract class AbsTableClient implements ITable {
         } catch (SQLException e) {
             throw new DtLoaderException(String.format("detecting whether the connection is closed exception:%s", e.getMessage()), e);
         }
-        return DBUtil.executeQuery(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), sql,
+        return DBUtil.executeQuery(rdbmsSourceDTO.getConnection(), sql,
                 ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
     }
 
@@ -129,7 +129,7 @@ public abstract class AbsTableClient implements ITable {
         } catch (SQLException e) {
             throw new DtLoaderException(String.format("detecting whether the connection is closed exception:%s", e.getMessage()), e);
         }
-        DBUtil.executeSqlWithoutResultSet(rdbmsSourceDTO.clearAfterGetConnection(clearStatus), sql,
+        DBUtil.executeSqlWithoutResultSet(rdbmsSourceDTO.getConnection(), sql,
                 ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
         return true;
     }
