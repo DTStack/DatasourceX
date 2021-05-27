@@ -56,7 +56,7 @@ public class Hive3Test extends BaseTest {
     /**
      * 数据准备
      */
-    //@BeforeClass
+    @BeforeClass
     public static void beforeClass()  {
         System.setProperty("HADOOP_USER_NAME", "admin");
         IClient client = ClientCache.getClient(DataSourceType.HIVE3X.getVal());
