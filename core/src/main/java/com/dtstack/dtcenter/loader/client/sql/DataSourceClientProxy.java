@@ -119,6 +119,12 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     }
 
     @Override
+    public List<String> getRootDatabases(ISourceDTO source, SqlQueryDTO queryDTO) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getRootDatabases(source, queryDTO),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
     public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getCreateTableSql(source, queryDTO),
                 targetClient.getClass().getClassLoader());

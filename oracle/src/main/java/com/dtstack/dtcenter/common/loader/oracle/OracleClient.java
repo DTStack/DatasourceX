@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.oracle;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.utils.CollectionUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -11,6 +12,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.OracleSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
+import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +20,10 @@ import oracle.jdbc.OracleResultSetMetaData;
 import oracle.sql.BLOB;
 import oracle.sql.CLOB;
 import oracle.xdb.XMLType;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -30,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -71,6 +76,18 @@ public class OracleClient extends AbsRdbmsClient {
     // 限制条数语句
     private static final String LIMIT_SQL = " AND ROWNUM <= %s ";
     /* ----------------------------------------------------------------------------------------- */
+
+    // 获取 oracle PDB 列表前 设置 session
+    private static final String ALTER_PDB_SESSION = "ALTER SESSION SET CONTAINER=%s";
+
+    // cdb root
+    private static final String CDB_ROOT = "CDB$ROOT";
+
+    // 获取 oracle PDB 列表
+    private static final String LIST_PDB = "SELECT NAME FROM v$pdbs WHERE 1 = 1 %s";
+
+    // 表名正则匹配模糊查询，忽略大小写
+    private static final String PDB_SEARCH_SQL = " AND REGEXP_LIKE (NAME, '%s', 'i') ";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -358,4 +375,66 @@ public class OracleClient extends AbsRdbmsClient {
         return CURRENT_DB;
     }
 
+    @Override
+    protected Integer beforeQuery(ISourceDTO source, SqlQueryDTO queryDTO, boolean query) {
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) source;
+        // 版本字段兼容
+        Boolean fieldExists = ReflectUtil.fieldExists(OracleSourceDTO.class, "pdb");
+        if (!fieldExists || StringUtils.isBlank(oracleSourceDTO.getPdb())) {
+            return super.beforeQuery(oracleSourceDTO, queryDTO, query);
+        }
+        // 如果为查询，SQL 不能为空
+        if (query && StringUtils.isBlank(queryDTO.getSql())) {
+            throw new DtLoaderException("Query SQL cannot be empty");
+        }
+        Integer clearStatus;
+        // 设置 connection
+        if (oracleSourceDTO.getConnection() == null) {
+            oracleSourceDTO.setConnection(getCon(oracleSourceDTO));
+            clearStatus = ConnectionClearStatus.CLOSE.getValue();
+        } else {
+            clearStatus = ConnectionClearStatus.NORMAL.getValue();
+        }
+        // 切换 container session
+        alterSession(oracleSourceDTO.getConnection(), oracleSourceDTO.getPdb());
+        return clearStatus;
+    }
+
+    @Override
+    public List<String> getRootDatabases(ISourceDTO source, SqlQueryDTO queryDTO) {
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) source;
+        // 执行后 将从 root 获取 PDB，否则获取到的为当前用户所在的 PDB
+        try {
+            // 构造 pdb 模糊查询和条数限制sql
+            String pdbConstr = buildSearchSql(PDB_SEARCH_SQL, queryDTO.getTableNamePattern(), queryDTO.getLimit());
+            // 切换到 cdb root，此处不关闭 connection
+            executeQuery(oracleSourceDTO.getConnection(), SqlQueryDTO.builder().sql(String.format(ALTER_PDB_SESSION, CDB_ROOT)).build(), ConnectionClearStatus.NORMAL.getValue());
+            List<Map<String, Object>> pdbList = executeQuery(oracleSourceDTO.getConnection(), SqlQueryDTO.builder().sql(String.format(LIST_PDB, pdbConstr)).build(), ConnectionClearStatus.NORMAL.getValue());
+            return pdbList.stream().map(row -> MapUtils.getString(row, "NAME")).collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new DtLoaderException(String.format("Error getting PDB list.%s", e.getMessage()), e);
+        } finally {
+            DBUtil.closeDBResources(null, null, oracleSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+    }
+
+    /**
+     * oracle 切换数据库
+     *
+     * @param connection 数据库链接
+     * @param pdb        pdb
+     */
+    private void alterSession(Connection connection, String pdb) {
+        if (StringUtils.isBlank(pdb)) {
+            log.warn("pdb is null, No switching...");
+            return;
+        }
+        try {
+            // 切换 pdb session，相当于 mysql 的use db ，此处执行后不关闭 connection
+            executeQuery(connection, SqlQueryDTO.builder().sql(String.format(ALTER_PDB_SESSION, pdb)).build(), ConnectionClearStatus.NORMAL.getValue());
+        } catch (Exception e) {
+            log.error("alter oracle container session error... {}", e.getMessage(), e);
+        }
+    }
 }

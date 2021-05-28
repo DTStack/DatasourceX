@@ -16,6 +16,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class OracleSourceDTO extends RdbmsSourceDTO  {
 
+    // oracle 可拔插数据库
+    private String pdb;
 
     @Override
     public Integer getSourceType() {
