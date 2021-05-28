@@ -170,6 +170,18 @@ public interface IClient<T> {
     List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
+     * 获取所有的db，此方法目的为获取所有的 database，为了解决一些遗留问题。例如 oracle 12 后支持 cdb
+     * 模式，此时 oracle 可以包含多个 pdb，每个 pdb 下面可以有多个 schema，但是getAllDatabases 返回
+     * 的是 schema 列表
+     *
+     * @param source   数据源信息
+     * @param queryDTO 查询信息
+     * @return db 列表
+     * @see IClient#getAllDatabases 该方法对于有 database 概念的数据源返回的是 database，否则返回 schema
+     */
+    List<String> getRootDatabases(ISourceDTO source, SqlQueryDTO queryDTO);
+
+    /**
      * 获取建表语句
      *
      * @param source
