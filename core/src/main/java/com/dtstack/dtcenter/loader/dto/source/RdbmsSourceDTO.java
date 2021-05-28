@@ -71,7 +71,7 @@ public class RdbmsSourceDTO implements ISourceDTO {
      */
     public Connection clearAfterGetConnection(Integer clearStatus) {
         if (ConnectionClearStatus.NORMAL.getValue().equals(clearStatus)) {
-            return this.connection;
+            return null;
         }
 
         Connection temp = connection;
