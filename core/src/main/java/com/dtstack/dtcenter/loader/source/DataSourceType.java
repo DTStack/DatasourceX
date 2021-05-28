@@ -55,10 +55,11 @@ public enum DataSourceType {
     CarbonData(20, 84, "CarbonData", "hive"),
     Kudu(24, 85, "Kudu", "kudu"),
     ADS(15, 86, "AnalyticDB", "mysql5"),
-    Kylin(23, 87, "Kylin", "kylin"),
-    Presto(48, 88, "Presto", "presto"),
-    OceanBase(49, 89, "OceanBase", "oceanbase"),
-    INCEPTOR(52, 90, "Inceptor", "inceptor"),
+    ADB_FOR_PG(54, 87, "ADB_PostgreSQL", "postgresql"),
+    Kylin(23, 88, "Kylin", "kylin"),
+    Presto(48, 89, "Presto", "presto"),
+    OceanBase(49, 90, "OceanBase", "oceanbase"),
+    INCEPTOR(52, 91, "Inceptor", "inceptor"),
 
     // NoSQL
     HBASE(8, 100, "HBase", "hbase"),
@@ -121,6 +122,7 @@ public enum DataSourceType {
         RDBM_S.add(TiDB.val);
         RDBM_S.add(CarbonData.val);
         RDBM_S.add(ADS.val);
+        RDBM_S.add(ADB_FOR_PG.val);
         RDBM_S.add(Phoenix.val);
         RDBM_S.add(PHOENIX5.val);
         RDBM_S.add(IMPALA.val);
