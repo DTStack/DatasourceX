@@ -117,6 +117,7 @@ public enum DataSourceType {
         RDBM_S.add(Phoenix.val);
         RDBM_S.add(PHOENIX5.val);
         RDBM_S.add(IMPALA.val);
+        RDBM_S.add(KINGBASE8.val);
 
         KAFKA_S.add(KAFKA.val);
         KAFKA_S.add(KAFKA_09.val);
