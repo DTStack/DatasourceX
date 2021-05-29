@@ -126,6 +126,7 @@ public enum DataSourceType {
         RDBM_S.add(IMPALA.val);
         RDBM_S.add(OceanBase.val);
         RDBM_S.add(INCEPTOR.val);
+        RDBM_S.add(KINGBASE8.val);
 
         KAFKA_S.add(KAFKA.val);
         KAFKA_S.add(KAFKA_09.val);
