@@ -113,6 +113,11 @@ public abstract class AbsNoSqlClient<T> implements IClient<T> {
     }
 
     @Override
+    public List<String> getRootDatabases(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
+
+    @Override
     public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }
