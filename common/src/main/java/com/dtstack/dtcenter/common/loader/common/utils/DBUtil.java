@@ -1,6 +1,8 @@
 package com.dtstack.dtcenter.common.loader.common.utils;
 
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
+import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -14,6 +16,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
@@ -37,11 +40,10 @@ public class DBUtil {
      *
      * @param conn
      * @param sql
-     * @param closeConn 是否关闭连接
      * @return
      */
-    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Boolean closeConn) {
-        return executeQuery(conn, sql, null, null, closeConn);
+    public static List<Map<String, Object>> executeQuery(Connection conn, String sql) {
+        return executeQuery(conn, sql, MAX_QUERY_ROW, null);
     }
 
     /**
@@ -51,10 +53,9 @@ public class DBUtil {
      * @param sql
      * @param limit
      * @param queryTimeout
-     * @param closeConn
      * @return
      */
-    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, Integer queryTimeout, Boolean closeConn) {
+    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, Integer queryTimeout) {
         List<Map<String, Object>> result = Lists.newArrayList();
         ResultSet res = null;
         Statement statement = null;
@@ -90,7 +91,7 @@ public class DBUtil {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("SQL execute exception：%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(res, statement, closeConn ? conn : null);
+            DBUtil.closeDBResources(res, statement, null);
         }
         return result;
     }
@@ -100,25 +101,12 @@ public class DBUtil {
      *
      * @param conn
      * @param sql
-     * @param closeConn 是否关闭连接
-     * @return
-     */
-    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Boolean closeConn, List<Object> preFields, Integer queryTimeout) {
-        return executeQuery(conn, sql, null, closeConn, preFields, queryTimeout);
-    }
-
-    /**
-     * 根据 SQL 查询 - 预编译查询
-     *
-     * @param conn
-     * @param sql
      * @param limit
-     * @param closeConn
      * @param preFields
      * @param queryTimeout
      * @return
      */
-    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, Boolean closeConn, List<Object> preFields, Integer queryTimeout) {
+    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, List<Object> preFields, Integer queryTimeout) {
         List<Map<String, Object>> result = Lists.newArrayList();
         ResultSet res = null;
         PreparedStatement statement = null;
@@ -158,7 +146,7 @@ public class DBUtil {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(res, statement, closeConn ? conn : null);
+            DBUtil.closeDBResources(res, statement, null);
         }
         return result;
     }
@@ -168,11 +156,8 @@ public class DBUtil {
      *
      * @param conn
      * @param sql
-     * @param closeConn 是否关闭连接
-     * @return
-     * @throws Exception
      */
-    public static void executeSqlWithoutResultSet(Connection conn, String sql, Boolean closeConn) {
+    public static void executeSqlWithoutResultSet(Connection conn, String sql) {
         Statement statement = null;
         try {
             statement = conn.createStatement();
@@ -180,7 +165,7 @@ public class DBUtil {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("SQL execute exception：%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(null, statement, closeConn ? conn : null);
+            DBUtil.closeDBResources(null, statement, null);
         }
     }
 
@@ -212,20 +197,29 @@ public class DBUtil {
      * @param conn
      */
     public static void closeDBResources(ResultSet rs, Statement stmt, Connection conn) {
-        try {
-            if (null != rs) {
+        if (null != rs) {
+            try {
                 rs.close();
+            } catch (SQLException e) {
+                log.error(e.getMessage(), e);
             }
+        }
 
-            if (null != stmt) {
+
+        if (null != stmt) {
+            try {
                 stmt.close();
+            } catch (SQLException e) {
+                log.error(e.getMessage(), e);
             }
+        }
 
-            if (null != conn) {
+        if (null != conn) {
+            try {
                 conn.close();
+            } catch (SQLException e) {
+                log.error(e.getMessage(), e);
             }
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
         }
     }
 
@@ -249,5 +243,26 @@ public class DBUtil {
             log.error("taskParams change error : {}", e.getMessage(), e);
         }
         return properties;
+    }
+
+    /**
+     * 处理RdbmsSourceDTO对象里面的Connection属性
+     *
+     * @param sourceDTO
+     * @param clearStatus
+     * @return
+     */
+    public static Connection clearAfterGetConnection(RdbmsSourceDTO sourceDTO, Integer clearStatus) {
+        if (ConnectionClearStatus.NORMAL.getValue().equals(clearStatus)) {
+            return null;
+        }
+
+        Connection temp = sourceDTO.getConnection();
+        sourceDTO.setConnection(null);
+
+        if (ConnectionClearStatus.CLEAR.getValue().equals(clearStatus)) {
+            return null;
+        }
+        return temp;
     }
 }

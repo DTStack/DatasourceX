@@ -107,36 +107,30 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     /**
      * 执行查询
      *
-     * @param conn
+     * @param rdbmsSourceDTO
      * @param queryDTO
      * @param clearStatus
      * @return
      * @throws SQLException
      */
-    public List<Map<String, Object>> executeQuery(Connection conn, SqlQueryDTO queryDTO, Integer clearStatus) throws SQLException {
-        // 如果当前 connection 已关闭，直接返回空列表
-        if (conn == null || conn.isClosed()) {
-            return Lists.newArrayList();
-        }
+    public List<Map<String, Object>> executeQuery(RdbmsSourceDTO rdbmsSourceDTO, SqlQueryDTO queryDTO, Integer clearStatus) {
+        try {
+            // 预编译字段
+            if (queryDTO.getPreFields() != null) {
+                return DBUtil.executeQuery(rdbmsSourceDTO.getConnection(), queryDTO.getSql(), queryDTO.getLimit(), queryDTO.getPreFields(), queryDTO.getQueryTimeout());
+            }
 
-        // 预编译字段
-        if (queryDTO.getPreFields() != null) {
-            return DBUtil.executeQuery(conn, queryDTO.getSql(), queryDTO.getLimit(), ConnectionClearStatus.CLOSE.getValue().equals(clearStatus), queryDTO.getPreFields(), queryDTO.getQueryTimeout());
+            return DBUtil.executeQuery(rdbmsSourceDTO.getConnection(), queryDTO.getSql(), queryDTO.getLimit(), queryDTO.getQueryTimeout());
+        } finally {
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
-
-        return DBUtil.executeQuery(conn, queryDTO.getSql(), queryDTO.getLimit(), queryDTO.getQueryTimeout(), ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
     }
 
     @Override
     public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, true);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
-        // 如果当前 connection 已关闭，直接返回空列表
-        try {
-            return executeQuery(rdbmsSourceDTO.getConnection(), queryDTO, clearStatus);
-        } catch (Exception e) {
-            throw new DtLoaderException(String.format("connection calls isClosed method exception : %s", e.getMessage()), e);
-        }
+        return executeQuery(rdbmsSourceDTO, queryDTO, clearStatus);
     }
 
     @Override
@@ -144,16 +138,10 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         Integer clearStatus = beforeQuery(iSource, queryDTO, true);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
         try {
-            // 如果当前 connection 已关闭，直接返回空列表
-            if (rdbmsSourceDTO.getConnection().isClosed()) {
-                return false;
-            }
-        } catch (SQLException e) {
-            throw new DtLoaderException(String.format("connection calls isClosed method exception : %s", e.getMessage()), e);
+            DBUtil.executeSqlWithoutResultSet(rdbmsSourceDTO.getConnection(), queryDTO.getSql());
+        } finally {
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
-
-        DBUtil.executeSqlWithoutResultSet(rdbmsSourceDTO.getConnection(), queryDTO.getSql(),
-                ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
         return true;
     }
 
@@ -225,7 +213,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("Get database table exception：%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(rs, null, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, null, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
         if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
             tableList = tableList.stream().limit(queryDTO.getLimit()).collect(Collectors.toList());
@@ -271,7 +259,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("%s:%s", errMsg, e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
         return result;
     }
@@ -304,7 +292,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         } catch (Exception e){
             throw new DtLoaderException(e.getMessage(), e);
         } finally {
-            DBUtil.closeDBResources(rs, stmt, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, stmt, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
     }
 
@@ -346,7 +334,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                         queryDTO.getTableName(), e.getMessage()), e);
             }
         } finally {
-            DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
     }
 
@@ -390,7 +378,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                         queryDTO.getTableName(), e.getMessage()), e);
             }
         } finally {
-            DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
 
         //获取字段注释
@@ -463,7 +451,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
         } finally {
-            DBUtil.closeDBResources(rs, stmt, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, stmt, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
         return previewList;
     }
@@ -570,7 +558,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("failed to get the create table sql：%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
         return createTableSql;
     }

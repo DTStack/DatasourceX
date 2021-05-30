@@ -82,7 +82,7 @@ public class MysqlClient extends AbsRdbmsClient {
             throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, mysql8SourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(mysql8SourceDTO, clearStatus));
         }
         return null;
     }
@@ -122,7 +122,7 @@ public class MysqlClient extends AbsRdbmsClient {
                         queryDTO.getTableName()), e);
             }
         }finally {
-            DBUtil.closeDBResources(rs, statement, sourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(sourceDTO, clearStatus));
         }
         return columnComments;
     }

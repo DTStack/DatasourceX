@@ -7,7 +7,6 @@ import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosConfigUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.inceptor.InceptorConnFactory;
-import com.dtstack.dtcenter.common.loader.inceptor.InceptorDriverUtil;
 import com.dtstack.dtcenter.common.loader.inceptor.downloader.InceptorDownload;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
@@ -127,7 +126,7 @@ public class InceptorClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, inceptorSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(inceptorSourceDTO, clearStatus));
         }
         return tableList;
     }
@@ -148,7 +147,7 @@ public class InceptorClient extends AbsRdbmsClient {
         try {
             return getTableMetaComment(inceptorSourceDTO.getConnection(), queryDTO.getTableName());
         } finally {
-            DBUtil.closeDBResources(null, null, inceptorSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(inceptorSourceDTO, clearStatus));
         }
     }
 
@@ -257,7 +256,7 @@ public class InceptorClient extends AbsRdbmsClient {
         try {
             return getColumnMetaData(inceptorSourceDTO.getConnection(), queryDTO.getTableName(), queryDTO.getFilterPartitionColumns());
         } finally {
-            DBUtil.closeDBResources(null, null, inceptorSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(inceptorSourceDTO, clearStatus));
         }
     }
 
@@ -406,11 +405,11 @@ public class InceptorClient extends AbsRdbmsClient {
             // 处理字段信息
             tableInfo.setColumns(getColumnMetaData(inceptorSourceDTO.getConnection(), queryDTO.getTableName(), queryDTO.getFilterPartitionColumns()));
             // 获取表结构信息
-            getTable(tableInfo, inceptorSourceDTO.getConnection(), queryDTO.getTableName());
+            getTable(tableInfo, inceptorSourceDTO, queryDTO.getTableName());
         } catch (Exception e) {
             throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(null, null, inceptorSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(inceptorSourceDTO, clearStatus));
         }
         return tableInfo;
     }
@@ -419,16 +418,11 @@ public class InceptorClient extends AbsRdbmsClient {
      * 获取表结构信息
      *
      * @param tableInfo 表信息
-     * @param conn      连接信息
+     * @param inceptorSourceDTO      连接信息
      * @param tableName 表名
      */
-    private void getTable(Table tableInfo, Connection conn, String tableName) {
-        List<Map<String, Object>> result;
-        try {
-            result = executeQuery(conn, SqlQueryDTO.builder().sql("desc formatted " + tableName).build(), ConnectionClearStatus.NORMAL.getValue());
-        } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
-        }
+    private void getTable(Table tableInfo, InceptorSourceDTO inceptorSourceDTO, String tableName) {
+        List<Map<String, Object>> result = executeQuery(inceptorSourceDTO, SqlQueryDTO.builder().sql("desc formatted " + tableName).build(), ConnectionClearStatus.NORMAL.getValue());
         for (Map<String, Object> row : result) {
             // category和attribute不可为空
             if (StringUtils.isBlank(MapUtils.getString(row, "category")) || StringUtils.isBlank(MapUtils.getString(row, "attribute"))) {

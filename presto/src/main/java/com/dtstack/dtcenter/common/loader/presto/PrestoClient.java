@@ -185,7 +185,7 @@ public class PrestoClient<T> extends AbsRdbmsClient<T> {
         try {
             return getColumnMetaData(prestoSourceDTO.getConnection(), schema, queryDTO.getTableName());
         } finally {
-            DBUtil.closeDBResources(null, null, prestoSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(prestoSourceDTO, clearStatus));
         }
     }
 

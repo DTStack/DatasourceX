@@ -96,7 +96,7 @@ public class KingbaseClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, kingbaseSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(kingbaseSourceDTO, clearStatus));
         }
     }
 
@@ -124,7 +124,7 @@ public class KingbaseClient extends AbsRdbmsClient {
             throw new DtLoaderException(String.format("Failed to get the information of table: %s. Please contact DBA to check the database and table information: %s",
                     queryDTO.getTableName(), e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, kingbaseSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(kingbaseSourceDTO, clearStatus));
         }
         return "";
     }
@@ -184,7 +184,7 @@ public class KingbaseClient extends AbsRdbmsClient {
             throw new DtLoaderException(String.format("Failed to get the comment information of the field of the table: %s. Please contact the DBA to check the database and table information.",
                     queryDTO.getTableName()), e);
         }finally {
-            DBUtil.closeDBResources(rs, statement, sourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(sourceDTO, clearStatus));
         }
         return columnComments;
     }
@@ -234,7 +234,7 @@ public class KingbaseClient extends AbsRdbmsClient {
                 throw new DtLoaderException(String.format("Failed to get meta information for the fields of table :%s. Please contact the DBA to check the database table information.", queryDTO.getTableName()) , e);
             }
         } finally {
-            DBUtil.closeDBResources(rs, statement, kingbaseSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(kingbaseSourceDTO, clearStatus));
         }
 
     }

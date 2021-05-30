@@ -1,7 +1,6 @@
 package com.dtstack.dtcenter.loader.dto.source;
 
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
-import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -62,25 +61,4 @@ public class RdbmsSourceDTO implements ISourceDTO {
      * 连接池配置信息，如果传入则认为开启连接池
      */
     private PoolConfig poolConfig;
-
-    /**
-     * 获取连接并清除当前对象中的连接
-     *
-     * @param clearStatus
-     * @return
-     */
-    public Connection clearAfterGetConnection(Integer clearStatus) {
-        if (ConnectionClearStatus.NORMAL.getValue().equals(clearStatus)) {
-            return null;
-        }
-
-        Connection temp = connection;
-        this.connection = null;
-
-        if (ConnectionClearStatus.CLEAR.getValue().equals(clearStatus)) {
-            return null;
-        }
-        return temp;
-    }
-
 }

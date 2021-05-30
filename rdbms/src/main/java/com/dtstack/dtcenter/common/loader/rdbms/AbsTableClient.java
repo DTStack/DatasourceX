@@ -16,7 +16,6 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -97,16 +96,11 @@ public abstract class AbsTableClient implements ITable {
     public List<Map<String, Object>> executeQuery(ISourceDTO sourceDTO, String sql) {
         Integer clearStatus = beforeQuery(sourceDTO, sql, true);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) sourceDTO;
-        // 如果当前 connection 已关闭，直接返回空列表
         try {
-            if (rdbmsSourceDTO.getConnection().isClosed()) {
-                return Lists.newArrayList();
-            }
-        } catch (SQLException e) {
-            throw new DtLoaderException(String.format("detecting whether the connection is closed exception:%s", e.getMessage()), e);
+            return DBUtil.executeQuery(rdbmsSourceDTO.getConnection(), sql);
+        } finally {
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
-        return DBUtil.executeQuery(rdbmsSourceDTO.getConnection(), sql,
-                ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
     }
 
     /**
@@ -121,16 +115,11 @@ public abstract class AbsTableClient implements ITable {
     public Boolean executeSqlWithoutResultSet(ISourceDTO sourceDTO, String sql) {
         Integer clearStatus = beforeQuery(sourceDTO, sql, true);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) sourceDTO;
-        // 如果当前 connection 已关闭，直接返回空列表
         try {
-            if (rdbmsSourceDTO.getConnection().isClosed()) {
-                return false;
-            }
-        } catch (SQLException e) {
-            throw new DtLoaderException(String.format("detecting whether the connection is closed exception:%s", e.getMessage()), e);
+            DBUtil.executeSqlWithoutResultSet(rdbmsSourceDTO.getConnection(), sql);
+        } finally {
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
-        DBUtil.executeSqlWithoutResultSet(rdbmsSourceDTO.getConnection(), sql,
-                ConnectionClearStatus.CLOSE.getValue().equals(clearStatus));
         return true;
     }
 

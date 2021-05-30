@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,7 +87,6 @@ public class PhoenixClient extends AbsRdbmsClient {
         }
         tableName = tableName.replace("\"", "");
 
-        Statement statement = null;
         ResultSet resultSet = null;
 
         try {
@@ -102,7 +100,7 @@ public class PhoenixClient extends AbsRdbmsClient {
             throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, phoenixSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, null, DBUtil.clearAfterGetConnection(phoenixSourceDTO, clearStatus));
         }
         return "";
     }
@@ -135,7 +133,7 @@ public class PhoenixClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("Get database table exception,%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(rs, null, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, null, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
         return tableList;
     }

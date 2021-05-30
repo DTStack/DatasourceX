@@ -112,7 +112,7 @@ public class OracleClient extends AbsRdbmsClient {
             throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, oracleSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(oracleSourceDTO, clearStatus));
         }
         return "";
     }
@@ -161,7 +161,7 @@ public class OracleClient extends AbsRdbmsClient {
                         queryDTO.getTableName()), e);
             }
         } finally {
-            DBUtil.closeDBResources(rs, statement, oracleSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(oracleSourceDTO, clearStatus));
         }
     }
 
@@ -190,7 +190,7 @@ public class OracleClient extends AbsRdbmsClient {
                         queryDTO.getTableName()), e);
             }
         }finally {
-            DBUtil.closeDBResources(rs, statement, sourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(sourceDTO, clearStatus));
         }
         return columnComments;
     }

@@ -112,7 +112,7 @@ public class GreenplumClient extends AbsRdbmsClient {
             throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, greenplum6SourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(greenplum6SourceDTO, clearStatus));
         }
         return "";
     }
@@ -140,7 +140,7 @@ public class GreenplumClient extends AbsRdbmsClient {
             throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     greenplum6SourceDTO.getSchema()), e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, greenplum6SourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(greenplum6SourceDTO, clearStatus));
         }
         return tableList;
     }
