@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.inceptor.client;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosConfigUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
@@ -296,8 +297,10 @@ public class InceptorClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(inceptorSourceDTO.getDefaultFS())) {
             return Boolean.TRUE;
         }
-        // 检查 metaStore 连通性
-        checkMetaStoreConnect(inceptorSourceDTO.getMetaStoreUris(), inceptorSourceDTO.getKerberosConfig());
+        if (StringUtils.isNotBlank(inceptorSourceDTO.getMetaStoreUris())) {
+            // 检查 metaStore 连通性
+            checkMetaStoreConnect(inceptorSourceDTO.getMetaStoreUris(), inceptorSourceDTO.getKerberosConfig());
+        }
         return HdfsOperator.checkConnection(inceptorSourceDTO.getDefaultFS(), inceptorSourceDTO.getConfig(), inceptorSourceDTO.getKerberosConfig());
     }
 
@@ -307,12 +310,11 @@ public class InceptorClient extends AbsRdbmsClient {
      * @param metaStoreUris  metaStore 地址
      * @param kerberosConfig kerberos 配置
      */
-    private void checkMetaStoreConnect(String metaStoreUris, Map<String, Object> kerberosConfig) {
-        if (StringUtils.isBlank(metaStoreUris)) {
-            return;
-        }
+    private synchronized void checkMetaStoreConnect(String metaStoreUris, Map<String, Object> kerberosConfig) {
         HiveConf hiveConf = new HiveConf();
         hiveConf.set(META_STORE_URIS_KEY, metaStoreUris);
+        // 重新设置 metaStore 地址
+        ReflectUtil.setField(HiveMetaStoreClient.class, "metastoreUris", null, null);
         if (MapUtils.isNotEmpty(kerberosConfig)) {
             // metaStore kerberos 认证需要
             hiveConf.setBoolean(META_STORE_SASL_ENABLED, true);

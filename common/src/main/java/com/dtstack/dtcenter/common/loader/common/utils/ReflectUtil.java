@@ -35,4 +35,23 @@ public class ReflectUtil {
         }
         return false;
     }
+
+    /**
+     * 重新设置静态/非静态变量字段属性
+     *
+     * @param c           class 类型
+     * @param fieldName   字段名
+     * @param obj         对象
+     * @param targetParam 目标值
+     * @param <T>         对象类型
+     */
+    public static <T> void setField(Class<T> c, String fieldName, Object obj, Object targetParam) {
+        try {
+            Field field = c.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(obj, targetParam);
+        } catch (Exception e) {
+            throw new DtLoaderException(String.format("set class: %s field: %s fail", c.getName(), fieldName));
+        }
+    }
 }
