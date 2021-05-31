@@ -506,7 +506,10 @@ public class Hive3Client extends AbsRdbmsClient {
                 continue;
             }
 
-            if (colName.contains("Type")) {
+            if (colName.contains("Table Type")) {
+                if (ReflectUtil.fieldExists(Table.class, "isView")) {
+                    tableInfo.setIsView(StringUtils.containsIgnoreCase(dataType, "VIEW"));
+                }
                 tableInfo.setExternalOrManaged(dataType);
                 continue;
             }
@@ -550,13 +553,6 @@ public class Hive3Client extends AbsRdbmsClient {
             if (StringUtils.containsIgnoreCase(dataType, "transactional")) {
                 if (ReflectUtil.fieldExists(Table.class, "isTransTable") && StringUtils.containsIgnoreCase(comment, "true")) {
                     tableInfo.setIsTransTable(true);
-                }
-                continue;
-            }
-
-            if (StringUtils.containsIgnoreCase(colName, "Type")) {
-                if (ReflectUtil.fieldExists(Table.class, "isView")) {
-                    tableInfo.setIsView(StringUtils.containsIgnoreCase(dataType, "VIEW"));
                 }
                 continue;
             }

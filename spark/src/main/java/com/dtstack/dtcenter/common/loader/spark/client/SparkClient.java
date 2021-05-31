@@ -538,6 +538,9 @@ public class SparkClient extends AbsRdbmsClient {
             }
 
             if (colName.contains("Table Type")) {
+                if (ReflectUtil.fieldExists(Table.class, "isView")) {
+                    tableInfo.setIsView(StringUtils.containsIgnoreCase(dataType, "VIEW"));
+                }
                 tableInfo.setExternalOrManaged(dataType);
                 continue;
             }
