@@ -56,9 +56,10 @@ public class InceptorTest extends BaseTest {
     public static void beforeClass() {
         // 准备 Kerberos 参数
         Map<String, Object> kerberosConfig = new HashMap<>();
+        String localKerberosPath = HiveKerberosTest.class.getResource("/tdh/inceptor").getPath();
         kerberosConfig.put("principal", "hive/tdh6-node3@TDH");
-        kerberosConfig.put("principalFile", "/Users/wangbin/IdeaProjects/dt-center-common-loader/test/src/test/resources/tdh/inceptor/inceptor.keytab");
-        kerberosConfig.put("java.security.krb5.conf", "/Users/wangbin/IdeaProjects/dt-center-common-loader/test/src/test/resources/tdh/inceptor/krb5.conf");
+        kerberosConfig.put("principalFile", localKerberosPath + "/inceptor.keytab");
+        kerberosConfig.put("java.security.krb5.conf", localKerberosPath + "/krb5.conf");
         INCEPTOR_SOURCE_DTO.setKerberosConfig(kerberosConfig);
 
         // inceptor 不支持单条插入语法 - 只有当底层存储是星环hbase、es、事务orc表才支持。
@@ -69,17 +70,17 @@ public class InceptorTest extends BaseTest {
         //textQueryDTO = SqlQueryDTO.builder().sql("create table loader_test_text (id int comment 'id comment', name string) COMMENT 'table comment' row format delimited fields terminated by ',' stored as TEXTFILE").build();
         //INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, textQueryDTO);
 
-        /*------------orc表--------------*//*
+        /*------------orc表--------------*/
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_orc").build();
         INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table loader_test_orc stored as ORC as select id,name from loader_test_text").build();
         INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
-        *//*------------csv表--------------*//*
+        /*------------csv表--------------*/
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_csv").build();
         INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table loader_test_csv stored as CSVFILE as select id,name from loader_test_text").build();
         INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
-        *//*------------暂时不考虑es、hbase、orc事务表--------------*//*
+        /*------------暂时不考虑es、hbase、orc事务表--------------*/
 
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_orc_tran").build();
         INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
@@ -88,7 +89,7 @@ public class InceptorTest extends BaseTest {
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_orc_not_tran").build();
         INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table loader_test_orc_not_tran (id int, name string) STORED AS ORC").build();
-        INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);*/
+        INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
     }
 
     /**
