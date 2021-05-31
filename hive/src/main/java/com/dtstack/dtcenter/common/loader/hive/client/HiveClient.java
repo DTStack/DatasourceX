@@ -106,7 +106,7 @@ public class HiveClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("get table exception,%", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, hiveSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(hiveSourceDTO, clearStatus));
         }
         return tableList;
     }
@@ -127,7 +127,7 @@ public class HiveClient extends AbsRdbmsClient {
         try {
             return getTableMetaComment(hiveSourceDTO.getConnection(), queryDTO.getTableName());
         } finally {
-            DBUtil.closeDBResources(null, null, hiveSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(hiveSourceDTO, clearStatus));
         }
     }
 
@@ -174,7 +174,7 @@ public class HiveClient extends AbsRdbmsClient {
         try {
             return getColumnMetaData(hiveSourceDTO.getConnection(), queryDTO.getTableName(), queryDTO.getFilterPartitionColumns());
         } finally {
-            DBUtil.closeDBResources(null, null, hiveSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(hiveSourceDTO, clearStatus));
         }
     }
 
@@ -473,22 +473,17 @@ public class HiveClient extends AbsRdbmsClient {
             // 处理字段信息
             tableInfo.setColumns(getColumnMetaData(hiveSourceDTO.getConnection(), queryDTO.getTableName(), queryDTO.getFilterPartitionColumns()));
             // 获取表结构信息
-            getTable(tableInfo, hiveSourceDTO.getConnection(), queryDTO.getTableName());
+            getTable(tableInfo, hiveSourceDTO, queryDTO.getTableName());
         } catch (Exception e) {
             throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(null, null, hiveSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(hiveSourceDTO, clearStatus));
         }
         return tableInfo;
     }
 
-    private void getTable(Table tableInfo, Connection conn, String tableName) {
-        List<Map<String, Object>> result = null;
-        try {
-            result = executeQuery(conn, SqlQueryDTO.builder().sql("desc formatted " + tableName).build(), ConnectionClearStatus.NORMAL.getValue());
-        } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
-        }
+    private void getTable(Table tableInfo, HiveSourceDTO hiveSourceDTO, String tableName) {
+        List<Map<String, Object>> result = executeQuery(hiveSourceDTO, SqlQueryDTO.builder().sql("desc formatted " + tableName).build(), ConnectionClearStatus.NORMAL.getValue());
         boolean isTableInfo = false;
         for (Map<String, Object> row : result) {
             String colName = MapUtils.getString(row, "col_name", "");

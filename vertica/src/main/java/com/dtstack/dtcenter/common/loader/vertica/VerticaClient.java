@@ -61,7 +61,7 @@ public class VerticaClient extends AbsRdbmsClient {
         VerticaSourceDTO verticaSourceDTO = (VerticaSourceDTO) iSource;
         List<String> tableList = new ArrayList<>();
         try {
-            List<Map<String, Object>> mapList = DBUtil.executeQuery(verticaSourceDTO.getConnection(), SHOW_TABLES, false);
+            List<Map<String, Object>> mapList = DBUtil.executeQuery(verticaSourceDTO.getConnection(), SHOW_TABLES);
             if (CollectionUtils.isEmpty(mapList)) {
                 return Collections.emptyList();
             }
@@ -72,7 +72,7 @@ public class VerticaClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(null, null, verticaSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(verticaSourceDTO, clearStatus));
         }
         return tableList;
     }
@@ -102,13 +102,13 @@ public class VerticaClient extends AbsRdbmsClient {
             } else {
                 querySql = String.format(SHOW_TABLE_COMMENT, getTableFromTable(queryDTO.getTableName()));
             }
-            Map<String, Object> commentMap = DBUtil.executeQuery(verticaSourceDTO.getConnection(), querySql, false).get(0);
+            Map<String, Object> commentMap = DBUtil.executeQuery(verticaSourceDTO.getConnection(), querySql).get(0);
             return MapUtils.getString(commentMap, "comment");
         } catch (Exception e) {
             throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
-            DBUtil.closeDBResources(null, null, verticaSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(verticaSourceDTO, clearStatus));
         }
     }
 

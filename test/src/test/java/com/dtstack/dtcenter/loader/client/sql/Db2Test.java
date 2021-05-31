@@ -14,7 +14,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
 import java.util.List;

@@ -91,14 +91,14 @@ public class Hive3Client extends AbsRdbmsClient {
     @Override
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
-        Hive3SourceDTO Hive3SourceDTO = (Hive3SourceDTO) iSource;
+        Hive3SourceDTO hive3SourceDTO = (Hive3SourceDTO) iSource;
         // 获取表信息需要通过show tables 语句
         String sql = "show tables";
         Statement statement = null;
         ResultSet rs = null;
         List<String> tableList = new ArrayList<>();
         try {
-            statement = Hive3SourceDTO.getConnection().createStatement();
+            statement = hive3SourceDTO.getConnection().createStatement();
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
@@ -107,7 +107,7 @@ public class Hive3Client extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("get table exception,%", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, Hive3SourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(hive3SourceDTO, clearStatus));
         }
         return tableList;
     }
@@ -124,11 +124,11 @@ public class Hive3Client extends AbsRdbmsClient {
     @Override
     public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
-        Hive3SourceDTO Hive3SourceDTO = (Hive3SourceDTO) iSource;
+        Hive3SourceDTO hive3SourceDTO = (Hive3SourceDTO) iSource;
         try {
-            return getTableMetaComment(Hive3SourceDTO.getConnection(), queryDTO.getTableName());
+            return getTableMetaComment(hive3SourceDTO.getConnection(), queryDTO.getTableName());
         } finally {
-            DBUtil.closeDBResources(null, null, Hive3SourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(hive3SourceDTO, clearStatus));
         }
     }
 
@@ -171,11 +171,11 @@ public class Hive3Client extends AbsRdbmsClient {
     @Override
     public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(iSource, queryDTO);
-        Hive3SourceDTO Hive3SourceDTO = (Hive3SourceDTO) iSource;
+        Hive3SourceDTO hive3SourceDTO = (Hive3SourceDTO) iSource;
         try {
-            return getColumnMetaData(Hive3SourceDTO.getConnection(), queryDTO.getTableName(), queryDTO.getFilterPartitionColumns());
+            return getColumnMetaData(hive3SourceDTO.getConnection(), queryDTO.getTableName(), queryDTO.getFilterPartitionColumns());
         } finally {
-            DBUtil.closeDBResources(null, null, Hive3SourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(hive3SourceDTO, clearStatus));
         }
     }
 
@@ -464,32 +464,27 @@ public class Hive3Client extends AbsRdbmsClient {
     @Override
     public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(source, queryDTO);
-        Hive3SourceDTO Hive3SourceDTO = (Hive3SourceDTO) source;
+        Hive3SourceDTO hive3SourceDTO = (Hive3SourceDTO) source;
 
         Table tableInfo = new Table();
         try {
             tableInfo.setName(queryDTO.getTableName());
             // 获取表注释
-            tableInfo.setComment(getTableMetaComment(Hive3SourceDTO.getConnection(), queryDTO.getTableName()));
+            tableInfo.setComment(getTableMetaComment(hive3SourceDTO.getConnection(), queryDTO.getTableName()));
             // 处理字段信息
-            tableInfo.setColumns(getColumnMetaData(Hive3SourceDTO.getConnection(), queryDTO.getTableName(), queryDTO.getFilterPartitionColumns()));
+            tableInfo.setColumns(getColumnMetaData(hive3SourceDTO.getConnection(), queryDTO.getTableName(), queryDTO.getFilterPartitionColumns()));
             // 获取表结构信息
-            getTable(tableInfo, Hive3SourceDTO.getConnection(), queryDTO.getTableName());
+            getTable(tableInfo, hive3SourceDTO, queryDTO.getTableName());
         } catch (Exception e) {
             throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(null, null, Hive3SourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(hive3SourceDTO, clearStatus));
         }
         return tableInfo;
     }
 
-    private void getTable(Table tableInfo, Connection conn, String tableName) {
-        List<Map<String, Object>> result = null;
-        try {
-            result = executeQuery(conn, SqlQueryDTO.builder().sql("desc formatted " + tableName).build(), ConnectionClearStatus.NORMAL.getValue());
-        } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
-        }
+    private void getTable(Table tableInfo, Hive3SourceDTO hive3SourceDTO, String tableName) {
+        List<Map<String, Object>> result = executeQuery(hive3SourceDTO, SqlQueryDTO.builder().sql("desc formatted " + tableName).build(), ConnectionClearStatus.NORMAL.getValue());
         boolean isTableInfo = false;
         for (Map<String, Object> row : result) {
             String colName = MapUtils.getString(row, "col_name", "");
@@ -627,7 +622,7 @@ public class Hive3Client extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("failed to get the create table sql：%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
         return createTableSql.toString();
     }

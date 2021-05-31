@@ -102,7 +102,7 @@ public class PhoenixClient extends AbsRdbmsClient {
             throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, phoenixSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(phoenixSourceDTO, clearStatus));
         }
         return "";
     }
@@ -134,7 +134,7 @@ public class PhoenixClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("Get database table exception,%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(rs, null, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, null, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
         return tableList;
     }

@@ -124,7 +124,7 @@ public class OceanBaseClient<T> extends AbsRdbmsClient<T> {
             throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, oceanBaseSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(oceanBaseSourceDTO, clearStatus));
         }
         return "";
     }
@@ -161,7 +161,7 @@ public class OceanBaseClient<T> extends AbsRdbmsClient<T> {
                         queryDTO.getTableName()), e);
             }
         } finally {
-            DBUtil.closeDBResources(rs, statement, sourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(sourceDTO, clearStatus));
         }
         return columnComments;
     }

@@ -99,7 +99,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, postgresqlSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(postgresqlSourceDTO, clearStatus));
         }
     }
 
@@ -125,7 +125,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
             throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, postgresqlSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(postgresqlSourceDTO, clearStatus));
         }
         return "";
     }
@@ -195,7 +195,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
                 throw new DtLoaderException(String.format("Failed to get meta information for the fields of table :%s. Please contact the DBA to check the database table information.", queryDTO.getTableName()), e);
             }
         } finally {
-            DBUtil.closeDBResources(rs, statement, postgresqlSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(postgresqlSourceDTO, clearStatus));
         }
 
     }

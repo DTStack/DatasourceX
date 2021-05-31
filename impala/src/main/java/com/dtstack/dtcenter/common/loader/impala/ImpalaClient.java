@@ -81,7 +81,7 @@ public class ImpalaClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("get table exception：%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, impalaSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(impalaSourceDTO, clearStatus));
         }
         return tableList;
     }
@@ -100,7 +100,7 @@ public class ImpalaClient extends AbsRdbmsClient {
         try {
             return getColumnMetaData(impalaSourceDTO.getConnection(), schema, queryDTO.getTableName(), queryDTO.getFilterPartitionColumns());
         } finally {
-            DBUtil.closeDBResources(null, null, impalaSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(impalaSourceDTO, clearStatus));
         }
     }
 
@@ -180,7 +180,7 @@ public class ImpalaClient extends AbsRdbmsClient {
         try {
             return getTableMetaComment(impalaSourceDTO.getConnection(), schema, queryDTO.getTableName());
         } finally {
-            DBUtil.closeDBResources(null, null, impalaSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(impalaSourceDTO, clearStatus));
         }
     }
 
@@ -250,23 +250,18 @@ public class ImpalaClient extends AbsRdbmsClient {
             // 处理字段信息
             tableInfo.setColumns(getColumnMetaData(impalaSourceDTO.getConnection(), schema, queryDTO.getTableName(), queryDTO.getFilterPartitionColumns()));
             // 获取表结构信息
-            getTable(tableInfo, impalaSourceDTO.getConnection(), schema, queryDTO.getTableName());
+            getTable(tableInfo, impalaSourceDTO, schema, queryDTO.getTableName());
         } catch (Exception e) {
             throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(null, null, impalaSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(impalaSourceDTO, clearStatus));
         }
         return tableInfo;
 
     }
 
-    private void getTable(Table tableInfo, Connection conn, String schema, String tableName) {
-        List<Map<String, Object>> result = null;
-        try {
-            result = executeQuery(conn, SqlQueryDTO.builder().sql("DESCRIBE formatted " + transferSchemaAndTableName(schema, tableName)).build(), ConnectionClearStatus.NORMAL.getValue());
-        } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
-        }
+    private void getTable(Table tableInfo, ImpalaSourceDTO impalaSourceDTO, String schema, String tableName) {
+        List<Map<String, Object>> result = executeQuery(impalaSourceDTO, SqlQueryDTO.builder().sql("DESCRIBE formatted " + transferSchemaAndTableName(schema, tableName)).build(), ConnectionClearStatus.NORMAL.getValue());
         boolean isTableInfo = false;
         for (Map<String, Object> row : result) {
             String colName = MapUtils.getString(row, "name", "");

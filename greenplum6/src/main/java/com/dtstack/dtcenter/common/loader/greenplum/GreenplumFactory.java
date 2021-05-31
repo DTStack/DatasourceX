@@ -30,7 +30,7 @@ public class GreenplumFactory extends ConnFactory {
         Greenplum6SourceDTO greenplum6SourceDTO = (Greenplum6SourceDTO) iSource;
         Connection connection = super.getConn(greenplum6SourceDTO, taskParams);
         if (!StringUtils.isBlank(greenplum6SourceDTO.getSchema())) {
-            DBUtil.executeSqlWithoutResultSet(connection, String.format(SCHEMA_SET, greenplum6SourceDTO.getSchema()), false);
+            DBUtil.executeSqlWithoutResultSet(connection, String.format(SCHEMA_SET, greenplum6SourceDTO.getSchema()));
         }
         return connection;
     }

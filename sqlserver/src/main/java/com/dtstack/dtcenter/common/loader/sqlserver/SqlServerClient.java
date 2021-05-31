@@ -98,7 +98,7 @@ public class SqlServerClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, sqlserverSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(sqlserverSourceDTO, clearStatus));
         }
         return tableList;
     }
@@ -127,7 +127,7 @@ public class SqlServerClient extends AbsRdbmsClient {
             throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, sqlserverSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(sqlserverSourceDTO, clearStatus));
         }
         return null;
     }
@@ -212,7 +212,7 @@ public class SqlServerClient extends AbsRdbmsClient {
         } catch (Exception e) {
             //获取表字段注释失败
         }finally {
-            DBUtil.closeDBResources(rs, statement, sourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(sourceDTO, clearStatus));
         }
         return columnComments;
     }
