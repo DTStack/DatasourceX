@@ -297,8 +297,10 @@ public class InceptorClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(inceptorSourceDTO.getDefaultFS())) {
             return Boolean.TRUE;
         }
-        // 检查 metaStore 连通性
-        checkMetaStoreConnect(inceptorSourceDTO.getMetaStoreUris(), inceptorSourceDTO.getKerberosConfig());
+        if (StringUtils.isNotBlank(inceptorSourceDTO.getMetaStoreUris())) {
+            // 检查 metaStore 连通性
+            checkMetaStoreConnect(inceptorSourceDTO.getMetaStoreUris(), inceptorSourceDTO.getKerberosConfig());
+        }
         return HdfsOperator.checkConnection(inceptorSourceDTO.getDefaultFS(), inceptorSourceDTO.getConfig(), inceptorSourceDTO.getKerberosConfig());
     }
 
@@ -308,10 +310,7 @@ public class InceptorClient extends AbsRdbmsClient {
      * @param metaStoreUris  metaStore 地址
      * @param kerberosConfig kerberos 配置
      */
-    private void checkMetaStoreConnect(String metaStoreUris, Map<String, Object> kerberosConfig) {
-        if (StringUtils.isBlank(metaStoreUris)) {
-            return;
-        }
+    private synchronized void checkMetaStoreConnect(String metaStoreUris, Map<String, Object> kerberosConfig) {
         HiveConf hiveConf = new HiveConf();
         hiveConf.set(META_STORE_URIS_KEY, metaStoreUris);
         // 重新设置 metaStore 地址
