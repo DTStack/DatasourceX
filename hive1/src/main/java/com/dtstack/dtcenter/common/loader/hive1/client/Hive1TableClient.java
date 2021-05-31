@@ -47,7 +47,7 @@ public class Hive1TableClient extends AbsTableClient {
         String tableType = "";
         for (Map<String, Object> row : result) {
             String colName = MapUtils.getString(row, "col_name");
-            if (StringUtils.containsIgnoreCase(colName, "Type")) {
+            if (StringUtils.containsIgnoreCase(colName, "Table Type")) {
                 tableType = MapUtils.getString(row, "data_type");
                 break;
             }
