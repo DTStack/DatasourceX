@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.loader.client.BaseTest;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.IKerberos;
+import com.dtstack.dtcenter.loader.dto.SolrQueryDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.SolrSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -72,6 +73,17 @@ public class SolrKerberosTest extends BaseTest {
     @Test
     public void getColumnMetaData() {
         List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("qianyi_test").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(metaData));
+    }
+
+    /**
+     * 自定义查询
+     */
+    @Test
+    public void executeQuery() {
+        SolrQueryDTO solrQueryDTO = new SolrQueryDTO();
+        solrQueryDTO.setQuery("name:红豆").setSort(SolrQueryDTO.SortClause.asc("price")).setRows(4).setFields("price","name","id");
+        List<Map<String,Object>> metaData = client.executeQuery(source, SqlQueryDTO.builder().tableName("qianyi_test").solrQueryDTO(solrQueryDTO).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(metaData));
     }
 
