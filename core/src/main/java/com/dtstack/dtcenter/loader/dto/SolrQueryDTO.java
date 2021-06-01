@@ -1,5 +1,7 @@
 package com.dtstack.dtcenter.loader.dto;
 
+import com.dtstack.dtcenter.loader.dto.contant.SolrCommonParams;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,7 +10,6 @@ import java.util.Map;
 
 /**
  * This is an augmented SolrParams with set fields for common fields used
- * in the Standard and Dismax request handlers
  */
 public class SolrQueryDTO {
 
@@ -205,6 +206,12 @@ public class SolrQueryDTO {
         return this;
     }
 
+    /**
+     * 自定义参数
+     * @param name
+     * @param values
+     * @return
+     */
     public SolrQueryDTO setParam(String name, String... values) {
         this.set(name, values);
         return this;
@@ -218,18 +225,9 @@ public class SolrQueryDTO {
 
     /**
      * A single sort clause, encapsulating what to sort and the sort order.
-     * <p>
-     * The item specified can be "anything sortable" by solr; some examples
-     * include a simple field name, the constant string {@code score}, and functions
-     * such as {@code sum(x_f, y_f)}.
-     * <p>
-     * A SortClause can be created through different mechanisms:
-     * <PRE><code>
      * new SortClause("product", SolrQueryDTO.ORDER.asc);
      * new SortClause("product", "asc");
      * SortClause.asc("product");
-     * SortClause.desc("product");
-     * </code></PRE>
      */
     public static class SortClause implements java.io.Serializable {
 
