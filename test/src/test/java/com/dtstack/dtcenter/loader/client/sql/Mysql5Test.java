@@ -118,6 +118,22 @@ public class Mysql5Test extends BaseTest {
     }
 
     /**
+     * 字段名称重复测试
+     */
+    @Test
+    public void executeQueryRepeatColumn() {
+        String sql = "select id, name ,id as id, name, name as name, id as name,name as id from LOADER_TEST";
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        Map<String, Object> row = result.get(0);
+        Assert.assertEquals(7, row.size());
+        Assert.assertTrue(row.containsKey("name") && row.containsKey("name(1)")
+                && row.containsKey("name(2)") && row.containsKey("name(3)")
+                && row.containsKey("id") && row.containsKey("id(1)")
+                && row.containsKey("id(2)"));
+    }
+
+    /**
      * 字段别名测试
      */
     @Test
