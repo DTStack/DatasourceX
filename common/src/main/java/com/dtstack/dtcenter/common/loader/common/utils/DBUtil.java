@@ -35,6 +35,9 @@ public class DBUtil {
     // 默认最大查询条数
     private static final Integer MAX_QUERY_ROW = 5000;
 
+    // 字段重复时的重命名规则
+    private static final String REPEAT_SIGN = "%s(%s)";
+
     /**
      * 根据 SQL 查询
      *
@@ -81,8 +84,10 @@ public class DBUtil {
 
                 while (res.next()) {
                     Map<String, Object> row = Maps.newLinkedHashMap();
+                    Map<String, Integer> columnRepeatSign = Maps.newHashMap();
                     for (int i = 0; i < columns; i++) {
-                        row.put(columnName.get(i), res.getObject(i + 1));
+                        String column = dealRepeatColumn(row, columnName.get(i), columnRepeatSign);
+                        row.put(column, res.getObject(i + 1));
                     }
                     result.add(row);
                 }
@@ -138,8 +143,10 @@ public class DBUtil {
 
             while (res.next()) {
                 Map<String, Object> row = Maps.newLinkedHashMap();
+                Map<String, Integer> columnRepeatSign = Maps.newHashMap();
                 for (int i = 0; i < columns; i++) {
-                    row.put(columnName.get(i), res.getObject(i + 1));
+                    String column = dealRepeatColumn(row, columnName.get(i), columnRepeatSign);
+                    row.put(column, res.getObject(i + 1));
                 }
                 result.add(row);
             }
@@ -149,6 +156,30 @@ public class DBUtil {
             DBUtil.closeDBResources(res, statement, null);
         }
         return result;
+    }
+
+    /**
+     * 处理 executeQuery 查询结果字段重复字段
+     *
+     * @param row              当前行的数据
+     * @param column           当前查询字段名
+     * @param columnRepeatSign 当前字段重复次数
+     * @return 处理后的重复字段名
+     */
+    private static String dealRepeatColumn(Map<String, Object> row, String column, Map<String, Integer> columnRepeatSign) {
+        boolean repeat = row.containsKey(column);
+        if (repeat) {
+            // 如果 column 重复则在 column 后进行增加 (1),(2)... 区分处理
+            boolean contains = columnRepeatSign.containsKey(column);
+            if (!contains) {
+                columnRepeatSign.put(column, 1);
+            } else {
+                columnRepeatSign.put(column, columnRepeatSign.get(column) + 1);
+            }
+            return String.format(REPEAT_SIGN, column, columnRepeatSign.get(column));
+        } else {
+            return column;
+        }
     }
 
     /**
