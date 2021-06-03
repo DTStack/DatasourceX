@@ -84,6 +84,7 @@ public class HbaseClient<T> implements IClient<T> {
         } finally {
             closeAdmin(admin);
             closeConnection(hConn,hbaseSourceDTO);
+            destroyProperty();
         }
         return tableList;
     }
@@ -130,6 +131,7 @@ public class HbaseClient<T> implements IClient<T> {
         } finally {
             closeTable(tb);
             closeConnection(hConn,hbaseSourceDTO);
+            destroyProperty();
         }
         return cfList;
     }
@@ -197,6 +199,7 @@ public class HbaseClient<T> implements IClient<T> {
             } else {
                 close(rs, table, null);
             }
+            destroyProperty();
         }
 
         //理解为一行记录
@@ -298,6 +301,7 @@ public class HbaseClient<T> implements IClient<T> {
             } else {
                 close(rs, table, null);
             }
+            destroyProperty();
         }
 
         //理解为一行记录
@@ -341,6 +345,7 @@ public class HbaseClient<T> implements IClient<T> {
         } finally {
             close(admin);
             closeConnection(connection, hbaseSourceDTO);
+            destroyProperty();
         }
         return namespaces;
     }
@@ -369,6 +374,7 @@ public class HbaseClient<T> implements IClient<T> {
         } finally {
             close(admin);
             closeConnection(connection, hbaseSourceDTO);
+            destroyProperty();
         }
         return tables;
     }
@@ -395,6 +401,11 @@ public class HbaseClient<T> implements IClient<T> {
         } catch (Exception e) {
             throw new DtLoaderException("hbase can not close table error", e);
         }
+    }
+
+    public static void destroyProperty() {
+        System.clearProperty("java.security.auth.login.config");
+        System.clearProperty("javax.security.auth.useSubjectCredsOnly");
     }
 
     /******************** 未支持的方法 **********************/
