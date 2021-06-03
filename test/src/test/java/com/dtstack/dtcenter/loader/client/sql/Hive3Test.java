@@ -57,7 +57,7 @@ public class Hive3Test extends BaseTest {
      */
     @BeforeClass
     public static void beforeClass()  {
-        System.setProperty("HADOOP_USER_NAME", "admin");
+        System.setProperty("HADOOP_USER_NAME", "hive");
         IClient client = ClientCache.getClient(DataSourceType.HIVE3X.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_1").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -258,7 +258,7 @@ public class Hive3Test extends BaseTest {
         IClient client = ClientCache.getClient(DataSourceType.HIVE3X.getVal());
         SqlQueryDTO sqlQueryDTO = SqlQueryDTO.builder().tableName("loader_test_1").build();
         String createTableSql = client.getCreateTableSql(source, sqlQueryDTO);
-        Assert.assertEquals("CREATE TABLE `default.loader_test_1`(  `id` int COMMENT 'id comment',   `name` string)COMMENT 'table comment'ROW FORMAT SERDE   'org.apache.hadoop.hive.ql.io.orc.OrcSerde' WITH SERDEPROPERTIES (   'field.delim'=',',   'serialization.format'=',') STORED AS INPUTFORMAT   'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' OUTPUTFORMAT   'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'LOCATION  'hdfs://dtstack/warehouse/tablespace/managed/hive/loader_test_1'TBLPROPERTIES (  'bucketing_version'='2',   'transient_lastDdlTime'='1621585185')", createTableSql);
+        Assert.assertTrue(createTableSql.contains("CREATE TABLE `default.loader_test_1`(  `id` int COMMENT 'id comment',   `name` string)COMMENT 'table comment'ROW FORMAT SERDE   'org.apache.hadoop.hive.ql.io.orc.OrcSerde' WITH SERDEPROPERTIES (   'field.delim'=',',   'serialization.format'=',') STORED AS INPUTFORMAT   'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' OUTPUTFORMAT   'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'LOCATION  'hdfs://dtstack/warehouse/tablespace/managed/hive/loader_test_1'TBLPROPERTIES (  'bucketing_version'='2',   'transient_lastDdlTime'='"));
     }
 
     /**

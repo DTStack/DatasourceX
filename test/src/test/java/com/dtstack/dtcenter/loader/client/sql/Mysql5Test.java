@@ -284,7 +284,8 @@ public class Mysql5Test extends BaseTest {
     public void getDownloader() throws Exception {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").sql("select * from LOADER_TEST").build();
         IDownloader iDownloader = client.getDownloader(source, queryDTO);
-        assert iDownloader != null;
+        List<String> list = iDownloader.getMetaInfo();
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
     }
 
     @Test
