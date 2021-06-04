@@ -66,7 +66,7 @@
 
 ###### 2. 获取当前db下的表(就是获取es某一索引下所有type)
 入参类型：
-- RedisSourceDTO：数据源连接信息
+- ESSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -80,7 +80,7 @@
 
 ###### 3. 获取所有db(就是获取es所有索引)
 入参类型：
-- RedisSourceDTO：数据源连接信息
+- ESSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -94,7 +94,7 @@
 
 ###### 4. 数据预览
 入参类型：
-- MongoSourceDTO：数据源连接信息
+- ESSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -108,7 +108,7 @@
 
 ###### 5. 获取表字段信息
 入参类型：
-- Mysql5SourceDTO：数据源连接信息
+- ESSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -123,7 +123,7 @@
 
 ###### 6. 执行自定义查询
 入参类型：
-- MongoSourceDTO：数据源连接信息
+- ESSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：
@@ -137,7 +137,7 @@
 
 ###### 7. 执行无需结果集的自定义语句
 入参类型：
-- MongoSourceDTO：数据源连接信息
+- ESSourceDTO：数据源连接信息
 - SqlQueryDTO：查询信息
 
 出参类型：

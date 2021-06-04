@@ -18,6 +18,7 @@ import com.dtstack.dtcenter.loader.enums.FileFormat;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -33,7 +34,7 @@ import java.util.List;
  * @Description：HDFS 文件系统测试
  */
 public class HdfsFileTest extends BaseTest {
-    
+
     // 初始化客户端
     private static final IHdfsFile client = ClientCache.getHdfs(DataSourceType.HDFS.getVal());
 
@@ -73,7 +74,7 @@ public class HdfsFileTest extends BaseTest {
      * 参数准备
      */
     @BeforeClass
-    public static void setUp () {
+    public static void setUp() {
         System.setProperty("HADOOP_USER_NAME", "admin");
         try {
             client.delete(source, "/tmp/hive_test", true);
@@ -466,6 +467,37 @@ public class HdfsFileTest extends BaseTest {
     public void getDownloaderByFormat(){
         IDownloader iDownloader = client.getDownloaderByFormat(source, "/tmp/test.txt", Lists.newArrayList("id", "name"),",", FileFormat.TEXT.getVal());
         assert iDownloader != null;
+    }
+
+
+    /**
+     * 获取文件downloader
+     */
+    @Test
+    public void getLogDownloader() {
+
+        // 初始化hdfs数据源信息
+        HdfsSourceDTO source = HdfsSourceDTO.builder()
+                .appIdStr("application_1622785513863_0033")
+                .defaultFS("hdfs://ns1")
+                .config("{\n" +
+                        "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
+                        "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.101.227:9000\",\n" +
+                        "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
+                        "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.101.196:9000\",\n" +
+                        "    \"dfs.nameservices\": \"ns1\"\n" +
+                        "}")
+                .yarnConf(Maps.newHashMap())
+                .build();
+        source.setUser("admin");
+        IDownloader iDownloader = client.getLogDownloader(source, SqlQueryDTO.builder().build());
+        assert iDownloader != null;
+        List<String> list = iDownloader.getContainers();
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
+        while (!iDownloader.reachedEnd()) {
+            Object row = iDownloader.readNext();
+            Assert.assertNotNull(row.toString());
+        }
     }
 
 }

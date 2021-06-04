@@ -401,22 +401,6 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         return "";
     }
 
-    /******************** 未支持的方法 **********************/
-    @Override
-    public Connection getCon(ISourceDTO iSource) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public Connection getCon(ISourceDTO source, String taskParams) {
-        throw new DtLoaderException("Not Support");
-    }
-
-    @Override
-    public List<String> getTableListBySchema(ISourceDTO iSource, SqlQueryDTO sqlQueryDTO) {
-        throw new DtLoaderException("Not Support");
-    }
-
     /**
      * 执行增删改等操作
      * <p><p/>
