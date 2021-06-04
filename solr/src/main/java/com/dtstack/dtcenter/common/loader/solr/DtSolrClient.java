@@ -22,13 +22,16 @@ import org.apache.solr.client.solrj.impl.Krb5HttpClientBuilder;
 import org.apache.solr.client.solrj.impl.SolrHttpClientBuilder;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.request.schema.SchemaRequest;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.schema.SchemaResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.params.ModifiableSolrParams;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -124,6 +127,7 @@ public class DtSolrClient extends AbsNoSqlClient {
 
     /**
      * collection 》》table
+     *
      * @param source
      * @param queryDTO
      * @return
@@ -221,5 +225,44 @@ public class DtSolrClient extends AbsNoSqlClient {
         } finally {
             closeResource(solrClient, solrSourceDTO);
         }
+    }
+
+    /**
+     * 自定义查询
+     * @param source
+     * @param queryDTO
+     * @return
+     */
+    @Override
+    public List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO) {
+        SolrSourceDTO solrSourceDTO = (SolrSourceDTO) source;
+        if (solrSourceDTO == null || StringUtils.isBlank(solrSourceDTO.getZkHost())) {
+            return new ArrayList<>();
+        }
+        //solr collection
+        String collection = queryDTO.getTableName();
+        if (StringUtils.isBlank(collection)) {
+            throw new DtLoaderException("The collection of solr is not specified，Data preview failed");
+        }
+        CloudSolrClient solrClient = getClient(solrSourceDTO);
+        List<Map<String, Object>> executeResult = Lists.newArrayList();
+
+        Map<String, String[]> queryParamMap = queryDTO.getSolrQueryDTO().getQueryParamMap();
+        ModifiableSolrParams queryParams = new ModifiableSolrParams(queryParamMap);
+        final QueryResponse response;
+        try {
+            response = solrClient.query(collection, queryParams);
+            SolrDocumentList documents = response.getResults();
+            for (SolrDocument document : documents) {
+                Map<String, Object> documentMap = new HashMap<>();
+                for (String key : document.keySet()) {
+                    documentMap.put(key, document.getFirstValue(key));
+                }
+                executeResult.add(documentMap);
+            }
+        } catch (Exception e) {
+            throw new DtLoaderException(String.format("executeQuery exception,Cause by:%s", e.getMessage()), e);
+        }
+        return executeResult;
     }
 }
