@@ -34,6 +34,7 @@ public class ClickHouseTest extends BaseTest {
             .url("jdbc:clickhouse://172.16.100.186:8123")
             .username("default")
             .password("b6rCe7ZV")
+            .schema("default")
             .poolConfig(new PoolConfig())
             .build();
 
@@ -57,6 +58,22 @@ public class ClickHouseTest extends BaseTest {
         String createTableSql = client.getCreateTableSql(source, queryDTO);
         Assert.assertTrue(StringUtils.isNotBlank(createTableSql));
     }
+
+    @Test
+    public void getFlinkColumnMetaData() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
+        List<ColumnMetaDTO> list = client.getFlinkColumnMetaData(source, queryDTO);
+        Assert.assertTrue("id".equals(list.get(0).getKey()));
+        Assert.assertTrue("date".equals(list.get(1).getKey()));
+    }
+
+    @Test
+    public void getPartitionColumn() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
+        List<ColumnMetaDTO> list = client.getPartitionColumn(source, queryDTO);
+        Assert.assertEquals("date", list.get(0).getKey());
+    }
+
     
     /**
      * 获取连接测试
@@ -176,6 +193,8 @@ public class ClickHouseTest extends BaseTest {
                 Assert.assertTrue(CollectionUtils.isNotEmpty(row));
             }
         }
+       Assert.assertTrue(CollectionUtils.isEmpty(downloader.getContainers()));
+       Assert.assertTrue(StringUtils.isEmpty(downloader.getFileName()));
     }
 
     /**

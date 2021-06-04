@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.BaseTest;
 import com.dtstack.dtcenter.loader.client.ClientCache;
@@ -204,4 +205,16 @@ public class Db2Test extends BaseTest {
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
     }
+
+    @Test
+    public void  getDownloader() throws Exception {
+        IDownloader downloader = client.getDownloader(source, SqlQueryDTO.builder().sql("select * from LOADER_TEST").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
+        while (!downloader.reachedEnd()){
+            Assert.assertNotNull(downloader.readNext());
+        }
+        Assert.assertNull(downloader.getFileName());
+        Assert.assertTrue(CollectionUtils.isEmpty(downloader.getContainers()));
+    }
+
 }
