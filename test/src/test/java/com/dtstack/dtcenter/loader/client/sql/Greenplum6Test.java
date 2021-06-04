@@ -90,6 +90,20 @@ public class Greenplum6Test extends BaseTest {
         Assert.assertTrue(CollectionUtils.isNotEmpty(result));
     }
 
+    @Test(expected = DtLoaderException.class)
+    public void isDatabaseExists()  {
+        Boolean result = client.isDatabaseExists(source, "public");
+        Assert.assertTrue(result);
+        Boolean result1 = client.isDatabaseExists(source, null);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void isTableExistsInDatabase()  {
+        Boolean result = client.isTableExistsInDatabase(source, "loader_test", "public");
+        Assert.assertTrue(result);
+        Boolean result1 = client.isTableExistsInDatabase(source, null,null);
+    }
+
     /**
      * 字段别名查询测试
      */
@@ -177,6 +191,9 @@ public class Greenplum6Test extends BaseTest {
                 Assert.assertTrue(CollectionUtils.isNotEmpty(row));
             }
         }
+        Assert.assertTrue( StringUtils.isEmpty(downloader.getFileName()));
+        Assert.assertTrue(CollectionUtils.isEmpty(downloader.getContainers()));
+        downloader.close();
     }
 
     /**
