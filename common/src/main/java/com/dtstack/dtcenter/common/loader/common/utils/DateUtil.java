@@ -59,7 +59,7 @@ public class DateUtil {
      * @param pattern 日期格式
      * @return SimpleDateFormat对象
      */
-    private static SimpleDateFormat getDateFormat(String pattern) {
+    public static SimpleDateFormat getDateFormat(String pattern) {
         SimpleDateFormat format = new SimpleDateFormat(pattern);
         return format;
     }
@@ -289,7 +289,7 @@ public class DateUtil {
     }
 
     public static Date stringToDate(String strDate) {
-        assert strDate == null || strDate.trim().length() == 0;
+        assert StringUtils.isNotBlank(strDate);
 
         try {
             return datetimeFormatter.parse(strDate);
