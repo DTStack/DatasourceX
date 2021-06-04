@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.utils.JSONUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.util.JaasUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
@@ -18,6 +19,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
+import sun.security.krb5.Config;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
@@ -97,6 +99,20 @@ public class HbasePoolManager {
         return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Connection>) () -> {
                     try {
+                        if (MapUtils.isNotEmpty(kerberosConfig)) {
+                            // hbase zk kerberos 需要写 jaas 文件
+                            String jaasConf = JaasUtil.writeJaasConf(kerberosConfig);
+                            // 刷新kerberos认证信息，在设置完java.security.krb5.conf后进行，否则会使用上次的krb5文件进行 refresh 导致认证失败
+                            try {
+                                Config.refresh();
+                                javax.security.auth.login.Configuration.setConfiguration(null);
+                            } catch (Exception e) {
+                                log.error("hbase kerberos认证信息刷新失败！");
+                            }
+                            System.setProperty("java.security.auth.login.config", jaasConf);
+                            log.info("java.security.auth.login.config : {}", jaasConf);
+                            System.setProperty("javax.security.auth.useSubjectCredsOnly", "true");
+                        }
                         return ConnectionFactory.createConnection(hConfig);
                     } catch (Exception e) {
                         throw new DtLoaderException(String.format("get hbase connection exception,%s", e.getMessage()), e);

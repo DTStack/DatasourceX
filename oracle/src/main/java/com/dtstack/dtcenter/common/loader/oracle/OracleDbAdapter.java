@@ -19,11 +19,13 @@ public class OracleDbAdapter {
         switch (columnType) {
             case Types.CHAR:
             case Types.CLOB:
+                return JavaType.TYPE_CLOB.getFlinkSqlType();
+            case Types.NCLOB:
+                return JavaType.TYPE_NCLOB.getFlinkSqlType();
             case Types.BLOB:
             case Types.LONGVARCHAR:
             case Types.VARCHAR:
             case Types.NVARCHAR:
-            case Types.NCLOB:
                 return JavaType.TYPE_VARCHAR.getFlinkSqlType();
 
             case Types.DATE:
@@ -69,7 +71,9 @@ public class OracleDbAdapter {
         TYPE_DOUBLE("double"),
         TYPE_DATE("date"),
         TYPE_TIMESTAMP("timestamp"),
-        TYPE_DECIMAL("decimal");
+        TYPE_DECIMAL("decimal"),
+        TYPE_CLOB("clob"),
+        TYPE_NCLOB("nclob");
 
         private String flinkSqlType;
 

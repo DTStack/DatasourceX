@@ -49,6 +49,7 @@ public class HbaseConnFactory {
                     log.error(e.getMessage(), e);
                 }
             }
+            HbaseClient.destroyProperty();
         }
         return check;
     }

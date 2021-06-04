@@ -84,6 +84,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
         } finally {
             closeAdmin(admin);
             closeConnection(hConn,hbaseSourceDTO);
+            destroyProperty();
         }
         if (Objects.nonNull(queryDTO) && StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
             tableList = tableList.stream().filter(table -> table.contains(queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
@@ -136,6 +137,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
         } finally {
             closeTable(tb);
             closeConnection(hConn,hbaseSourceDTO);
+            destroyProperty();
         }
         return cfList;
     }
@@ -203,6 +205,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
             } else {
                 close(rs, table, null);
             }
+            destroyProperty();
         }
 
         //理解为一行记录
@@ -291,10 +294,12 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
             Scan scan = new Scan();
             //数据预览限制返回条数
             scan.setMaxResultSize(queryDTO.getPreviewNum());
-            scan.setFilter(new PageFilter(queryDTO.getPreviewNum()));
             rs = table.getScanner(scan);
-            for (Result r : rs) {
-                results.add(r);
+            for (Result row : rs) {
+                if (CollectionUtils.isEmpty(row.listCells())) {
+                    continue;
+                }
+                results.add(row);
                 if (results.size() >= queryDTO.getPreviewNum()) {
                     break;
                 }
@@ -307,6 +312,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
             } else {
                 close(rs, table, null);
             }
+            destroyProperty();
         }
 
         //理解为一行记录
@@ -350,6 +356,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
         } finally {
             close(admin);
             closeConnection(connection, hbaseSourceDTO);
+            destroyProperty();
         }
         return namespaces;
     }
@@ -378,6 +385,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
         } finally {
             close(admin);
             closeConnection(connection, hbaseSourceDTO);
+            destroyProperty();
         }
         return tables;
     }
@@ -404,5 +412,10 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("hbase can not close table error,%s", e.getMessage()), e);
         }
+    }
+
+    public static void destroyProperty() {
+        System.clearProperty("java.security.auth.login.config");
+        System.clearProperty("javax.security.auth.useSubjectCredsOnly");
     }
 }
