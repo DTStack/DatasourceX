@@ -288,7 +288,6 @@ public class HbaseClient<T> implements IClient<T> {
             Scan scan = new Scan();
             //数据预览限制返回条数
             scan.setMaxResultSize(queryDTO.getPreviewNum());
-            scan.setFilter(new PageFilter(queryDTO.getPreviewNum()));
             rs = table.getScanner(scan);
             for (Result r : rs) {
                 results.add(r);
