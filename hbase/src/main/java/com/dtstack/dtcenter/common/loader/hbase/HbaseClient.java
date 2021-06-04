@@ -289,8 +289,14 @@ public class HbaseClient<T> implements IClient<T> {
             //数据预览限制返回条数
             scan.setMaxResultSize(queryDTO.getPreviewNum());
             rs = table.getScanner(scan);
-            for (Result r : rs) {
-                results.add(r);
+            for (Result row : rs) {
+                if (CollectionUtils.isEmpty(row.listCells())) {
+                    continue;
+                }
+                results.add(row);
+                if (results.size() >= queryDTO.getPreviewNum()) {
+                    break;
+                }
             }
         } catch (Exception e){
             throw new DtLoaderException("数据预览失败", e);
