@@ -22,6 +22,7 @@ public enum DataBaseType {
     Spark("hive", "org.apache.hive.jdbc.HiveDriver"),
     INCEPTOR("inceptor", "org.apache.hive.jdbc.HiveDriver"),
     ADS("mysql", "com.mysql.jdbc.Driver"),
+    ADB_FOR_PG("postgresql", "org.postgresql.Driver"),
     RDS("mysql", "com.mysql.jdbc.Driver"),
     MaxCompute("maxcompute", "com.aliyun.odps.jdbc.OdpsDriver"),
     LIBRA("postgresql", "org.postgresql.Driver"),
