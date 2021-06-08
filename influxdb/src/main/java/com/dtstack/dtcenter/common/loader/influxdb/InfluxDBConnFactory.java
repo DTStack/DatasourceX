@@ -47,7 +47,7 @@ public class InfluxDBConnFactory {
         }
         String originUrl = influxDBSourceDTO.getUrl().trim();
         // 默认 http 协议
-        String url = (originUrl.startsWith(HTTP_PREFIX)|originUrl.startsWith(HTTPS_PREFIX)) ?
+        String url = (originUrl.startsWith(HTTP_PREFIX)||originUrl.startsWith(HTTPS_PREFIX)) ?
                 originUrl : HTTP_PREFIX + originUrl;
         InfluxDB influxDB;
         if (StringUtils.isNotBlank(influxDBSourceDTO.getUsername())) {
