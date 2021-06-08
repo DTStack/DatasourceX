@@ -166,7 +166,7 @@ public class DBUtil {
      * @param columnRepeatSign 当前字段重复次数
      * @return 处理后的重复字段名
      */
-    private static String dealRepeatColumn(Map<String, Object> row, String column, Map<String, Integer> columnRepeatSign) {
+    public static String dealRepeatColumn(Map<String, Object> row, String column, Map<String, Integer> columnRepeatSign) {
         boolean repeat = row.containsKey(column);
         if (repeat) {
             // 如果 column 重复则在 column 后进行增加 (1),(2)... 区分处理

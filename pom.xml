@@ -54,6 +54,7 @@
         <module>aws_s3</module>
         <module>solr</module>
         <module>inceptor</module>
+        <module>influxdb</module>
         <module>test</module>
     </modules>
     <packaging>pom</packaging>
