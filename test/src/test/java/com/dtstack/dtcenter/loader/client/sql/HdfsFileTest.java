@@ -478,7 +478,7 @@ public class HdfsFileTest extends BaseTest {
 
         // 初始化hdfs数据源信息
         HdfsSourceDTO source = HdfsSourceDTO.builder()
-                .appIdStr("application_1622785513863_0033")
+                .appIdStr("application_1623120179590_0022")
                 .defaultFS("hdfs://ns1")
                 .config("{\n" +
                         "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
@@ -493,7 +493,7 @@ public class HdfsFileTest extends BaseTest {
         IDownloader iDownloader = client.getLogDownloader(source, SqlQueryDTO.builder().build());
         assert iDownloader != null;
         List<String> list = iDownloader.getContainers();
-        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
+        Assert.assertTrue(CollectionUtils.isEmpty(list));
         while (!iDownloader.reachedEnd()) {
             Object row = iDownloader.readNext();
             Assert.assertNotNull(row.toString());

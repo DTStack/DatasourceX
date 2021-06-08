@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.common.loader.hdfs.downloader.YarnLogDownload;
+package org.apache.hadoop.yarn.logaggregation.filecontroller.ifile;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.compress.CodecPool;

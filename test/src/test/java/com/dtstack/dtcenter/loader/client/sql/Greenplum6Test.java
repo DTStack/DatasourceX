@@ -161,9 +161,15 @@ public class Greenplum6Test extends BaseTest {
      */
     @Test
     public void getTableMetaComment()  {
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("public").tableName("loader_test").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         Assert.assertEquals("中文_table_comment", metaComment);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getPartitionColumn() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("public").tableName("loader_test").build();
+        client.getPartitionColumn(source, queryDTO);
     }
 
     /**

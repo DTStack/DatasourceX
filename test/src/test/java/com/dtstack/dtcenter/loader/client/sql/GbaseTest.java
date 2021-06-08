@@ -68,4 +68,9 @@ public class GbaseTest extends BaseTest {
         String metaComment = client.getTableMetaComment(source, queryDTO);
         Assert.assertEquals("table comment", metaComment);
     }
+
+    @Test
+    public void getType() {
+        Assert.assertEquals(DataSourceType.GBase_8a.getVal(),source.getSourceType());
+    }
 }

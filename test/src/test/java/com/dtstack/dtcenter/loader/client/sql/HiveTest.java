@@ -203,7 +203,7 @@ public class HiveTest extends BaseTest {
         while (!downloader.reachedEnd()){
             Assert.assertNotNull(downloader.readNext());
         }
-       Assert.assertNull(downloader.getContainers());
+       Assert.assertTrue(CollectionUtils.isEmpty(downloader.getContainers()));
     }
 
     @Test

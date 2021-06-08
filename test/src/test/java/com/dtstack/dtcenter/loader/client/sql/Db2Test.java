@@ -179,6 +179,28 @@ public class Db2Test extends BaseTest {
     }
 
     /**
+     * 数据预览测试
+     */
+    @Test
+    public void preview_001() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("DB2INST1").tableName("LOADER_TEST").previewNum(1).build();
+        List preview = client.getPreview(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(preview));
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getCreateTableSql() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("DB2INST1").tableName("LOADER_TEST").previewNum(1).build();
+        client.getCreateTableSql(source, queryDTO);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getPartitionColumn() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("DB2INST1").tableName("LOADER_TEST").previewNum(1).build();
+        client.getPartitionColumn(source, queryDTO);
+    }
+
+    /**
      * 根据sql 获取对应结果的字段信息
      */
     @Test
