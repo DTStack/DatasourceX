@@ -28,6 +28,12 @@ public class InfluxDBConnFactory {
     // 异常适配器
     private static final IErrorAdapter ERROR_ADAPTER = new ErrorAdapterImpl();
 
+    // http 前缀
+    private static final String HTTP_PREFIX = "http://";
+
+    // https 前缀
+    private static final String HTTPS_PREFIX = "https://";
+
     /**
      * 获取 influxDB 连接客户端
      *
@@ -36,11 +42,18 @@ public class InfluxDBConnFactory {
      */
     public static InfluxDB getClient(ISourceDTO sourceDTO) {
         InfluxDBSourceDTO influxDBSourceDTO = (InfluxDBSourceDTO) sourceDTO;
+        if (StringUtils.isBlank(influxDBSourceDTO.getUrl())) {
+            throw new DtLoaderException("url cannot be null");
+        }
+        String originUrl = influxDBSourceDTO.getUrl().trim();
+        // 默认 http 协议
+        String url = (originUrl.startsWith(HTTP_PREFIX)|originUrl.startsWith(HTTPS_PREFIX)) ?
+                originUrl : HTTP_PREFIX + originUrl;
         InfluxDB influxDB;
         if (StringUtils.isNotBlank(influxDBSourceDTO.getUsername())) {
-            influxDB = InfluxDBFactory.connect(influxDBSourceDTO.getUrl(), influxDBSourceDTO.getUsername(), influxDBSourceDTO.getPassword());
+            influxDB = InfluxDBFactory.connect(url, influxDBSourceDTO.getUsername(), influxDBSourceDTO.getPassword());
         } else {
-            influxDB = InfluxDBFactory.connect(influxDBSourceDTO.getUrl());
+            influxDB = InfluxDBFactory.connect(url);
         }
         // 设置 db
         if (StringUtils.isNotBlank(influxDBSourceDTO.getDatabase())) {

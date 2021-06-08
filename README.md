@@ -76,6 +76,7 @@
 |:------------------------------:|:------------------------------------------:|
 | websocket                      | [doc](docs/other/websocket.md)        |
 | socket                         | [doc](docs/other/socket.md)           |
+| influxdb                       | [doc](docs/other/influxdb.md)           |
 
 ---
 
