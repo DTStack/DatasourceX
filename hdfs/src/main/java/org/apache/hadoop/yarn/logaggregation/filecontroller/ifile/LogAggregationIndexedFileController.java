@@ -2,8 +2,6 @@ package org.apache.hadoop.yarn.logaggregation.filecontroller.ifile;
 
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.hdfs.YarnConfUtil;
-import com.dtstack.dtcenter.common.loader.hdfs.downloader.YarnLogDownload.BoundedRangeFileInputStream;
-import com.dtstack.dtcenter.common.loader.hdfs.downloader.YarnLogDownload.Compression;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.annotations.VisibleForTesting;

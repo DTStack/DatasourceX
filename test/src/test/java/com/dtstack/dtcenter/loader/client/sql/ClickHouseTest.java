@@ -27,9 +27,9 @@ import java.util.Map;
  * @Description：ClickHouse 测试
  */
 public class ClickHouseTest extends BaseTest {
-    
+
     private static final IClient client = ClientCache.getClient(DataSourceType.Clickhouse.getVal());
-    
+
     private static ClickHouseSourceDTO source = ClickHouseSourceDTO.builder()
             .url("jdbc:clickhouse://172.16.100.186:8123")
             .username("default")
@@ -46,12 +46,12 @@ public class ClickHouseTest extends BaseTest {
         IClient client = ClientCache.getClient(DataSourceType.Clickhouse.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("CREATE TABLE loader_test (id String  COMMENT 'ID编码', date Date  COMMENT '日期') ENGINE = MergeTree(date, (id,date), 8192)").build();
+        queryDTO = SqlQueryDTO.builder().sql("CREATE TABLE loader_test (id String  COMMENT 'ID编码',price double, date Date  COMMENT '日期') ENGINE = MergeTree(date, (id,date), 8192)").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test values('1', toDate('2020-08-22'))").build();
+        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test values('1',1.2, toDate('2020-08-22'))").build();
         assert client.executeSqlWithoutResultSet(source, queryDTO);
     }
-    
+
     @Test
     public void getCreateTableSql() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
@@ -64,7 +64,7 @@ public class ClickHouseTest extends BaseTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<ColumnMetaDTO> list = client.getFlinkColumnMetaData(source, queryDTO);
         Assert.assertTrue("id".equals(list.get(0).getKey()));
-        Assert.assertTrue("date".equals(list.get(1).getKey()));
+        Assert.assertTrue("date".equals(list.get(2).getKey()));
     }
 
     @Test
@@ -74,12 +74,12 @@ public class ClickHouseTest extends BaseTest {
         Assert.assertEquals("date", list.get(0).getKey());
     }
 
-    
+
     /**
      * 获取连接测试
      */
     @Test
-    public void getCon() throws Exception{
+    public void getCon() throws Exception {
         Connection connection = client.getCon(source);
         Assert.assertNotNull(connection);
         connection.close();
@@ -89,7 +89,7 @@ public class ClickHouseTest extends BaseTest {
      * 测试连通性测试
      */
     @Test
-    public void testCon()  {
+    public void testCon() {
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("connection exception");
@@ -100,7 +100,7 @@ public class ClickHouseTest extends BaseTest {
      * 执行查询语句测试
      */
     @Test
-    public void executeQuery()  {
+    public void executeQuery() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from loader_test").build();
         List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(result));
@@ -110,7 +110,7 @@ public class ClickHouseTest extends BaseTest {
      * 字段别名查询测试
      */
     @Test
-    public void executeQueryAlias()  {
+    public void executeQueryAlias() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select id as tAlias from loader_test").build();
         List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(result));
@@ -120,7 +120,7 @@ public class ClickHouseTest extends BaseTest {
      * 无结果查询测试
      */
     @Test
-    public void executeSqlWithoutResultSet()  {
+    public void executeSqlWithoutResultSet() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from loader_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
@@ -129,7 +129,7 @@ public class ClickHouseTest extends BaseTest {
      * 获取表
      */
     @Test
-    public void getTableList()  {
+    public void getTableList() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List<String> tableList = client.getTableList(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
@@ -139,11 +139,11 @@ public class ClickHouseTest extends BaseTest {
      * 获取java 标准字段属性
      */
     @Test
-    public void getColumnClassInfo()  {
+    public void getColumnClassInfo() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<String> columnClassInfo = client.getColumnClassInfo(source, queryDTO);
         Assert.assertEquals("java.lang.String", columnClassInfo.get(0));
-        Assert.assertEquals("java.sql.Date", columnClassInfo.get(1));
+        Assert.assertEquals("java.sql.Date", columnClassInfo.get(2));
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnClassInfo));
     }
 
@@ -151,11 +151,11 @@ public class ClickHouseTest extends BaseTest {
      * 获取表字段详细信息
      */
     @Test
-    public void getColumnMetaData()  {
+    public void getColumnMetaData() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         Assert.assertEquals("String", columnMetaData.get(0).getType());
-        Assert.assertEquals("Date", columnMetaData.get(1).getType());
+        Assert.assertEquals("Date", columnMetaData.get(2).getType());
         Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
     }
 
@@ -163,7 +163,7 @@ public class ClickHouseTest extends BaseTest {
      * 获取表注释,clickHouse 暂时不支持获取表注释
      */
     @Test
-    public void getTableMetaComment()  {
+    public void getTableMetaComment() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         Assert.assertTrue(StringUtils.isEmpty(client.getTableMetaComment(source, queryDTO)));
     }
@@ -182,19 +182,20 @@ public class ClickHouseTest extends BaseTest {
      * 指定sql downloader下载 测试
      */
     @Test
-    public void downloader()throws Exception {
+    public void downloader() throws Exception {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from loader_test").build();
         IDownloader downloader = client.getDownloader(source, queryDTO);
         List<String> metaInfo = downloader.getMetaInfo();
         Assert.assertTrue(CollectionUtils.isNotEmpty(metaInfo));
-        while (!downloader.reachedEnd()){
-            List<List<String>> result = (List<List<String>>)downloader.readNext();
-            for (List<String> row : result){
+        while (!downloader.reachedEnd()) {
+            List<List<String>> result = (List<List<String>>) downloader.readNext();
+            for (List<String> row : result) {
                 Assert.assertTrue(CollectionUtils.isNotEmpty(row));
             }
         }
-       Assert.assertTrue(CollectionUtils.isEmpty(downloader.getContainers()));
-       Assert.assertTrue(StringUtils.isEmpty(downloader.getFileName()));
+        Assert.assertTrue(CollectionUtils.isEmpty(downloader.getContainers()));
+        Assert.assertTrue(StringUtils.isEmpty(downloader.getFileName()));
+        downloader.close();
     }
 
     /**
@@ -211,7 +212,7 @@ public class ClickHouseTest extends BaseTest {
      * 获取所有的schema
      */
     @Test
-    public void getAllDatabases()  {
+    public void getAllDatabases() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
         List databases = client.getAllDatabases(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(databases));
@@ -221,8 +222,13 @@ public class ClickHouseTest extends BaseTest {
      * 获取当前使用的 schema
      */
     @Test
-    public void getCurrentDatabase()  {
+    public void getCurrentDatabase() {
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
+    }
+
+    @Test
+    public void getSourceType() {
+        Assert.assertEquals(DataSourceType.Clickhouse.getVal(), source.getSourceType());
     }
 }

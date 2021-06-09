@@ -12,7 +12,6 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.KafkaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -26,7 +25,6 @@ import java.util.List;
  * @Date ：Created in 13:04 2020/2/29
  * @Description：Kafka 测试类
  */
-@Slf4j
 public class KafkaTest extends BaseTest {
 
     // 构建kafka数据源信息
@@ -80,7 +78,6 @@ public class KafkaTest extends BaseTest {
             Boolean clientTopic = client.createTopic(source, topicDTO);
             assert (Boolean.TRUE.equals(clientTopic));
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
         }
 
     }
