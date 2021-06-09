@@ -55,7 +55,7 @@ public enum DataSourceType {
     CarbonData(20, 84, "CarbonData", "hive"),
     Kudu(24, 85, "Kudu", "kudu"),
     ADS(15, 86, "AnalyticDB", "mysql5"),
-    ADB_FOR_PG(54, 87, "ADB_PostgreSQL", "postgresql"),
+    ADB_FOR_PG(54, 87, "AnalyticDB PostgreSQL", "postgresql"),
     Kylin(23, 88, "Kylin", "kylin"),
     Presto(48, 89, "Presto", "presto"),
     OceanBase(49, 90, "OceanBase", "oceanbase"),
