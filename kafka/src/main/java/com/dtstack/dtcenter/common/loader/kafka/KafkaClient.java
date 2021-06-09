@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.kafka;
 
-import com.dtstack.dtcenter.common.loader.kafka.util.KafkaUtil;
 import com.dtstack.dtcenter.common.loader.common.nosql.AbsNoSqlClient;
+import com.dtstack.dtcenter.common.loader.kafka.util.KafkaUtil;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.KafkaSourceDTO;
 

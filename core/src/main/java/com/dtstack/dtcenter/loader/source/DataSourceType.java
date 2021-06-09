@@ -55,10 +55,11 @@ public enum DataSourceType {
     CarbonData(20, 84, "CarbonData", "hive"),
     Kudu(24, 85, "Kudu", "kudu"),
     ADS(15, 86, "AnalyticDB", "mysql5"),
-    Kylin(23, 87, "Kylin", "kylin"),
-    Presto(48, 88, "Presto", "presto"),
-    OceanBase(49, 89, "OceanBase", "oceanbase"),
-    INCEPTOR(52, 90, "Inceptor", "inceptor"),
+    ADB_FOR_PG(54, 87, "AnalyticDB PostgreSQL", "postgresql"),
+    Kylin(23, 88, "Kylin", "kylin"),
+    Presto(48, 89, "Presto", "presto"),
+    OceanBase(49, 90, "OceanBase", "oceanbase"),
+    INCEPTOR(52, 91, "Inceptor", "inceptor"),
 
     // NoSQL
     HBASE(8, 100, "HBase", "hbase"),
@@ -85,8 +86,9 @@ public enum DataSourceType {
     SOCKET(44, 127, "Socket", "socket"),
     RESTFUL(47, 128, "Restful", "restful"),
     VERTICA(43, 129, "Vertica", "vertica"),
-    BEATS(16, 130, "Beats", "null"),
-    Spark(1002, 131, "Spark", "spark"),
+    INFLUXDB(55, 130, "InfluxDB", "influxdb"),
+    BEATS(16, 131, "Beats", "null"),
+    Spark(1002, 132, "Spark", "spark"),
     ;
 
     DataSourceType(int val, int order, String name, String pluginName) {
@@ -121,6 +123,7 @@ public enum DataSourceType {
         RDBM_S.add(TiDB.val);
         RDBM_S.add(CarbonData.val);
         RDBM_S.add(ADS.val);
+        RDBM_S.add(ADB_FOR_PG.val);
         RDBM_S.add(Phoenix.val);
         RDBM_S.add(PHOENIX5.val);
         RDBM_S.add(IMPALA.val);

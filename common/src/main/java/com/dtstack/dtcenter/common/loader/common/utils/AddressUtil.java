@@ -1,7 +1,9 @@
 package com.dtstack.dtcenter.common.loader.common.utils;
 
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.telnet.TelnetClient;
 
 import java.net.InetAddress;
@@ -55,19 +57,19 @@ public class AddressUtil {
      * @return
      */
     private static boolean isSpecialIp(String ip) {
-        if (":".contains(ip)) {
+        if (StringUtils.isBlank(ip)) {
+            throw new DtLoaderException("ip is not null...");
+        }
+        if (ip.contains(":")) {
             return true;
         }
-        if ("127.".startsWith(ip)) {
+        if (ip.startsWith("127.")) {
             return true;
         }
-        if ("169.254.".startsWith(ip)) {
+        if (ip.startsWith("169.254.")) {
             return true;
         }
-        if ("255.255.255.255".equals(ip)) {
-            return true;
-        }
-        return false;
+        return ip.equals("255.255.255.255");
     }
 
     /**

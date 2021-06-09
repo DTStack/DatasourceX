@@ -135,10 +135,17 @@ public class InceptorTest extends BaseTest {
 
     @Test
     public void testCon() {
-        Boolean isConnected = INCEPTOR_CLIENT.testCon(INCEPTOR_SOURCE_DTO);
-        if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("connection exception");
+        Assert.assertTrue(INCEPTOR_CLIENT.testCon(INCEPTOR_SOURCE_DTO));
+        INCEPTOR_SOURCE_DTO.setMetaStoreUris("xx");
+        Boolean check;
+        try {
+            check = INCEPTOR_CLIENT.testCon(INCEPTOR_SOURCE_DTO);
+        } catch (Exception e) {
+            check = false;
         }
+        Assert.assertFalse(check);
+        INCEPTOR_SOURCE_DTO.setMetaStoreUris("thrift://tdh6-node3:9083,thrift://tdh6-node2:9083");
+        Assert.assertTrue(INCEPTOR_CLIENT.testCon(INCEPTOR_SOURCE_DTO));
     }
 
     /**

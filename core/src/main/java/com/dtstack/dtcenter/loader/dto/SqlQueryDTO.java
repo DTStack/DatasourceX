@@ -97,6 +97,12 @@ public class SqlQueryDTO {
      */
     private List<Filter> hbaseFilter;
 
+
+    /**
+     * solr 自定义查询
+     */
+    private SolrQueryDTO solrQueryDTO;
+
     /**
      * Elasticsearch 命令, 定义es操作类型
      * <b><b/>

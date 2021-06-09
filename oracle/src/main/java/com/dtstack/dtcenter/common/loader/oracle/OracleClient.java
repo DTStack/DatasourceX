@@ -129,7 +129,7 @@ public class OracleClient extends AbsRdbmsClient {
             throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
                     queryDTO.getTableName()), e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, oracleSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(oracleSourceDTO, clearStatus));
         }
         return "";
     }
@@ -178,7 +178,7 @@ public class OracleClient extends AbsRdbmsClient {
                         queryDTO.getTableName()), e);
             }
         } finally {
-            DBUtil.closeDBResources(rs, statement, oracleSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(oracleSourceDTO, clearStatus));
         }
     }
 
@@ -207,7 +207,7 @@ public class OracleClient extends AbsRdbmsClient {
                         queryDTO.getTableName()), e);
             }
         }finally {
-            DBUtil.closeDBResources(rs, statement, sourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(sourceDTO, clearStatus));
         }
         return columnComments;
     }
@@ -409,13 +409,13 @@ public class OracleClient extends AbsRdbmsClient {
             // 构造 pdb 模糊查询和条数限制sql
             String pdbConstr = buildSearchSql(PDB_SEARCH_SQL, queryDTO.getTableNamePattern(), queryDTO.getLimit());
             // 切换到 cdb root，此处不关闭 connection
-            executeQuery(oracleSourceDTO.getConnection(), SqlQueryDTO.builder().sql(String.format(ALTER_PDB_SESSION, CDB_ROOT)).build(), ConnectionClearStatus.NORMAL.getValue());
-            List<Map<String, Object>> pdbList = executeQuery(oracleSourceDTO.getConnection(), SqlQueryDTO.builder().sql(String.format(LIST_PDB, pdbConstr)).build(), ConnectionClearStatus.NORMAL.getValue());
+            DBUtil.executeSqlWithoutResultSet(oracleSourceDTO.getConnection(), String.format(ALTER_PDB_SESSION, CDB_ROOT));
+            List<Map<String, Object>> pdbList = executeQuery(oracleSourceDTO, SqlQueryDTO.builder().sql(String.format(LIST_PDB, pdbConstr)).build(), ConnectionClearStatus.NORMAL.getValue());
             return pdbList.stream().map(row -> MapUtils.getString(row, "NAME")).collect(Collectors.toList());
         } catch (Exception e) {
             throw new DtLoaderException(String.format("Error getting PDB list.%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(null, null, oracleSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(oracleSourceDTO, clearStatus));
         }
     }
 
@@ -432,7 +432,7 @@ public class OracleClient extends AbsRdbmsClient {
         }
         try {
             // 切换 pdb session，相当于 mysql 的use db ，此处执行后不关闭 connection
-            executeQuery(connection, SqlQueryDTO.builder().sql(String.format(ALTER_PDB_SESSION, pdb)).build(), ConnectionClearStatus.NORMAL.getValue());
+            DBUtil.executeSqlWithoutResultSet(connection, String.format(ALTER_PDB_SESSION, pdb));
         } catch (Exception e) {
             log.error("alter oracle container session error... {}", e.getMessage(), e);
         }

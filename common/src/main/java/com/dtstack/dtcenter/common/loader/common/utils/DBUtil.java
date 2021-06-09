@@ -1,6 +1,8 @@
 package com.dtstack.dtcenter.common.loader.common.utils;
 
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
+import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -14,6 +16,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
@@ -32,16 +35,18 @@ public class DBUtil {
     // 默认最大查询条数
     private static final Integer MAX_QUERY_ROW = 5000;
 
+    // 字段重复时的重命名规则
+    private static final String REPEAT_SIGN = "%s(%s)";
+
     /**
      * 根据 SQL 查询
      *
      * @param conn
      * @param sql
-     * @param closeConn 是否关闭连接
      * @return
      */
-    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Boolean closeConn) {
-        return executeQuery(conn, sql, null, null, closeConn);
+    public static List<Map<String, Object>> executeQuery(Connection conn, String sql) {
+        return executeQuery(conn, sql, MAX_QUERY_ROW, null);
     }
 
     /**
@@ -51,10 +56,9 @@ public class DBUtil {
      * @param sql
      * @param limit
      * @param queryTimeout
-     * @param closeConn
      * @return
      */
-    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, Integer queryTimeout, Boolean closeConn) {
+    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, Integer queryTimeout) {
         List<Map<String, Object>> result = Lists.newArrayList();
         ResultSet res = null;
         Statement statement = null;
@@ -80,8 +84,10 @@ public class DBUtil {
 
                 while (res.next()) {
                     Map<String, Object> row = Maps.newLinkedHashMap();
+                    Map<String, Integer> columnRepeatSign = Maps.newHashMap();
                     for (int i = 0; i < columns; i++) {
-                        row.put(columnName.get(i), res.getObject(i + 1));
+                        String column = dealRepeatColumn(row, columnName.get(i), columnRepeatSign);
+                        row.put(column, res.getObject(i + 1));
                     }
                     result.add(row);
                 }
@@ -90,7 +96,7 @@ public class DBUtil {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("SQL execute exception：%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(res, statement, closeConn ? conn : null);
+            DBUtil.closeDBResources(res, statement, null);
         }
         return result;
     }
@@ -100,25 +106,12 @@ public class DBUtil {
      *
      * @param conn
      * @param sql
-     * @param closeConn 是否关闭连接
-     * @return
-     */
-    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Boolean closeConn, List<Object> preFields, Integer queryTimeout) {
-        return executeQuery(conn, sql, null, closeConn, preFields, queryTimeout);
-    }
-
-    /**
-     * 根据 SQL 查询 - 预编译查询
-     *
-     * @param conn
-     * @param sql
      * @param limit
-     * @param closeConn
      * @param preFields
      * @param queryTimeout
      * @return
      */
-    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, Boolean closeConn, List<Object> preFields, Integer queryTimeout) {
+    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, List<Object> preFields, Integer queryTimeout) {
         List<Map<String, Object>> result = Lists.newArrayList();
         ResultSet res = null;
         PreparedStatement statement = null;
@@ -150,17 +143,43 @@ public class DBUtil {
 
             while (res.next()) {
                 Map<String, Object> row = Maps.newLinkedHashMap();
+                Map<String, Integer> columnRepeatSign = Maps.newHashMap();
                 for (int i = 0; i < columns; i++) {
-                    row.put(columnName.get(i), res.getObject(i + 1));
+                    String column = dealRepeatColumn(row, columnName.get(i), columnRepeatSign);
+                    row.put(column, res.getObject(i + 1));
                 }
                 result.add(row);
             }
         } catch (Exception e) {
             throw new DtLoaderException(String.format("SQL executed exception, %s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(res, statement, closeConn ? conn : null);
+            DBUtil.closeDBResources(res, statement, null);
         }
         return result;
+    }
+
+    /**
+     * 处理 executeQuery 查询结果字段重复字段
+     *
+     * @param row              当前行的数据
+     * @param column           当前查询字段名
+     * @param columnRepeatSign 当前字段重复次数
+     * @return 处理后的重复字段名
+     */
+    public static String dealRepeatColumn(Map<String, Object> row, String column, Map<String, Integer> columnRepeatSign) {
+        boolean repeat = row.containsKey(column);
+        if (repeat) {
+            // 如果 column 重复则在 column 后进行增加 (1),(2)... 区分处理
+            boolean contains = columnRepeatSign.containsKey(column);
+            if (!contains) {
+                columnRepeatSign.put(column, 1);
+            } else {
+                columnRepeatSign.put(column, columnRepeatSign.get(column) + 1);
+            }
+            return String.format(REPEAT_SIGN, column, columnRepeatSign.get(column));
+        } else {
+            return column;
+        }
     }
 
     /**
@@ -168,11 +187,8 @@ public class DBUtil {
      *
      * @param conn
      * @param sql
-     * @param closeConn 是否关闭连接
-     * @return
-     * @throws Exception
      */
-    public static void executeSqlWithoutResultSet(Connection conn, String sql, Boolean closeConn) {
+    public static void executeSqlWithoutResultSet(Connection conn, String sql) {
         Statement statement = null;
         try {
             statement = conn.createStatement();
@@ -180,7 +196,7 @@ public class DBUtil {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("SQL execute exception：%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(null, statement, closeConn ? conn : null);
+            DBUtil.closeDBResources(null, statement, null);
         }
     }
 
@@ -212,20 +228,29 @@ public class DBUtil {
      * @param conn
      */
     public static void closeDBResources(ResultSet rs, Statement stmt, Connection conn) {
-        try {
-            if (null != rs) {
+        if (null != rs) {
+            try {
                 rs.close();
+            } catch (SQLException e) {
+                log.error(e.getMessage(), e);
             }
+        }
 
-            if (null != stmt) {
+
+        if (null != stmt) {
+            try {
                 stmt.close();
+            } catch (SQLException e) {
+                log.error(e.getMessage(), e);
             }
+        }
 
-            if (null != conn) {
+        if (null != conn) {
+            try {
                 conn.close();
+            } catch (SQLException e) {
+                log.error(e.getMessage(), e);
             }
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
         }
     }
 
@@ -249,5 +274,26 @@ public class DBUtil {
             log.error("taskParams change error : {}", e.getMessage(), e);
         }
         return properties;
+    }
+
+    /**
+     * 处理RdbmsSourceDTO对象里面的Connection属性
+     *
+     * @param sourceDTO
+     * @param clearStatus
+     * @return
+     */
+    public static Connection clearAfterGetConnection(RdbmsSourceDTO sourceDTO, Integer clearStatus) {
+        if (ConnectionClearStatus.NORMAL.getValue().equals(clearStatus)) {
+            return null;
+        }
+
+        Connection temp = sourceDTO.getConnection();
+        sourceDTO.setConnection(null);
+
+        if (ConnectionClearStatus.CLEAR.getValue().equals(clearStatus)) {
+            return null;
+        }
+        return temp;
     }
 }

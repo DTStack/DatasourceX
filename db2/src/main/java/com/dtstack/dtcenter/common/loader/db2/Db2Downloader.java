@@ -62,7 +62,7 @@ public class Db2Downloader implements IDownloader {
         statement = connection.createStatement();
 
         String countSQL = String.format("SELECT COUNT(*) FROM (%s) temp", sql);
-        String showColumns = String.format("SELECT * FROM (%s) t limit 1", sql);
+        String showColumns = String.format("SELECT * FROM (%s) t fetch first  1 rows only", sql);
 
         ResultSet totalResultSet = null;
         ResultSet columnsResultSet = null;
@@ -109,7 +109,7 @@ public class Db2Downloader implements IDownloader {
     @Override
     public List<List<String>> readNext() {
         //分页查询，一次一百条
-        String limitSQL = String.format("SELECT * FROM (%s) t limit %s,%s", sql, pageSize * (pageNum - 1), pageSize);
+        String limitSQL = String.format("SELECT * FROM (select t.*, row_number() over() as rownum FROM (%s) t )WHERE rownum BETWEEN %s AND %s", sql, pageSize * (pageNum - 1), pageSize);
         List<List<String>> pageTemp = new ArrayList<>(100);
         try (ResultSet resultSet = statement.executeQuery(limitSQL)) {
             while (resultSet.next()) {

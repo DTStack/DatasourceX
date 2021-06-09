@@ -73,7 +73,7 @@ public class SparkConnFactory extends ConnFactory {
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             if (entry.getKey() instanceof String && entry.getValue() instanceof String) {
                 try {
-                    DBUtil.executeSqlWithoutResultSet(connection, String.format(HIVE_CONF_SQL, entry.getKey(), entry.getValue()), false);
+                    DBUtil.executeSqlWithoutResultSet(connection, String.format(HIVE_CONF_SQL, entry.getKey(), entry.getValue()));
                 } catch (Exception e) {
                     log.warn("deal SparkSql Connection properties error : {}", e.getMessage(), e);
                 }

@@ -31,4 +31,35 @@ public class FtpTest extends BaseTest {
             throw new DtLoaderException("connection exception");
         }
     }
+
+    @Test(expected = DtLoaderException.class)
+    public void testCon_1() throws Exception {
+        FtpSourceDTO source = FtpSourceDTO.builder()
+                .url("172.16.100.251")
+                .username("root")
+                .hostPort("22")
+                .password("dt@sz.com")
+                .build();
+        IClient client = ClientCache.getClient(DataSourceType.FTP.getVal());
+        Boolean isConnected = client.testCon(source);
+        if (Boolean.FALSE.equals(isConnected)) {
+            throw new DtLoaderException("connection exception");
+        }
+    }
+
+    @Test
+    public void testCon_2() throws Exception {
+        FtpSourceDTO source = FtpSourceDTO.builder()
+                .url("172.16.8.173")
+                .protocol("ftp")
+                .hostPort("21")
+                .username("Administrator")
+                .password("XN#passw0rd2019")
+                .build();
+        IClient client = ClientCache.getClient(DataSourceType.FTP.getVal());
+        Boolean isConnected = client.testCon(source);
+        if (Boolean.FALSE.equals(isConnected)) {
+            throw new DtLoaderException("connection exception");
+        }
+    }
 }

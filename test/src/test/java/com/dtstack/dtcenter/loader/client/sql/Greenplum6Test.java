@@ -90,6 +90,20 @@ public class Greenplum6Test extends BaseTest {
         Assert.assertTrue(CollectionUtils.isNotEmpty(result));
     }
 
+    @Test(expected = DtLoaderException.class)
+    public void isDatabaseExists()  {
+        Boolean result = client.isDatabaseExists(source, "public");
+        Assert.assertTrue(result);
+        Boolean result1 = client.isDatabaseExists(source, null);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void isTableExistsInDatabase()  {
+        Boolean result = client.isTableExistsInDatabase(source, "loader_test", "public");
+        Assert.assertTrue(result);
+        Boolean result1 = client.isTableExistsInDatabase(source, null,null);
+    }
+
     /**
      * 字段别名查询测试
      */
@@ -147,9 +161,15 @@ public class Greenplum6Test extends BaseTest {
      */
     @Test
     public void getTableMetaComment()  {
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("public").tableName("loader_test").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         Assert.assertEquals("中文_table_comment", metaComment);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getPartitionColumn() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("public").tableName("loader_test").build();
+        client.getPartitionColumn(source, queryDTO);
     }
 
     /**
@@ -177,6 +197,9 @@ public class Greenplum6Test extends BaseTest {
                 Assert.assertTrue(CollectionUtils.isNotEmpty(row));
             }
         }
+        Assert.assertTrue( StringUtils.isEmpty(downloader.getFileName()));
+        Assert.assertTrue(CollectionUtils.isEmpty(downloader.getContainers()));
+        downloader.close();
     }
 
     /**

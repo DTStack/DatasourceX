@@ -77,7 +77,7 @@ public class ClickhouseClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtLoaderException("get table exception" + e.getMessage(), e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, clickHouseSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(clickHouseSourceDTO, clearStatus));
         }
         return tableList;
     }
@@ -109,7 +109,7 @@ public class ClickhouseClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtLoaderException("get table exception" + e.getMessage(), e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, clickHouseSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(clickHouseSourceDTO, clearStatus));
         }
         return columnList;
     }
@@ -117,12 +117,12 @@ public class ClickhouseClient extends AbsRdbmsClient {
     @Override
     public List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeColumnQuery(source, queryDTO);
-        ClickHouseSourceDTO postgresqlSourceDTO = (ClickHouseSourceDTO) source;
+        ClickHouseSourceDTO clickHouseSourceDTO = (ClickHouseSourceDTO) source;
         Statement statement = null;
         ResultSet rs = null;
         List<ColumnMetaDTO> columns = new ArrayList<>();
         try {
-            statement = postgresqlSourceDTO.getConnection().createStatement();
+            statement = clickHouseSourceDTO.getConnection().createStatement();
             String queryColumnSql = "select * from " + queryDTO.getTableName()
                     + " where 1=2";
             rs = statement.executeQuery(queryColumnSql);
@@ -159,7 +159,7 @@ public class ClickhouseClient extends AbsRdbmsClient {
                 throw new DtLoaderException(String.format("Failed to get meta information for the fields of table :%s. Please contact the DBA to check the database table information.%s", queryDTO.getTableName(), e.getMessage()), e);
             }
         } finally {
-            DBUtil.closeDBResources(rs, statement, postgresqlSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(clickHouseSourceDTO, clearStatus));
         }
     }
 

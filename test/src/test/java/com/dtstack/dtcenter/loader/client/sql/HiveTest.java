@@ -144,6 +144,14 @@ public class HiveTest extends BaseTest {
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
+    @Test
+    public void getTableListBySchema() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("default").build();
+        List<String> tableList = client.getTableListBySchema(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+    }
+
+
     /**
      * 获取表字段 java 规范化类型
      */
@@ -195,6 +203,7 @@ public class HiveTest extends BaseTest {
         while (!downloader.reachedEnd()){
             Assert.assertNotNull(downloader.readNext());
         }
+       Assert.assertTrue(CollectionUtils.isEmpty(downloader.getContainers()));
     }
 
     @Test

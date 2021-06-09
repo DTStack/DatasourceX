@@ -1,1 +1,1 @@
-com.dtstack.dtcenter.common.loader.mysql.MysqlTableClient
+com.dtstack.dtcenter.common.loader.mysql5.MysqlTableClient

@@ -31,7 +31,7 @@ public class GbaseConnFactory extends ConnFactory {
 
         // 选择 Schema
         String useSchema = String.format("USE %s", gBaseSourceDTO.getSchema());
-        DBUtil.executeSqlWithoutResultSet(conn, useSchema, false);
+        DBUtil.executeSqlWithoutResultSet(conn, useSchema);
         return conn;
     }
 }

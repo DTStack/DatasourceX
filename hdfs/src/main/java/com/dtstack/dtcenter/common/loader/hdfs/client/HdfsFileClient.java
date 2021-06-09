@@ -459,7 +459,14 @@ public class HdfsFileClient implements IHdfsFile {
                         for (String hdfsDirPath : hdfsDirPaths) {
                             Path hdfsPath = new Path(hdfsDirPath);
                             if (!fs.exists(hdfsPath)) {
-                                throw new DtLoaderException(String.format("hdfs path: %s does not exist", hdfsDirPath));
+                                log.warn("hdfs path : {} does not exist", hdfsDirPath);
+                                HDFSContentSummary contentSummaryEmpty = HDFSContentSummary.builder()
+                                        .directoryCount(0L)
+                                        .fileCount(0L)
+                                        .ModifyTime(0L)
+                                        .spaceConsumed(0L).build();
+                                hdfsContentSummaries.add(contentSummaryEmpty);
+                                continue;
                             }
                             org.apache.hadoop.fs.FileStatus fileStatus = fs.getFileStatus(hdfsPath);
                             ContentSummary contentSummary = fs.getContentSummary(hdfsPath);

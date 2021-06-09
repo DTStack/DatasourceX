@@ -40,6 +40,7 @@
 | GBase_8a                   | [doc](docs/rdbms/rdbm.md)                |
 | Phoenix4                   | [doc](docs/rdbms/rdbm.md)             |
 | Phoenix5                   | [doc](docs/rdbms/rdbm.md)             |
+| oceanbase                   | [doc](docs/rdbms/oceanbase.md)             |
 | Vertica                    | [doc](docs/rdbms/rdbm.md)              |
 
 ### 2.2 非关系型数据库
@@ -49,6 +50,7 @@
 | REDIS                       | [doc](docs/nosql/redis.md)              |
 | HBASE(hbase1.x、2.x版本)     | [doc](docs/nosql/hbase.md)               |
 | ES(ES6、ES7版本)             | [doc](docs/nosql/es.md)                  |
+| SOLR(SOLR7.4版本)             | [doc](docs/nosql/solr.md)                  |
 | MONGODB                     | [doc](docs/nosql/mongodb.md)             |
 | HBASE                       | [doc](docs/nosql/hbase.md)               |
 
@@ -74,6 +76,7 @@
 |:------------------------------:|:------------------------------------------:|
 | websocket                      | [doc](docs/other/websocket.md)        |
 | socket                         | [doc](docs/other/socket.md)           |
+| influxdb                       | [doc](docs/other/influxdb.md)           |
 
 ---
 

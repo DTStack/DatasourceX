@@ -51,7 +51,7 @@ public class GbaseClient extends AbsRdbmsClient {
             throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.%s",
                     queryDTO.getTableName(), e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, gBaseSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(gBaseSourceDTO, clearStatus));
         }
         return null;
     }

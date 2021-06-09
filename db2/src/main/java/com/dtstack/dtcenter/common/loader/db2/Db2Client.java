@@ -72,7 +72,7 @@ public class Db2Client extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("get table exception：%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, db2SourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(db2SourceDTO, clearStatus));
         }
         return tableList;
     }
@@ -95,7 +95,7 @@ public class Db2Client extends AbsRdbmsClient {
             throw new DtLoaderException(String.format("Failed to get the information of table: %s. Please contact DBA to check the database and table information: %s",
                     queryDTO.getTableName(), e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(resultSet, statement, db2SourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(db2SourceDTO, clearStatus));
         }
         return "";
     }

@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.BaseTest;
 import com.dtstack.dtcenter.loader.client.ClientCache;
@@ -14,7 +15,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
 import java.util.List;
@@ -179,6 +179,28 @@ public class Db2Test extends BaseTest {
     }
 
     /**
+     * 数据预览测试
+     */
+    @Test
+    public void preview_001() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("DB2INST1").tableName("LOADER_TEST").previewNum(1).build();
+        List preview = client.getPreview(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(preview));
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getCreateTableSql() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("DB2INST1").tableName("LOADER_TEST").previewNum(1).build();
+        client.getCreateTableSql(source, queryDTO);
+    }
+
+    @Test(expected = DtLoaderException.class)
+    public void getPartitionColumn() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("DB2INST1").tableName("LOADER_TEST").previewNum(1).build();
+        client.getPartitionColumn(source, queryDTO);
+    }
+
+    /**
      * 根据sql 获取对应结果的字段信息
      */
     @Test
@@ -205,4 +227,16 @@ public class Db2Test extends BaseTest {
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertNotNull(currentDatabase);
     }
+
+    @Test
+    public void  getDownloader() throws Exception {
+        IDownloader downloader = client.getDownloader(source, SqlQueryDTO.builder().sql("select * from LOADER_TEST").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
+        while (!downloader.reachedEnd()){
+            Assert.assertNotNull(downloader.readNext());
+        }
+        Assert.assertNull(downloader.getFileName());
+        Assert.assertTrue(CollectionUtils.isEmpty(downloader.getContainers()));
+    }
+
 }
