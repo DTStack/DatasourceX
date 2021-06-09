@@ -55,7 +55,7 @@ public enum DataSourceType {
     CarbonData(20, 84, "CarbonData", "hive"),
     Kudu(24, 85, "Kudu", "kudu"),
     ADS(15, 86, "AnalyticDB", "mysql5"),
-    ADB_FOR_PG(54, 87, "ADB_PostgreSQL", "postgresql"),
+    ADB_FOR_PG(54, 87, "AnalyticDB PostgreSQL", "postgresql"),
     Kylin(23, 88, "Kylin", "kylin"),
     Presto(48, 89, "Presto", "presto"),
     OceanBase(49, 90, "OceanBase", "oceanbase"),
@@ -86,9 +86,9 @@ public enum DataSourceType {
     SOCKET(44, 127, "Socket", "socket"),
     RESTFUL(47, 128, "Restful", "restful"),
     VERTICA(43, 129, "Vertica", "vertica"),
-    BEATS(16, 130, "Beats", "null"),
-    Spark(1002, 131, "Spark", "spark"),
-    INFLUXDB(55, 132, "influxDB", "influxdb"),
+    INFLUXDB(55, 130, "InfluxDB", "influxdb"),
+    BEATS(16, 131, "Beats", "null"),
+    Spark(1002, 132, "Spark", "spark"),
     ;
 
     DataSourceType(int val, int order, String name, String pluginName) {
