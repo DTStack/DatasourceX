@@ -171,4 +171,10 @@ public class DataSourceClientProxy<T> implements IClient<T> {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getCatalogs(source),
                 targetClient.getClass().getClassLoader());
     }
+
+    @Override
+    public String getVersion(ISourceDTO source) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getVersion(source),
+                targetClient.getClass().getClassLoader());
+    }
 }

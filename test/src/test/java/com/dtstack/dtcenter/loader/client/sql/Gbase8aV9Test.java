@@ -8,6 +8,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.GBaseSourceDTO;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -122,5 +123,13 @@ public class Gbase8aV9Test extends BaseTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from loader_test").build();
         List sql = client.getColumnMetaDataWithSql(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(sql));
+    }
+
+    /**
+     * 获取版本
+     */
+    @Test
+    public void getVersion() {
+        Assert.assertTrue(StringUtils.isNotBlank(client.getVersion(source)));
     }
 }

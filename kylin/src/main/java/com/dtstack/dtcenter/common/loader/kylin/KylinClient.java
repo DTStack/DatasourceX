@@ -26,6 +26,9 @@ import java.util.List;
 public class KylinClient extends AbsRdbmsClient {
     private static final String TABLE_SHOW = "\"%s\".\"%s\"";
 
+    // 获取当前版本号
+    private static final String SHOW_VERSION = "select version()";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new KylinConnFactory();
@@ -69,6 +72,11 @@ public class KylinClient extends AbsRdbmsClient {
             DBUtil.closeDBResources(rs, null, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
         return tableList;
+    }
+
+    @Override
+    protected String getVersionSql() {
+        return SHOW_VERSION;
     }
 
 }

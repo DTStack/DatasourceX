@@ -2,9 +2,9 @@ package com.dtstack.dtcenter.common.loader.greenplum;
 
 import com.dtstack.dtcenter.common.loader.common.utils.SqlFormatUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.dto.Column;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import org.apache.commons.collections.CollectionUtils;
+import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
@@ -13,36 +13,38 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 /**
- * @company: www.dtstack.com
- * @Author ：wangchuan
- * @Date ：Created in 下午7:44 2020/6/3
- * @Description：Postgresql表下载
+ * Greenplum download
+ *
+ * @author ：wangchuan
+ * date：Created in 下午2:42 2021/6/10
+ * company: www.dtstack.com
  */
-
+@Slf4j
 public class GreenplumDownloader implements IDownloader {
 
-    private int pageNum;
+    private final List<String> columnNames = Lists.newArrayList();
 
-    private int pageAll;
+    private final Connection connection;
 
-    private List<Column> columnNames;
+    private final String sql;
 
-    private int totalLine;
-
-    private Connection connection;
-
-    private String sql;
-
-    private String schema;
+    private final String schema;
 
     private Statement statement;
 
-    private int pageSize;
+    private int pageNum = 1;
+
+    private final int pageSize = 100;
+
+    private int pageAll;
 
     private int columnCount;
+
+    // 切换 schema 命令
+    private static final String SWITCH_SCHEMA = "set search_path to %s";
 
     public GreenplumDownloader(Connection connection, String sql, String schema) {
         this.connection = connection;
@@ -52,17 +54,22 @@ public class GreenplumDownloader implements IDownloader {
 
     @Override
     public boolean configure() throws Exception {
-        if (null == connection || StringUtils.isEmpty(sql)) {
-            throw new DtLoaderException("file is not exist");
+        if (Objects.isNull(connection) || StringUtils.isEmpty(sql)) {
+            throw new DtLoaderException("connection is close or sql is null");
         }
-        totalLine = 0;
-        pageSize = 100;
-        pageNum = 1;
+        int totalLine = 0;
         statement = connection.createStatement();
+        if (StringUtils.isNotBlank(schema)) {
+            try {
+                // 切换 schema
+                statement.execute(String.format(SWITCH_SCHEMA, schema));
+            } catch (Exception e) {
+                log.error("switch schema to {} error", schema);
+            }
+        }
 
-        String countSQL = String.format("SELECT COUNT(*) FROM (%s) temp", sql);
+        String countSQL = String.format("SELECT COUNT(1) FROM (%s) temp", sql);
         String showColumns = String.format("SELECT * FROM (%s) t limit 1", sql);
-
         ResultSet totalResultSet = null;
         ResultSet columnsResultSet = null;
         try {
@@ -71,22 +78,16 @@ public class GreenplumDownloader implements IDownloader {
                 //获取总行数
                 totalLine = totalResultSet.getInt(1);
             }
-
             columnsResultSet = statement.executeQuery(showColumns);
             //获取列信息
-            columnNames = new ArrayList<>();
             columnCount = columnsResultSet.getMetaData().getColumnCount();
             for (int i = 1; i <= columnCount; i++) {
-                Column column = new Column();
-                column.setName(columnsResultSet.getMetaData().getColumnName(i));
-                column.setType(columnsResultSet.getMetaData().getColumnTypeName(i));
-                column.setIndex(i);
-                columnNames.add(column);
+                columnNames.add(columnsResultSet.getMetaData().getColumnLabel(i));
             }
-            //获取总页数
+            // 获取总页数
             pageAll = (int) Math.ceil(totalLine / (double) pageSize);
         } catch (Exception e) {
-            throw new DtLoaderException("build GreenPlum downloader message exception : " + e.getMessage(), e);
+            throw new DtLoaderException("build Greenplum downloader message exception : " + e.getMessage(), e);
         } finally {
             if (totalResultSet != null) {
                 totalResultSet.close();
@@ -100,16 +101,13 @@ public class GreenplumDownloader implements IDownloader {
 
     @Override
     public List<String> getMetaInfo() {
-        if (CollectionUtils.isNotEmpty(columnNames)) {
-            return columnNames.stream().map(Column::getName).collect(Collectors.toList());
-        }
-        return Collections.emptyList();
+        return columnNames;
     }
 
     @Override
     public List<List<String>> readNext() {
         //分页查询，一次一百条
-        String limitSQL = String.format("SELECT * FROM (%s) t limit %s offset %s", sql, pageSize, pageSize*(pageNum-1));
+        String limitSQL = String.format("SELECT * FROM (%s) t limit %s offset %s", sql, pageSize, pageSize * (pageNum - 1));
         List<List<String>> pageTemp = new ArrayList<>(100);
 
         try (ResultSet resultSet = statement.executeQuery(limitSQL)) {
@@ -121,7 +119,7 @@ public class GreenplumDownloader implements IDownloader {
                 pageTemp.add(columns);
             }
         } catch (Exception e) {
-            throw new DtLoaderException("read GreenPlum message exception : " + e.getMessage(), e);
+            throw new DtLoaderException("read Greenplum message exception : " + e.getMessage(), e);
         }
 
         pageNum++;

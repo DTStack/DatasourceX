@@ -259,4 +259,12 @@ public interface IClient<T> {
      * @return 数据源目录
      */
     List<String> getCatalogs(ISourceDTO source);
+
+    /**
+     * 获取当前数据源的版本
+     *
+     * @param source 数据源信息
+     * @return 数据源版本
+     */
+    String getVersion(ISourceDTO source);
 }

@@ -33,6 +33,9 @@ public class DmClient extends AbsRdbmsClient {
     private static String CREATE_TABLE_SQL = "select dbms_metadata.get_ddl(OBJECT_TYPE => 'TABLE',\n" +
             "NAME=>upper('%s'),SCHNAME => '%s')";
 
+    // 获取当前版本号
+    private static final String SHOW_VERSION = "select BANNER from v$version";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new DmConnFactory();
@@ -91,5 +94,10 @@ public class DmClient extends AbsRdbmsClient {
     @Override
     public String getShowDbSql() {
         return DM_ALL_DATABASES;
+    }
+
+    @Override
+    protected String getVersionSql() {
+        return SHOW_VERSION;
     }
 }

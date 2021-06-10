@@ -67,6 +67,9 @@ public class KingbaseClient extends AbsRdbmsClient {
     // 限制条数语句
     private static final String LIMIT_SQL = " LIMIT %s ";
 
+    // 获取当前版本号
+    private static final String SHOW_VERSION = "select version()";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new KingbaseConnFactory();
@@ -282,5 +285,10 @@ public class KingbaseClient extends AbsRdbmsClient {
             constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));
         }
         return String.format(SCHEMA_TABLE_SQL, schema, constr.toString());
+    }
+
+    @Override
+    protected String getVersionSql() {
+        return SHOW_VERSION;
     }
 }
