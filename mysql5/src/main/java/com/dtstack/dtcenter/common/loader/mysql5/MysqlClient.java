@@ -66,6 +66,9 @@ public class MysqlClient extends AbsRdbmsClient {
     // 判断table是否在schema中
     private static final String TABLE_IS_IN_SCHEMA = "select table_name from information_schema.tables where table_schema='%s' and table_name = '%s'";
 
+    // 获取当前版本号
+    private static final String SHOW_VERSION = "select version()";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new MysqlConnFactory();
@@ -262,5 +265,10 @@ public class MysqlClient extends AbsRdbmsClient {
             schema = String.format("`%s`", schema);
         }
         return String.format("%s.%s", schema, tableName);
+    }
+
+    @Override
+    protected String getVersionSql() {
+        return SHOW_VERSION;
     }
 }

@@ -135,4 +135,12 @@ public class DmDbTest extends BaseTest {
         String createTableSql = client.getCreateTableSql(source, queryDTO);
         Assert.assertTrue(StringUtils.isNotBlank(createTableSql));
     }
+
+    /**
+     * 获取版本
+     */
+    @Test
+    public void getVersion() {
+        Assert.assertTrue(StringUtils.isNotBlank(client.getVersion(source)));
+    }
 }

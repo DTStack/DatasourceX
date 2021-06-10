@@ -89,6 +89,9 @@ public class OracleClient extends AbsRdbmsClient {
     // 表名正则匹配模糊查询，忽略大小写
     private static final String PDB_SEARCH_SQL = " AND REGEXP_LIKE (NAME, '%s', 'i') ";
 
+    // 获取当前版本号
+    private static final String SHOW_VERSION = "select BANNER from v$version";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new OracleConnFactory();
@@ -436,5 +439,10 @@ public class OracleClient extends AbsRdbmsClient {
         } catch (Exception e) {
             log.error("alter oracle container session error... {}", e.getMessage(), e);
         }
+    }
+
+    @Override
+    protected String getVersionSql() {
+        return SHOW_VERSION;
     }
 }

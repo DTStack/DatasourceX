@@ -314,4 +314,12 @@ public class Mysql5Test extends BaseTest {
         List tableListBySchema = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("dev").tableNamePattern("").view(true).limit(5).build());
         Assert.assertTrue(tableListBySchema.contains("LOADER_TEST_VIEW"));
     }
+
+    /**
+     * 获取版本
+     */
+    @Test
+    public void getVersion() {
+        Assert.assertTrue(StringUtils.isNotBlank(client.getVersion(source)));
+    }
 }

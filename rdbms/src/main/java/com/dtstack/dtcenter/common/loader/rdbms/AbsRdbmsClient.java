@@ -658,4 +658,20 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     protected String addPercentSign(String str) {
         return "%" + str + "%";
     }
+
+    @Override
+    public String getVersion(ISourceDTO source) {
+        String showVersionSql = getVersionSql();
+        List<String> result = queryWithSingleColumn(source, showVersionSql, 1, "failed to get data source version");
+        return CollectionUtils.isNotEmpty(result) ? result.get(0) : "";
+    }
+
+    /**
+     * 获取数据源版本的sql，需要实现的数据源去重写该方法
+     *
+     * @return 获取版本对应的 sql
+     */
+    protected String getVersionSql() {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
 }

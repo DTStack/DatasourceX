@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.common.loader.postgresql;
+package com.dtstack.dtcenter.common.loader.libra;
 
 import com.dtstack.dtcenter.common.loader.common.utils.SqlFormatUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -16,14 +16,14 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Postgresql download
+ * Libra download
  *
  * @author ：wangchuan
  * date：Created in 下午2:42 2021/6/10
  * company: www.dtstack.com
  */
 @Slf4j
-public class PostgresqlDownloader implements IDownloader {
+public class LibraDownloader implements IDownloader {
 
     private final List<String> columnNames = Lists.newArrayList();
 
@@ -46,7 +46,7 @@ public class PostgresqlDownloader implements IDownloader {
     // 切换 schema 命令
     private static final String SWITCH_SCHEMA = "set search_path to %s";
 
-    public PostgresqlDownloader(Connection connection, String sql, String schema) {
+    public LibraDownloader(Connection connection, String sql, String schema) {
         this.connection = connection;
         this.sql = SqlFormatUtil.formatSql(sql);
         this.schema = schema;
@@ -87,7 +87,7 @@ public class PostgresqlDownloader implements IDownloader {
             // 获取总页数
             pageAll = (int) Math.ceil(totalLine / (double) pageSize);
         } catch (Exception e) {
-            throw new DtLoaderException("build Postgresql downloader message exception : " + e.getMessage(), e);
+            throw new DtLoaderException("build Libra downloader message exception : " + e.getMessage(), e);
         } finally {
             if (totalResultSet != null) {
                 totalResultSet.close();
@@ -119,7 +119,7 @@ public class PostgresqlDownloader implements IDownloader {
                 pageTemp.add(columns);
             }
         } catch (Exception e) {
-            throw new DtLoaderException("read Postgresql message exception : " + e.getMessage(), e);
+            throw new DtLoaderException("read Libra message exception : " + e.getMessage(), e);
         }
 
         pageNum++;

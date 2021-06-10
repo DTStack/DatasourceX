@@ -271,4 +271,12 @@ public class OceanBaseTest extends BaseTest {
     public void isTableExistsInDatabase() {
         assert  client.isTableExistsInDatabase(source, "LOADER_TEST","SYS");
     }
+
+    /**
+     * 获取版本
+     */
+    @Test
+    public void getVersion() {
+        Assert.assertTrue(StringUtils.isNotBlank(client.getVersion(source)));
+    }
 }

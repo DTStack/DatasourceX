@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.libra;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.LibraSourceDTO;
@@ -38,6 +39,9 @@ public class LibraClient extends AbsRdbmsClient {
 
     // 判断schema是否在
     private static final String TABLES_IS_IN_SCHEMA = "select table_name from information_schema.tables WHERE table_schema = '%s' and table_name = '%s'";
+
+    // 获取当前版本号
+    private static final String SHOW_VERSION = "show server_version";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -138,5 +142,20 @@ public class LibraClient extends AbsRdbmsClient {
             throw new DtLoaderException("schema is not empty");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLES_IS_IN_SCHEMA, dbName, tableName)).build()));
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
+        LibraSourceDTO libraSourceDTO = (LibraSourceDTO) source;
+        String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : libraSourceDTO.getSchema();
+        LibraDownloader libraDownloader = new LibraDownloader(getCon(libraSourceDTO),
+                queryDTO.getSql(), schema);
+        libraDownloader.configure();
+        return libraDownloader;
+    }
+
+    @Override
+    protected String getVersionSql() {
+        return SHOW_VERSION;
     }
 }

@@ -232,4 +232,12 @@ public class TiDBTest  extends BaseTest {
         List tableListBySchema = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("db_dev").tableNamePattern("").limit(5).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableListBySchema));
     }
+
+    /**
+     * 获取版本
+     */
+    @Test
+    public void getVersion() {
+        Assert.assertTrue(StringUtils.isNotBlank(client.getVersion(source)));
+    }
 }
