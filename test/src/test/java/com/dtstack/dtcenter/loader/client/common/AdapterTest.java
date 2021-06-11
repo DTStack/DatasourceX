@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.loader.client.clickhouse;
+package com.dtstack.dtcenter.loader.client.common;
 
 import com.dtstack.dtcenter.common.loader.clickhouse.ClickhouseAdapter;
 import com.dtstack.dtcenter.common.loader.kingbase.KingbaseAdapter;
