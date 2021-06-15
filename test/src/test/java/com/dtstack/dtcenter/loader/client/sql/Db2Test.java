@@ -130,7 +130,7 @@ public class Db2Test extends BaseTest {
      */
     @Test
     public void getTableListBySchema()  {
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("DB2INST1").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("DB2INST1").limit(3).build();
         List<String> tableList = client.getTableListBySchema(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
