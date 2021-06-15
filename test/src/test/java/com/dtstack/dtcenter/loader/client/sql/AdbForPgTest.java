@@ -266,4 +266,9 @@ public class AdbForPgTest extends BaseTest {
     public void getVersion() {
         Assert.assertTrue(StringUtils.isNotBlank(client.getVersion(source)));
     }
+
+    @Test
+    public void createSchema() {
+        Assert.assertTrue(client.createDatabase(source, "loader_test", null));
+    }
 }
