@@ -60,6 +60,9 @@ public class PostgresqlClient extends AbsRdbmsClient {
     // 获取当前版本号
     private static final String SHOW_VERSION = "show server_version";
 
+    // 创建 schema
+    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new PostgresqlConnFactory();
@@ -278,5 +281,10 @@ public class PostgresqlClient extends AbsRdbmsClient {
     @Override
     protected String getVersionSql() {
         return SHOW_VERSION;
+    }
+
+    @Override
+    protected String getCreateDatabaseSql(String dbName, String comment) {
+        return String.format(CREATE_SCHEMA_SQL_TMPL, dbName);
     }
 }
