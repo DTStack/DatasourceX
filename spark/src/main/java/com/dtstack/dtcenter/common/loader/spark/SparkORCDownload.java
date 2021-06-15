@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.spark;
 
+import com.alibaba.fastjson.JSON;
 import com.dtstack.dtcenter.common.exception.DtCenterDefException;
 import com.dtstack.dtcenter.common.hadoop.HdfsOperator;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -23,6 +24,7 @@ import org.apache.hadoop.mapred.Reporter;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -170,7 +172,26 @@ public class SparkORCDownload implements IDownloader {
         }
         StructField field = fields.get(index);
         Object data = inspector.getStructFieldData(value, field);
+        // 处理 Map 类型
+        if (data instanceof Map) {
+            return convertMap((Map) data);
+        }
         return Objects.isNull(data) ? null : data.toString();
+    }
+
+    /**
+     * 转换 Map 类型数据
+     *
+     * @param data 数据
+     * @return 转换后的 String
+     */
+    private String convertMap(Map data) {
+        Map<String, Object> result = new HashMap<>();
+        data.keySet().stream().forEach(key -> {
+            Object value = data.get(key);
+            result.put(key.toString(), Objects.isNull(value) ? null : value.toString());
+        });
+        return JSON.toJSONString(result);
     }
 
     private boolean initRecordReader() throws IOException {
