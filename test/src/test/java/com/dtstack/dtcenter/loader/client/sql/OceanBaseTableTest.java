@@ -4,7 +4,9 @@ import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.BaseTest;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.ITable;
+import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.OceanBaseSourceDTO;
+import com.dtstack.dtcenter.loader.enums.CommandType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.collections.CollectionUtils;
@@ -43,6 +45,18 @@ public class OceanBaseTableTest extends BaseTest {
         Map<String,String> param = new HashMap<>();
         param.put("comment","中文");
         client.alterTableParams(source, "LOADER_TEST", param);
+    }
+
+    @Test
+    public void upsertTableColumn() {
+        UpsertColumnMetaDTO columnMetaDTO = new UpsertColumnMetaDTO();
+        columnMetaDTO.setCommandType(CommandType.INSERT);
+        columnMetaDTO.setSchema("sys");
+        columnMetaDTO.setTableName("LOADER_TEST");
+        columnMetaDTO.setColumnComment("comment");
+        columnMetaDTO.setColumnName("age");
+        columnMetaDTO.setColumnType("int");
+        client.upsertTableColumn(source, columnMetaDTO);
     }
 
 }

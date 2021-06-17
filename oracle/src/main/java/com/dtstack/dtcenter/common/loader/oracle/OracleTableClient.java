@@ -2,7 +2,9 @@ package com.dtstack.dtcenter.common.loader.oracle;
 
 import com.dtstack.dtcenter.common.loader.rdbms.AbsTableClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
+import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,10 @@ public class OracleTableClient extends AbsTableClient {
     private static final String TABLE_SIZE_SQL = "select bytes AS table_size from user_segments where segment_name='%s' ";
 
     private static final String ADD_SCHEMA = " and TABLESPACE_NAME = upper('%s')";
+
+    private static final String ADD_COLUMN_SQL = "ALTER TABLE %s ADD COLUMN %s %s";
+
+    private static final String ADD_COLUMN_COMMENT_SQL = "COMMENT ON COLUMN %s IS '%s'";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -72,4 +78,26 @@ public class OracleTableClient extends AbsTableClient {
 
         return String.format(TABLE_SIZE_SQL, schema) + ADD_SCHEMA;
     }
+
+
+    /**
+     * 添加表列名
+     *
+     * @param source
+     * @param columnMetaDTO
+     * @return
+     */
+    protected Boolean addTableColumn(ISourceDTO source, UpsertColumnMetaDTO columnMetaDTO) {
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        String schema = StringUtils.isNotBlank(columnMetaDTO.getSchema()) ? columnMetaDTO.getSchema() : rdbmsSourceDTO.getSchema();
+        String tableName = transferSchemaAndTableName(schema, columnMetaDTO.getTableName());
+        String sql = String.format(ADD_COLUMN_SQL, tableName, columnMetaDTO.getColumnName(), columnMetaDTO.getColumnType());
+        executeSqlWithoutResultSet(source, sql);
+        if (StringUtils.isNotEmpty(columnMetaDTO.getColumnComment())) {
+            String commentSql = String.format(ADD_COLUMN_COMMENT_SQL, transformTableColumn(tableName, columnMetaDTO.getColumnName()), columnMetaDTO.getColumnComment());
+            executeSqlWithoutResultSet(source, commentSql);
+        }
+        return true;
+    }
+
 }

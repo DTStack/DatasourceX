@@ -6,7 +6,9 @@ import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
+import com.dtstack.dtcenter.loader.enums.CommandType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -106,5 +108,18 @@ public class PostgresqlTableTest extends BaseTest {
         ITable client = ClientCache.getTable(DataSourceType.PostgreSQL.getVal());
         Boolean check = client.isView(source, null, "pg_test4");
         Assert.assertFalse(check);
+    }
+
+    @Test
+    public void upsertTableColumn() {
+        ITable client = ClientCache.getTable(DataSourceType.PostgreSQL.getVal());
+        UpsertColumnMetaDTO columnMetaDTO = new UpsertColumnMetaDTO();
+        columnMetaDTO.setCommandType(CommandType.INSERT);
+        columnMetaDTO.setSchema("public");
+        columnMetaDTO.setTableName("pg_test4");
+        columnMetaDTO.setColumnComment("comment");
+        columnMetaDTO.setColumnName("age");
+        columnMetaDTO.setColumnType("int");
+        client.upsertTableColumn(source, columnMetaDTO);
     }
 }

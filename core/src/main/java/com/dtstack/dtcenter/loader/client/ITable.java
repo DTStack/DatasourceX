@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client;
 
+import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 
 import java.sql.Connection;
@@ -98,4 +99,13 @@ public interface ITable {
      */
     @Deprecated
     Boolean isView (ISourceDTO source, String schema, String tableName);
+
+
+    /**
+     * 新增或者修改表的列
+     * @param source 数据源信息
+     * @param columnMetaDTO 列信息
+     * @return
+     */
+    Boolean upsertTableColumn(ISourceDTO source, UpsertColumnMetaDTO columnMetaDTO);
 }

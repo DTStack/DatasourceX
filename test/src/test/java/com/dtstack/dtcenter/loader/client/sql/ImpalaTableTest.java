@@ -6,7 +6,9 @@ import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
+import com.dtstack.dtcenter.loader.enums.CommandType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
@@ -101,5 +103,19 @@ public class ImpalaTableTest extends BaseTest {
         params.put("comment", "test");
         Boolean alterCheck = client.alterTableParams(source, "wangchuan_partitions_test", params);
         Assert.assertTrue(alterCheck);
+    }
+
+
+    @Test
+    public void upsertTableColumn() {
+        ITable client = ClientCache.getTable(DataSourceType.IMPALA.getVal());
+        UpsertColumnMetaDTO columnMetaDTO = new UpsertColumnMetaDTO();
+        columnMetaDTO.setCommandType(CommandType.INSERT);
+        columnMetaDTO.setSchema("default");
+        columnMetaDTO.setTableName("wangchuan_partitions_test");
+        columnMetaDTO.setColumnComment("comment");
+        columnMetaDTO.setColumnName("age");
+        columnMetaDTO.setColumnType("int");
+        client.upsertTableColumn(source, columnMetaDTO);
     }
 }

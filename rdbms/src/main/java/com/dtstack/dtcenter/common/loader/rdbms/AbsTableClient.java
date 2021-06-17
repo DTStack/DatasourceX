@@ -1,11 +1,14 @@
 package com.dtstack.dtcenter.common.loader.rdbms;
 
+import com.dtstack.dtcenter.common.loader.common.exception.ErrorCode;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.MathUtil;
 import com.dtstack.dtcenter.loader.cache.connection.CacheConnectionHelper;
 import com.dtstack.dtcenter.loader.client.ITable;
+import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
+import com.dtstack.dtcenter.loader.enums.CommandType;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
@@ -201,6 +204,92 @@ public abstract class AbsTableClient implements ITable {
     public Boolean isView(ISourceDTO source, String schema, String tableName) {
         throw new DtLoaderException("The method is not supported");
     }
+
+    @Override
+    public Boolean upsertTableColumn(ISourceDTO source, UpsertColumnMetaDTO columnMetaDTO) {
+        CommandType commandType = columnMetaDTO.getCommandType();
+        //校验参数
+        checkUpsertTableColumnParam(commandType, columnMetaDTO);
+        Boolean result;
+        switch (commandType) {
+            case INSERT:
+                result = addTableColumn(source, columnMetaDTO);
+                break;
+            case UPDATE:
+                result = updateTableColumn(source, columnMetaDTO);
+                break;
+            case DELETE:
+                result = deleteTableColumn(source, columnMetaDTO);
+                break;
+            default:
+                throw new DtLoaderException("operator type is not correct");
+        }
+        return result;
+    }
+
+    private void checkUpsertTableColumnParam(CommandType commandType, UpsertColumnMetaDTO columnMetaDTO) {
+        if (commandType == null) {
+            throw new DtLoaderException("commandType is not null");
+        }
+        if (CommandType.INSERT.getType().equals(commandType.getType()) || CommandType.UPDATE.getType().equals(commandType.getType())){
+            if (StringUtils.isEmpty(columnMetaDTO.getColumnName()) || StringUtils.isEmpty(columnMetaDTO.getColumnType())) {
+                throw new DtLoaderException("upsert column exception,columnName and columnType can not empty");
+            }
+        } else if (CommandType.DELETE.getType().equals(commandType.getType())) {
+            if (StringUtils.isEmpty(columnMetaDTO.getColumnName())) {
+                throw new DtLoaderException("delete column exception,columnName can not empty");
+            }
+        }
+    }
+
+    /**
+     * 添加表字段
+     *
+     * @param source
+     * @param columnMetaDTO
+     * @return
+     */
+    protected Boolean addTableColumn(ISourceDTO source, UpsertColumnMetaDTO columnMetaDTO) {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
+
+    /**
+     * 生成修改表列名的sql
+     *
+     * @param source
+     * @param columnMetaDTO
+     * @return
+     */
+    protected Boolean updateTableColumn(ISourceDTO source, UpsertColumnMetaDTO columnMetaDTO) {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
+
+    /**
+     * 生成删除表列名的sql
+     *
+     * @param source
+     * @param columnMetaDTO
+     * @return
+     */
+    protected Boolean deleteTableColumn(ISourceDTO source, UpsertColumnMetaDTO columnMetaDTO) {
+      throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
+
+    /**
+     * 处理schema和表名
+     *
+     * @param schema
+     * @param tableName
+     * @return
+     */
+    protected String transferSchemaAndTableName(String schema, String tableName) {
+        return String.format("%s.%s", schema, tableName);
+    }
+
+    protected String transformTableColumn(String tableName, String column) {
+        return tableName + "." + column;
+    }
+
 
     /**
      * 检查参数并设置schema
