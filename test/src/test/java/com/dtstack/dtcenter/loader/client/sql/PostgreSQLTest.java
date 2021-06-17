@@ -127,6 +127,22 @@ public class PostgreSQLTest extends BaseTest {
     }
 
     /**
+     * 设置schema 查询结果表不存在
+     */
+    @Test(expected = DtLoaderException.class)
+    public void executeSqlWithoutResultSet_001()  {
+        PostgresqlSourceDTO source = PostgresqlSourceDTO.builder()
+                .url("jdbc:postgresql://172.16.101.246:5432/postgres?currentSchema=public")
+                .username("postgres")
+                .password("abc123")
+                .schema("test")
+                .poolConfig(new PoolConfig())
+                .build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select count(1) from loader_test").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+    }
+
+    /**
      * 获取表
      */
     @Test

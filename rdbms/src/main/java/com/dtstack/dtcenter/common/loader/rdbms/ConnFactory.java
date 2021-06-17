@@ -93,8 +93,10 @@ public class ConnFactory {
         try {
             RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) iSource;
             boolean isStart = rdbmsSourceDTO.getPoolConfig() != null;
-            return isStart && MapUtils.isEmpty(rdbmsSourceDTO.getKerberosConfig()) ?
+             Connection connection = isStart && MapUtils.isEmpty(rdbmsSourceDTO.getKerberosConfig()) ?
                     getCpConn(rdbmsSourceDTO) : getSimpleConn(rdbmsSourceDTO);
+
+            return setSchema(connection, rdbmsSourceDTO.getSchema());
         } catch (Exception e){
             // 对异常进行统一处理
             throw new DtLoaderException(errorAdapter.connAdapter(e.getMessage(), errorPattern), e);
@@ -209,5 +211,17 @@ public class ConnFactory {
     protected String getPrimaryKey(ISourceDTO source) {
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
         return String.format(CP_POOL_KEY, rdbmsSourceDTO.getUrl(), rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getPassword());
+    }
+
+    public Connection setSchema(Connection conn, String schema) {
+        if (StringUtils.isBlank(schema)) {
+            return conn;
+        }
+        try {
+            conn.setSchema(schema);
+        } catch (Exception e) {
+            log.warn(String.format("setting schema exception : %s", e.getMessage()), e);
+        }
+        return conn;
     }
 }
