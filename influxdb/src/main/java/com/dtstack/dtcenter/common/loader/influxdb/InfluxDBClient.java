@@ -11,9 +11,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.influxdb.InfluxDB;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * influxDB 客户端
@@ -31,10 +33,16 @@ public class InfluxDBClient<T> extends AbsNoSqlClient<T> {
     private static final String SHOW_TABLE = "SHOW measurements";
 
     // 数据预览并限制条数 SQL
-    private static final String PREVIEW_LIMIT = "SELECT * FROM %s LIMIT %s";
+    private static final String PREVIEW_LIMIT = "SELECT %s FROM %s LIMIT %s";
 
     // 获取表字段信息 SQL
     private static final String SHOW_FIELD = "SHOW field keys from %s";
+
+    // time 字段
+    private static final String TIME_KEY = "time";
+
+    // time 字段类型
+    private static final String TIME_TYPE = "LONG";
 
     @Override
     public Boolean testCon(ISourceDTO source) {
@@ -66,7 +74,12 @@ public class InfluxDBClient<T> extends AbsNoSqlClient<T> {
         if (StringUtils.isBlank(queryDTO.getTableName())) {
             throw new DtLoaderException("table name cannot be empty.");
         }
-        return InfluxDBUtil.queryWithList(influxDB, String.format(PREVIEW_LIMIT, queryDTO.getTableName(), queryDTO.getPreviewNum()), true);
+        List<ColumnMetaDTO> columnMetaData = getColumnMetaData(source, queryDTO);
+        if (CollectionUtils.isEmpty(columnMetaData)) {
+            return Collections.emptyList();
+        }
+        List<String> fieldList = columnMetaData.stream().map(col -> String.format("\"%s\"", col.getKey())).collect(Collectors.toList());
+        return InfluxDBUtil.queryWithList(influxDB, String.format(PREVIEW_LIMIT, String.join(",", fieldList), queryDTO.getTableName(), queryDTO.getPreviewNum()), true);
     }
 
     @Override
@@ -95,6 +108,11 @@ public class InfluxDBClient<T> extends AbsNoSqlClient<T> {
         InfluxDB influxDB = InfluxDBConnFactory.getClient(InfluxDBUtil.dealDb(source, queryDTO));
         List<List<Object>> result = InfluxDBUtil.queryWithList(influxDB, String.format(SHOW_FIELD, queryDTO.getTableName()), true);
         List<ColumnMetaDTO> columnMetas = Lists.newArrayList();
+        // 添加 time 字段
+        ColumnMetaDTO timeColumn = new ColumnMetaDTO();
+        timeColumn.setKey(TIME_KEY);
+        timeColumn.setType(TIME_TYPE);
+        columnMetas.add(timeColumn);
         if (CollectionUtils.isEmpty(result) || result.size() < 2) {
             return columnMetas;
         }
