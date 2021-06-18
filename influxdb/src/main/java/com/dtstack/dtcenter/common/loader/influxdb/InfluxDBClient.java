@@ -38,6 +38,12 @@ public class InfluxDBClient<T> extends AbsNoSqlClient<T> {
     // 获取表字段信息 SQL
     private static final String SHOW_FIELD = "SHOW field keys from %s";
 
+    // time 字段
+    private static final String TIME_KEY = "time";
+
+    // time 字段类型
+    private static final String TIME_TYPE = "LONG";
+
     @Override
     public Boolean testCon(ISourceDTO source) {
         return InfluxDBConnFactory.testCon(source);
@@ -102,6 +108,11 @@ public class InfluxDBClient<T> extends AbsNoSqlClient<T> {
         InfluxDB influxDB = InfluxDBConnFactory.getClient(InfluxDBUtil.dealDb(source, queryDTO));
         List<List<Object>> result = InfluxDBUtil.queryWithList(influxDB, String.format(SHOW_FIELD, queryDTO.getTableName()), true);
         List<ColumnMetaDTO> columnMetas = Lists.newArrayList();
+        // 添加 time 字段
+        ColumnMetaDTO timeColumn = new ColumnMetaDTO();
+        timeColumn.setKey(TIME_KEY);
+        timeColumn.setType(TIME_TYPE);
+        columnMetas.add(timeColumn);
         if (CollectionUtils.isEmpty(result) || result.size() < 2) {
             return columnMetas;
         }
