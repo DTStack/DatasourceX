@@ -5,9 +5,9 @@ import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.BaseTest;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
-import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.AdbForPgSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
@@ -39,6 +39,7 @@ public class AdbForPgTest extends BaseTest {
             .url("jdbc:postgresql://gp-uf6090cj8371507dbo-master.gpdbmaster.rds.aliyuncs.com/")
             .username("zhishu")
             .password("bdci2019!")
+            .schema("public")
             .poolConfig(new PoolConfig())
             .build();
 
@@ -270,5 +271,11 @@ public class AdbForPgTest extends BaseTest {
     @Test
     public void createSchema() {
         Assert.assertTrue(client.createDatabase(source, "loader_test", null));
+    }
+
+    @Test
+    public void getTable() {
+        Table table = client.getTable(source, SqlQueryDTO.builder().tableName("loader_test").build());
+        Assert.assertEquals("table comment", table.getComment());
     }
 }
