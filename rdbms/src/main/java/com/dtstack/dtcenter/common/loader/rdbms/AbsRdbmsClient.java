@@ -575,7 +575,13 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     @Override
     public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
-        return new Table();
+        Table table = new Table();
+        List<ColumnMetaDTO> columnMetaData = getColumnMetaData(source, queryDTO);
+        String tableComment = getTableMetaComment(source, queryDTO);
+        table.setColumns(columnMetaData);
+        table.setName(queryDTO.getTableName());
+        table.setComment(tableComment);
+        return table;
     }
 
     /**
