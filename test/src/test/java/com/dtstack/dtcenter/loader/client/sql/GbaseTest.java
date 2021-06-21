@@ -8,6 +8,7 @@ import com.dtstack.dtcenter.loader.dto.source.GBaseSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -72,5 +73,13 @@ public class GbaseTest extends BaseTest {
     @Test
     public void getType() {
         Assert.assertEquals(DataSourceType.GBase_8a.getVal(),source.getSourceType());
+    }
+
+    /**
+     * 获取版本
+     */
+    @Test
+    public void getVersion() {
+        Assert.assertTrue(StringUtils.isNotBlank(ClientCache.getClient(DataSourceType.GBase_8a.getVal()).getVersion(source)));
     }
 }

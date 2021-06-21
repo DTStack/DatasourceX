@@ -6,7 +6,9 @@ import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.Greenplum6SourceDTO;
+import com.dtstack.dtcenter.loader.enums.CommandType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -105,5 +107,17 @@ public class GreenplumTableTest extends BaseTest {
         ITable client = ClientCache.getTable(DataSourceType.GREENPLUM6.getVal());
         Boolean check = client.isView(source, null, "gp_test");
         Assert.assertFalse(check);
+    }
+
+    @Test
+    public void upsertTableColumn() {
+        UpsertColumnMetaDTO columnMetaDTO = new UpsertColumnMetaDTO();
+        columnMetaDTO.setCommandType(CommandType.INSERT);
+        columnMetaDTO.setSchema("public");
+        columnMetaDTO.setTableName("gp_test");
+        columnMetaDTO.setColumnComment("comment");
+        columnMetaDTO.setColumnName("age");
+        columnMetaDTO.setColumnType("int");
+        client.upsertTableColumn(source, columnMetaDTO);
     }
 }

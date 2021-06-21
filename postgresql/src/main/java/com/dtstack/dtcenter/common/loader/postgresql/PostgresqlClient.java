@@ -57,6 +57,12 @@ public class PostgresqlClient extends AbsRdbmsClient {
     // 限制条数语句
     private static final String LIMIT_SQL = " LIMIT %s ";
 
+    // 获取当前版本号
+    private static final String SHOW_VERSION = "show server_version";
+
+    // 创建 schema
+    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new PostgresqlConnFactory();
@@ -145,7 +151,8 @@ public class PostgresqlClient extends AbsRdbmsClient {
     @Override
     public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         PostgresqlSourceDTO postgresqlSourceDTO = (PostgresqlSourceDTO) source;
-        PostgresqlDownloader postgresqlDownloader = new PostgresqlDownloader(getCon(postgresqlSourceDTO), queryDTO.getSql(), postgresqlSourceDTO.getSchema());
+        String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : postgresqlSourceDTO.getSchema();
+        PostgresqlDownloader postgresqlDownloader = new PostgresqlDownloader(getCon(postgresqlSourceDTO), queryDTO.getSql(), schema);
         postgresqlDownloader.configure();
         return postgresqlDownloader;
     }
@@ -269,5 +276,15 @@ public class PostgresqlClient extends AbsRdbmsClient {
     @Override
     protected String getCurrentDbSql() {
         return CURRENT_DB;
+    }
+
+    @Override
+    protected String getVersionSql() {
+        return SHOW_VERSION;
+    }
+
+    @Override
+    protected String getCreateDatabaseSql(String dbName, String comment) {
+        return String.format(CREATE_SCHEMA_SQL_TMPL, dbName);
     }
 }

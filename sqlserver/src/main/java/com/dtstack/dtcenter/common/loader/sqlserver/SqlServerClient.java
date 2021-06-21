@@ -63,6 +63,9 @@ public class SqlServerClient extends AbsRdbmsClient {
     private static String SQL_SERVER_COLUMN_COMMENT = "column_description";
     private static final String COMMENT_QUERY = "SELECT B.name AS column_name, C.value AS column_description FROM sys.tables A INNER JOIN sys.columns B ON B.object_id = A.object_id LEFT JOIN sys.extended_properties C ON C.major_id = B.object_id AND C.minor_id = B.column_id WHERE A.name = N";
 
+    // 获取当前版本号
+    private static final String SHOW_VERSION = "SELECT @@VERSION";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new SQLServerConnFactory();
@@ -230,5 +233,10 @@ public class SqlServerClient extends AbsRdbmsClient {
     @Override
     protected String getCurrentDbSql() {
         return CURRENT_DB;
+    }
+
+    @Override
+    public String getVersion(ISourceDTO source) {
+        return SHOW_VERSION;
     }
 }

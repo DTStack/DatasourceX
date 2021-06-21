@@ -4,9 +4,12 @@ import com.dtstack.dtcenter.loader.client.BaseTest;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.IKerberos;
+import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.Phoenix5SourceDTO;
+import com.dtstack.dtcenter.loader.enums.CommandType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
@@ -60,6 +63,9 @@ public class Phoenix5KerberosTest extends BaseTest {
                 "      CONSTRAINT my_pk PRIMARY KEY (state, city))").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("UPSERT INTO loader_test (state, city, population) values ('NY','New York',8143197)").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+
+        queryDTO = SqlQueryDTO.builder().sql("alter table loader_test add age BIGINT").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -190,6 +196,19 @@ public class Phoenix5KerberosTest extends BaseTest {
     public void searchTableAndViewBySchema ()  {
         List list = client.getTableListBySchema(source, SqlQueryDTO.builder().schema("default").build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(list));
+    }
+
+
+    @Test
+    public void upsertTableColumn() {
+        ITable client = ClientCache.getTable(DataSourceType.PHOENIX5.getVal());
+        UpsertColumnMetaDTO columnMetaDTO = new UpsertColumnMetaDTO();
+        columnMetaDTO.setCommandType(CommandType.INSERT);
+        columnMetaDTO.setSchema("default");
+        columnMetaDTO.setTableName("loader_test");
+        columnMetaDTO.setColumnName("age");
+        columnMetaDTO.setColumnType("BIGINT");
+        client.upsertTableColumn(source, columnMetaDTO);
     }
 
 }

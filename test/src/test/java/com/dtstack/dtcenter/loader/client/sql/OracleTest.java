@@ -323,4 +323,12 @@ public class OracleTest extends BaseTest {
         Long tableSize = tableClient.getTableSize(source, null, "LOADER_TEST");
         Assert.assertTrue(tableSize != null && tableSize > 0);
     }
+
+    /**
+     * 获取版本
+     */
+    @Test
+    public void getVersion() {
+        Assert.assertTrue(StringUtils.isNotBlank(client.getVersion(source)));
+    }
 }

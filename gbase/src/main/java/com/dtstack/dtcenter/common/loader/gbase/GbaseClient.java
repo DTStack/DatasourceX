@@ -20,6 +20,10 @@ import java.sql.Statement;
  * @Description：GBase8a 客户端
  */
 public class GbaseClient extends AbsRdbmsClient {
+
+    // 获取当前版本号
+    private static final String SHOW_VERSION = "SELECT SERVICE_LEVEL FROM SYSIBMADM.ENV_INST_INFO";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new GbaseConnFactory();
@@ -54,5 +58,10 @@ public class GbaseClient extends AbsRdbmsClient {
             DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(gBaseSourceDTO, clearStatus));
         }
         return null;
+    }
+
+    @Override
+    protected String getVersionSql() {
+        return SHOW_VERSION;
     }
 }

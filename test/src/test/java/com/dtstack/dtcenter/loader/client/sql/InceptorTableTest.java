@@ -5,7 +5,9 @@ import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.InceptorSourceDTO;
+import com.dtstack.dtcenter.loader.enums.CommandType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -141,5 +143,17 @@ public class InceptorTableTest extends BaseTest {
     public void tableIsNotView () {
         Boolean check = INCEPTOR_Table.isView(INCEPTOR_SOURCE_DTO, null, "loader_test_5");
         Assert.assertTrue(check);
+    }
+
+    @Test
+    public void upsertTableColumn() {
+        UpsertColumnMetaDTO columnMetaDTO = new UpsertColumnMetaDTO();
+        columnMetaDTO.setCommandType(CommandType.INSERT);
+        columnMetaDTO.setSchema("default");
+        columnMetaDTO.setTableName("loader_test_part");
+        columnMetaDTO.setColumnComment("comment");
+        columnMetaDTO.setColumnName("age");
+        columnMetaDTO.setColumnType("int");
+        INCEPTOR_Table.upsertTableColumn(INCEPTOR_SOURCE_DTO, columnMetaDTO);
     }
 }

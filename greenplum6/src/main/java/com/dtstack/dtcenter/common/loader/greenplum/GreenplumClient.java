@@ -73,6 +73,9 @@ public class GreenplumClient extends AbsRdbmsClient {
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select current_database()";
 
+    // 获取当前版本号
+    private static final String SHOW_VERSION = "select version()";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new GreenplumFactory();
@@ -148,8 +151,9 @@ public class GreenplumClient extends AbsRdbmsClient {
     @Override
     public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         Greenplum6SourceDTO greenplum6SourceDTO = (Greenplum6SourceDTO) source;
+        String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : greenplum6SourceDTO.getSchema();
         GreenplumDownloader greenplumDownloader = new GreenplumDownloader(getCon(greenplum6SourceDTO),
-                queryDTO.getSql(), greenplum6SourceDTO.getSchema());
+                queryDTO.getSql(), schema);
         greenplumDownloader.configure();
         return greenplumDownloader;
     }
@@ -208,5 +212,10 @@ public class GreenplumClient extends AbsRdbmsClient {
     @Override
     protected String getCurrentDbSql() {
         return CURRENT_DB;
+    }
+
+    @Override
+    protected String getVersionSql() {
+        return SHOW_VERSION;
     }
 }

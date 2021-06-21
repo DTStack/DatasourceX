@@ -42,7 +42,10 @@ public class Db2Client extends AbsRdbmsClient {
     private static final String SEARCH_SQL = " AND TABLE_NAME LIKE '%s' ";
 
     // 限制条数语句
-    private static final String LIMIT_SQL = " ROWNUM = %s ";
+    private static final String LIMIT_SQL = " fetch first  %s rows only ";
+
+    // 获取当前版本号
+    private static final String SHOW_VERSION = "SELECT SERVICE_LEVEL FROM SYSIBMADM.ENV_INST_INFO";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -182,5 +185,10 @@ public class Db2Client extends AbsRdbmsClient {
     @Override
     protected String getCurrentDbSql() {
         return CURRENT_DB;
+    }
+
+    @Override
+    protected String getVersionSql() {
+        return SHOW_VERSION;
     }
 }

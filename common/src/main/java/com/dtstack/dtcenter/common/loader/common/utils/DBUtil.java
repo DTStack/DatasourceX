@@ -194,7 +194,7 @@ public class DBUtil {
             statement = conn.createStatement();
             statement.execute(sql);
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("SQL execute exception：%s", e.getMessage()), e);
+            throw new DtLoaderException(String.format("execute sql: %s, cause by：%s", sql, e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(null, statement, null);
         }

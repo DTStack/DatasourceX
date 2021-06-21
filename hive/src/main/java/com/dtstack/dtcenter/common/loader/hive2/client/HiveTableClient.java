@@ -3,7 +3,9 @@ package com.dtstack.dtcenter.common.loader.hive2.client;
 import com.dtstack.dtcenter.common.loader.hive2.HiveConnFactory;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsTableClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
+import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +38,8 @@ public class HiveTableClient extends AbsTableClient {
 
     private static final String TABLE_IS_VIEW_SQL = "desc formatted %s";
 
+    private static final String ADD_COLUMN_SQL = "alter table %s add columns(%s %s comment '%s')";
+
     @Override
     public Boolean isView(ISourceDTO source, String schema, String tableName) {
         checkParamAndSetSchema(source, schema, tableName);
@@ -53,5 +57,20 @@ public class HiveTableClient extends AbsTableClient {
             }
         }
         return StringUtils.containsIgnoreCase(tableType, "VIEW");
+    }
+
+    /**
+     * 添加表字段
+     *
+     * @param source
+     * @param columnMetaDTO
+     * @return
+     */
+    protected Boolean addTableColumn(ISourceDTO source, UpsertColumnMetaDTO columnMetaDTO) {
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        String schema = StringUtils.isNotBlank(columnMetaDTO.getSchema()) ? columnMetaDTO.getSchema() : rdbmsSourceDTO.getSchema();
+        String comment = StringUtils.isNotBlank(columnMetaDTO.getColumnComment()) ? columnMetaDTO.getColumnComment() : "";
+        String sql = String.format(ADD_COLUMN_SQL, transferSchemaAndTableName(schema, columnMetaDTO.getTableName()), columnMetaDTO.getColumnName(), columnMetaDTO.getColumnType(), comment);
+        return executeSqlWithoutResultSet(source, sql);
     }
 }

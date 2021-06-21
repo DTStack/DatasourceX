@@ -2,7 +2,9 @@ package com.dtstack.dtcenter.common.loader.postgresql;
 
 import com.dtstack.dtcenter.common.loader.rdbms.AbsTableClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
+import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,10 @@ public class PostgresqlTableClient extends AbsTableClient {
 
     // 判断表是不是视图表sql
     private static final String TABLE_IS_VIEW_SQL = "select viewname from pg_views where (schemaname ='public' or schemaname = '%s') and viewname = '%s'";
+
+    private static final String ADD_COLUMN_SQL = "ALTER TABLE %s ADD COLUMN %s %s";
+
+    private static final String ADD_COLUMN_COMMENT_SQL = "COMMENT ON COLUMN %s IS '%s'";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -68,5 +74,27 @@ public class PostgresqlTableClient extends AbsTableClient {
         schema = StringUtils.isNotBlank(schema) ? schema : "public";
         String sql = String.format(TABLE_IS_VIEW_SQL, schema, tableName);
         return CollectionUtils.isNotEmpty(executeQuery(source, sql));
+    }
+
+
+
+    /**
+     * 添加表列名
+     *
+     * @param source
+     * @param columnMetaDTO
+     * @return
+     */
+    protected Boolean addTableColumn(ISourceDTO source, UpsertColumnMetaDTO columnMetaDTO) {
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        String schema = StringUtils.isNotBlank(columnMetaDTO.getSchema()) ? columnMetaDTO.getSchema() : rdbmsSourceDTO.getSchema();
+        String tableName = transferSchemaAndTableName(schema, columnMetaDTO.getTableName());
+        String sql = String.format(ADD_COLUMN_SQL, tableName, columnMetaDTO.getColumnName(), columnMetaDTO.getColumnType());
+        executeSqlWithoutResultSet(source, sql);
+        if (StringUtils.isNotEmpty(columnMetaDTO.getColumnComment())) {
+            String commentSql = String.format(ADD_COLUMN_COMMENT_SQL, transformTableColumn(tableName, columnMetaDTO.getColumnName()), columnMetaDTO.getColumnComment());
+            executeSqlWithoutResultSet(source, commentSql);
+        }
+        return true;
     }
 }

@@ -136,4 +136,9 @@ public abstract class AbsNoSqlClient<T> implements IClient<T> {
     public List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }
+
+    @Override
+    public String getVersion(ISourceDTO source) {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
 }

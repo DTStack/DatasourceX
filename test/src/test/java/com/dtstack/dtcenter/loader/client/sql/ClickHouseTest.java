@@ -231,4 +231,12 @@ public class ClickHouseTest extends BaseTest {
     public void getSourceType() {
         Assert.assertEquals(DataSourceType.Clickhouse.getVal(), source.getSourceType());
     }
+
+    /**
+     * 获取版本
+     */
+    @Test
+    public void getVersion() {
+        Assert.assertTrue(StringUtils.isNotBlank(client.getVersion(source)));
+    }
 }

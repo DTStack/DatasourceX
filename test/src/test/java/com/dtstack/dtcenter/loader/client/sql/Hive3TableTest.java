@@ -5,7 +5,9 @@ import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.Hive3SourceDTO;
+import com.dtstack.dtcenter.loader.enums.CommandType;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
@@ -134,5 +136,17 @@ public class Hive3TableTest extends BaseTest {
         ITable client = ClientCache.getTable(DataSourceType.HIVE.getVal());
         Boolean check = client.isView(source, null, "loader_test_5");
         Assert.assertTrue(check);
+    }
+
+    @Test
+    public void upsertTableColumn() {
+        UpsertColumnMetaDTO columnMetaDTO = new UpsertColumnMetaDTO();
+        columnMetaDTO.setCommandType(CommandType.INSERT);
+        columnMetaDTO.setSchema("default");
+        columnMetaDTO.setTableName("loader_test_part");
+        columnMetaDTO.setColumnComment("comment");
+        columnMetaDTO.setColumnName("age");
+        columnMetaDTO.setColumnType("int");
+        client.upsertTableColumn(source, columnMetaDTO);
     }
 }

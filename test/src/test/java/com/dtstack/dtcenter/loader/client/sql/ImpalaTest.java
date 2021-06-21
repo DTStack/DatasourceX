@@ -270,4 +270,12 @@ public class ImpalaTest extends BaseTest {
         Assert.assertTrue(list.contains("name"));
         downloader.close();
     }
+
+    /**
+     * 获取版本
+     */
+    @Test
+    public void getVersion() {
+        Assert.assertTrue(StringUtils.isNotBlank(ClientCache.getClient(DataSourceType.IMPALA.getVal()).getVersion(source)));
+    }
 }

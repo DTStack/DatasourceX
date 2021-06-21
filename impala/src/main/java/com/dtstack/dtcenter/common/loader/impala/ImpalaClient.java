@@ -44,6 +44,9 @@ public class ImpalaClient extends AbsRdbmsClient {
     // 根据schema选表表名模糊查询
     private static final String SEARCH_SQL = " LIKE '%s' ";
 
+    // 获取当前版本号
+    private static final String SHOW_VERSION = "select version()";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new ImpalaConnFactory();
@@ -357,5 +360,10 @@ public class ImpalaClient extends AbsRdbmsClient {
     @Override
     protected String addPercentSign(String str) {
         return "*" + str + "*";
+    }
+
+    @Override
+    protected String getVersionSql() {
+        return SHOW_VERSION;
     }
 }

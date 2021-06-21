@@ -55,6 +55,9 @@ public class VerticaClient extends AbsRdbmsClient {
      */
     private static final String TABLE_QUERY = "SELECT * FROM %s";
 
+    // 获取当前版本号
+    private static final String SHOW_VERSION = "select version()";
+
     @Override
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(iSource, queryDTO, false);
@@ -194,5 +197,10 @@ public class VerticaClient extends AbsRdbmsClient {
     @Override
     protected DataSourceType getSourceType() {
         return DataSourceType.VERTICA;
+    }
+
+    @Override
+    protected String getVersionSql() {
+        return SHOW_VERSION;
     }
 }

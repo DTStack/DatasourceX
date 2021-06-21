@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.loader.client.table;
 
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
 import com.dtstack.dtcenter.loader.client.ITable;
+import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 
 import java.sql.Connection;
@@ -74,6 +75,12 @@ public class TableClientProxy implements ITable {
     @Override
     public Boolean isView(ISourceDTO source, String schema, String tableName) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.isView(source, schema, tableName),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public Boolean upsertTableColumn(ISourceDTO source, UpsertColumnMetaDTO columnMetaDTO) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.upsertTableColumn(source, columnMetaDTO),
                 targetClient.getClass().getClassLoader());
     }
 }

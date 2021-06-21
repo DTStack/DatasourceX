@@ -161,4 +161,12 @@ public class VerticaTest extends BaseTest {
         List tables = client.getTableListBySchema(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(tables));
     }
+
+    /**
+     * 获取版本
+     */
+    @Test
+    public void getVersion() {
+        Assert.assertTrue(StringUtils.isNotBlank(client.getVersion(source)));
+    }
 }

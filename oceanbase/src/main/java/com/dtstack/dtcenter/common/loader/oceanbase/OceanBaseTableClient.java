@@ -2,7 +2,9 @@ package com.dtstack.dtcenter.common.loader.oceanbase;
 
 import com.dtstack.dtcenter.common.loader.rdbms.AbsTableClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
+import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,9 @@ public class OceanBaseTableClient extends AbsTableClient {
 
     // 获取表占用存储sql
     private static final String TABLE_SIZE_SQL = "select (data_length + index_length) as table_size from information_schema.tables where TABLE_SCHEMA = '%s' and TABLE_NAME = '%s'";
+
+    //新增表字段
+    private static final String ADD_COLUMN_SQL = "ALTER TABLE %s ADD COLUMN %s %s COMMENT '%s'";
 
 
     @Override
@@ -62,5 +67,14 @@ public class OceanBaseTableClient extends AbsTableClient {
             throw new DtLoaderException("schema is not empty");
         }
         return String.format(TABLE_SIZE_SQL, schema, tableName);
+    }
+
+
+    protected Boolean addTableColumn(ISourceDTO source, UpsertColumnMetaDTO columnMetaDTO) {
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        String schema = StringUtils.isNotBlank(columnMetaDTO.getSchema()) ? columnMetaDTO.getSchema() : rdbmsSourceDTO.getSchema();
+        String comment = StringUtils.isNotEmpty(columnMetaDTO.getColumnComment()) ? columnMetaDTO.getColumnComment() : "";
+        String sql = String.format(ADD_COLUMN_SQL, transferSchemaAndTableName(schema, columnMetaDTO.getTableName()), columnMetaDTO.getColumnName(), columnMetaDTO.getColumnType(), comment);
+        return executeSqlWithoutResultSet(source, sql);
     }
 }

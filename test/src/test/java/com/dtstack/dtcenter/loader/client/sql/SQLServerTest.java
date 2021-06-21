@@ -264,4 +264,12 @@ public class SQLServerTest extends BaseTest {
         String currentDatabase = client.getCurrentDatabase(source);
         Assert.assertTrue(StringUtils.isNotBlank(currentDatabase));
     }
+    /**
+     * 获取版本
+     */
+    @Test
+    public void getVersion() {
+        Assert.assertTrue(StringUtils.isNotBlank(client.getVersion(source)));
+    }
+
 }

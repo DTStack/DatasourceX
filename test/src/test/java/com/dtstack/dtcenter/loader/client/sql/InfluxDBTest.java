@@ -23,7 +23,6 @@ import java.util.Map;
  * date：Created in 上午10:33 2021/6/7
  * company: www.dtstack.com
  */
-@Ignore
 public class InfluxDBTest extends BaseTest {
 
     // 构建client
@@ -31,7 +30,7 @@ public class InfluxDBTest extends BaseTest {
 
     // 构建数据源信息
     private static final InfluxDBSourceDTO SOURCE_DTO = InfluxDBSourceDTO.builder()
-            .url("http://localhost:8086")
+            .url("http://172.16.21.76:8086")
             .database("wangchuan_test")
             .build();
 
@@ -62,9 +61,9 @@ public class InfluxDBTest extends BaseTest {
 
     @Test
     public void getPreview() {
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("wangchuan_test").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("wangchuan_test").previewNum(5).build();
         List<List<Object>> preview = CLIENT.getPreview(SOURCE_DTO, queryDTO);
-        Assert.assertTrue(CollectionUtils.isNotEmpty(preview));
+        Assert.assertTrue(CollectionUtils.isNotEmpty(preview) && preview.size() == 6);
     }
 
     @Test

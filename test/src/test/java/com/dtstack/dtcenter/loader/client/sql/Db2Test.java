@@ -12,6 +12,7 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -129,7 +130,7 @@ public class Db2Test extends BaseTest {
      */
     @Test
     public void getTableListBySchema()  {
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("DB2INST1").build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("DB2INST1").limit(3).build();
         List<String> tableList = client.getTableListBySchema(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
@@ -239,4 +240,11 @@ public class Db2Test extends BaseTest {
         Assert.assertTrue(CollectionUtils.isEmpty(downloader.getContainers()));
     }
 
+    /**
+     * 获取版本
+     */
+    @Test
+    public void getVersion() {
+        Assert.assertTrue(StringUtils.isNotBlank(client.getVersion(source)));
+    }
 }
