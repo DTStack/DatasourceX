@@ -674,4 +674,9 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     protected String getVersionSql() {
         throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }
+
+    @Override
+    public List<String> listFileNames(ISourceDTO sourceDTO, String path, Boolean includeDir, Boolean recursive, Integer maxNum, String regexStr) {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
 }

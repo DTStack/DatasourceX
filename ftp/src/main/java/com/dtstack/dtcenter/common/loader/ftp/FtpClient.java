@@ -5,14 +5,10 @@ import com.dtstack.dtcenter.common.loader.common.utils.AddressUtil;
 import com.dtstack.dtcenter.loader.dto.source.FtpSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.google.common.collect.Maps;
-import com.jcraft.jsch.JSchException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPReply;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.List;
 
 /**
  * @company: www.dtstack.com
@@ -22,64 +18,37 @@ import java.util.Optional;
  */
 public class FtpClient<T> extends AbsNoSqlClient<T> {
 
-    private static final int TIMEOUT = 60000;
-
     @Override
-    public Boolean testCon(ISourceDTO iSource) {
-        FtpSourceDTO ftpSourceDTO = (FtpSourceDTO) iSource;
-        if (ftpSourceDTO == null || !AddressUtil.telnet(ftpSourceDTO.getUrl(), Integer.valueOf(ftpSourceDTO.getHostPort()))) {
+    public Boolean testCon(ISourceDTO sourceDTO) {
+        FtpSourceDTO ftpSourceDTO = (FtpSourceDTO) sourceDTO;
+        Integer port = FtpUtil.getFtpPort(ftpSourceDTO.getProtocol(), ftpSourceDTO.getHostPort());
+        if (!AddressUtil.telnet(ftpSourceDTO.getUrl(), port)) {
             return Boolean.FALSE;
         }
-
-        if (ftpSourceDTO.getProtocol() != null && "sftp".equalsIgnoreCase(ftpSourceDTO.getProtocol())) {
-            SFTPHandler instance = null;
-            try {
-                Integer finalPort = Integer.valueOf(ftpSourceDTO.getHostPort());
-                Map<String, String> sftpConfig = Maps.newHashMap();
-                sftpConfig.put(SFTPHandler.KEY_HOST, ftpSourceDTO.getUrl());
-                sftpConfig.put(SFTPHandler.KEY_PORT, String.valueOf(finalPort));
-                sftpConfig.put(SFTPHandler.KEY_USERNAME, ftpSourceDTO.getUsername());
-                sftpConfig.put(SFTPHandler.KEY_PASSWORD, ftpSourceDTO.getPassword());
-                sftpConfig.put(SFTPHandler.KEY_TIMEOUT, String.valueOf(TIMEOUT));
-                sftpConfig.put(SFTPHandler.KEY_AUTHENTICATION, Optional.ofNullable(ftpSourceDTO.getAuth()).orElse(""));
-                sftpConfig.put(SFTPHandler.KEY_RSA, Optional.ofNullable(ftpSourceDTO.getPath()).orElse(""));
-                instance = SFTPHandler.getInstance(sftpConfig);
-            } catch (JSchException e) {
-                throw new DtLoaderException("Failed to establish a connection with the ftp server, please check whether the user name and password are correct");
-            } finally {
-                if (instance != null) {
-                    instance.close();
-                }
-            }
+        if (StringUtils.equalsIgnoreCase(ProtocolEnum.SFTP.name(), ftpSourceDTO.getProtocol())) {
+            SFTPHandler sftpHandler = FtpClientFactory.getSFTPHandler(ftpSourceDTO);
+            sftpHandler.close();
         } else {
-            if (StringUtils.isBlank(ftpSourceDTO.getHostPort())) {
-                ftpSourceDTO.setHostPort("21");
-            }
-            FTPClient ftpClient = new FTPClient();
             try {
-                ftpClient.connect(ftpSourceDTO.getUrl(), Integer.valueOf(ftpSourceDTO.getHostPort()));
-                ftpClient.login(ftpSourceDTO.getUsername(), ftpSourceDTO.getPassword());
-                ftpClient.setConnectTimeout(TIMEOUT);
-                ftpClient.setDataTimeout(TIMEOUT);
-                if ("PASV".equalsIgnoreCase(ftpSourceDTO.getConnectMode())) {
-                    ftpClient.enterRemotePassiveMode();
-                    ftpClient.enterLocalPassiveMode();
-                } else if ("PORT".equals(ftpSourceDTO.getConnectMode())) {
-                    ftpClient.enterLocalActiveMode();
-                }
-                int reply = ftpClient.getReplyCode();
-                if (!FTPReply.isPositiveCompletion(reply)) {
-                    ftpClient.disconnect();
-                    throw new DtLoaderException("Failed to establish a connection with the ftp server, please check whether the user name and password are correct");
-                }
-
-                if (ftpClient != null) {
-                    ftpClient.disconnect();
-                }
+                FTPClient ftpClient = FtpClientFactory.getFtpClient(ftpSourceDTO);
+                ftpClient.disconnect();
             } catch (Exception e) {
-                throw new DtLoaderException("Failed to establish a connection with the ftp server, please check whether the user name and password are correct");
+                throw new DtLoaderException(e.getMessage(), e);
             }
         }
         return true;
+    }
+
+    @Override
+    public List<String> listFileNames(ISourceDTO sourceDTO, String path, Boolean includeDir, Boolean recursive, Integer maxNum, String regexStr) {
+        FtpSourceDTO ftpSourceDTO = (FtpSourceDTO) sourceDTO;
+        List<String> fileNames;
+        if (StringUtils.equalsIgnoreCase(ProtocolEnum.SFTP.name(), ftpSourceDTO.getProtocol())) {
+            fileNames = FtpUtil.getSFTPFileNames(FtpClientFactory.getSFTPHandler(ftpSourceDTO), path, includeDir, recursive, maxNum, regexStr);
+        } else {
+            fileNames = FtpUtil.getFTPFileNames(FtpClientFactory.getFtpClient(ftpSourceDTO), path, includeDir, recursive, maxNum, regexStr);
+        }
+        fileNames.sort(String::compareTo);
+        return fileNames;
     }
 }

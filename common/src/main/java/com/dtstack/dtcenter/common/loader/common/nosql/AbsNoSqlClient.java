@@ -141,4 +141,9 @@ public abstract class AbsNoSqlClient<T> implements IClient<T> {
     public String getVersion(ISourceDTO source) {
         throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }
+
+    @Override
+    public List<String> listFileNames(ISourceDTO sourceDTO, String path, Boolean includeDir, Boolean recursive,  Integer maxNum, String regexStr) {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
 }

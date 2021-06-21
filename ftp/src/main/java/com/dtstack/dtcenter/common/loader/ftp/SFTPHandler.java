@@ -6,12 +6,14 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 import java.util.Properties;
+import java.util.Vector;
 
 /**
  * @company: www.dtstack.com
@@ -81,6 +83,17 @@ public class SFTPHandler {
         channelSftp.connect();
 
         return new SFTPHandler(session, channelSftp);
+    }
+
+    /**
+     * 列出 sftp 下面的文件
+     *
+     * @param sftpPath sftp 路径
+     * @return sftp 文件集合
+     * @throws SftpException sftp 异常
+     */
+    public Vector listFile(String sftpPath) throws SftpException {
+        return channelSftp.ls(sftpPath);
     }
 
     /**
