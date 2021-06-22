@@ -96,9 +96,10 @@ public class PostgresqlClient extends AbsRdbmsClient {
                 constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
             }
             //大小写区分，不传schema默认获取所有表，并且表名签名拼接schema，格式："schema"."tableName"
+            String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : postgresqlSourceDTO.getSchema();
             String querySql;
-            if (StringUtils.isNotBlank(postgresqlSourceDTO.getSchema())) {
-                querySql = queryDTO.getView() ? String.format(SHOW_TABLE_AND_VIEW_BY_SCHEMA_SQL, postgresqlSourceDTO.getSchema()) : String.format(SHOW_TABLE_BY_SCHEMA_SQL, postgresqlSourceDTO.getSchema(), constr.toString());
+            if (StringUtils.isNotBlank(schema)) {
+                querySql = queryDTO.getView() ? String.format(SHOW_TABLE_AND_VIEW_BY_SCHEMA_SQL, schema) : String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema, constr.toString());
             }else {
                 querySql = queryDTO.getView() ? String.format(ALL_TABLE_AND_VIEW_SQL, constr.toString()) : String.format(ALL_TABLE_SQL, constr.toString());
             }

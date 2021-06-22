@@ -5,6 +5,7 @@ import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.BaseTest;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
@@ -12,6 +13,7 @@ import com.dtstack.dtcenter.loader.dto.source.AdbForPgSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
@@ -19,6 +21,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,6 +37,10 @@ public class AdbForPgTest extends BaseTest {
 
     // 获取数据源 client
     private static final IClient client = ClientCache.getClient(DataSourceType.ADB_FOR_PG.getVal());
+
+    // 获取数据源 table client
+    private static final ITable TABLE_CLIENT = ClientCache.getTable(DataSourceType.ADB_FOR_PG.getVal());
+
 
     private static final AdbForPgSourceDTO source = AdbForPgSourceDTO.builder()
             .url("jdbc:postgresql://gp-uf6090cj8371507dbo-master.gpdbmaster.rds.aliyuncs.com/")
@@ -274,8 +281,13 @@ public class AdbForPgTest extends BaseTest {
     }
 
     @Test
-    public void getTable() {
+    public void alterTableParam() {
+        Table tableBefore = client.getTable(source, SqlQueryDTO.builder().tableName("loader_test").build());
+        Assert.assertEquals("table comment", tableBefore.getComment());
+        Map<String, String> params = Maps.newHashMap();
+        params.put("comment", "table_comment");
+        TABLE_CLIENT.alterTableParams(source, "loader_test", params);
         Table table = client.getTable(source, SqlQueryDTO.builder().tableName("loader_test").build());
-        Assert.assertEquals("table comment", table.getComment());
+        Assert.assertEquals("table_comment", table.getComment());
     }
 }
