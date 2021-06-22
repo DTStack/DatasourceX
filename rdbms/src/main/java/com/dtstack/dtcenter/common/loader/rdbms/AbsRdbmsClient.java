@@ -575,7 +575,21 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
     @Override
     public Table getTable(ISourceDTO source, SqlQueryDTO queryDTO) {
-        return new Table();
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        Table table = new Table();
+        try {
+            List<ColumnMetaDTO> columnMetaData = getColumnMetaData(source, queryDTO);
+            String tableComment = getTableMetaComment(source, queryDTO);
+            table.setColumns(columnMetaData);
+            table.setName(queryDTO.getTableName());
+            table.setComment(tableComment);
+        } catch (Exception e) {
+            throw new DtLoaderException(String.format("SQL executed exception: %s", e.getMessage()), e);
+        } finally {
+            DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
+        }
+        return table;
     }
 
     /**

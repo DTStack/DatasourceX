@@ -63,6 +63,12 @@ public class PostgresqlClient extends AbsRdbmsClient {
     // 创建 schema
     private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
 
+    // 查询表注释
+    private static final String TABLE_COMMENT = "select relname as tabname, cast(obj_description(oid,'pg_class') as varchar) as comment from pg_class c where relname = '%s' %s";
+
+    // 查询 schema 的 oid（主键）
+    private static final String SCHEMA_RECORD_OID = " and relnamespace in (select oid from pg_namespace where nspname = '%s')";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new PostgresqlConnFactory();
@@ -90,9 +96,10 @@ public class PostgresqlClient extends AbsRdbmsClient {
                 constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
             }
             //大小写区分，不传schema默认获取所有表，并且表名签名拼接schema，格式："schema"."tableName"
+            String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : postgresqlSourceDTO.getSchema();
             String querySql;
-            if (StringUtils.isNotBlank(postgresqlSourceDTO.getSchema())) {
-                querySql = queryDTO.getView() ? String.format(SHOW_TABLE_AND_VIEW_BY_SCHEMA_SQL, postgresqlSourceDTO.getSchema()) : String.format(SHOW_TABLE_BY_SCHEMA_SQL, postgresqlSourceDTO.getSchema(), constr.toString());
+            if (StringUtils.isNotBlank(schema)) {
+                querySql = queryDTO.getView() ? String.format(SHOW_TABLE_AND_VIEW_BY_SCHEMA_SQL, schema) : String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema, constr.toString());
             }else {
                 querySql = queryDTO.getView() ? String.format(ALL_TABLE_AND_VIEW_SQL, constr.toString()) : String.format(ALL_TABLE_SQL, constr.toString());
             }
@@ -118,9 +125,9 @@ public class PostgresqlClient extends AbsRdbmsClient {
         ResultSet resultSet = null;
         try {
             statement = postgresqlSourceDTO.getConnection().createStatement();
-            resultSet = statement.executeQuery(String.format("select relname as tabname,\n" +
-                    "cast(obj_description(relfilenode,'pg_class') as varchar) as comment from pg_class c\n" +
-                    "where  relkind = 'r' and relname = '%s'", queryDTO.getTableName()));
+            String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : postgresqlSourceDTO.getSchema();
+            String schemaOidSql = StringUtils.isNotBlank(schema) ? String.format(SCHEMA_RECORD_OID, schema) : "";
+            resultSet = statement.executeQuery(String.format(TABLE_COMMENT, queryDTO.getTableName(), schemaOidSql));
             while (resultSet.next()) {
                 String dbTableName = resultSet.getString(1);
                 if (dbTableName.equalsIgnoreCase(queryDTO.getTableName())) {
@@ -270,7 +277,8 @@ public class PostgresqlClient extends AbsRdbmsClient {
     @Override
     protected String dealSql(ISourceDTO iSourceDTO, SqlQueryDTO sqlQueryDTO){
         PostgresqlSourceDTO postgresqlSourceDTO = (PostgresqlSourceDTO)iSourceDTO;
-        return "select * from " + transferSchemaAndTableName(postgresqlSourceDTO.getSchema(), sqlQueryDTO.getTableName());
+        String schema = StringUtils.isNotBlank(sqlQueryDTO.getSchema()) ? sqlQueryDTO.getSchema() : postgresqlSourceDTO.getSchema();
+        return "select * from " + transferSchemaAndTableName(schema, sqlQueryDTO.getTableName());
     }
 
     @Override
