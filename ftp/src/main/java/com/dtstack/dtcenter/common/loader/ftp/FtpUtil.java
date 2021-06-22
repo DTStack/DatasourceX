@@ -1,6 +1,6 @@
 package com.dtstack.dtcenter.common.loader.ftp;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import com.jcraft.jsch.ChannelSftp;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -8,10 +8,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
@@ -61,7 +60,50 @@ public class FtpUtil {
      * @return 文件名集合
      */
     public static List<String> getSFTPFileNames(SFTPHandler handler, String path, Boolean includeDir, Boolean recursive, Integer maxNum, String regexStr) {
-        return getSFTPFileNamesByPath(handler, path, includeDir, recursive, maxNum, Sets.newHashSet(), regexStr);
+        List<String> fileNames = Lists.newArrayList();
+        if (handler == null) {
+            return fileNames;
+        }
+        // SFTP 文件夹队列
+        LinkedList<String> dirQueue = Lists.newLinkedList();
+        // 添加队列头信息
+        dirQueue.add(path);
+        try {
+            while (!dirQueue.isEmpty()) {
+                // 取出队列中的第一个元素
+                String dirPath = dirQueue.removeFirst();
+                Vector vector = handler.listFile(dirPath);
+                for (Object single : vector) {
+                    ChannelSftp.LsEntry lsEntry = (ChannelSftp.LsEntry) single;
+                    if (lsEntry.getAttrs().isDir() && !(lsEntry.getFilename().equals(".") || lsEntry.getFilename().equals(".."))) {
+                        if (includeDir) {
+                            if (fileNames.size() == maxNum) {
+                                // 清空队列，退出循环
+                                dirQueue.clear();
+                                break;
+                            }
+                            listAddByRegex(fileNames, regexStr, lsEntry.getFilename(), dirPath);
+                        }
+                        if (recursive) {
+                            // 如果循环则将文件路径添加到队列中
+                            dirQueue.add(dirPath + "/" + lsEntry.getFilename());
+                        }
+                    } else if (!lsEntry.getAttrs().isDir()) {
+                        if (fileNames.size() == maxNum) {
+                            // 清空队列，退出循环
+                            dirQueue.clear();
+                            break;
+                        }
+                        listAddByRegex(fileNames, regexStr, lsEntry.getFilename(), dirPath);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            handler.close();
+        }
+        return fileNames;
     }
 
     /**
@@ -75,79 +117,69 @@ public class FtpUtil {
      * @return 文件名集合
      */
     public static List<String> getFTPFileNames(FTPClient ftpClient, String path, Boolean includeDir, Boolean recursive, Integer maxNum, String regexStr) {
-        return getFTPFileNamesByPath(ftpClient, path, includeDir, recursive, maxNum, Sets.newHashSet(), regexStr);
-    }
-
-    private static List<String> getSFTPFileNamesByPath(SFTPHandler handler, String path, Boolean includeDir, Boolean recursive, Integer maxNum, Set<String> fileNames, String regexStr) {
-        if (handler == null) {
-            return new ArrayList<>();
+        List<String> fileNames = Lists.newArrayList();
+        if (ftpClient == null) {
+            return fileNames;
         }
+        // SFTP 文件夹队列
+        LinkedList<String> dirQueue = Lists.newLinkedList();
+        // 添加队列头信息
+        dirQueue.add(path);
         try {
-            Vector vector = handler.listFile(path);
-            for (Object single : vector) {
-                ChannelSftp.LsEntry lsEntry = (ChannelSftp.LsEntry) single;
-                if (lsEntry.getAttrs().isDir() && !(lsEntry.getFilename().equals(".") || lsEntry.getFilename().equals(".."))) {
-                    if (includeDir) {
+            while (!dirQueue.isEmpty()) {
+                // 取出队列中的第一个元素
+                String dirPath = dirQueue.removeFirst();
+                FTPFile[] ftpFiles = ftpClient.listFiles(dirPath);
+                if (ArrayUtils.isEmpty(ftpFiles)) {
+                    return Collections.emptyList();
+                }
+                for (FTPFile file : ftpFiles) {
+                    if (file.isDirectory() && !(file.getName().equals(".") || file.getName().equals(".."))) {
+                        if (includeDir) {
+                            if (fileNames.size() == maxNum) {
+                                break;
+                            }
+                            listAddByRegex(fileNames, regexStr, file.getName(), dirPath);
+                        }
+                        if (recursive) {
+                            // 清空队列，退出循环
+                            dirQueue.clear();
+                            // 如果循环则将文件路径添加到队列中
+                            dirQueue.add(dirPath + "/" + file.getName());
+                        }
+                    } else if (!file.isDirectory()) {
                         if (fileNames.size() == maxNum) {
+                            // 清空队列，退出循环
+                            dirQueue.clear();
                             break;
                         }
-                        listAddByRegex(fileNames, regexStr, lsEntry.getFilename(), path);
+                        listAddByRegex(fileNames, regexStr, file.getName(), dirPath);
                     }
-                    if (recursive) {
-                        getSFTPFileNamesByPath(handler, path + "/" + lsEntry.getFilename(), includeDir, true, maxNum, fileNames, regexStr);
-                    }
-                } else if (!lsEntry.getAttrs().isDir()) {
-                    if (fileNames.size() == maxNum) {
-                        break;
-                    }
-                    listAddByRegex(fileNames, regexStr, lsEntry.getFilename(), path);
                 }
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {
-            handler.close();
+            try {
+                ftpClient.disconnect();
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
         }
-        return new ArrayList<>(fileNames);
+        return fileNames;
     }
 
-    private static void listAddByRegex(Set<String> fileNames, String regexStr, String fileName, String namePrefix) {
+    /**
+     * 根据传入正则判断是否匹配，匹配则放入 list 中
+     *
+     * @param fileNames  文件名集合
+     * @param regexStr   正则表达式
+     * @param fileName   文件名
+     * @param namePrefix 文件前缀（路径）
+     */
+    private static void listAddByRegex(List<String> fileNames, String regexStr, String fileName, String namePrefix) {
         if (StringUtils.isBlank(regexStr) || Pattern.compile(regexStr).matcher(fileName).matches()) {
             fileNames.add((namePrefix + "/" + fileName).replaceAll("//*", "/"));
         }
-    }
-
-    private static List<String> getFTPFileNamesByPath(FTPClient ftpClient, String path, Boolean includeDir, Boolean recursive, Integer maxNum, Set<String> fileNames, String regexStr) {
-        if (ftpClient == null) {
-            return new ArrayList<>();
-        }
-        try {
-            FTPFile[] ftpFiles = ftpClient.listFiles(path);
-            if (ArrayUtils.isEmpty(ftpFiles)) {
-                return Collections.emptyList();
-            }
-            for (FTPFile file : ftpFiles) {
-                if (file.isDirectory() && !(file.getName().equals(".") || file.getName().equals(".."))) {
-                    if (includeDir) {
-                        if (fileNames.size() == maxNum) {
-                            break;
-                        }
-                        listAddByRegex(fileNames, regexStr, file.getName(), path);
-                    }
-                    if (recursive) {
-                        getFTPFileNamesByPath(ftpClient, path + "/" + file.getName(), includeDir, true, maxNum, fileNames, regexStr);
-                    }
-                } else if (!file.isDirectory()) {
-                    if (fileNames.size() == maxNum) {
-                        break;
-                    }
-                    listAddByRegex(fileNames, regexStr, file.getName(), path);
-                }
-            }
-            return new ArrayList<>(fileNames);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-        return new ArrayList<>(fileNames);
     }
 }
