@@ -4,7 +4,6 @@ import com.dtstack.dtcenter.common.loader.common.nosql.AbsNoSqlClient;
 import com.dtstack.dtcenter.common.loader.common.utils.AddressUtil;
 import com.dtstack.dtcenter.loader.dto.source.FtpSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
@@ -29,14 +28,18 @@ public class FtpClient<T> extends AbsNoSqlClient<T> {
             return Boolean.FALSE;
         }
         if (StringUtils.equalsIgnoreCase(ProtocolEnum.SFTP.name(), ftpSourceDTO.getProtocol())) {
-            SFTPHandler sftpHandler = FtpClientFactory.getSFTPHandler(ftpSourceDTO);
-            sftpHandler.close();
+            SFTPHandler sftpHandler = null;
+            try {
+                sftpHandler = FtpClientFactory.getSFTPHandler(ftpSourceDTO);
+            } finally {
+                if (Objects.nonNull(sftpHandler)) {
+                    sftpHandler.close();
+                }
+            }
         } else {
             FTPClient ftpClient = null;
             try {
                 ftpClient = FtpClientFactory.getFtpClient(ftpSourceDTO);
-            } catch (Exception e) {
-                throw new DtLoaderException(e.getMessage(), e);
             } finally {
                 if (Objects.nonNull(ftpClient)) {
                     try {
