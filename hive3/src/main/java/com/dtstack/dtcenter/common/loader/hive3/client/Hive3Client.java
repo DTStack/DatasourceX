@@ -566,6 +566,10 @@ public class Hive3Client extends AbsRdbmsClient {
                 }
             }
         }
+        // text 未获取到分隔符情况下添加默认值
+        if (StringUtils.equalsIgnoreCase(StoredType.TEXTFILE.getValue(), tableInfo.getStoreType()) && Objects.isNull(tableInfo.getDelim())) {
+            tableInfo.setDelim(DtClassConsistent.HiveConsistent.DEFAULT_FIELD_DELIMIT);
+        }
     }
 
     @Override
