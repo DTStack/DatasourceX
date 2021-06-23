@@ -100,8 +100,6 @@ public class FtpUtil {
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-        } finally {
-            handler.close();
         }
         return fileNames;
     }
@@ -159,12 +157,6 @@ public class FtpUtil {
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-        } finally {
-            try {
-                ftpClient.disconnect();
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
         }
         return fileNames;
     }

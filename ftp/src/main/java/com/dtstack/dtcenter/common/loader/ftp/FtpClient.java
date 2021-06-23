@@ -5,10 +5,12 @@ import com.dtstack.dtcenter.common.loader.common.utils.AddressUtil;
 import com.dtstack.dtcenter.loader.dto.source.FtpSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -16,6 +18,7 @@ import java.util.List;
  * @Date ：Created in 22:52 2020/2/27
  * @Description：FTP 客户端
  */
+@Slf4j
 public class FtpClient<T> extends AbsNoSqlClient<T> {
 
     @Override
@@ -29,11 +32,19 @@ public class FtpClient<T> extends AbsNoSqlClient<T> {
             SFTPHandler sftpHandler = FtpClientFactory.getSFTPHandler(ftpSourceDTO);
             sftpHandler.close();
         } else {
+            FTPClient ftpClient = null;
             try {
-                FTPClient ftpClient = FtpClientFactory.getFtpClient(ftpSourceDTO);
-                ftpClient.disconnect();
+                ftpClient = FtpClientFactory.getFtpClient(ftpSourceDTO);
             } catch (Exception e) {
                 throw new DtLoaderException(e.getMessage(), e);
+            } finally {
+                if (Objects.nonNull(ftpClient)) {
+                    try {
+                        ftpClient.disconnect();
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
             }
         }
         return true;
@@ -44,9 +55,23 @@ public class FtpClient<T> extends AbsNoSqlClient<T> {
         FtpSourceDTO ftpSourceDTO = (FtpSourceDTO) sourceDTO;
         List<String> fileNames;
         if (StringUtils.equalsIgnoreCase(ProtocolEnum.SFTP.name(), ftpSourceDTO.getProtocol())) {
-            fileNames = FtpUtil.getSFTPFileNames(FtpClientFactory.getSFTPHandler(ftpSourceDTO), path, includeDir, recursive, maxNum, regexStr);
+            SFTPHandler sftpHandler = FtpClientFactory.getSFTPHandler(ftpSourceDTO);
+            try {
+                fileNames = FtpUtil.getSFTPFileNames(sftpHandler, path, includeDir, recursive, maxNum, regexStr);
+            } finally {
+                sftpHandler.close();
+            }
         } else {
-            fileNames = FtpUtil.getFTPFileNames(FtpClientFactory.getFtpClient(ftpSourceDTO), path, includeDir, recursive, maxNum, regexStr);
+            FTPClient ftpClient = FtpClientFactory.getFtpClient(ftpSourceDTO);
+            try {
+                fileNames = FtpUtil.getFTPFileNames(ftpClient, path, includeDir, recursive, maxNum, regexStr);
+            } finally {
+                try {
+                    ftpClient.disconnect();
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
         }
         fileNames.sort(String::compareTo);
         return fileNames;
