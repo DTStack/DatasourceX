@@ -135,4 +135,11 @@ public interface DtClassConsistent {
          */
         public static final String KEY_HBASE_ZOOKEEPER_QUORUM = "hbase.zookeeper.quorum";
     }
+
+    class HiveConsistent {
+        /**
+         * Hive text 表默认表分隔符
+         */
+        public static final String DEFAULT_FIELD_DELIMIT = "\001";
+    }
 }
