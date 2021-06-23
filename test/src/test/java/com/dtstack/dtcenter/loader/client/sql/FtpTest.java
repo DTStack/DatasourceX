@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.source.FtpSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -15,7 +16,10 @@ import org.junit.Test;
  * @Description：FTP 测试
  */
 public class FtpTest extends BaseTest {
-    FtpSourceDTO source = FtpSourceDTO.builder()
+
+    private static final IClient CLIENT = ClientCache.getClient(DataSourceType.FTP.getVal());
+
+    private static final FtpSourceDTO SFTP_SOURCE_DTO = FtpSourceDTO.builder()
             .url("172.16.100.251")
             .hostPort("22")
             .username("root")
@@ -23,43 +27,43 @@ public class FtpTest extends BaseTest {
             .protocol("sftp")
             .build();
 
-    @Test
-    public void testCon() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.FTP.getVal());
-        Boolean isConnected = client.testCon(source);
-        if (Boolean.FALSE.equals(isConnected)) {
-            throw new DtLoaderException("connection exception");
-        }
-    }
+    private static final FtpSourceDTO FTP_SOURCE_DTO = FtpSourceDTO.builder()
+            .url("172.16.100.251")
+            .hostPort("21")
+            .username("admin")
+            .password("dt@sz.com")
+            .protocol("ftp")
+            .build();
 
-    @Test(expected = DtLoaderException.class)
-    public void testCon_1() throws Exception {
-        FtpSourceDTO source = FtpSourceDTO.builder()
-                .url("172.16.100.251")
-                .username("root")
-                .hostPort("22")
-                .password("dt@sz.com")
-                .build();
-        IClient client = ClientCache.getClient(DataSourceType.FTP.getVal());
-        Boolean isConnected = client.testCon(source);
+    @Test
+    public void testConSFTP() {
+        Boolean isConnected = CLIENT.testCon(SFTP_SOURCE_DTO);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("connection exception");
         }
     }
 
     @Test
-    public void testCon_2() throws Exception {
-        FtpSourceDTO source = FtpSourceDTO.builder()
-                .url("172.16.8.173")
-                .protocol("ftp")
-                .hostPort("21")
-                .username("Administrator")
-                .password("XN#passw0rd2019")
-                .build();
-        IClient client = ClientCache.getClient(DataSourceType.FTP.getVal());
-        Boolean isConnected = client.testCon(source);
+    public void testConFTP(){
+        Boolean isConnected = CLIENT.testCon(FTP_SOURCE_DTO);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("connection exception");
         }
+    }
+
+    @Test
+    public void listSftpFileNames() {
+        Assert.assertEquals(3, CLIENT.listFileNames(SFTP_SOURCE_DTO, "/tmp", true, true, 3, ".*").size());
+        Assert.assertEquals(3, CLIENT.listFileNames(SFTP_SOURCE_DTO, "/tmp", false, false, 3, ".*").size());
+        Assert.assertEquals(3, CLIENT.listFileNames(SFTP_SOURCE_DTO, "/tmp", true, false, 3, ".*").size());
+        Assert.assertEquals(3, CLIENT.listFileNames(SFTP_SOURCE_DTO, "/tmp", false, true, 3, ".*").size());
+    }
+
+    @Test
+    public void listFtpFileNames() {
+        Assert.assertEquals(3, CLIENT.listFileNames(FTP_SOURCE_DTO, "/tmp", true, true, 3, ".*").size());
+        Assert.assertEquals(3, CLIENT.listFileNames(FTP_SOURCE_DTO, "/tmp", false, false, 3, ".*").size());
+        Assert.assertEquals(3, CLIENT.listFileNames(FTP_SOURCE_DTO, "/tmp", true, false, 3, ".*").size());
+        Assert.assertEquals(3, CLIENT.listFileNames(FTP_SOURCE_DTO, "/tmp", false, true, 3, ".*").size());
     }
 }

@@ -177,4 +177,10 @@ public class DataSourceClientProxy<T> implements IClient<T> {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getVersion(source),
                 targetClient.getClass().getClassLoader());
     }
+
+    @Override
+    public List<String> listFileNames(ISourceDTO sourceDTO, String path, Boolean includeDir, Boolean recursive, Integer maxNum, String regexStr) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.listFileNames(sourceDTO, path, includeDir, recursive, maxNum, regexStr),
+                targetClient.getClass().getClassLoader());
+    }
 }
