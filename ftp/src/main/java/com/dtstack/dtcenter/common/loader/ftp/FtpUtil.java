@@ -137,13 +137,13 @@ public class FtpUtil {
                     if (file.isDirectory() && !(file.getName().equals(".") || file.getName().equals(".."))) {
                         if (includeDir) {
                             if (fileNames.size() == maxNum) {
+                                // 清空队列，退出循环
+                                dirQueue.clear();
                                 break;
                             }
                             listAddByRegex(fileNames, regexStr, file.getName(), dirPath);
                         }
                         if (recursive) {
-                            // 清空队列，退出循环
-                            dirQueue.clear();
                             // 如果循环则将文件路径添加到队列中
                             dirQueue.add(dirPath + "/" + file.getName());
                         }
