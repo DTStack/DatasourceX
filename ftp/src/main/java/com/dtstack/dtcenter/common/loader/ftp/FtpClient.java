@@ -58,19 +58,25 @@ public class FtpClient<T> extends AbsNoSqlClient<T> {
         FtpSourceDTO ftpSourceDTO = (FtpSourceDTO) sourceDTO;
         List<String> fileNames;
         if (StringUtils.equalsIgnoreCase(ProtocolEnum.SFTP.name(), ftpSourceDTO.getProtocol())) {
-            SFTPHandler sftpHandler = FtpClientFactory.getSFTPHandler(ftpSourceDTO);
+            SFTPHandler sftpHandler = null;
             try {
+                sftpHandler = FtpClientFactory.getSFTPHandler(ftpSourceDTO);
                 fileNames = FtpUtil.getSFTPFileNames(sftpHandler, path, includeDir, recursive, maxNum, regexStr);
             } finally {
-                sftpHandler.close();
+                if (Objects.nonNull(sftpHandler)) {
+                    sftpHandler.close();
+                }
             }
         } else {
-            FTPClient ftpClient = FtpClientFactory.getFtpClient(ftpSourceDTO);
+            FTPClient ftpClient = null;
             try {
+                ftpClient = FtpClientFactory.getFtpClient(ftpSourceDTO);
                 fileNames = FtpUtil.getFTPFileNames(ftpClient, path, includeDir, recursive, maxNum, regexStr);
             } finally {
                 try {
-                    ftpClient.disconnect();
+                    if (Objects.nonNull(ftpClient)) {
+                        ftpClient.disconnect();
+                    }
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }
