@@ -38,11 +38,17 @@ public class InfluxDBClient<T> extends AbsNoSqlClient<T> {
     // 获取表字段信息 SQL
     private static final String SHOW_FIELD = "SHOW field keys from %s";
 
+    // 获取表 tag 信息 SQL
+    private static final String SHOW_TAG = "SHOW tag keys from %s";
+
     // time 字段
     private static final String TIME_KEY = "time";
 
     // time 字段类型
     private static final String TIME_TYPE = "LONG";
+
+    // time 字段类型
+    private static final String TAG_TYPE = "STRING";
 
     @Override
     public Boolean testCon(ISourceDTO source) {
@@ -106,26 +112,44 @@ public class InfluxDBClient<T> extends AbsNoSqlClient<T> {
             throw new DtLoaderException("table name cannot be empty.");
         }
         InfluxDB influxDB = InfluxDBConnFactory.getClient(InfluxDBUtil.dealDb(source, queryDTO));
-        List<List<Object>> result = InfluxDBUtil.queryWithList(influxDB, String.format(SHOW_FIELD, queryDTO.getTableName()), true);
+        List<List<Object>> fieldResult = InfluxDBUtil.queryWithList(influxDB, String.format(SHOW_FIELD, queryDTO.getTableName()), true);
+        List<List<Object>> tagResult = InfluxDBUtil.queryWithList(influxDB, String.format(SHOW_TAG, queryDTO.getTableName()), true);
         List<ColumnMetaDTO> columnMetas = Lists.newArrayList();
         // 添加 time 字段
         ColumnMetaDTO timeColumn = new ColumnMetaDTO();
         timeColumn.setKey(TIME_KEY);
         timeColumn.setType(TIME_TYPE);
         columnMetas.add(timeColumn);
-        if (CollectionUtils.isEmpty(result) || result.size() < 2) {
-            return columnMetas;
-        }
-        for (int i = 1; i < result.size(); i++) {
-            List<Object> row = result.get(i);
-            if (CollectionUtils.isNotEmpty(row) && row.size() == 2) {
-                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
-                columnMetaDTO.setKey(Objects.nonNull(row.get(0)) ? row.get(0).toString() : "");
-                columnMetaDTO.setType(Objects.nonNull(row.get(1)) ? row.get(1).toString() : "");
-                columnMetas.add(columnMetaDTO);
-            }
-        }
+        addColumnFromResult(columnMetas, fieldResult);
+        addColumnFromResult(columnMetas, tagResult);
         return columnMetas;
     }
 
+    /**
+     * 从结果集添加 column 字段，包括 tag 和 field
+     *
+     * @param columnMetas column 集合
+     * @param result      查询结果集
+     */
+    private void addColumnFromResult(List<ColumnMetaDTO> columnMetas, List<List<Object>> result) {
+        // result 结果集 第一行为字段名，后面为字段值，长度小于 2 直接返回
+        if (CollectionUtils.isEmpty(result) || result.size() < 2) {
+            return;
+        }
+        for (int i = 1; i < result.size(); i++) {
+            // 查询 field 返回两列数据分别是 fieldKey 和 fieldType，查询 tag 返回一列数据是 tagKey
+            List<Object> row = result.get(i);
+            if (CollectionUtils.isNotEmpty(row) && row.size() >= 1 && row.size() <= 2) {
+                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+                if (row.size() == 2) {
+                    columnMetaDTO.setKey(Objects.nonNull(row.get(0)) ? row.get(0).toString() : "");
+                    columnMetaDTO.setType(Objects.nonNull(row.get(1)) ? row.get(1).toString() : "");
+                } else {
+                    columnMetaDTO.setKey(Objects.nonNull(row.get(0)) ? row.get(0).toString() : "");
+                    columnMetaDTO.setType(TAG_TYPE);
+                }
+                columnMetas.add(columnMetaDTO);
+            }
+        }
+    }
 }
