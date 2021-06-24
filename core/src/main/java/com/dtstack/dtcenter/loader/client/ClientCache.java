@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.loader.client.kerberos.KerberosClientFactory;
 import com.dtstack.dtcenter.loader.client.mq.KafkaClientFactory;
 import com.dtstack.dtcenter.loader.client.sql.DataSourceClientFactory;
 import com.dtstack.dtcenter.loader.client.table.TableClientFactory;
+import com.dtstack.dtcenter.loader.client.tsdb.TsdbClientFactory;
 import com.dtstack.dtcenter.loader.exception.ClientAccessException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Maps;
@@ -51,6 +52,11 @@ public class ClientCache {
      * table 客户端缓存
      */
     private static final Map<String, ITable> TABLE_CLIENT = Maps.newConcurrentMap();
+
+    /**
+     * tsdb 客户端缓存
+     */
+    private static final Map<String, ITsdb> TSDB_CLIENT = Maps.newConcurrentMap();
 
     protected static String userDir = String.format("%s/pluginLibs/", System.getProperty("user.dir"));
 
@@ -288,6 +294,35 @@ public class ClientCache {
             }
 
             return table;
+        } catch (Throwable e) {
+            throw new ClientAccessException(e);
+        }
+    }
+
+    /**
+     * 获取 tsdb Client 客户端
+     *
+     * @param sourceType 数据源类型
+     * @return tsdb Client 客户端
+     */
+    public static ITsdb getTsdb(Integer sourceType) {
+        String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
+        return getTsdb(pluginName);
+    }
+
+    private static ITsdb getTsdb(String pluginName) {
+        try {
+            ITsdb tsdb = TSDB_CLIENT.get(pluginName);
+            if (tsdb == null) {
+                synchronized (TSDB_CLIENT) {
+                    if (tsdb == null) {
+                        tsdb = TsdbClientFactory.createPluginClass(pluginName);
+                        TSDB_CLIENT.put(pluginName, tsdb);
+                    }
+                }
+            }
+
+            return tsdb;
         } catch (Throwable e) {
             throw new ClientAccessException(e);
         }
