@@ -1,14 +1,13 @@
 package com.dtstack.dtcenter.common.loader.ftp;
 
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import com.jcraft.jsch.ChannelSftp;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -23,6 +22,8 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public class FtpUtil {
+
+    private static final Integer MAX_DFS = 1000;
 
     /**
      * FTP 默认端口
@@ -69,11 +70,19 @@ public class FtpUtil {
         // 添加队列头信息
         dirQueue.add(path);
         try {
+            int currentDfs = 0;
             while (!dirQueue.isEmpty()) {
                 // 取出队列中的第一个元素
                 String dirPath = dirQueue.removeFirst();
                 Vector vector = handler.listFile(dirPath);
                 for (Object single : vector) {
+                    if (++currentDfs >= MAX_DFS) {
+                        log.warn("Search more than {} files, stop looking for files", MAX_DFS);
+                        if (fileNames.isEmpty()) {
+                            throw new DtLoaderException(String.format("The first %1$s files in the current folder do not match, please modify the matching rules", MAX_DFS));
+                        }
+                        return fileNames;
+                    }
                     ChannelSftp.LsEntry lsEntry = (ChannelSftp.LsEntry) single;
                     if (lsEntry.getAttrs().isDir() && !(lsEntry.getFilename().equals(".") || lsEntry.getFilename().equals(".."))) {
                         if (includeDir) {
@@ -124,14 +133,19 @@ public class FtpUtil {
         // 添加队列头信息
         dirQueue.add(path);
         try {
+            int currentDfs = 0;
             while (!dirQueue.isEmpty()) {
                 // 取出队列中的第一个元素
                 String dirPath = dirQueue.removeFirst();
                 FTPFile[] ftpFiles = ftpClient.listFiles(dirPath);
-                if (ArrayUtils.isEmpty(ftpFiles)) {
-                    return Collections.emptyList();
-                }
                 for (FTPFile file : ftpFiles) {
+                    if (++currentDfs >= MAX_DFS) {
+                        log.warn("Search more than {} files, stop looking for files", MAX_DFS);
+                        if (fileNames.isEmpty()) {
+                            throw new DtLoaderException(String.format("The first %1$s files in the current folder do not match, please modify the matching rules", MAX_DFS));
+                        }
+                        return fileNames;
+                    }
                     if (file.isDirectory() && !(file.getName().equals(".") || file.getName().equals(".."))) {
                         if (includeDir) {
                             if (fileNames.size() == maxNum) {
