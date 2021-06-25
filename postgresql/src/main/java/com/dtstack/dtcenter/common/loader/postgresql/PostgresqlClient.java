@@ -12,6 +12,8 @@ import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
@@ -20,6 +22,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -68,6 +71,52 @@ public class PostgresqlClient extends AbsRdbmsClient {
 
     // 查询 schema 的 oid（主键）
     private static final String SCHEMA_RECORD_OID = " and relnamespace in (select oid from pg_namespace where nspname = '%s')";
+
+    // 获取指定 schema 下面表的字段信息
+    private static final String  SHOW_TABLE_COLUMN_BY_SCHEMA = "SELECT array_to_string(ARRAY(select concat( c1, c2, c3, c4) as column_line from (select column_name || ' ' || data_type as c1,case when character_maximum_length > 0 then '(' || character_maximum_length || ')' end as c2,case when is_nullable = 'NO' then ' NOT NULL' end as c3,case when column_default is not Null then ' DEFAULT' end || ' ' || replace(column_default, '::character varying', '') as c4 from information_schema.columns where table_name = '%1$s' and table_schema='%2$s' order by ordinal_position) as string_columns), ',') as column";
+
+    // 获取指定表的字段信息
+    private static final String SHOW_TABLE_COLUMN = "SELECT array_to_string(ARRAY(select concat( c1, c2, c3, c4) as column_line from (select column_name || ' ' || data_type as c1,case when character_maximum_length > 0 then '(' || character_maximum_length || ')' end as c2,case when is_nullable = 'NO' then ' NOT NULL' end as c3,case when column_default is not Null then ' DEFAULT' end || ' ' || replace(column_default, '::character varying', '') as c4 from information_schema.columns where table_name = '%1$s' order by ordinal_position) as string_columns), ',') as column";
+
+    // 获取指定 schema 下面表的约束
+    private static final String SHOW_TABLE_CONSTRAINT_BY_SCHEMA = "select array_to_string(\n" +
+            "array(\n" +
+            "select concat(' CONSTRAINT ',conname ,c,u,p,f)   from (\n" +
+            "select conname,\n" +
+            "case when contype='c' then ' CHECK('|| consrc ||')' end  as c  ,\n" +
+            "case when contype='u' then ' UNIQUE('|| ( SELECT array_to_string(ARRAY (SELECT A.attname FROM pg_attribute A WHERE A.attrelid = (select oid from pg_class where relname= '%1$s' and relnamespace = (select oid from pg_namespace where nspname = '%2$s')) AND A.attnum IN ( SELECT UNNEST ( conkey ) FROM pg_constraint C WHERE contype = 'u' AND C.conrelid = ((select oid from pg_class where relname= '%1$s' and relnamespace = (select oid from pg_namespace where nspname = '%2$s'))) AND ( array_to_string( conkey, ',' ) IS NOT NULL))),',') ) ||')' end as u ,\n" +
+            "case when contype='p' then ' PRIMARY KEY ('|| ( SELECT array_to_string(ARRAY (SELECT A.attname FROM pg_attribute A WHERE A.attrelid = (select oid from pg_class where relname= '%1$s' and relnamespace = (select oid from pg_namespace where nspname = '%2$s')) AND A.attnum IN ( SELECT UNNEST ( conkey ) FROM pg_constraint C WHERE contype = 'p' AND C.conrelid = ((select oid from pg_class where relname= '%1$s' and relnamespace = (select oid from pg_namespace where nspname = '%2$s'))) AND ( array_to_string( conkey, ',' ) IS NOT NULL))),',')) ||')' end  as p  ,\n" +
+            "case when contype='f' then ' FOREIGN KEY('|| ( SELECT array_to_string(ARRAY (SELECT A.attname FROM pg_attribute A WHERE A.attrelid = (select oid from pg_class where relname= '%1$s' and relnamespace = (select oid from pg_namespace where nspname = '%2$s')) AND A.attnum IN ( SELECT UNNEST ( conkey ) FROM pg_constraint C WHERE contype = 'u' AND C.conrelid = ((select oid from pg_class where relname= '%1$s' and relnamespace = (select oid from pg_namespace where nspname = '%2$s'))) AND ( array_to_string( conkey, ',' ) IS NOT NULL))),',')) ||') REFERENCES '|| \n" +
+            "(select p.relname from pg_class p where p.oid=c.confrelid )  || '('|| ( SELECT array_to_string(ARRAY (SELECT A.attname FROM pg_attribute A WHERE A.attrelid = ((select oid from pg_class where relname= '%1$s' and relnamespace = (select oid from pg_namespace where nspname = '%2$s'))) AND A.attnum IN ( SELECT UNNEST ( conkey ) FROM pg_constraint C WHERE contype = 'u' AND C.conrelid = (select oid from pg_class where relname= '%1$s' and relnamespace = (select oid from pg_namespace where nspname = '%2$s')) AND ( array_to_string( conkey, ',' ) IS NOT NULL))),',') ) ||')' end as  f\n" +
+            "from pg_constraint c\n" +
+            "where contype in('u','c','f','p') and conrelid=( \n" +
+            "select oid  from pg_class  where relname='%1$s' and relnamespace = (select oid from pg_namespace where nspname = '%2$s') \n" +
+            " )\n" +
+            ") as t  \n" +
+            ") ,',' ) as constraint";
+
+    // 获取指定 schema 下面表的约束
+    private static final String SHOW_TABLE_CONSTRAINT = "select array_to_string(\n" +
+            "array(\n" +
+            "select concat(' CONSTRAINT ',conname ,c,u,p,f)   from (\n" +
+            "select conname,\n" +
+            "case when contype='c' then ' CHECK('|| consrc ||')' end  as c  ,\n" +
+            "case when contype='u' then ' UNIQUE('|| ( SELECT array_to_string(ARRAY (SELECT A.attname FROM pg_attribute A WHERE A.attrelid = (select oid from pg_class where relname= '%1$s' ) AND A.attnum IN ( SELECT UNNEST ( conkey ) FROM pg_constraint C WHERE contype = 'u' AND C.conrelid = ((select oid from pg_class where relname= '%1$s' )) AND ( array_to_string( conkey, ',' ) IS NOT NULL))),',') ) ||')' end as u ,\n" +
+            "case when contype='p' then ' PRIMARY KEY ('|| ( SELECT array_to_string(ARRAY (SELECT A.attname FROM pg_attribute A WHERE A.attrelid = (select oid from pg_class where relname= '%1$s' ) AND A.attnum IN ( SELECT UNNEST ( conkey ) FROM pg_constraint C WHERE contype = 'p' AND C.conrelid = ((select oid from pg_class where relname= '%1$s' )) AND ( array_to_string( conkey, ',' ) IS NOT NULL))),',')) ||')' end  as p  ,\n" +
+            "case when contype='f' then ' FOREIGN KEY('|| ( SELECT array_to_string(ARRAY (SELECT A.attname FROM pg_attribute A WHERE A.attrelid = (select oid from pg_class where relname= '%1$s' ) AND A.attnum IN ( SELECT UNNEST ( conkey ) FROM pg_constraint C WHERE contype = 'u' AND C.conrelid = ((select oid from pg_class where relname= '%1$s' )) AND ( array_to_string( conkey, ',' ) IS NOT NULL))),',')) ||') REFERENCES '|| \n" +
+            "(select p.relname from pg_class p where p.oid=c.confrelid )  || '('|| ( SELECT array_to_string(ARRAY (SELECT A.attname FROM pg_attribute A WHERE A.attrelid = ((select oid from pg_class where relname= '%1$s' )) AND A.attnum IN ( SELECT UNNEST ( conkey ) FROM pg_constraint C WHERE contype = 'u' AND C.conrelid = (select oid from pg_class where relname= '%1$s' ) AND ( array_to_string( conkey, ',' ) IS NOT NULL))),',') ) ||')' end as  f\n" +
+            "from pg_constraint c\n" +
+            "where contype in('u','c','f','p') and conrelid=( \n" +
+            "select oid  from pg_class  where relname='%1$s' \n" +
+            " )\n" +
+            ") as t  \n" +
+            ") ,',' ) as constraint";
+
+    // 格式刷 schema 和 表名
+    private static final String SCHEMA_TABLE_FORMAT = "\"%s\".\"%s\"";
+
+    // 建表模版
+    private static final String CREATE_TABLE_TEMPLATE = "CREATE TABLE %s (%s);";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -216,7 +265,41 @@ public class PostgresqlClient extends AbsRdbmsClient {
 
     @Override
     public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException("Not Support");
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
+        PostgresqlSourceDTO postgresqlSourceDTO = (PostgresqlSourceDTO) source;
+        String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : postgresqlSourceDTO.getSchema();
+        List<Map<String, Object>> columnResult;
+        List<Map<String, Object>> constraintResult;
+        String tableName;
+        if (StringUtils.isNotBlank(schema)) {
+            try {
+                columnResult = executeQuery(postgresqlSourceDTO, SqlQueryDTO.builder().sql(String.format(SHOW_TABLE_COLUMN_BY_SCHEMA, queryDTO.getTableName(), schema)).build());
+                constraintResult = executeQuery(postgresqlSourceDTO, SqlQueryDTO.builder().sql(String.format(SHOW_TABLE_CONSTRAINT_BY_SCHEMA, queryDTO.getTableName(), schema)).build());
+                tableName = String.format(SCHEMA_TABLE_FORMAT, schema, queryDTO.getTableName());
+            } finally {
+                DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(postgresqlSourceDTO, clearStatus));
+            }
+        } else {
+            try {
+                columnResult = executeQuery(postgresqlSourceDTO, SqlQueryDTO.builder().sql(String.format(SHOW_TABLE_COLUMN, queryDTO.getTableName())).build());
+                constraintResult = executeQuery(postgresqlSourceDTO, SqlQueryDTO.builder().sql(String.format(SHOW_TABLE_CONSTRAINT, queryDTO.getTableName())).build());
+                tableName = queryDTO.getTableName();
+            } finally {
+                DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(postgresqlSourceDTO, clearStatus));
+            }
+        }
+        if (CollectionUtils.isEmpty(columnResult) || StringUtils.isBlank(MapUtils.getString(columnResult.get(0), "column"))) {
+            throw new DtLoaderException(String.format("Failed to get table %s field", queryDTO.getTableName()));
+        }
+        String columnStr = MapUtils.getString(columnResult.get(0), "column");
+        String constraint = null;
+        if (CollectionUtils.isNotEmpty(constraintResult)) {
+            constraint = MapUtils.getString(constraintResult.get(0), "constraint");
+        }
+        if (StringUtils.isNotBlank(constraint)) {
+            return String.format(CREATE_TABLE_TEMPLATE, tableName, columnStr + " , " +constraint);
+        }
+        return String.format(CREATE_TABLE_TEMPLATE, tableName, columnStr);
     }
 
     @Override

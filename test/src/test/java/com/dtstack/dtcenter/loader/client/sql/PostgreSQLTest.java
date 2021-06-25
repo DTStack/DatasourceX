@@ -324,4 +324,10 @@ public class PostgreSQLTest extends BaseTest {
         Table table = client.getTable(source, SqlQueryDTO.builder().tableName("loader_test").build());
         Assert.assertEquals("table comment", table.getComment());
     }
+
+    @Test
+    public void getCreateTable() {
+        String createTable = client.getCreateTableSql(source, SqlQueryDTO.builder().tableName("loader_test").build());
+        Assert.assertTrue(StringUtils.isNotBlank(createTable));
+    }
 }
