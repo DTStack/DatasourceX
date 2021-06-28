@@ -87,8 +87,9 @@ public enum DataSourceType {
     RESTFUL(47, 128, "Restful", "restful"),
     VERTICA(43, 129, "Vertica", "vertica"),
     INFLUXDB(55, 130, "InfluxDB", "influxdb"),
-    BEATS(16, 131, "Beats", "null"),
-    Spark(1002, 132, "Spark", "spark"),
+    OPENTSDB(56, 131, "OpenTSDB", "opentsdb"),
+    BEATS(16, 132, "Beats", "null"),
+    Spark(1002, 133, "Spark", "spark"),
     ;
 
     DataSourceType(int val, int order, String name, String pluginName) {
