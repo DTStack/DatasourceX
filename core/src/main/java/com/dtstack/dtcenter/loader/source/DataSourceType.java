@@ -38,7 +38,7 @@ public enum DataSourceType {
 
     // MPP
     GREENPLUM6(36, 40, "Greenplum", "greenplum6"),
-    LIBRA(21, 41, "LibrA", "libra"),
+    LIBRA(21, 41, "GaussDB", "libra"),
     GBase_8a(22, 42, "GBase_8a", "gbase"),
 
     // FileSystem
