@@ -61,6 +61,10 @@ public class AdbForPgTest extends BaseTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("comment on table loader_test is 'table comment'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("comment on COLUMN loader_test.id is 'id comment'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("comment on COLUMN loader_test.name is 'name comment'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test values (1, 'nanqi')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_download").build();
@@ -170,7 +174,9 @@ public class AdbForPgTest extends BaseTest {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test").build();
         List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
         Assert.assertEquals("int4",columnMetaData.get(0).getType());
+        Assert.assertEquals("id comment",columnMetaData.get(0).getComment());
         Assert.assertEquals("text",columnMetaData.get(1).getType());
+        Assert.assertEquals("name comment",columnMetaData.get(1).getComment());
     }
 
     /**

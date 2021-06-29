@@ -11,6 +11,7 @@ import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -68,6 +69,9 @@ public class PostgresqlClient extends AbsRdbmsClient {
 
     // 查询表注释
     private static final String TABLE_COMMENT = "select relname as tabname, cast(obj_description(oid,'pg_class') as varchar) as comment from pg_class c where relname = '%s' %s";
+
+    // 查询字段注释
+    private static final String COLUMN_COMMENT = "SELECT A.attname AS column,D.description AS comment FROM pg_class C,pg_attribute A,pg_description D WHERE C.relname = '%s' %s AND A.attnum > 0 AND A.attrelid = C.oid AND D.objoid = A.attrelid AND D.objsubid = A.attnum";
 
     // 查询 schema 的 oid（主键）
     private static final String SCHEMA_RECORD_OID = " and relnamespace in (select oid from pg_namespace where nspname = '%s')";
@@ -190,6 +194,23 @@ public class PostgresqlClient extends AbsRdbmsClient {
             DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(postgresqlSourceDTO, clearStatus));
         }
         return "";
+    }
+
+    @Override
+    protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        Integer clearStatus = beforeQuery(sourceDTO, SqlQueryDTO.builder().build(), false);
+        String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : sourceDTO.getSchema();
+        String columnCommentSql = StringUtils.isNoneBlank(schema) ? String.format(COLUMN_COMMENT, queryDTO.getTableName(), String.format(SCHEMA_RECORD_OID, schema)) : String.format(COLUMN_COMMENT, queryDTO.getTableName(), "");
+        Map<String, String> comments = Maps.newHashMap();
+        try {
+            List<Map<String, Object>> result = executeQuery(sourceDTO, SqlQueryDTO.builder().sql(columnCommentSql).build());
+            for (Map<String, Object> row : result) {
+                comments.put(MapUtils.getString(row, "column"), MapUtils.getString(row, "comment"));
+            }
+        } finally {
+            DBUtil.clearAfterGetConnection(sourceDTO, clearStatus);
+        }
+        return comments;
     }
 
     @Override
