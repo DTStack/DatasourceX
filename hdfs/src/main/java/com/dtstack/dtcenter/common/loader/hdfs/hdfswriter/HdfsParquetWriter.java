@@ -61,13 +61,16 @@ public class HdfsParquetWriter {
 
     private static final String KEY_SCALE = "scale";
 
-
     /**
      * 按位置写入
      *
-     * @return
+     * @param source        数据源信息
+     * @param hdfsWriterDTO hdfs 写入配置类
+     * @param isSetDefault  是否设置默认值
+     * @return 写入条数
+     * @throws IOException io 异常
      */
-    public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
+    public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO, boolean isSetDefault) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         int startLine = hdfsWriterDTO.getStartLine();
         //首行是标题则内容从下一行开始
@@ -104,6 +107,14 @@ public class HdfsParquetWriter {
                 group = new SimpleGroup(schema);
                 for (int i = 0; i < size; i++) {
                     String val = lineArray[i];
+                    // val 为空且不设置默认值时 跳过本次循环
+                    if (StringUtils.isBlank(val) && !isSetDefault) {
+                        continue;
+                    }
+                    // 为 null 时跳过本次循环
+                    if (StringUtils.equalsIgnoreCase(val, HdfsWriter.DEFAULT_NULL)) {
+                        continue;
+                    }
                     String type = hdfsWriterDTO.getColumnsList().get(i).getType().toLowerCase();
                     switch (type) {
                         case "tinyint":
@@ -171,9 +182,13 @@ public class HdfsParquetWriter {
     /**
      * 按名称写入
      *
-     * @return
+     * @param source        数据源信息
+     * @param hdfsWriterDTO hdfs 写入配置类
+     * @param isSetDefault  是否设置默认值
+     * @return 写入条数
+     * @throws IOException io 异常
      */
-    public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
+    public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO, boolean isSetDefault) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         MessageType schema = buildSchema(hdfsWriterDTO.getColumnsList());
         ParquetWriter<Group> writer = getWriter(hdfsSourceDTO, hdfsWriterDTO.getHdfsDirPath(), hdfsWriterDTO.getColumnsList());
@@ -232,6 +247,14 @@ public class HdfsParquetWriter {
                     if (index != -1 && index <= (columnArr.length - 1)) {
                         columnName = hdfsWriterDTO.getColumnsList().get(index).getKey();
                         val = columnArr[index].trim();
+                        // val 为空且不设置默认值时 跳过本次循环
+                        if (StringUtils.isBlank(val) && !isSetDefault) {
+                            continue;
+                        }
+                        // 为 null 时跳过本次循环
+                        if (StringUtils.equalsIgnoreCase(val, HdfsWriter.DEFAULT_NULL)) {
+                            continue;
+                        }
                         String type = hdfsWriterDTO.getColumnsList().get(i).getType().toLowerCase();
                         switch (hdfsWriterDTO.getColumnsList().get(index).getType().toLowerCase()) {
                             case "tinyint":

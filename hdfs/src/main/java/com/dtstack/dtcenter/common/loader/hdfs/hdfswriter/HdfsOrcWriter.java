@@ -49,7 +49,16 @@ public class HdfsOrcWriter {
      **/
     public static final int FLUSH_LINE_NUM = 1000;
 
-    public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
+    /**
+     * 按位置写入
+     *
+     * @param source        数据源信息
+     * @param hdfsWriterDTO hdfs 写入配置类
+     * @param isSetDefault  是否设置默认值
+     * @return 写入条数
+     * @throws IOException io 异常
+     */
+    public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO, boolean isSetDefault) throws IOException {
 
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Boolean topLineIsTitle = hdfsWriterDTO.getTopLineIsTitle();
@@ -94,7 +103,7 @@ public class HdfsOrcWriter {
 
                 List<Object> targetList = Lists.newArrayList();
                 for (int i = 0; i < size; i++) {
-                    targetList.add(HdfsWriter.convertToTargetType(structList.get(i).getTypeName(), lineArray[i], hdfsWriterDTO.getKeyList().get(i).getDateFormat()));
+                    targetList.add(HdfsWriter.convertToTargetType(structList.get(i).getTypeName(), lineArray[i], hdfsWriterDTO.getKeyList().get(i).getDateFormat(), isSetDefault));
                 }
 
                 writer.addRow(targetList);
@@ -127,7 +136,16 @@ public class HdfsOrcWriter {
         return writeLineNum;
     }
 
-    public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
+    /**
+     * 按名称写入
+     *
+     * @param source        数据源信息
+     * @param hdfsWriterDTO hdfs 写入配置类
+     * @param isSetDefault  是否设置默认值
+     * @return 写入条数
+     * @throws IOException io 异常
+     */
+    public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO, boolean isSetDefault) throws IOException {
 
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
@@ -204,7 +222,7 @@ public class HdfsOrcWriter {
                     }
 
                     TypeInfo struct = structList.get(i);
-                    Object record = HdfsWriter.convertToTargetType(struct.getTypeName(), val, hdfsWriterDTO.getKeyList().get(i).getDateFormat());
+                    Object record = HdfsWriter.convertToTargetType(struct.getTypeName(), val, hdfsWriterDTO.getKeyList().get(i).getDateFormat(), isSetDefault);
                     recordArr[i] = record;
                 }
 
