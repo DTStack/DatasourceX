@@ -271,12 +271,10 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
 
         Statement stmt = null;
         ResultSet rs = null;
-        // schema 先从queryDTO中获取
-        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? rdbmsSourceDTO.getSchema() : queryDTO.getSchema();
         try {
             stmt = rdbmsSourceDTO.getConnection().createStatement();
             String queryColumnSql =
-                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(schema, queryDTO.getTableName())
+                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(rdbmsSourceDTO, queryDTO)
                             + " where 1=2";
             rs = stmt.executeQuery(queryColumnSql);
             ResultSetMetaData rsmd = rs.getMetaData();
@@ -345,12 +343,10 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         Statement statement = null;
         ResultSet rs = null;
         List<ColumnMetaDTO> columns = new ArrayList<>();
-        // schema 先从queryDTO中获取
-        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? rdbmsSourceDTO.getSchema() : queryDTO.getSchema();
         try {
             statement = rdbmsSourceDTO.getConnection().createStatement();
             String queryColumnSql =
-                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(schema, queryDTO.getTableName()) + " where 1=2";
+                    "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(rdbmsSourceDTO, queryDTO) + " where 1=2";
 
             rs = statement.executeQuery(queryColumnSql);
             ResultSetMetaData rsMetaData = rs.getMetaData();
@@ -471,9 +467,20 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @return 处理后的查询sql
      */
     protected String dealSql(ISourceDTO sourceDTO, SqlQueryDTO sqlQueryDTO){
+        return "select * from " + transferSchemaAndTableName(sourceDTO, sqlQueryDTO);
+    }
+
+    /**
+     * 处理 schema 和 表名，优先从 SqlQueryDTO 获取 schema
+     *
+     * @param sourceDTO   数据源连接信息
+     * @param sqlQueryDTO 查询信息
+     * @return 处理后的 schema 和 table
+     */
+    protected String transferSchemaAndTableName(ISourceDTO sourceDTO, SqlQueryDTO sqlQueryDTO) {
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) sourceDTO;
         String schema = StringUtils.isNotBlank(sqlQueryDTO.getSchema()) ? sqlQueryDTO.getSchema() : rdbmsSourceDTO.getSchema();
-        return "select * from " + transferSchemaAndTableName(schema, sqlQueryDTO.getTableName());
+        return transferSchemaAndTableName(schema, sqlQueryDTO.getTableName());
     }
 
     /**

@@ -201,7 +201,7 @@ public class KingbaseClient extends AbsRdbmsClient {
         List<ColumnMetaDTO> columns = new ArrayList<>();
         try {
             statement = kingbaseSourceDTO.getConnection().createStatement();
-            String queryColumnSql = "select * from " + transferSchemaAndTableName(kingbaseSourceDTO.getSchema(), queryDTO.getTableName())
+            String queryColumnSql = "select * from " + transferSchemaAndTableName(kingbaseSourceDTO, queryDTO)
                     + " where 1=2";
             rs = statement.executeQuery(queryColumnSql);
             ResultSetMetaData rsMetaData = rs.getMetaData();
@@ -240,18 +240,6 @@ public class KingbaseClient extends AbsRdbmsClient {
             DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(kingbaseSourceDTO, clearStatus));
         }
 
-    }
-
-    /**
-     * 处理kingbase数据预览sql
-     * @param sourceDTO
-     * @param sqlQueryDTO
-     * @return
-     */
-    @Override
-    protected String dealSql(ISourceDTO sourceDTO, SqlQueryDTO sqlQueryDTO){
-        KingbaseSourceDTO kingbaseSourceDTO = (KingbaseSourceDTO) sourceDTO;
-        return "select * from " + transferSchemaAndTableName(kingbaseSourceDTO.getSchema(), sqlQueryDTO.getTableName());
     }
 
     @Override

@@ -112,11 +112,8 @@ public class PrestoClient<T> extends AbsRdbmsClient<T> {
 
     @Override
     protected Map<String, String> getColumnComments(RdbmsSourceDTO sourceDTO, SqlQueryDTO queryDTO) {
-        PrestoSourceDTO prestoSourceDTO = (PrestoSourceDTO) sourceDTO;
-        // schema 先从queryDTO中获取
-        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? prestoSourceDTO.getSchema() : queryDTO.getSchema();
         // 查询某表字段注释的sql
-        String queryColumnCommentSql = String.format(SHOW_TABLE_COLUMN_COMMENT, transferSchemaAndTableName(schema, queryDTO.getTableName()));
+        String queryColumnCommentSql = String.format(SHOW_TABLE_COLUMN_COMMENT, transferSchemaAndTableName(sourceDTO, queryDTO));
         log.info("The SQL executed by method getColumnComments is:{}", queryColumnCommentSql);
         List<Map<String, Object>> result = executeQuery(sourceDTO, SqlQueryDTO.builder().sql(queryColumnCommentSql).build());
         Map<String, String> columnComments = Maps.newHashMap();
@@ -222,10 +219,8 @@ public class PrestoClient<T> extends AbsRdbmsClient<T> {
     @Override
     public String getCreateTableSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         PrestoSourceDTO prestoSourceDTO = (PrestoSourceDTO) sourceDTO;
-        // schema 先从queryDTO中获取
-        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? prestoSourceDTO.getSchema() : queryDTO.getSchema();
         // 对表名进行转换，schema如果传则不可以在表名中出现schema信息
-        String tableName = transferSchemaAndTableName(schema, queryDTO.getTableName());
+        String tableName = transferSchemaAndTableName(prestoSourceDTO, queryDTO);
         List<String> result = queryWithSingleColumn(sourceDTO, String.format(SHOW_CREATE_TABLE_SQL, tableName), 1, "failed to get table create sql...");
         if (CollectionUtils.isEmpty(result)) {
             throw new DtLoaderException("failed to get table create sql...");
@@ -268,12 +263,5 @@ public class PrestoClient<T> extends AbsRdbmsClient<T> {
             return tableName;
         }
         return String.format("%s.%s", schema, tableName);
-    }
-
-    @Override
-    protected String dealSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO){
-        PrestoSourceDTO prestoSourceDTO = (PrestoSourceDTO) sourceDTO;
-        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? prestoSourceDTO.getSchema() : queryDTO.getSchema();
-        return "select * from " + transferSchemaAndTableName(schema, queryDTO.getTableName());
     }
 }

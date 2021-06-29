@@ -243,7 +243,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
         List<ColumnMetaDTO> columns = new ArrayList<>();
         try {
             statement = postgresqlSourceDTO.getConnection().createStatement();
-            String queryColumnSql = "select * from " + transferSchemaAndTableName(postgresqlSourceDTO.getSchema(), queryDTO.getTableName())
+            String queryColumnSql = "select * from " + transferSchemaAndTableName(postgresqlSourceDTO, queryDTO)
                     + " where 1=2";
             rs = statement.executeQuery(queryColumnSql);
             ResultSetMetaData rsMetaData = rs.getMetaData();
@@ -370,19 +370,6 @@ public class PostgresqlClient extends AbsRdbmsClient {
             schema = String.format("\"%s\"", schema);
         }
         return String.format("%s.%s", schema, tableName);
-    }
-
-    /**
-     * 处理Postgresql数据预览sql
-     * @param iSourceDTO
-     * @param sqlQueryDTO
-     * @return
-     */
-    @Override
-    protected String dealSql(ISourceDTO iSourceDTO, SqlQueryDTO sqlQueryDTO){
-        PostgresqlSourceDTO postgresqlSourceDTO = (PostgresqlSourceDTO)iSourceDTO;
-        String schema = StringUtils.isNotBlank(sqlQueryDTO.getSchema()) ? sqlQueryDTO.getSchema() : postgresqlSourceDTO.getSchema();
-        return "select * from " + transferSchemaAndTableName(schema, sqlQueryDTO.getTableName());
     }
 
     @Override
