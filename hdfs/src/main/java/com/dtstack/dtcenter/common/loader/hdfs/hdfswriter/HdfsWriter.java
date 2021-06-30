@@ -1,5 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 
+import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
+import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -81,6 +83,22 @@ public class HdfsWriter {
         }
 
         return delim;
+    }
+
+    /**
+     * 根据类型转换字段值
+     *
+     * @param columnType    字段类型
+     * @param columnVal     字段值
+     * @param dateFormat    日期格式化类型
+     * @param hdfsWriterDTO hdfs 写入配置类
+     * @return 转换后的对象
+     * @throws ParseException 日期类型解析异常
+     */
+    public static Object convertToTargetType(String columnType, String columnVal, SimpleDateFormat dateFormat, HdfsWriterDTO hdfsWriterDTO) throws ParseException {
+        // 是否设置默认值
+        Boolean isSetDefault = ReflectUtil.getFieldValueNotThrow(Boolean.class, hdfsWriterDTO, "setDefault", true, true);
+        return convertToTargetType(columnType, columnVal, dateFormat, isSetDefault);
     }
 
     public static Object convertToTargetType(String columnType, String columnVal, SimpleDateFormat dateFormat, boolean isSetDefault) throws ParseException {

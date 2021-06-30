@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 
 
 import com.csvreader.CsvReader;
+import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
@@ -66,11 +67,10 @@ public class HdfsParquetWriter {
      *
      * @param source        数据源信息
      * @param hdfsWriterDTO hdfs 写入配置类
-     * @param isSetDefault  是否设置默认值
      * @return 写入条数
      * @throws IOException io 异常
      */
-    public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO, boolean isSetDefault) throws IOException {
+    public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         int startLine = hdfsWriterDTO.getStartLine();
         //首行是标题则内容从下一行开始
@@ -107,6 +107,7 @@ public class HdfsParquetWriter {
                 group = new SimpleGroup(schema);
                 for (int i = 0; i < size; i++) {
                     String val = lineArray[i];
+                    Boolean isSetDefault = ReflectUtil.getFieldValueNotThrow(Boolean.class, hdfsWriterDTO, "setDefault", true, true);
                     // val 为空且不设置默认值时 跳过本次循环
                     if (StringUtils.isBlank(val) && !isSetDefault) {
                         continue;
@@ -184,11 +185,10 @@ public class HdfsParquetWriter {
      *
      * @param source        数据源信息
      * @param hdfsWriterDTO hdfs 写入配置类
-     * @param isSetDefault  是否设置默认值
      * @return 写入条数
      * @throws IOException io 异常
      */
-    public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO, boolean isSetDefault) throws IOException {
+    public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         MessageType schema = buildSchema(hdfsWriterDTO.getColumnsList());
         ParquetWriter<Group> writer = getWriter(hdfsSourceDTO, hdfsWriterDTO.getHdfsDirPath(), hdfsWriterDTO.getColumnsList());
@@ -247,6 +247,7 @@ public class HdfsParquetWriter {
                     if (index != -1 && index <= (columnArr.length - 1)) {
                         columnName = hdfsWriterDTO.getColumnsList().get(index).getKey();
                         val = columnArr[index].trim();
+                        Boolean isSetDefault = ReflectUtil.getFieldValueNotThrow(Boolean.class, hdfsWriterDTO, "setDefault", true, true);
                         // val 为空且不设置默认值时 跳过本次循环
                         if (StringUtils.isBlank(val) && !isSetDefault) {
                             continue;

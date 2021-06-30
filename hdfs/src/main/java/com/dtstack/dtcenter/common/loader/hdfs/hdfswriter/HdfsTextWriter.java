@@ -49,11 +49,10 @@ public class HdfsTextWriter {
      *
      * @param source        数据源信息
      * @param hdfsWriterDTO hdfs 写入配置配
-     * @param isSetDefault  是否设置默认值
      * @return 写入数据条数
      * @throws IOException io 异常
      */
-    public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO, boolean isSetDefault) throws IOException {
+    public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         int startLine = hdfsWriterDTO.getStartLine();
         //首行是标题则内容从下一行开始
@@ -85,7 +84,7 @@ public class HdfsTextWriter {
                 }
 
                 final String[] lineArray = reader.getValues();
-                final String recordStr = transformColumn(hdfsWriterDTO.getColumnsList(), hdfsWriterDTO.getKeyList(), lineArray, hdfsWriterDTO.getToLineDelimiter(), isSetDefault);
+                final String recordStr = transformColumn(hdfsWriterDTO.getColumnsList(), hdfsWriterDTO.getKeyList(), lineArray, hdfsWriterDTO.getToLineDelimiter(), hdfsWriterDTO);
 
                 final byte[] bytes = recordStr.getBytes(Charsets.UTF_8);
                 stream.write(bytes);
@@ -115,11 +114,10 @@ public class HdfsTextWriter {
      *
      * @param source        数据源信息
      * @param hdfsWriterDTO hdfs 写入配置类
-     * @param isSetDefault  是否设置默认值
      * @return 写入数据条数
      * @throws IOException io异常
      */
-    public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO, boolean isSetDefault) throws IOException {
+    public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         final boolean overwrite = false;
         final Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
@@ -182,7 +180,7 @@ public class HdfsTextWriter {
                         sb.append(hdfsWriterDTO.getToLineDelimiter());
                     } else {
                         final ColumnMetaDTO columnMeta = hdfsWriterDTO.getColumnsList().get(i);
-                        Object targetObj = HdfsWriter.convertToTargetType(columnMeta.getType(), columnArr[index], hdfsWriterDTO.getKeyList().get(i).getDateFormat(), isSetDefault);
+                        Object targetObj = HdfsWriter.convertToTargetType(columnMeta.getType(), columnArr[index], hdfsWriterDTO.getKeyList().get(i).getDateFormat(), hdfsWriterDTO);
                         if (Objects.nonNull(targetObj)) {
                             sb.append(targetObj.toString());
                         }
@@ -218,7 +216,7 @@ public class HdfsTextWriter {
         return writeLineNum;
     }
 
-    private static String transformColumn(final List<ColumnMetaDTO> tableColumns, final List<HDFSImportColumn> keyList, final String[] columnValArr, final String delimiter, boolean isSetDefault) throws ParseException {
+    private static String transformColumn(final List<ColumnMetaDTO> tableColumns, final List<HDFSImportColumn> keyList, final String[] columnValArr, final String delimiter, HdfsWriterDTO hdfsWriterDTO) throws ParseException {
 
         if (columnValArr == null) {
             throw new DtLoaderException("记录不应该为空");
@@ -231,7 +229,7 @@ public class HdfsTextWriter {
             final String columnVal = columnValArr[i];
             final ColumnMetaDTO tableColumn = tableColumns.get(i);
             final String columnType = tableColumn.getType();
-            final Object targetVal = HdfsWriter.convertToTargetType(columnType, columnVal, keyList.get(i).getDateFormat(), isSetDefault);
+            final Object targetVal = HdfsWriter.convertToTargetType(columnType, columnVal, keyList.get(i).getDateFormat(), hdfsWriterDTO);
             if (targetVal != null) {
                 sb.append(targetVal);
             }
