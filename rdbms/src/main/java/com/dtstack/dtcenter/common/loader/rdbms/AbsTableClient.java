@@ -283,6 +283,9 @@ public abstract class AbsTableClient implements ITable {
      * @return
      */
     protected String transferSchemaAndTableName(String schema, String tableName) {
+        if (StringUtils.isBlank(schema)) {
+            return tableName;
+        }
         return String.format("%s.%s", schema, tableName);
     }
 

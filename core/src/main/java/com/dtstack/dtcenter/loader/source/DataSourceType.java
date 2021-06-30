@@ -38,7 +38,7 @@ public enum DataSourceType {
 
     // MPP
     GREENPLUM6(36, 40, "Greenplum", "greenplum6"),
-    LIBRA(21, 41, "LibrA", "libra"),
+    LIBRA(21, 41, "GaussDB", "libra"),
     GBase_8a(22, 42, "GBase_8a", "gbase"),
 
     // FileSystem
@@ -87,8 +87,9 @@ public enum DataSourceType {
     RESTFUL(47, 128, "Restful", "restful"),
     VERTICA(43, 129, "Vertica", "vertica"),
     INFLUXDB(55, 130, "InfluxDB", "influxdb"),
-    BEATS(16, 131, "Beats", "null"),
-    Spark(1002, 132, "Spark", "spark"),
+    OPENTSDB(56, 131, "OpenTSDB", "opentsdb"),
+    BEATS(16, 132, "Beats", "null"),
+    Spark(1002, 133, "Spark", "spark"),
     ;
 
     DataSourceType(int val, int order, String name, String pluginName) {

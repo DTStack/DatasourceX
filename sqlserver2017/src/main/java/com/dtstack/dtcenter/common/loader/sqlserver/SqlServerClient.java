@@ -12,6 +12,7 @@ import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.Sqlserver2017SourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -117,7 +118,21 @@ public class SqlServerClient extends AbsRdbmsClient {
 
     @Override
     protected String dealSql(ISourceDTO source, SqlQueryDTO sqlQueryDTO) {
-        return "select top "+sqlQueryDTO.getPreviewNum()+" * from "+transferTableName(sqlQueryDTO.getTableName());
+        return "select top " + sqlQueryDTO.getPreviewNum() + " * from " + transferSchemaAndTableName(source, sqlQueryDTO);
+    }
+
+    @Override
+    protected String transferSchemaAndTableName(String schema, String tableName) {
+        if (StringUtils.isBlank(schema)) {
+            return transferTableName(tableName);
+        }
+        if (!tableName.startsWith("[") || !tableName.endsWith("]")) {
+            tableName = String.format("[%s]", tableName);
+        }
+        if (!schema.startsWith("[") || !schema.endsWith("]")){
+            schema = String.format("[%s]", schema);
+        }
+        return String.format("%s.%s", schema, tableName);
     }
 
     @Override

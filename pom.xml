@@ -55,6 +55,7 @@
         <module>solr</module>
         <module>inceptor</module>
         <module>influxdb</module>
+        <module>opentsdb</module>
         <module>test</module>
     </modules>
     <packaging>pom</packaging>

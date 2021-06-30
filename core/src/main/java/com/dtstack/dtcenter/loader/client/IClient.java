@@ -267,4 +267,17 @@ public interface IClient<T> {
      * @return 数据源版本
      */
     String getVersion(ISourceDTO source);
+
+    /**
+     * 列出指定路径下的文件
+     *
+     * @param sourceDTO  数据源信息
+     * @param path       路径
+     * @param includeDir 是否包含文件夹
+     * @param recursive  是否递归
+     * @param maxNum     最大返回条数
+     * @param regexStr   正则匹配
+     * @return 文件集合
+     */
+    List<String> listFileNames(ISourceDTO sourceDTO, String path, Boolean includeDir, Boolean recursive, Integer maxNum, String regexStr);
 }

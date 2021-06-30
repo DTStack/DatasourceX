@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.common.loader.rdbms.AbsTableClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
@@ -57,7 +58,15 @@ public class PostgresqlTableClient extends AbsTableClient {
 
     @Override
     public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) {
-        throw new DtLoaderException("postgresql not currently support change table parameter ！");
+        PostgresqlSourceDTO postgresqlSourceDTO = (PostgresqlSourceDTO) source;
+        String comment = params.get("comment");
+        log.info("update table comment，comment：{}！", comment);
+        if (StringUtils.isEmpty(comment)) {
+            return true;
+        }
+        String tbName = transferSchemaAndTableName(postgresqlSourceDTO.getSchema(), tableName);
+        String alterTableParamsSql = String.format("comment on table %s is '%s'", tbName, comment);
+        return executeSqlWithoutResultSet(source, alterTableParamsSql);
     }
 
     @Override

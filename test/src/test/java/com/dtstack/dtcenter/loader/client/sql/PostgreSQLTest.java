@@ -8,6 +8,7 @@ import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.UpsertColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.source.PostgresqlSourceDTO;
 import com.dtstack.dtcenter.loader.enums.CommandType;
@@ -316,5 +317,17 @@ public class PostgreSQLTest extends BaseTest {
         columnMetaDTO.setColumnName("age");
         columnMetaDTO.setColumnType("int");
         client.upsertTableColumn(source, columnMetaDTO);
+    }
+
+    @Test
+    public void getTable() {
+        Table table = client.getTable(source, SqlQueryDTO.builder().tableName("loader_test").build());
+        Assert.assertEquals("table comment", table.getComment());
+    }
+
+    @Test
+    public void getCreateTable() {
+        String createTable = client.getCreateTableSql(source, SqlQueryDTO.builder().tableName("loader_test").build());
+        Assert.assertTrue(StringUtils.isNotBlank(createTable));
     }
 }
