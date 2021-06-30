@@ -102,6 +102,9 @@ public class HdfsWriter {
             if (columnType.startsWith(DOUBLE_TYPE)) {
                 return 0.0;
             }
+            if (columnType.startsWith(DATE_TYPE) || columnType.startsWith(TIMESTAMP_TYPE)) {
+                return null;
+            }
             return "";
         } else if (columnType.startsWith(CHAR_TYPE) || columnType.startsWith(VARCHAR_TYPE) || columnType.startsWith(STRING_TYPE)) {
             return columnVal;

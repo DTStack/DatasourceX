@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -180,7 +181,10 @@ public class HdfsTextWriter {
                     } else {
                         final ColumnMetaDTO columnMeta = hdfsWriterDTO.getColumnsList().get(i);
                         final String targetStr = HdfsWriter.convertToTargetType(columnMeta.getType(), columnArr[index], hdfsWriterDTO.getKeyList().get(i).getDateFormat()).toString();
-                        sb.append(targetStr).append(hdfsWriterDTO.getToLineDelimiter());
+                        if (Objects.nonNull(targetStr)) {
+                            sb.append(targetStr);
+                        }
+                        sb.append(hdfsWriterDTO.getToLineDelimiter());
                     }
                 }
 
