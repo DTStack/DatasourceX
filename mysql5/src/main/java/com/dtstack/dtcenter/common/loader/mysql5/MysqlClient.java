@@ -159,12 +159,10 @@ public class MysqlClient extends AbsRdbmsClient {
         Statement statement = null;
         ResultSet rs = null;
         Map<String, String> columnComments = new HashMap<>();
-        // schema 先从queryDTO中获取
-        String schema = StringUtils.isBlank(queryDTO.getSchema()) ? sourceDTO.getSchema() : queryDTO.getSchema();
         try {
             statement = sourceDTO.getConnection().createStatement();
             String queryColumnCommentSql =
-                    "show full columns from " + transferSchemaAndTableName(schema, queryDTO.getTableName());
+                    "show full columns from " + transferSchemaAndTableName(sourceDTO, queryDTO);
             rs = statement.executeQuery(queryColumnCommentSql);
             while (rs.next()) {
                 String columnName = rs.getString("Field");
