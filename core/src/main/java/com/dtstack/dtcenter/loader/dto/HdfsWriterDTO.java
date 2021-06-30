@@ -35,4 +35,9 @@ public class HdfsWriterDTO {
 
     private String fileFormat;
 
+    /**
+     * 是否设置默认值
+     */
+    private Boolean setDefault;
+
 }

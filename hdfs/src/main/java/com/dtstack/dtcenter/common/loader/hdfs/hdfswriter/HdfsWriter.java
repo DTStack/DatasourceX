@@ -1,5 +1,7 @@
 package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 
+import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
+import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +26,8 @@ import java.text.SimpleDateFormat;
 public class HdfsWriter {
 
     private static final char DEFAULT_DELIM = ',';
+
+    public static final String DEFAULT_NULL = "\\N";
 
     private static String TINYINT_TYPE = "tinyint";
 
@@ -81,8 +85,28 @@ public class HdfsWriter {
         return delim;
     }
 
-    public static Object convertToTargetType(String columnType, String columnVal, SimpleDateFormat dateFormat) throws ParseException {
+    /**
+     * 根据类型转换字段值
+     *
+     * @param columnType    字段类型
+     * @param columnVal     字段值
+     * @param dateFormat    日期格式化类型
+     * @param hdfsWriterDTO hdfs 写入配置类
+     * @return 转换后的对象
+     * @throws ParseException 日期类型解析异常
+     */
+    public static Object convertToTargetType(String columnType, String columnVal, SimpleDateFormat dateFormat, HdfsWriterDTO hdfsWriterDTO) throws ParseException {
+        // 是否设置默认值
+        Boolean isSetDefault = ReflectUtil.getFieldValueNotThrow(Boolean.class, hdfsWriterDTO, "setDefault", true, true);
+        return convertToTargetType(columnType, columnVal, dateFormat, isSetDefault);
+    }
+
+    public static Object convertToTargetType(String columnType, String columnVal, SimpleDateFormat dateFormat, boolean isSetDefault) throws ParseException {
         if (StringUtils.isBlank(columnVal)) {
+            // 不设置默认值返回 null
+            if (!isSetDefault) {
+                return null;
+            }
             //空白字符串需要给默认值
             if (columnType.startsWith(CHAR_TYPE) || columnType.startsWith(VARCHAR_TYPE) || columnType.startsWith(STRING_TYPE)) {
                 return "";
@@ -106,6 +130,9 @@ public class HdfsWriter {
                 return null;
             }
             return "";
+        } else if (StringUtils.equalsIgnoreCase(columnVal, DEFAULT_NULL)) {
+            // value 为 /N 返回 null，此处不考虑传入 CSV 文件使用其他标识空值符的情景
+            return null;
         } else if (columnType.startsWith(CHAR_TYPE) || columnType.startsWith(VARCHAR_TYPE) || columnType.startsWith(STRING_TYPE)) {
             return columnVal;
         } else if (columnType.startsWith(INT_TYPE)) {

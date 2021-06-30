@@ -49,6 +49,14 @@ public class HdfsOrcWriter {
      **/
     public static final int FLUSH_LINE_NUM = 1000;
 
+    /**
+     * 按位置写入
+     *
+     * @param source        数据源信息
+     * @param hdfsWriterDTO hdfs 写入配置类
+     * @return 写入条数
+     * @throws IOException io 异常
+     */
     public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
 
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
@@ -94,7 +102,7 @@ public class HdfsOrcWriter {
 
                 List<Object> targetList = Lists.newArrayList();
                 for (int i = 0; i < size; i++) {
-                    targetList.add(HdfsWriter.convertToTargetType(structList.get(i).getTypeName(), lineArray[i], hdfsWriterDTO.getKeyList().get(i).getDateFormat()));
+                    targetList.add(HdfsWriter.convertToTargetType(structList.get(i).getTypeName(), lineArray[i], hdfsWriterDTO.getKeyList().get(i).getDateFormat(), hdfsWriterDTO));
                 }
 
                 writer.addRow(targetList);
@@ -127,6 +135,14 @@ public class HdfsOrcWriter {
         return writeLineNum;
     }
 
+    /**
+     * 按名称写入
+     *
+     * @param source        数据源信息
+     * @param hdfsWriterDTO hdfs 写入配置类
+     * @return 写入条数
+     * @throws IOException io 异常
+     */
     public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
 
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
@@ -204,7 +220,7 @@ public class HdfsOrcWriter {
                     }
 
                     TypeInfo struct = structList.get(i);
-                    Object record = HdfsWriter.convertToTargetType(struct.getTypeName(), val, hdfsWriterDTO.getKeyList().get(i).getDateFormat());
+                    Object record = HdfsWriter.convertToTargetType(struct.getTypeName(), val, hdfsWriterDTO.getKeyList().get(i).getDateFormat(), hdfsWriterDTO);
                     recordArr[i] = record;
                 }
 
