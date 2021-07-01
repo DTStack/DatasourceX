@@ -14,6 +14,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -49,7 +50,7 @@ public class InceptorDownload implements IDownloader {
     /**
      * 每页数据条数
      */
-    private final int pageSize = 100;
+    private int pageSize = 100;
 
     /**
      * 总页数
@@ -67,11 +68,6 @@ public class InceptorDownload implements IDownloader {
     private List<Column> columnNames;
 
     /**
-     * 详细的数据信息
-     */
-    private List<List<String>> pageInfo;
-
-    /**
      * 表字段条数
      */
     private int columnCount;
@@ -81,9 +77,12 @@ public class InceptorDownload implements IDownloader {
      */
     private boolean isConfigure = false;
 
-    public InceptorDownload(Connection connection, String sql) {
+    public InceptorDownload(Connection connection, String sql, Integer pageSize) {
         this.connection = connection;
         this.sql = sql;
+        if (Objects.nonNull(pageSize)) {
+            this.pageSize = pageSize;
+        }
     }
 
     @Override

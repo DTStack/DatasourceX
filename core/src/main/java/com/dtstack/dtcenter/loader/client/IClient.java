@@ -160,6 +160,17 @@ public interface IClient<T> {
     IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
     /**
+     * 根据执行 sql 下载数据
+     *
+     * @param source   数据源信息
+     * @param sql      执行 sql
+     * @param pageSize 每页的数量
+     * @return 数据下载 downloader
+     * @throws Exception 异常
+     */
+    IDownloader getDownloader(ISourceDTO source, String sql, Integer pageSize) throws Exception;
+
+    /**
      * 获取所有的 DB
      *
      * @param source
