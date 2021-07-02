@@ -68,6 +68,11 @@ public abstract class AbsNoSqlClient<T> implements IClient<T> {
     }
 
     @Override
+    public IDownloader getDownloader(ISourceDTO source, String sql, Integer pageSize) throws Exception {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
+
+    @Override
     public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
         throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }

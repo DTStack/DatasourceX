@@ -532,6 +532,11 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     @Override
+    public IDownloader getDownloader(ISourceDTO source, String sql, Integer pageSize) throws Exception {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
+
+    @Override
     public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO){
         // 获取表信息需要通过show databases 语句
         String sql = getShowDbSql();

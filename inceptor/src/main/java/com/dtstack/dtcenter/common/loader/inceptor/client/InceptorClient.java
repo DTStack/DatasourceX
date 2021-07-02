@@ -350,7 +350,12 @@ public class InceptorClient extends AbsRdbmsClient {
 
     @Override
     public IDownloader getDownloader(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
-        InceptorDownload inceptorDownload = new InceptorDownload(getCon(sourceDTO), queryDTO.getSql());
+        return getDownloader(sourceDTO, queryDTO.getSql(), 100);
+    }
+
+    @Override
+    public IDownloader getDownloader(ISourceDTO source, String sql, Integer pageSize) throws Exception {
+        InceptorDownload inceptorDownload = new InceptorDownload(getCon(source), sql, pageSize);
         inceptorDownload.configure();
         return inceptorDownload;
     }

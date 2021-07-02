@@ -113,6 +113,12 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     }
 
     @Override
+    public IDownloader getDownloader(ISourceDTO source, String sql, Integer pageSize) throws Exception {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> new DownloaderProxy(targetClient.getDownloader(source, sql, pageSize)),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
     public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getAllDatabases(source, queryDTO),
                 targetClient.getClass().getClassLoader());
