@@ -47,9 +47,10 @@ public class HdfsTextWriter {
      * 从文件中读取行,根据提供的分隔符号分割,再根据提供的hdfs分隔符合并,写入hdfs
      * ---需要根据column信息判断导入的数据是否符合要求
      *
-     * @param source
-     * @param hdfsWriterDTO
-     * @throws IOException
+     * @param source        数据源信息
+     * @param hdfsWriterDTO hdfs 写入配置配
+     * @return 写入数据条数
+     * @throws IOException io 异常
      */
     public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
@@ -83,7 +84,7 @@ public class HdfsTextWriter {
                 }
 
                 final String[] lineArray = reader.getValues();
-                final String recordStr = transformColumn(hdfsWriterDTO.getColumnsList(), hdfsWriterDTO.getKeyList(), lineArray, hdfsWriterDTO.getToLineDelimiter());
+                final String recordStr = transformColumn(hdfsWriterDTO.getColumnsList(), hdfsWriterDTO.getKeyList(), lineArray, hdfsWriterDTO.getToLineDelimiter(), hdfsWriterDTO);
 
                 final byte[] bytes = recordStr.getBytes(Charsets.UTF_8);
                 stream.write(bytes);
@@ -111,11 +112,10 @@ public class HdfsTextWriter {
     /**
      * 只有首行为标题行才可以使用名称匹配
      *
-     * @param source
-     * @param hdfsWriterDTO
-     * @param
-     * @return
-     * @throws IOException
+     * @param source        数据源信息
+     * @param hdfsWriterDTO hdfs 写入配置类
+     * @return 写入数据条数
+     * @throws IOException io异常
      */
     public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
@@ -180,9 +180,9 @@ public class HdfsTextWriter {
                         sb.append(hdfsWriterDTO.getToLineDelimiter());
                     } else {
                         final ColumnMetaDTO columnMeta = hdfsWriterDTO.getColumnsList().get(i);
-                        final String targetStr = HdfsWriter.convertToTargetType(columnMeta.getType(), columnArr[index], hdfsWriterDTO.getKeyList().get(i).getDateFormat()).toString();
-                        if (Objects.nonNull(targetStr)) {
-                            sb.append(targetStr);
+                        Object targetObj = HdfsWriter.convertToTargetType(columnMeta.getType(), columnArr[index], hdfsWriterDTO.getKeyList().get(i).getDateFormat(), hdfsWriterDTO);
+                        if (Objects.nonNull(targetObj)) {
+                            sb.append(targetObj.toString());
                         }
                         sb.append(hdfsWriterDTO.getToLineDelimiter());
                     }
@@ -216,7 +216,7 @@ public class HdfsTextWriter {
         return writeLineNum;
     }
 
-    private static String transformColumn(final List<ColumnMetaDTO> tableColumns, final List<HDFSImportColumn> keyList, final String[] columnValArr, final String delimiter) throws ParseException {
+    private static String transformColumn(final List<ColumnMetaDTO> tableColumns, final List<HDFSImportColumn> keyList, final String[] columnValArr, final String delimiter, HdfsWriterDTO hdfsWriterDTO) throws ParseException {
 
         if (columnValArr == null) {
             throw new DtLoaderException("Record not be empty");
@@ -229,7 +229,7 @@ public class HdfsTextWriter {
             final String columnVal = columnValArr[i];
             final ColumnMetaDTO tableColumn = tableColumns.get(i);
             final String columnType = tableColumn.getType();
-            final Object targetVal = HdfsWriter.convertToTargetType(columnType, columnVal, keyList.get(i).getDateFormat());
+            final Object targetVal = HdfsWriter.convertToTargetType(columnType, columnVal, keyList.get(i).getDateFormat(), hdfsWriterDTO);
             if (targetVal != null) {
                 sb.append(targetVal);
             }
