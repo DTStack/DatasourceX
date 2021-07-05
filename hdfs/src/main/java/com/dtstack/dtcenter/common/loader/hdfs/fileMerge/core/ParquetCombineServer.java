@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.common.loader.hdfs.util.FileSystemUtils;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.parquet.column.ParquetProperties;
@@ -141,19 +142,21 @@ public class ParquetCombineServer extends CombineServer {
     protected ParquetMetaData getFileMetaData(FileStatus fileStatus) {
         ParquetMetaData metaData = new ParquetMetaData();
         try (ParquetFileReader parquetFileReader = ParquetFileReader.open(configuration, fileStatus.getPath())) {
-            BlockMetaData blockMetaData = parquetFileReader.getFooter().getBlocks().get(0);
-            CompressionCodec compressionCodec = CompressionCodec.valueOf(blockMetaData.getColumns().get(0).getCodec().toString());
-
-            //小文件的数据大小
-            long compressedSize = blockMetaData.getCompressedSize();
-            //小文件的行数
-            long rowSize = blockMetaData.getRowCount();
-            BigDecimal limitRows = new BigDecimal(rowSize + "").divide(new BigDecimal(compressedSize + ""), 8, ROUND_HALF_UP);
-
             metaData.setSchema(parquetFileReader.getFileMetaData().getSchema());
-            metaData.seteCompressType(ECompressType.getByTypeAndFileType(compressionCodec.name(), "parquet"));
-            metaData.setCompressed(metaData.geteCompressType() != null && !compressionCodec.equals(CompressionCodec.UNCOMPRESSED));
-            metaData.setLimitSize(new BigDecimal(maxCombinedFileSize + "").multiply(limitRows).longValue());
+            List<BlockMetaData> blocks = parquetFileReader.getFooter().getBlocks();
+            if (CollectionUtils.isNotEmpty(blocks)) {
+                BlockMetaData blockMetaData = blocks.get(0);
+                CompressionCodec compressionCodec = CompressionCodec.valueOf(blockMetaData.getColumns().get(0).getCodec().toString());
+
+                //小文件的数据大小
+                long compressedSize = blockMetaData.getCompressedSize();
+                //小文件的行数
+                long rowSize = blockMetaData.getRowCount();
+                BigDecimal limitRows = new BigDecimal(rowSize + "").divide(new BigDecimal(compressedSize + ""), 8, ROUND_HALF_UP);
+                metaData.seteCompressType(ECompressType.getByTypeAndFileType(compressionCodec.name(), "parquet"));
+                metaData.setCompressed(metaData.geteCompressType() != null && !compressionCodec.equals(CompressionCodec.UNCOMPRESSED));
+                metaData.setLimitSize(new BigDecimal(maxCombinedFileSize + "").multiply(limitRows).longValue());
+            }
         } catch (IOException e) {
             throw new DtLoaderException("ParquetFileReader open error", e);
         }
