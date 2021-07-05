@@ -524,15 +524,15 @@ public class SparkClient extends AbsRdbmsClient {
         boolean isTableInfo = false;
         for (Map<String, Object> row : result) {
             String colName = MapUtils.getString(row, "col_name");
-            String dataType = MapUtils.getString(row, "data_type");
-            if (StringUtils.isBlank(colName) || StringUtils.isBlank(dataType)) {
+            String dataTypeOrigin = MapUtils.getString(row, "data_type", "");
+            if (StringUtils.isBlank(colName) || StringUtils.isEmpty(dataTypeOrigin)) {
                 if (StringUtils.isNotBlank(colName) && colName.contains("# Detailed Table Information")) {
                     isTableInfo = true;
                 }
                 continue;
             }
             // 去空格处理
-            dataType = dataType.trim();
+            String dataType = dataTypeOrigin.trim();
             if (!isTableInfo) {
                 continue;
             }
@@ -549,7 +549,8 @@ public class SparkClient extends AbsRdbmsClient {
 
             // ThriftServer 2.1.x 分隔符为 key
             if (colName.contains("field.delim")) {
-                tableInfo.setDelim(dataType);
+                // trim 之后不会空则取 trim 后的值
+                tableInfo.setDelim(StringUtils.isEmpty(dataType) ? dataTypeOrigin : dataType);
                 continue;
             }
 
