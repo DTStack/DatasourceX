@@ -520,7 +520,8 @@ public class HiveClient extends AbsRdbmsClient {
             }
 
             if (dataType.contains("field.delim")) {
-                tableInfo.setDelim(MapUtils.getString(row, "comment", "\001").trim());
+                String delimit = MapUtils.getString(row, "comment", "");
+                tableInfo.setDelim(StringUtils.isEmpty(delimit.trim()) ? delimit : delimit.trim());
                 continue;
             }
 
