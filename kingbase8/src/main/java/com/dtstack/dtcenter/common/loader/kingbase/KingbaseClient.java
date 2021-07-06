@@ -82,32 +82,7 @@ public class KingbaseClient extends AbsRdbmsClient {
 
     @Override
     public List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO) {
-        KingbaseSourceDTO kingbaseSourceDTO = (KingbaseSourceDTO) source;
-        Integer clearStatus = beforeQuery(kingbaseSourceDTO, queryDTO, false);
-        Statement statement = null;
-        ResultSet rs = null;
-        try {
-            statement = kingbaseSourceDTO.getConnection().createStatement();
-            //不区分大小写
-            StringBuilder constr = new StringBuilder();
-            if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-                constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
-            }
-            if (Objects.nonNull(queryDTO.getLimit())) {
-                constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));
-            }
-            rs = statement.executeQuery(StringUtils.isNotBlank(kingbaseSourceDTO.getSchema()) ?
-                    String.format(SCHEMA_TABLE_SQL, kingbaseSourceDTO.getSchema(), constr.toString()) : ALL_TABLE_SQL);
-            List<String> tableList = new ArrayList<>();
-            while (rs.next()) {
-                tableList.add(rs.getString(1));
-            }
-            return tableList;
-        } catch (Exception e) {
-            throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
-        } finally {
-            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(kingbaseSourceDTO, clearStatus));
-        }
+       return getTableListBySchema(source, queryDTO);
     }
 
     /**
@@ -270,7 +245,7 @@ public class KingbaseClient extends AbsRdbmsClient {
         String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : rdbmsSourceDTO.getSchema();
         // 如果不传scheme，默认使用当前连接使用的schema
         if (StringUtils.isBlank(schema)) {
-            throw new DtLoaderException("schema is not empty...");
+           return ALL_TABLE_SQL;
         }
         StringBuilder constr = new StringBuilder();
         if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
