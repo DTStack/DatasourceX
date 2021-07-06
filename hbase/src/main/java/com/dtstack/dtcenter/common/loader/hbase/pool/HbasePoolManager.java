@@ -99,13 +99,14 @@ public class HbasePoolManager {
         return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
                 (PrivilegedAction<Connection>) () -> {
                     try {
+                        // 每次都清空 Configuration
+                        javax.security.auth.login.Configuration.setConfiguration(null);
                         if (MapUtils.isNotEmpty(kerberosConfig)) {
                             // hbase zk kerberos 需要写 jaas 文件
                             String jaasConf = JaasUtil.writeJaasConf(kerberosConfig);
                             // 刷新kerberos认证信息，在设置完java.security.krb5.conf后进行，否则会使用上次的krb5文件进行 refresh 导致认证失败
                             try {
                                 Config.refresh();
-                                javax.security.auth.login.Configuration.setConfiguration(null);
                             } catch (Exception e) {
                                 log.error("hbase kerberos认证信息刷新失败！");
                             }

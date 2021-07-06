@@ -84,6 +84,7 @@ public class HbaseClientSpecial implements IHbase {
         } finally {
             close(admin);
             closeConnection(connection, hbaseSourceDTO);
+            HbaseClient.destroyProperty();
         }
         return false;
     }
@@ -124,6 +125,7 @@ public class HbaseClientSpecial implements IHbase {
         } finally {
             close(admin);
             closeConnection(connection, hbaseSourceDTO);
+            HbaseClient.destroyProperty();
         }
         return true;
     }
@@ -153,6 +155,7 @@ public class HbaseClientSpecial implements IHbase {
         } finally {
             close(rs, table);
             closeConnection(connection, hbaseSourceDTO);
+            HbaseClient.destroyProperty();
         }
         return results;
     }
@@ -182,6 +185,7 @@ public class HbaseClientSpecial implements IHbase {
         } finally {
             close(table);
             closeConnection(connection, hbaseSourceDTO);
+            HbaseClient.destroyProperty();
         }
     }
 
@@ -205,6 +209,7 @@ public class HbaseClientSpecial implements IHbase {
         } finally {
             close(table);
             closeConnection(connection, hbaseSourceDTO);
+            HbaseClient.destroyProperty();
         }
     }
 
@@ -229,6 +234,7 @@ public class HbaseClientSpecial implements IHbase {
         } finally {
             close(table);
             closeConnection(connection, hbaseSourceDTO);
+            HbaseClient.destroyProperty();
         }
         return row;
     }
@@ -365,6 +371,7 @@ public class HbaseClientSpecial implements IHbase {
         } finally {
             close(table, rs);
             closeConnection(connection, hbaseSourceDTO);
+            HbaseClient.destroyProperty();
         }
     }
 
