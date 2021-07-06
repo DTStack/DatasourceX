@@ -146,7 +146,7 @@ public class KingbaseTest extends BaseTest {
                 .schema("public")
                 .poolConfig(PoolConfig.builder().maximumPoolSize(2).build())
                 .build();
-        List tableList = client.getTableList(source, SqlQueryDTO.builder().build());
+        List tableList = client.getTableList(source, SqlQueryDTO.builder().tableNamePattern("demo").limit(3).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
@@ -155,7 +155,7 @@ public class KingbaseTest extends BaseTest {
      */
     @Test
     public void getTableListBySchema() {
-        List tableList = client.getTableList(source, SqlQueryDTO.builder().build());
+        List tableList = client.getTableList(source, SqlQueryDTO.builder().tableNamePattern("demo").limit(3).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 

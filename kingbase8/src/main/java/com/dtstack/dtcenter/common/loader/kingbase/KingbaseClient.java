@@ -44,7 +44,7 @@ public class KingbaseClient extends AbsRdbmsClient {
     /**
      * 获取所有表名，表名前拼接schema，并对schema和tableName进行增加双引号处理
      */
-    private static final String ALL_TABLE_SQL = "SELECT '\"'||schemaname||'\".\"'||tablename||'\"' AS schema_table FROM SYS_CATALOG.sys_tables order by schema_table ";
+    private static final String ALL_TABLE_SQL = "SELECT '\"'||schemaname||'\".\"'||tablename||'\"' AS schema_table FROM SYS_CATALOG.sys_tables WHERE 1=1 %s";
 
     /**
      * 获取某个表的表注释信息
@@ -243,16 +243,16 @@ public class KingbaseClient extends AbsRdbmsClient {
     protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) sourceDTO;
         String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : rdbmsSourceDTO.getSchema();
-        // 如果不传scheme，默认使用当前连接使用的schema
-        if (StringUtils.isBlank(schema)) {
-           return ALL_TABLE_SQL;
-        }
         StringBuilder constr = new StringBuilder();
         if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
             constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
         }
         if (Objects.nonNull(queryDTO.getLimit())) {
             constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));
+        }
+        // 如果不传scheme，默认使用当前连接使用的schema
+        if (StringUtils.isBlank(schema)) {
+           return String.format(ALL_TABLE_SQL, constr.toString());
         }
         return String.format(SCHEMA_TABLE_SQL, schema, constr.toString());
     }
