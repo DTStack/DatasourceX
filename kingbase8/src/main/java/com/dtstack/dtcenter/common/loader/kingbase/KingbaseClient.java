@@ -89,8 +89,15 @@ public class KingbaseClient extends AbsRdbmsClient {
         try {
             statement = kingbaseSourceDTO.getConnection().createStatement();
             //不区分大小写
+            StringBuilder constr = new StringBuilder();
+            if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+                constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
+            }
+            if (Objects.nonNull(queryDTO.getLimit())) {
+                constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));
+            }
             rs = statement.executeQuery(StringUtils.isNotBlank(kingbaseSourceDTO.getSchema()) ?
-                    String.format(SCHEMA_TABLE_SQL, kingbaseSourceDTO.getSchema()) : ALL_TABLE_SQL);
+                    String.format(SCHEMA_TABLE_SQL, kingbaseSourceDTO.getSchema(), constr.toString()) : ALL_TABLE_SQL);
             List<String> tableList = new ArrayList<>();
             while (rs.next()) {
                 tableList.add(rs.getString(1));

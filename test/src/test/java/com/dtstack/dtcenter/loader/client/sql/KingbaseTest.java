@@ -134,11 +134,18 @@ public class KingbaseTest extends BaseTest {
     }
 
     /**
-     * 不指定schema获取表
+     * 指定schema获取表
      * @throws Exception
      */
     @Test
     public void getTableList() {
+        KingbaseSourceDTO source = KingbaseSourceDTO.builder()
+                .url("jdbc:kingbase8://172.16.100.186:54321/test_db")
+                .username("test")
+                .password("test123")
+                .schema("public")
+                .poolConfig(PoolConfig.builder().maximumPoolSize(2).build())
+                .build();
         List tableList = client.getTableList(source, SqlQueryDTO.builder().build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
