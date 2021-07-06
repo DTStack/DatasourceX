@@ -28,8 +28,6 @@ public class HttpClient {
 
     public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
-    public static final String HTTP_PREFIX = "http://";
-
     /**
      * 实际的HttpClient
      */
@@ -110,7 +108,7 @@ public class HttpClient {
     }
 
     private String getUrl(String apiPath) {
-        return HTTP_PREFIX + this.httpAddressManager.getAddress() + apiPath;
+        return this.httpAddressManager.getAddress() + apiPath;
     }
 
     public HttpResponse post(String apiPath, String json) {

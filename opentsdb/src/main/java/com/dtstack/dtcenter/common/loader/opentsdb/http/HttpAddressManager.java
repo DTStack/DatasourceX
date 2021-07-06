@@ -13,8 +13,14 @@ public class HttpAddressManager {
 
 	private final String address;
 
+	public static final String HTTP_PREFIX = "http://";
+
+	private static final String HTTPS_PREFIX = "https://";
+
 	private HttpAddressManager(OpenTSDBSourceDTO sourceDTO) {
-		address = sourceDTO.getHost() + ":" + sourceDTO.getPort();
+		// 默认 http 协议
+		address = (sourceDTO.getUrl().startsWith(HTTP_PREFIX) || sourceDTO.getUrl().startsWith(HTTPS_PREFIX)) ?
+				sourceDTO.getUrl() : HTTP_PREFIX + sourceDTO.getUrl();
 	}
 
 	public static HttpAddressManager createHttpAddressManager(OpenTSDBSourceDTO sourceDTO) {

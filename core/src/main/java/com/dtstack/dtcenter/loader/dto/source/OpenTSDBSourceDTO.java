@@ -25,14 +25,9 @@ import java.sql.Connection;
 public class OpenTSDBSourceDTO implements ISourceDTO {
 
     /**
-     * ip或host地址
+     * url
      */
-    private String host;
-
-    /**
-     * 端口
-     */
-    private Integer port;
+    private String url;
 
     @Override
     public Integer getSourceType() {

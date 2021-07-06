@@ -515,13 +515,14 @@ public class Hive3Client extends AbsRdbmsClient {
             }
 
             if (colName.contains("field.delim")) {
-                // 列分隔符不进行 trim 操作
-                tableInfo.setDelim(dataTypeOrigin);
+                // trim 之后不会空则取 trim 后的值
+                tableInfo.setDelim(StringUtils.isEmpty(dataType) ? dataTypeOrigin : dataType);
                 continue;
             }
 
             if (dataType.contains("field.delim")) {
-                tableInfo.setDelim(MapUtils.getString(row, "comment", "\001"));
+                String delimit = MapUtils.getString(row, "comment", "");
+                tableInfo.setDelim(StringUtils.isEmpty(delimit.trim()) ? delimit : delimit.trim());
                 continue;
             }
 

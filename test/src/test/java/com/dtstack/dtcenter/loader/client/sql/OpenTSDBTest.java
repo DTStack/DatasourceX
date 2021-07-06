@@ -27,8 +27,7 @@ public class OpenTSDBTest extends BaseTest {
 
     // 构建数据源信息
     private static final OpenTSDBSourceDTO SOURCE_DTO = OpenTSDBSourceDTO.builder()
-            .host("172.16.23.15")
-            .port(4242)
+            .url("http://172.16.23.15:4242")
             .build();
 
     /**

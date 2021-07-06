@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 
 
 import com.csvreader.CsvReader;
+import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
@@ -61,11 +62,13 @@ public class HdfsParquetWriter {
 
     private static final String KEY_SCALE = "scale";
 
-
     /**
      * 按位置写入
      *
-     * @return
+     * @param source        数据源信息
+     * @param hdfsWriterDTO hdfs 写入配置类
+     * @return 写入条数
+     * @throws IOException io 异常
      */
     public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
@@ -104,6 +107,15 @@ public class HdfsParquetWriter {
                 group = new SimpleGroup(schema);
                 for (int i = 0; i < size; i++) {
                     String val = lineArray[i];
+                    Boolean isSetDefault = ReflectUtil.getFieldValueNotThrow(Boolean.class, hdfsWriterDTO, "setDefault", true, true);
+                    // val 为空且不设置默认值时 跳过本次循环
+                    if (StringUtils.isBlank(val) && !isSetDefault) {
+                        continue;
+                    }
+                    // 为 null 时跳过本次循环
+                    if (StringUtils.equalsIgnoreCase(val, HdfsWriter.DEFAULT_NULL)) {
+                        continue;
+                    }
                     String type = hdfsWriterDTO.getColumnsList().get(i).getType().toLowerCase();
                     switch (type) {
                         case "tinyint":
@@ -171,7 +183,10 @@ public class HdfsParquetWriter {
     /**
      * 按名称写入
      *
-     * @return
+     * @param source        数据源信息
+     * @param hdfsWriterDTO hdfs 写入配置类
+     * @return 写入条数
+     * @throws IOException io 异常
      */
     public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
@@ -232,6 +247,15 @@ public class HdfsParquetWriter {
                     if (index != -1 && index <= (columnArr.length - 1)) {
                         columnName = hdfsWriterDTO.getColumnsList().get(index).getKey();
                         val = columnArr[index].trim();
+                        Boolean isSetDefault = ReflectUtil.getFieldValueNotThrow(Boolean.class, hdfsWriterDTO, "setDefault", true, true);
+                        // val 为空且不设置默认值时 跳过本次循环
+                        if (StringUtils.isBlank(val) && !isSetDefault) {
+                            continue;
+                        }
+                        // 为 null 时跳过本次循环
+                        if (StringUtils.equalsIgnoreCase(val, HdfsWriter.DEFAULT_NULL)) {
+                            continue;
+                        }
                         String type = hdfsWriterDTO.getColumnsList().get(i).getType().toLowerCase();
                         switch (hdfsWriterDTO.getColumnsList().get(index).getType().toLowerCase()) {
                             case "tinyint":
