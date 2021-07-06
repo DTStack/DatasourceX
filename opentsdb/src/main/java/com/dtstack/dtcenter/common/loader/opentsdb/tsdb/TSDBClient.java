@@ -41,18 +41,15 @@ public class TSDBClient implements TSDB {
 
     protected final HttpClient httpclient;
 
-    private final String host;
-
-    private final Integer port;
+    private final String url;
 
     private static final String EMPTY_HOLDER = new JSONObject().toJSONString();
 
     public TSDBClient(OpenTSDBSourceDTO sourceDTO) {
-        this.host = sourceDTO.getHost();
-        this.port = sourceDTO.getPort();
+        this.url = sourceDTO.getUrl();
         this.httpclient = HttpClientFactory.createHttpClient(sourceDTO);
         this.httpclient.start();
-        log.info("The tsdb client has started. ip:{},port:{}", sourceDTO.getHost(), sourceDTO.getPort());
+        log.info("The tsdb client has started. url:{}", sourceDTO.getUrl());
     }
 
     /**
@@ -63,7 +60,7 @@ public class TSDBClient implements TSDB {
         try {
             httpclient.post(HttpAPI.VIP_HEALTH, EMPTY_HOLDER);
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("open tsdb Connection failed,ip:%s,port:%s", host, port));
+            throw new DtLoaderException(String.format("open tsdb Connection failed,url:%s", url));
         }
     }
 
