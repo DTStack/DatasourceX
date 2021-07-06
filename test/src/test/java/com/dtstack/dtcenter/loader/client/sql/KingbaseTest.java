@@ -134,12 +134,19 @@ public class KingbaseTest extends BaseTest {
     }
 
     /**
-     * 不指定schema获取表
+     * 指定schema获取表
      * @throws Exception
      */
     @Test
     public void getTableList() {
-        List tableList = client.getTableList(source, SqlQueryDTO.builder().build());
+        KingbaseSourceDTO source = KingbaseSourceDTO.builder()
+                .url("jdbc:kingbase8://172.16.100.186:54321/test_db")
+                .username("test")
+                .password("test123")
+                .schema("public")
+                .poolConfig(PoolConfig.builder().maximumPoolSize(2).build())
+                .build();
+        List tableList = client.getTableList(source, SqlQueryDTO.builder().tableNamePattern("demo").limit(3).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
@@ -148,7 +155,7 @@ public class KingbaseTest extends BaseTest {
      */
     @Test
     public void getTableListBySchema() {
-        List tableList = client.getTableList(source, SqlQueryDTO.builder().build());
+        List tableList = client.getTableList(source, SqlQueryDTO.builder().tableNamePattern("demo").limit(3).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
