@@ -14,6 +14,10 @@ import java.util.Map;
  */
 @Slf4j
 public class DorisTableClient extends MysqlTableClient {
+
+    /**
+     * Alter Table 只支持三种操作类型:partition、rollup和schema change
+     */
     @Override
     public Boolean alterTableParams(ISourceDTO source, String tableName, Map<String, String> params) {
         throw new DtLoaderException("Method not support");
