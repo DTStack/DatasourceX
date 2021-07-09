@@ -40,6 +40,7 @@ public enum DataSourceType {
     GREENPLUM6(36, 40, "Greenplum", "greenplum6"),
     LIBRA(21, 41, "GaussDB", "libra"),
     GBase_8a(22, 42, "GBase_8a", "gbase"),
+    DORIS(57, 43, "DorisDB", "doris"),
 
     // FileSystem
     HDFS(6, 60, "HDFS", "hdfs"),
