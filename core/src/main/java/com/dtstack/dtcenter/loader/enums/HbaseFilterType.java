@@ -15,9 +15,11 @@ public enum HbaseFilterType {
 
     ROW_FILTER(3),
 
-    TIMESTAMP_FILTER(4);
+    TIMESTAMP_FILTER(4),
 
-    private Integer val;
+    FILTER_LIST(5);
+
+    private final Integer val;
 
     HbaseFilterType(Integer val) {
         this.val = val;
