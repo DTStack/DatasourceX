@@ -52,6 +52,12 @@ public class KafkaClientProxy<T> implements IKafka<T> {
     }
 
     @Override
+    public List<T> getAllPartitions(ISourceDTO source, String topic) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getAllPartitions(source, topic),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
     public List<KafkaOffsetDTO> getOffset(ISourceDTO source, String topic) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getOffset(source, topic),
                 targetClient.getClass().getClassLoader());

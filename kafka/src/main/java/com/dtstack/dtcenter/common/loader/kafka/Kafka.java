@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.kafka;
 
+import com.dtstack.dtcenter.common.loader.common.exception.ErrorCode;
 import com.dtstack.dtcenter.common.loader.kafka.util.KafkaUtil;
 import com.dtstack.dtcenter.loader.client.IKafka;
 import com.dtstack.dtcenter.loader.dto.KafkaConsumerDTO;
@@ -124,5 +125,10 @@ public class Kafka<T> implements IKafka<T> {
         }
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
         return KafkaUtil.getGroupInfoByGroupId(kafkaSourceDTO, groupId, topic);
+    }
+
+    @Override
+    public List<T> getAllPartitions(ISourceDTO source, String topic) {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }
 }
