@@ -1,6 +1,8 @@
 package com.dtstack.dtcenter.common.loader.hbase;
 
 import com.dtstack.dtcenter.loader.client.IHbase;
+import com.dtstack.dtcenter.loader.dto.HbaseQueryDTO;
+import com.dtstack.dtcenter.loader.dto.filter.TimestampFilter;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -26,6 +28,7 @@ import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.filter.CompareFilter;
+import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.PageFilter;
 import org.apache.hadoop.hbase.filter.RegexStringComparator;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -35,6 +38,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -373,6 +377,143 @@ public class HbaseClientSpecial implements IHbase {
             closeConnection(connection, hbaseSourceDTO);
             HbaseClient.destroyProperty();
         }
+    }
+
+    @Override
+    public List<Map<String, Object>> executeQuery(ISourceDTO source, HbaseQueryDTO hbaseQueryDTO, TimestampFilter timestampFilter) {
+        HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
+        Connection connection = null;
+        Table table = null;
+        ResultScanner rs = null;
+        List<Result> results = Lists.newArrayList();
+        List<Map<String, Object>> executeResult = Lists.newArrayList();
+        try {
+            // 获取hbase连接
+            connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
+            List<String> columns = hbaseQueryDTO.getColumns();
+            // 转化表名为 hbase TableName
+            TableName tableName = TableName.valueOf(hbaseQueryDTO.getTableName());
+            table = connection.getTable(tableName);
+            Scan scan = new Scan();
+            // 指定 hbase 扫描列，格式 --> 列族:列名
+            if (CollectionUtils.isNotEmpty(columns)) {
+                for (String column : columns) {
+                    String[] familyAndQualifier = column.split(":");
+                    if (familyAndQualifier.length < 2) {
+                        continue;
+                    }
+                    scan.addColumn(Bytes.toBytes(familyAndQualifier[0]), Bytes.toBytes(familyAndQualifier[1]));
+                }
+            }
+            // 获取 common-loader 定义的自定义查询器并转化为 hbase 中的 filter
+            com.dtstack.dtcenter.loader.dto.filter.Filter loaderFilter = hbaseQueryDTO.getFilter();
+            if (Objects.nonNull(loaderFilter)) {
+                if (loaderFilter instanceof com.dtstack.dtcenter.loader.dto.filter.FilterList) {
+                    com.dtstack.dtcenter.loader.dto.filter.FilterList loaderFilterList = (com.dtstack.dtcenter.loader.dto.filter.FilterList) loaderFilter;
+                    FilterList hbaseFilterList = new FilterList(convertOp(loaderFilterList.getOperator()));
+                    convertFilter(loaderFilterList, hbaseFilterList);
+                    scan.setFilter(hbaseFilterList);
+                } else {
+                    scan.setFilter(FilterType.get(loaderFilter));
+                }
+            }
+            // 设置启始 rowKey
+            if (StringUtils.isNotBlank(hbaseQueryDTO.getStartRowKey())) {
+                scan.setStartRow(Bytes.toBytes(hbaseQueryDTO.getStartRowKey()));
+            }
+            // 设置结束 rowKey
+            if (StringUtils.isNotBlank(hbaseQueryDTO.getEndRowKey())) {
+                scan.setStartRow(Bytes.toBytes(hbaseQueryDTO.getEndRowKey()));
+            }
+            // 设置 pageFilter 返回结果在多 region 情况下可能也不准确，通过 limit 限制
+            long limit = Objects.isNull(hbaseQueryDTO.getLimit()) ? Long.MAX_VALUE : hbaseQueryDTO.getLimit();
+            scan.setMaxResultSize(limit);
+            // 单独设置时间戳过滤
+            if (Objects.nonNull(timestampFilter)) {
+                HbaseClient.fillTimestampFilter(scan, timestampFilter);
+            }
+            rs = table.getScanner(scan);
+            for (Result row : rs) {
+                if (CollectionUtils.isEmpty(row.listCells())) {
+                    continue;
+                }
+                results.add(row);
+                if (results.size() >= limit) {
+                    break;
+                }
+            }
+            if (CollectionUtils.isEmpty(results)) {
+                return executeResult;
+            }
+        } catch (Exception e){
+            throw new DtLoaderException(String.format("Failed to execute hbase customization,%s", e.getMessage()), e);
+        } finally {
+            if (hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())) {
+                close(rs, table, connection);
+            } else {
+                close(rs, table, null);
+            }
+            HbaseClient.destroyProperty();
+        }
+        //理解为一行记录
+        for (Result result : results) {
+            List<Cell> cells = result.listCells();
+            if (CollectionUtils.isEmpty(cells)) {
+                continue;
+            }
+            long timestamp = 0L;
+            HashMap<String, Object> row = Maps.newHashMap();
+            for (Cell cell : cells){
+                row.put(ROWKEY, Bytes.toString(cell.getRowArray(), cell.getRowOffset(),cell.getRowLength()));
+                String family = Bytes.toString(cell.getFamilyArray(), cell.getFamilyOffset(),cell.getFamilyLength());
+                String qualifier = Bytes.toString(cell.getQualifierArray(), cell.getQualifierOffset(),cell.getQualifierLength());
+                String value = Bytes.toString(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
+                row.put(String.format(FAMILY_QUALIFIER, family, qualifier), value);
+                //取到最新变动的时间
+                if (cell.getTimestamp() > timestamp) {
+                    timestamp = cell.getTimestamp();
+                }
+            }
+            row.put(TIMESTAMP, timestamp);
+            executeResult.add(row);
+        }
+        return executeResult;
+    }
+
+    /**
+     * 转化 common-loader 定义的 FilterList 为 hbase 中的 FilterList
+     *
+     * @param loaderFilterList common-loader 定义的 FilterList
+     * @param hbaseFilterList  hbase 中 FilterList
+     */
+    public static void convertFilter(com.dtstack.dtcenter.loader.dto.filter.FilterList loaderFilterList, FilterList hbaseFilterList) {
+        List<com.dtstack.dtcenter.loader.dto.filter.Filter> loaderFilters = loaderFilterList.getFilters();
+        if (CollectionUtils.isEmpty(loaderFilters)) {
+            return;
+        }
+        for (com.dtstack.dtcenter.loader.dto.filter.Filter filter : loaderFilters) {
+            if (filter instanceof com.dtstack.dtcenter.loader.dto.filter.FilterList) {
+                com.dtstack.dtcenter.loader.dto.filter.FilterList filterList = (com.dtstack.dtcenter.loader.dto.filter.FilterList) filter;
+                FilterList filterNew = new FilterList(convertOp(filterList.getOperator()));
+                convertFilter(filterList, filterNew);
+                hbaseFilterList.addFilter(filterNew);
+            } else {
+                hbaseFilterList.addFilter(FilterType.get(filter));
+            }
+        }
+    }
+
+    /**
+     * 转化 FilterList.Operator
+     *
+     * @param operator common-loader 中的 FilterList.Operator
+     * @return hbase 的 FilterList.Operator
+     */
+    public static FilterList.Operator convertOp(com.dtstack.dtcenter.loader.dto.filter.FilterList.Operator operator) {
+        if (operator.equals(com.dtstack.dtcenter.loader.dto.filter.FilterList.Operator.MUST_PASS_ONE)) {
+            return FilterList.Operator.MUST_PASS_ONE;
+        }
+        return FilterList.Operator.MUST_PASS_ALL;
     }
 
     /**

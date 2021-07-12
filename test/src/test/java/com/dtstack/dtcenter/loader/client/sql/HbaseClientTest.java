@@ -4,7 +4,13 @@ import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.BaseTest;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IHbase;
+import com.dtstack.dtcenter.loader.dto.HbaseQueryDTO;
+import com.dtstack.dtcenter.loader.dto.comparator.BinaryComparator;
+import com.dtstack.dtcenter.loader.dto.filter.FilterList;
+import com.dtstack.dtcenter.loader.dto.filter.RowFilter;
+import com.dtstack.dtcenter.loader.dto.filter.SingleColumnValueFilter;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
+import com.dtstack.dtcenter.loader.enums.CompareOp;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
@@ -36,7 +42,7 @@ public class HbaseClientTest extends BaseTest {
     // 构建数据源信息
     private static final HbaseSourceDTO source = HbaseSourceDTO.builder()
             .url("172.16.100.175:2181,172.16.101.196:2181,172.16.101.227:2181")
-            .path("/hbase2")
+            .path("/hbase")
             .poolConfig(poolConfig)
             .build();
 
@@ -54,10 +60,45 @@ public class HbaseClientTest extends BaseTest {
         HBASE_CLIENT.putRow(source, "loader_test_2", "1002", "info1", "name", "wangbin");
         HBASE_CLIENT.putRow(source, "loader_test_2", "1003", "info2", "name", "wangchuan");
         HBASE_CLIENT.putRow(source, "loader_test_2", "1003", "info2", "age", "18");
+        HBASE_CLIENT.putRow(source, "loader_test_2", "1004", "info2", "name", "wangchuan4");
+        HBASE_CLIENT.putRow(source, "loader_test_2", "1005", "info2", "name", "wangchuan5");
+        HBASE_CLIENT.putRow(source, "loader_test_2", "1006", "info2", "name", "wangchuan6");
+        HBASE_CLIENT.putRow(source, "loader_test_2", "1007", "info2", "name", "wangchuan7");
+        HBASE_CLIENT.putRow(source, "loader_test_2", "1008", "info2", "name", "wangchuan8");
         HBASE_CLIENT.putRow(source, "loader_test_2", "1004_loader", "info2", "addr", "beijing");
         HBASE_CLIENT.putRow(source, "loader_test_2", "1005_loader", "info2", "addr", "shanghai");
         HBASE_CLIENT.putRow(source, "loader_test_2", "1006_loader", "info2", "addr", "shenzhen");
         HBASE_CLIENT.putRow(source, "loader_test_2", "1007_loader", "info2", "addr", "hangzhou");
+    }
+
+    /**
+     * 自定义查询
+     */
+    @Test
+    public void executeQuery() {
+        // 最外层为 or
+        FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ONE);
+        // rowKey > 1005
+        RowFilter rowGreaterFilter = new RowFilter(CompareOp.GREATER, new BinaryComparator("1005".getBytes()));
+        filterList.addFilter(rowGreaterFilter);
+        // 这一层为 and
+        FilterList filterList2 = new FilterList(FilterList.Operator.MUST_PASS_ALL);
+        // rowKey < 1005
+        RowFilter rowLessFilter = new RowFilter(CompareOp.LESS, new BinaryComparator("1005".getBytes()));
+        // info2:name = wangchuan4
+        SingleColumnValueFilter singleColumnValueFilter = new SingleColumnValueFilter("info2".getBytes(), "name".getBytes(), CompareOp.LESS, "wangchuan4".getBytes());
+        filterList2.addFilter(rowLessFilter);
+        filterList2.addFilter(singleColumnValueFilter);
+        filterList.addFilter(filterList2);
+        // 最后的查询条件相当于 select x from x where rowKey > 1005 or (rowKey < 1005 and info2:name = wangchuan4)
+        HbaseQueryDTO hbaseQueryDTO = HbaseQueryDTO.builder()
+                .tableName("loader_test_2")
+                .startRowKey("1002")
+                .filter(filterList)
+                .limit(50L)
+                .build();
+        List<Map<String, Object>> queryResult = HBASE_CLIENT.executeQuery(source, hbaseQueryDTO, null);
+        System.out.println(queryResult);
     }
 
     /**
@@ -181,4 +222,6 @@ public class HbaseClientTest extends BaseTest {
         List<List<String>> preview = HBASE_CLIENT.preview(source, "loader_test_2", familyQualifierMap, 10);
         Assert.assertEquals(0, preview.size());
     }
+
+
 }
