@@ -55,16 +55,6 @@ public interface IKafka<T> {
     Boolean createTopic(ISourceDTO source, KafkaTopicDTO kafkaTopic);
 
     /**
-     * 获取特定 Topic 分区信息
-     *
-     * @param source
-     * @param topic
-     * @return
-     * @throws Exception
-     */
-    List<T> getAllPartitions(ISourceDTO source, String topic);
-
-    /**
      * 获取特定 Topic 所有分区的偏移量
      *
      * @param source

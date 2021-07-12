@@ -30,11 +30,16 @@ public class KafkaConsistent {
     /**
      * Kafka JAAS 内容
      */
-    public static String KAFKA_JAAS_CONTENT = "KafkaClient {\n" +
+    public static final String KAFKA_JAAS_CONTENT = "KafkaClient {\n" +
             "    com.sun.security.auth.module.Krb5LoginModule required\n" +
             "    useKeyTab=true\n" +
             "    storeKey=true\n" +
             "    keyTab=\"%s\"\n" +
             "    principal=\"%s\";\n" +
             "};";
+
+    /**
+     * kafka SASL/PLAIN 认证
+     */
+    public static final String KAFKA_SASL_PLAIN_CONTENT = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"%s\" password=\"%s\";";
 }

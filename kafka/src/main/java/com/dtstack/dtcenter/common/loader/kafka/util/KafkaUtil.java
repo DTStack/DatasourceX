@@ -1,20 +1,16 @@
 package com.dtstack.dtcenter.common.loader.kafka.util;
 
-import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
-import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
-import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.common.utils.TelUtil;
 import com.dtstack.dtcenter.common.loader.kafka.KafkaConsistent;
-import com.dtstack.dtcenter.common.loader.kafka.KafkaErrorPattern;
 import com.dtstack.dtcenter.common.loader.kafka.enums.EConsumeType;
 import com.dtstack.dtcenter.loader.dto.KafkaConsumerDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaOffsetDTO;
 import com.dtstack.dtcenter.loader.dto.KafkaPartitionDTO;
+import com.dtstack.dtcenter.loader.dto.source.KafkaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import kafka.admin.AdminUtils;
 import kafka.cluster.Broker;
 import kafka.cluster.EndPoint;
 import kafka.coordinator.group.GroupOverview;
@@ -32,7 +28,6 @@ import org.apache.kafka.clients.consumer.OffsetAndTimestamp;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.requests.MetadataResponse;
 import org.apache.kafka.common.security.JaasUtils;
 import scala.collection.JavaConversions;
 import sun.security.krb5.Config;
@@ -46,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -60,26 +54,13 @@ public class KafkaUtil {
     public static final String EARLIEST = "earliest";
     private static final int MAX_POOL_RECORDS = 5;
 
-    private static final IErrorPattern ERROR_PATTERN = new KafkaErrorPattern();
-
-    // 异常适配器
-    private static final IErrorAdapter ERROR_ADAPTER = new ErrorAdapterImpl();
-
-
-    public static boolean checkConnection(String zkUrls, String brokerUrls, Map<String, Object> kerberosConfig) {
-        try {
-            if (StringUtils.isEmpty(brokerUrls)) {
-                brokerUrls = getAllBrokersAddressFromZk(zkUrls);
-            }
-            return StringUtils.isNotBlank(brokerUrls) && checkKafkaConnection(brokerUrls, kerberosConfig);
-        } catch (Exception e) {
-            throw new DtLoaderException(ERROR_ADAPTER.connAdapter(e.getMessage(), ERROR_PATTERN), e);
-        }
-    }
+    // 开启 kerberos 默认 sasl.kerberos.service.name
+    private static final String DEFAULT_KERBEROS_NAME = "kafka";
 
     /**
-     * 写kafka jaas文件，同时处理 krb5.conf
-     * @param kerberosConfig
+     * 写入 kafka jaas文件到 keytab 文件所在同一级目录，同时设置 krb5.conf 绝对路径到系统变量中
+     *
+     * @param kerberosConfig kafka kerberos 配置
      * @return jaas文件绝对路径
      */
     private static String writeKafkaJaas(Map<String, Object> kerberosConfig) {
@@ -119,11 +100,10 @@ public class KafkaUtil {
     }
 
     /**
-     * 从 ZK 中获取所有的 Kafka 地址
+     * 从 ZK 中获取所有的 Kafka broker 地址
      *
-     * @param zkUrls
-     * @return
-     * @throws Exception
+     * @param zkUrls zk 地址
+     * @return kafka broker 地址
      */
     public static String getAllBrokersAddressFromZk(String zkUrls) {
         log.info("Obtain Kafka Broker address through ZK : {}", zkUrls);
@@ -162,21 +142,19 @@ public class KafkaUtil {
     /**
      * 从 KAFKA 中获取 TOPIC 的信息
      *
-     * @param brokerUrls
-     * @param kerberosConfig
-     * @return
+     * @param kafkaSourceDTO kafka 数据源信息
+     * @return topic 列表
      */
-    public static List<String> getTopicListFromBroker(String brokerUrls, Map<String, Object> kerberosConfig) {
-        Properties defaultKafkaConfig = initProperties(brokerUrls, kerberosConfig);
+    public static List<String> getTopicList(KafkaSourceDTO kafkaSourceDTO) {
+        Properties defaultKafkaConfig = initProperties(kafkaSourceDTO);
         List<String> results = Lists.newArrayList();
         try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(defaultKafkaConfig)) {
-            ;
             Map<String, List<PartitionInfo>> topics = consumer.listTopics();
             if (topics != null) {
                 results.addAll(topics.keySet());
             }
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            throw new DtLoaderException(String.format("failed to get topics from broker. %s", e.getMessage()), e);
         } finally {
             destroyProperty();
         }
@@ -184,47 +162,18 @@ public class KafkaUtil {
     }
 
     /**
-     * 从 ZK 中获取 TOPIC 的信息
-     *
-     * @param zkUrls
-     * @return
-     */
-    public static List<String> getTopicListFromZk(String zkUrls) {
-        log.info("Get Kafka Topic information through ZK: {}", zkUrls);
-        ZkUtils zkUtils = null;
-        List<String> topics = Lists.newArrayList();
-        try {
-            zkUtils = ZkUtils.apply(zkUrls, KafkaConsistent.SESSION_TIME_OUT,
-                    KafkaConsistent.CONNECTION_TIME_OUT, JaasUtils.isZkSecurityEnabled());
-            topics = JavaConversions.seqAsJavaList(zkUtils.getAllTopics());
-            if (CollectionUtils.isNotEmpty(topics)) {
-                topics.remove(KafkaConsistent.KAFKA_DEFAULT_CREATE_TOPIC);
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            if (zkUtils != null) {
-                zkUtils.close();
-            }
-        }
-        return topics;
-    }
-
-    /**
      * 通过 KAFKA 中创建 TOPIC 的信息
      *
-     * @param brokerUrls
-     * @param kerberosConfig
-     * @param topicName
-     * @param partitions
-     * @param replicationFacto
-     * @return
+     * @param sourceDTO         数据源信息
+     * @param topicName         topic 名称
+     * @param partitions        分区数量
+     * @param replicationFactor 每个分区的副本数量
      */
-    public static void createTopicFromBroker(String brokerUrls, Map<String, Object> kerberosConfig,
-                                                String topicName, Integer partitions, Short replicationFacto) {
-        Properties defaultKafkaConfig = initProperties(brokerUrls, kerberosConfig);
+    public static void createTopicFromBroker(KafkaSourceDTO sourceDTO, String topicName,
+                                             Integer partitions, Short replicationFactor) {
+        Properties defaultKafkaConfig = initProperties(sourceDTO);
         try (AdminClient client = AdminClient.create(defaultKafkaConfig);) {
-            NewTopic topic = new NewTopic(topicName, partitions, replicationFacto);
+            NewTopic topic = new NewTopic(topicName, partitions, replicationFactor);
             client.createTopics(Collections.singleton(topic));
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
@@ -232,43 +181,14 @@ public class KafkaUtil {
     }
 
     /**
-     * 通过 ZK 获取 分区信息 (目前没有地方使用到)
-     *
-     * @param zkUrls
-     * @param topic
-     * @return
-     */
-    @Deprecated
-    public static List<MetadataResponse.PartitionMetadata> getAllPartitionsFromZk(String zkUrls, String topic) {
-        log.info("Obtain Kafka partition information through ZK, zkUrls : {}, topic : {}", zkUrls, topic);
-        ZkUtils zkUtils = null;
-
-        try {
-            zkUtils = ZkUtils.apply(zkUrls, KafkaConsistent.SESSION_TIME_OUT, KafkaConsistent.CONNECTION_TIME_OUT,
-                    JaasUtils.isZkSecurityEnabled());
-            MetadataResponse.TopicMetadata topicMetadata = AdminUtils.fetchTopicMetadataFromZk(topic, zkUtils);
-            List<MetadataResponse.PartitionMetadata> partitionMetadata = topicMetadata.partitionMetadata();
-            return partitionMetadata;
-        } catch (Exception e) {
-            throw new DtLoaderException(e.getMessage(), e);
-        } finally {
-            if (zkUtils != null) {
-                zkUtils.close();
-            }
-        }
-    }
-
-    /**
      * 获取所有分区中最大最小的偏移量
      *
-     * @param brokerUrls
-     * @param kerberosConfig
-     * @param topic
-     * @return
+     * @param sourceDTO 数据源信息
+     * @param topic     kafka topic
+     * @return kafka 每个分区的最大最小 offset
      */
-    public static List<KafkaOffsetDTO> getPartitionOffset(String brokerUrls,
-                                                          Map<String, Object> kerberosConfig, String topic) {
-        Properties defaultKafkaConfig = initProperties(brokerUrls, kerberosConfig);
+    public static List<KafkaOffsetDTO> getPartitionOffset(KafkaSourceDTO sourceDTO, String topic) {
+        Properties defaultKafkaConfig = initProperties(sourceDTO);
         try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(defaultKafkaConfig)) {
             List<TopicPartition> partitions = new ArrayList<>();
             List<PartitionInfo> allPartitionInfo = consumer.partitionsFor(topic);
@@ -297,7 +217,7 @@ public class KafkaUtil {
                 kafkaOffsetDTOMap.put(entry.getKey().partition(), offsetDTO);
             }
 
-            return kafkaOffsetDTOMap.values().stream().collect(Collectors.toList());
+            return new ArrayList<>(kafkaOffsetDTOMap.values());
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
         } finally {
@@ -308,37 +228,20 @@ public class KafkaUtil {
     /**
      * 根据 Kafka 地址 校验连接性
      *
-     * @param brokerUrls
-     * @param kerberosConfig
-     * @return
+     * @param sourceDTO 数据源信息
+     * @return 是否连通
      */
-    private static boolean checkKafkaConnection(String brokerUrls, Map<String, Object> kerberosConfig) {
-        boolean check = false;
-        Properties props = initProperties(brokerUrls, kerberosConfig);
+    public static boolean checkConnection(KafkaSourceDTO sourceDTO) {
+        Properties props = initProperties(sourceDTO);
         /* 定义consumer */
         try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props)) {
             consumer.listTopics();
-            check = true;
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            throw new DtLoaderException(String.format("connect kafka fail: %s", e.getMessage()), e);
         } finally {
             destroyProperty();
         }
-        return check;
-    }
-
-    /**
-     * 初始化 Kafka 配置信息
-     *
-     */
-    public static Properties initProperties (String zkUrls, String brokerUrls,Map<String, Object> conf) {
-        String bootstrapServers;
-        if (StringUtils.isEmpty(brokerUrls)){
-            bootstrapServers = getAllBrokersAddressFromZk(zkUrls);
-        }else {
-            bootstrapServers = brokerUrls;
-        }
-        return initProperties(bootstrapServers, conf);
+        return true;
     }
 
     private static void destroyProperty() {
@@ -347,14 +250,28 @@ public class KafkaUtil {
     }
 
     /**
+     * 获取 kafka broker 地址，如果 broker 填写为空则从 zookeeper 中获取
+     *
+     * @param sourceDTO kafka 数据源信息
+     * @return kafka broker 地址
+     */
+    private static String getKafkaBroker(KafkaSourceDTO sourceDTO) {
+        String brokerUrls = StringUtils.isEmpty(sourceDTO.getBrokerUrls()) ? getAllBrokersAddressFromZk(sourceDTO.getUrl()) : sourceDTO.getBrokerUrls();
+        if (StringUtils.isBlank(brokerUrls)) {
+            throw new DtLoaderException("failed to get broker from zookeeper.");
+        }
+        return brokerUrls;
+    }
+
+    /**
      * 初始化 Kafka 配置信息
      *
-     * @param brokerUrls
-     * @param kerberosConfig
-     * @return
+     * @param sourceDTO 数据源信息
+     * @return kafka 配置
      */
-    private synchronized static Properties initProperties(String brokerUrls, Map<String, Object> kerberosConfig) {
-        log.info("Initialize Kafka configuration information, brokerUrls : {}, kerberosConfig : {}", brokerUrls, kerberosConfig);
+    private synchronized static Properties initProperties(KafkaSourceDTO sourceDTO) {
+        String brokerUrls = getKafkaBroker(sourceDTO);
+        log.info("Initialize Kafka configuration information, brokerUrls : {}, kerberosConfig : {}", brokerUrls, sourceDTO.getKerberosConfig());
         Properties props = new Properties();
         if (StringUtils.isBlank(brokerUrls)) {
             throw new DtLoaderException("Kafka Broker address cannot be empty");
@@ -379,20 +296,24 @@ public class KafkaUtil {
 
         /*设置超时时间*/
         props.put("request.timeout.ms", "10500");
-        if (MapUtils.isEmpty(kerberosConfig)) {
+
+        // username 和 password 都为空的时候走 SASL/PLAIN 认证逻辑
+        if (StringUtils.isNotBlank(sourceDTO.getUsername()) && StringUtils.isNotBlank(sourceDTO.getPassword())) {
+            // SASL/PLAIN 相关设置
+            props.put("security.protocol", "SASL_PLAINTEXT");
+            props.put("sasl.mechanism", "PLAIN");
+            props.put("sasl.jaas.config", String.format(KafkaConsistent.KAFKA_SASL_PLAIN_CONTENT, sourceDTO.getUsername(), sourceDTO.getPassword()));
             return props;
         }
 
-        // 历史数据兼容
-        if (MapUtils.isEmpty(kerberosConfig)) {
+        if (MapUtils.isEmpty(sourceDTO.getKerberosConfig())) {
             //不满足kerberos条件 直接返回
             return props;
         }
-
         // 只需要认证的用户名
-        String kafkaKbrServiceName = MapUtils.getString(kerberosConfig, HadoopConfTool.KAFKA_KERBEROS_SERVICE_NAME);
+        String kafkaKbrServiceName = MapUtils.getString(sourceDTO.getKerberosConfig(), HadoopConfTool.KAFKA_KERBEROS_SERVICE_NAME, DEFAULT_KERBEROS_NAME);
         kafkaKbrServiceName = kafkaKbrServiceName.split("/")[0];
-        String kafkaLoginConf = writeKafkaJaas(kerberosConfig);
+        String kafkaLoginConf = writeKafkaJaas(sourceDTO.getKerberosConfig());
 
         // 刷新kerberos认证信息，在设置完java.security.krb5.conf后进行，否则会使用上次的krb5文件进行 refresh 导致认证失败
         try {
@@ -412,10 +333,9 @@ public class KafkaUtil {
     }
 
 
-    public static List<String> getRecordsFromKafka(String zkUrls, String brokerUrls, String topic, String autoReset, Map<String, Object> kerberos) {
+    public static List<String> getRecordsFromKafka(KafkaSourceDTO sourceDTO, String topic, String autoReset) {
         List<String> result = new ArrayList<>();
-
-        Properties props = initProperties(zkUrls, brokerUrls, kerberos);
+        Properties props = initProperties(sourceDTO);
         /*去除超时时间*/
         props.remove("request.timeout.ms");
         props.put("max.poll.records", MAX_POOL_RECORDS);
@@ -458,15 +378,15 @@ public class KafkaUtil {
                 result.add(record.value());
             }
         } catch (Exception e) {
-            log.error("consumption data from Kafka zkUrls:{} \nbrokerUrls:{} \ntopic:{} \nautoReset:{} \n ", zkUrls, brokerUrls, topic, autoReset, e);
+            throw new DtLoaderException(String.format("consumption data from kafka error: %s", e.getMessage()), e);
         } finally {
             destroyProperty();
         }
         return result;
     }
 
-    public static List<KafkaPartitionDTO> getPartitions (String brokerUrls, String topic, Map<String, Object> kerberosConfig) {
-        Properties defaultKafkaConfig = initProperties(brokerUrls, kerberosConfig);
+    public static List<KafkaPartitionDTO> getPartitions (KafkaSourceDTO sourceDTO, String topic) {
+        Properties defaultKafkaConfig = initProperties(sourceDTO);
         List<KafkaPartitionDTO> partitionDTOS = Lists.newArrayList();
         try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(defaultKafkaConfig)) {
             // PartitionInfo没有实现序列化接口，不能使用 fastJson 进行拷贝
@@ -522,21 +442,19 @@ public class KafkaUtil {
     /**
      * 从 kafka 消费数据
      *
-     * @param brokerUrls      kafka broker节点信息
+     * @param sourceDTO       kafka 数据源信息
      * @param topic           消费主题
      * @param collectNum      收集条数
      * @param offsetReset     消费方式
      * @param timestampOffset 按时间消费
      * @param maxTimeWait     最大等待时间
-     * @param kerberosConfig  kerberos 配置
      * @return 消费到的数据
      */
-    public static List<String> consumeData(String brokerUrls, String topic, Integer collectNum,
-                                           String offsetReset, Long timestampOffset,
-                                           Integer maxTimeWait, Map<String, Object> kerberosConfig) {
+    public static List<String> consumeData(KafkaSourceDTO sourceDTO, String topic, Integer collectNum,
+                                           String offsetReset, Long timestampOffset, Integer maxTimeWait) {
         // 结果集
         List<String> result = new ArrayList<>();
-        Properties prop = initProperties(brokerUrls, kerberosConfig);
+        Properties prop = initProperties(sourceDTO);
         // 每次拉取最大条数
         prop.put("max.poll.records", MAX_POOL_RECORDS);
         try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(prop)) {
@@ -597,7 +515,7 @@ public class KafkaUtil {
                 }
             }
         } catch (Exception e) {
-            log.error("consumption data from Kafka exception：brokerUrls:{} \ntopic:{} \noffsetReset:{} \n timestampOffset:{} \n maxTimeWait:{} \n ", brokerUrls, topic, offsetReset, timestampOffset, maxTimeWait, e);
+            throw new DtLoaderException(String.format("consumption data from Kafka exception: %s", e.getMessage()), e);
         } finally {
             destroyProperty();
         }
@@ -607,14 +525,13 @@ public class KafkaUtil {
     /**
      * 获取 kafka 消费者组列表
      *
-     * @param brokerUrls     kafka broker节点信息
-     * @param topic          kafka 主题
-     * @param kerberosConfig kerberos 配置信息
+     * @param sourceDTO  kakfa 数据源信息
+     * @param topic      kafka 主题
      * @return 消费者组列表
      */
-    public static List<String> listConsumerGroup(String brokerUrls, String topic, Map<String, Object> kerberosConfig) {
+    public static List<String> listConsumerGroup(KafkaSourceDTO sourceDTO, String topic) {
         List<String> consumerGroups = new ArrayList<>();
-        Properties prop = initProperties(brokerUrls, kerberosConfig);
+        Properties prop = initProperties(sourceDTO);
         // 获取kafka client
         kafka.admin.AdminClient adminClient = kafka.admin.AdminClient.create(prop);
         try {
@@ -655,15 +572,14 @@ public class KafkaUtil {
     /**
      * 获取 kafka 消费者组详细信息
      *
-     * @param brokerUrls     kafka broker 地址信息
-     * @param groupId        消费者组
-     * @param srcTopic       kafka 主题
-     * @param kerberosConfig kerberos 配置信息哦
+     * @param sourceDTO kafka 数据源信息
+     * @param groupId   消费者组
+     * @param srcTopic  kafka 主题
      * @return 消费者组详细信息
      */
-    public static List<KafkaConsumerDTO> getGroupInfoByGroupId(String brokerUrls, String groupId, String srcTopic, Map<String, Object> kerberosConfig) {
+    public static List<KafkaConsumerDTO> getGroupInfoByGroupId(KafkaSourceDTO sourceDTO, String groupId, String srcTopic) {
         List<KafkaConsumerDTO> result = Lists.newArrayList();
-        Properties prop = initProperties(brokerUrls, kerberosConfig);
+        Properties prop = initProperties(sourceDTO);
         // 获取kafka client
         kafka.admin.AdminClient adminClient = kafka.admin.AdminClient.create(prop);
         try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(prop)){
