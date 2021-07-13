@@ -93,14 +93,6 @@ public class KafkaKerberosTest extends BaseTest {
     }
 
     @Test
-    public void getAllPartitions() throws Exception {
-        // 测试的时候需要引进 kafka 包
-        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
-        List<MetadataResponse.PartitionMetadata> allPartitions = client.getAllPartitions(source, "nanqi");
-        System.out.println(allPartitions.size());
-    }
-
-    @Test
     public void getOffset() throws Exception {
         IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
         List<KafkaOffsetDTO> offset = client.getOffset(source, "nanqi");

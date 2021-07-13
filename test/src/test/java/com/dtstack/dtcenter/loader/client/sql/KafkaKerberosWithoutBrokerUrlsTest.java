@@ -86,14 +86,6 @@ public class KafkaKerberosWithoutBrokerUrlsTest extends BaseTest {
     }
 
     @Test
-    public void getAllPartitions(){
-        // 测试的时候需要引进 kafka 包
-        IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
-        List<MetadataResponse.PartitionMetadata> allPartitions = client.getAllPartitions(source, "nanqi");
-        System.out.println(allPartitions.size());
-    }
-
-    @Test
     public void getOffset(){
         IKafka client = ClientCache.getKafka(DataSourceType.KAFKA_09.getVal());
         List<KafkaOffsetDTO> offset = client.getOffset(source, "nanqi");

@@ -62,6 +62,7 @@ public interface IKafka<T> {
      * @return
      * @throws Exception
      */
+    @Deprecated
     List<T> getAllPartitions(ISourceDTO source, String topic);
 
     /**
