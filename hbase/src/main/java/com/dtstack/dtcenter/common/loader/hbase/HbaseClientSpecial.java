@@ -416,7 +416,7 @@ public class HbaseClientSpecial implements IHbase {
             }
             // 设置结束 rowKey
             if (StringUtils.isNotBlank(hbaseQueryDTO.getEndRowKey())) {
-                scan.setStartRow(Bytes.toBytes(hbaseQueryDTO.getEndRowKey()));
+                scan.setStopRow(Bytes.toBytes(hbaseQueryDTO.getEndRowKey()));
             }
             // 设置 pageFilter 返回结果在多 region 情况下可能也不准确，通过 limit 限制
             long limit = Objects.isNull(hbaseQueryDTO.getLimit()) ? Long.MAX_VALUE : hbaseQueryDTO.getLimit();
