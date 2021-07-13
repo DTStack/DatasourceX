@@ -86,11 +86,13 @@ public class HbaseClientTest extends BaseTest {
         // rowKey < 1005
         RowFilter rowLessFilter = new RowFilter(CompareOp.LESS, new BinaryComparator("1005".getBytes()));
         // info2:name = wangchuan4
-        SingleColumnValueFilter singleColumnValueFilter = new SingleColumnValueFilter("info2".getBytes(), "name".getBytes(), CompareOp.LESS, "wangchuan4".getBytes());
+        SingleColumnValueFilter singleColumnValueFilter = new SingleColumnValueFilter("info2".getBytes(), "name".getBytes(), CompareOp.EQUAL, "wangchuan4".getBytes());
+        // 设置为 true 标识当该列不存在不进行返回
+        singleColumnValueFilter.setFilterIfMissing(true);
         filterList2.addFilter(rowLessFilter);
         filterList2.addFilter(singleColumnValueFilter);
         filterList.addFilter(filterList2);
-        // 最后的查询条件相当于 select x from x where rowKey > 1005 or (rowKey < 1005 and info2:name = wangchuan4)
+        // 最后的查询条件相当于 select * from loader_test_2 where rowKey > 1002 and (rowKey > 1005 or (rowKey < 1005 and info2:name = wangchuan4)) limit 50
         HbaseQueryDTO hbaseQueryDTO = HbaseQueryDTO.builder()
                 .tableName("loader_test_2")
                 .startRowKey("1002")
