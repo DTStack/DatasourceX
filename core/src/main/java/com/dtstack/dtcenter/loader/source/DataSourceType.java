@@ -91,6 +91,7 @@ public enum DataSourceType {
     OPENTSDB(56, 131, "OpenTSDB", "opentsdb"),
     BEATS(16, 132, "Beats", "null"),
     Spark(1002, 133, "Spark", "spark"),
+    KylinRestful(58, 135, "KylinRestful", "kylinRestful")
     ;
 
     DataSourceType(int val, int order, String name, String pluginName) {
