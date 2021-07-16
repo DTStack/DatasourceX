@@ -58,6 +58,7 @@
         <module>opentsdb</module>
         <module>doris</module>
         <module>test</module>
+        <module>kylinRestful</module>
     </modules>
     <packaging>pom</packaging>
 
