@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @company: www.dtstack.com
@@ -178,7 +180,7 @@ public class OracleClient extends AbsRdbmsClient {
         try {
             statement = sourceDTO.getConnection().createStatement();
             String queryColumnCommentSql =
-                    "select * from all_col_comments where Table_Name =" + addSingleQuotes(queryDTO.getTableName());
+                    "select * from all_col_comments where Table_Name =" + addSingleQuotes(getTableName(sourceDTO.getSchema(), queryDTO.getTableName()));
             rs = statement.executeQuery(queryColumnCommentSql);
             while (rs.next()) {
                 String columnName = rs.getString(ORACLE_COLUMN_NAME);
@@ -200,9 +202,47 @@ public class OracleClient extends AbsRdbmsClient {
         return columnComments;
     }
 
+    /**
+     * 添加单引号
+     *
+     * @param str
+     * @return
+     */
     private static String addSingleQuotes(String str) {
         str = str.contains("'") ? str : String.format("'%s'", str);
         return str;
+    }
+
+    /**
+     * 获取表名
+     *
+     * @param schema
+     * @param tableName
+     * @return
+     */
+    private String getTableName(String schema, String tableName) {
+        String schemaAndTableName = transferSchemaAndTableName(schema, tableName);
+        List<String> splitWithQuotations = splitWithQuotation(schemaAndTableName, "\"");
+        if (splitWithQuotations.size() != 2) {
+            return tableName;
+        }
+        return splitWithQuotations.get(1);
+    }
+
+    /**
+     * 获取Schema名字
+     *
+     * @param schema
+     * @param tableName
+     * @return
+     */
+    private String getSchemaName(String schema, String tableName) {
+        String schemaAndTableName = transferSchemaAndTableName(schema, tableName);
+        List<String> splitWithQuotations = splitWithQuotation(schemaAndTableName, "\"");
+        if (splitWithQuotations.isEmpty()) {
+            return schema;
+        }
+        return splitWithQuotations.get(0);
     }
 
     @Override
@@ -281,6 +321,7 @@ public class OracleClient extends AbsRdbmsClient {
      * @param queryDTO 查询条件
      * @return 对应的sql语句
      */
+    @Override
     protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         // 构造表名模糊查询和条数限制sql
         String tableConstr = buildSearchSql(TABLE_SEARCH_SQL, queryDTO.getTableNamePattern(), queryDTO.getLimit());
@@ -344,6 +385,9 @@ public class OracleClient extends AbsRdbmsClient {
     protected String transferSchemaAndTableName(String schema, String tableName) {
         if (!tableName.startsWith("\"") || !tableName.endsWith("\"")) {
             tableName = String.format("\"%s\"", tableName);
+            // 如果tableName包含Schema操作，无其他方法，只能去判断长度
+        } else if (indexCount(tableName, "\"") >= 4) {
+            return tableName;
         }
         if (StringUtils.isBlank(schema)) {
             return tableName;
@@ -352,6 +396,44 @@ public class OracleClient extends AbsRdbmsClient {
             schema = String.format("\"%s\"", schema);
         }
         return String.format("%s.%s", schema, tableName);
+    }
+
+    /**
+     * 通过采用indexOf + substring + 递归的方式来获取指定字符的数量
+     *
+     * @param text      指定要搜索的字符串
+     * @param countText 指定要搜索的字符
+     */
+    private static int indexCount(String text, String countText) {
+        // 根据指定的字符构建正则
+        Pattern pattern = Pattern.compile(countText);
+        // 构建字符串和正则的匹配
+        Matcher matcher = pattern.matcher(text);
+        int count = 0;
+        // 循环依次往下匹配
+        // 如果匹配,则数量+1
+        while (matcher.find()){
+            count++;
+        }
+        return count;
+    }
+
+    /**
+     * 正则解析出对应符号内的内容
+     *
+     * @param text
+     * @param quotationText
+     * @return
+     */
+    private static List<String> splitWithQuotation(String text, String quotationText) {
+        Pattern quotationPattern = Pattern.compile(quotationText + "(.*?)" + quotationText);
+        Matcher quotationMatch = quotationPattern.matcher(text);
+
+        ArrayList<String> results = new ArrayList<>();
+        while (quotationMatch.find()) {
+            results.add(quotationMatch.group().trim().replace(quotationText, ""));
+        }
+        return results;
     }
 
     @Override
