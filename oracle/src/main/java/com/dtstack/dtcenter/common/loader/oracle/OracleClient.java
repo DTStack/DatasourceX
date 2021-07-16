@@ -156,6 +156,17 @@ public class OracleClient extends AbsRdbmsClient {
 
                 columns.add(columnMetaDTO);
             }
+
+            //获取字段注释
+            Map<String, String> columnComments = getColumnComments(oracleSourceDTO, queryDTO);
+            if (Objects.isNull(columnComments)) {
+                return columns;
+            }
+            for (ColumnMetaDTO columnMetaDTO : columns) {
+                if (columnComments.containsKey(columnMetaDTO.getKey())) {
+                    columnMetaDTO.setComment(columnComments.get(columnMetaDTO.getKey()));
+                }
+            }
             return columns;
 
         } catch (SQLException e) {
