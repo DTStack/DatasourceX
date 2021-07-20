@@ -13,9 +13,8 @@ import com.dtstack.dtcenter.loader.dto.source.KafkaSourceDTO;
  */
 public class KafkaClient<T> extends AbsNoSqlClient<T> {
     @Override
-    public Boolean testCon(ISourceDTO iSource) {
-        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
-        return KafkaUtil.checkConnection(kafkaSourceDTO.getUrl(), kafkaSourceDTO.getBrokerUrls(),
-                kafkaSourceDTO.getKerberosConfig());
+    public Boolean testCon(ISourceDTO sourceDTO) {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) sourceDTO;
+        return KafkaUtil.checkConnection(kafkaSourceDTO);
     }
 }

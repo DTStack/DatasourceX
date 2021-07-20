@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.kafka;
 
+import com.dtstack.dtcenter.common.loader.common.exception.ErrorCode;
 import com.dtstack.dtcenter.common.loader.kafka.util.KafkaUtil;
 import com.dtstack.dtcenter.loader.client.IKafka;
 import com.dtstack.dtcenter.loader.dto.KafkaConsumerDTO;
@@ -9,7 +10,6 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.KafkaSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -17,22 +17,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @company: www.dtstack.com
- * @Author ：wangchuan
- * @Date ：Created in 16:08 2020/6/2
- * @Description：Kafka 客户端 支持 Kafka 0.9、0.10、0.11、1.x版本
+ * kafka 客户端，支持 kafka 0.10、10.11、1.x、2.x 版本
+ * 支持 kafka kerberos认证(SASL/GSSAPI)、用户名密码认证(SASL/PLAIN)
+ *
+ * @author ：wangchuan
+ * date：Created in 下午4:39 2021/7/9
+ * company: www.dtstack.com
  */
 public class Kafka<T> implements IKafka<T> {
     @Override
-    public Boolean testCon(ISourceDTO iSource) {
-        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
-        return KafkaUtil.checkConnection(kafkaSourceDTO.getUrl(), kafkaSourceDTO.getBrokerUrls(),
-                kafkaSourceDTO.getKerberosConfig());
+    public Boolean testCon(ISourceDTO sourceDTO) {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) sourceDTO;
+        return KafkaUtil.checkConnection(kafkaSourceDTO);
     }
 
     @Override
-    public String getAllBrokersAddress(ISourceDTO iSource) {
-        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
+    public String getAllBrokersAddress(ISourceDTO sourceDTO) {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) sourceDTO;
         if (StringUtils.isNotBlank(kafkaSourceDTO.getBrokerUrls())) {
             return kafkaSourceDTO.getBrokerUrls();
         }
@@ -40,60 +41,35 @@ public class Kafka<T> implements IKafka<T> {
     }
 
     @Override
-    public List<String> getTopicList(ISourceDTO iSource) {
-        List<String> topics;
-        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
-
-        if (StringUtils.isNotBlank(kafkaSourceDTO.getBrokerUrls())) {
-            topics = KafkaUtil.getTopicListFromBroker(kafkaSourceDTO.getBrokerUrls(),
-                    kafkaSourceDTO.getKerberosConfig());
-        } else {
-            topics = KafkaUtil.getTopicListFromZk(kafkaSourceDTO.getUrl());
-        }
-
-        //过滤特殊topic
-        if (CollectionUtils.isNotEmpty(topics)) {
-            topics = topics.stream().filter(s -> !"__consumer_offsets".equals(s)).collect(Collectors.toList());
-        }
-
-        return topics;
+    public List<String> getTopicList(ISourceDTO sourceDTO) {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) sourceDTO;
+        List<String> topics = KafkaUtil.getTopicList(kafkaSourceDTO);
+        // 过滤掉存储消费者组 offset 的 topic
+        return topics.stream().filter(s -> !"__consumer_offsets".equals(s)).collect(Collectors.toList());
     }
 
     @Override
-    public Boolean createTopic(ISourceDTO iSource, KafkaTopicDTO kafkaTopic) {
-        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
-        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(iSource) : kafkaSourceDTO.getBrokerUrls();
-        KafkaUtil.createTopicFromBroker(brokerUrl, kafkaSourceDTO.getKerberosConfig(), kafkaTopic.getTopicName(),
-                kafkaTopic.getPartitions(),
-                kafkaTopic.getReplicationFactor());
+    public Boolean createTopic(ISourceDTO sourceDTO, KafkaTopicDTO kafkaTopic) {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) sourceDTO;
+        KafkaUtil.createTopicFromBroker(kafkaSourceDTO, kafkaTopic.getTopicName(), kafkaTopic.getPartitions(), kafkaTopic.getReplicationFactor());
         return true;
     }
 
     @Override
-    public List<T> getAllPartitions(ISourceDTO iSource, String topic) {
-        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
-        return (List<T>) KafkaUtil.getAllPartitionsFromZk(kafkaSourceDTO.getUrl(), topic);
+    public List getOffset(ISourceDTO sourceDTO, String topic) {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) sourceDTO;
+        return KafkaUtil.getPartitionOffset(kafkaSourceDTO, topic);
     }
 
     @Override
-    public List getOffset(ISourceDTO iSource, String topic) {
-        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
-        if (StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls())) {
-            kafkaSourceDTO.setBrokerUrls(KafkaUtil.getAllBrokersAddressFromZk(kafkaSourceDTO.getUrl()));
-        }
-        return KafkaUtil.getPartitionOffset(kafkaSourceDTO.getBrokerUrls(), kafkaSourceDTO.getKerberosConfig(), topic);
+    public List<List<Object>> getPreview(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        return getPreview(sourceDTO, queryDTO, KafkaUtil.EARLIEST);
     }
 
     @Override
-    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        return getPreview(iSource, queryDTO, KafkaUtil.EARLIEST);
-    }
-
-    @Override
-    public List<List<Object>> getPreview(ISourceDTO iSource, SqlQueryDTO queryDTO, String prevMode) {
-        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) iSource;
-        List<String> recordsFromKafka = KafkaUtil.getRecordsFromKafka(kafkaSourceDTO.getUrl(),
-                kafkaSourceDTO.getBrokerUrls(), queryDTO.getTableName(), prevMode, kafkaSourceDTO.getKerberosConfig());
+    public List<List<Object>> getPreview(ISourceDTO sourceDTO, SqlQueryDTO queryDTO, String prevMode) {
+        KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) sourceDTO;
+        List<String> recordsFromKafka = KafkaUtil.getRecordsFromKafka(kafkaSourceDTO, queryDTO.getTableName(), prevMode);
         List<Object> records = new ArrayList<>(recordsFromKafka);
         List<List<Object>> result = new ArrayList<>();
         result.add(records);
@@ -103,22 +79,19 @@ public class Kafka<T> implements IKafka<T> {
     @Override
     public List<KafkaPartitionDTO> getTopicPartitions(ISourceDTO source, String topic) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
-        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
-        return KafkaUtil.getPartitions(brokerUrl, topic, kafkaSourceDTO.getKerberosConfig());
+        return KafkaUtil.getPartitions(kafkaSourceDTO, topic);
     }
 
     @Override
     public List<String> consumeData(ISourceDTO source, String topic, Integer collectNum, String offsetReset, Long timestampOffset, Integer maxTimeWait) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
-        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
-        return KafkaUtil.consumeData(brokerUrl, topic, collectNum, offsetReset, timestampOffset, maxTimeWait, kafkaSourceDTO.getKerberosConfig());
+        return KafkaUtil.consumeData(kafkaSourceDTO, topic, collectNum, offsetReset, timestampOffset, maxTimeWait);
     }
 
     @Override
     public List<String> listConsumerGroup(ISourceDTO source) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
-        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
-        return KafkaUtil.listConsumerGroup(brokerUrl, null, kafkaSourceDTO.getKerberosConfig());
+        return KafkaUtil.listConsumerGroup(kafkaSourceDTO, null);
     }
 
     @Override
@@ -127,15 +100,13 @@ public class Kafka<T> implements IKafka<T> {
             throw new DtLoaderException("topic cannot be empty...");
         }
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
-        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
-        return KafkaUtil.listConsumerGroup(brokerUrl, topic, kafkaSourceDTO.getKerberosConfig());
+        return KafkaUtil.listConsumerGroup(kafkaSourceDTO, topic);
     }
 
     @Override
     public List<KafkaConsumerDTO> getGroupInfoByGroupId(ISourceDTO source, String groupId) {
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
-        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
-        return KafkaUtil.getGroupInfoByGroupId(brokerUrl, groupId, null, kafkaSourceDTO.getKerberosConfig());
+        return KafkaUtil.getGroupInfoByGroupId(kafkaSourceDTO, groupId, null);
     }
 
     @Override
@@ -144,8 +115,7 @@ public class Kafka<T> implements IKafka<T> {
             throw new DtLoaderException("topic cannot be empty...");
         }
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
-        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
-        return KafkaUtil.getGroupInfoByGroupId(brokerUrl, null, topic, kafkaSourceDTO.getKerberosConfig());
+        return KafkaUtil.getGroupInfoByGroupId(kafkaSourceDTO, null, topic);
     }
 
     @Override
@@ -154,7 +124,11 @@ public class Kafka<T> implements IKafka<T> {
             throw new DtLoaderException("topic cannot be empty...");
         }
         KafkaSourceDTO kafkaSourceDTO = (KafkaSourceDTO) source;
-        String brokerUrl = StringUtils.isBlank(kafkaSourceDTO.getBrokerUrls()) ? getAllBrokersAddress(kafkaSourceDTO) : kafkaSourceDTO.getBrokerUrls();
-        return KafkaUtil.getGroupInfoByGroupId(brokerUrl, groupId, topic, kafkaSourceDTO.getKerberosConfig());
+        return KafkaUtil.getGroupInfoByGroupId(kafkaSourceDTO, groupId, topic);
+    }
+
+    @Override
+    public List<T> getAllPartitions(ISourceDTO source, String topic) {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }
 }

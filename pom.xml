@@ -6,7 +6,7 @@
 
     <groupId>com.dtstack.dtcenter</groupId>
     <artifactId>common-loader</artifactId>
-    <version>1.6.0-SNAPSHOT</version>
+    <version>1.7.0-SNAPSHOT</version>
     <modules>
         <module>core</module>
         <module>rdbms</module>
@@ -56,7 +56,9 @@
         <module>inceptor</module>
         <module>influxdb</module>
         <module>opentsdb</module>
+        <module>doris</module>
         <module>test</module>
+        <module>kylinrestful</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -211,6 +213,12 @@
             <dependency>
                 <groupId>com.dtstack.dtcenter</groupId>
                 <artifactId>common.loader.kerberos</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.dtstack.dtcenter</groupId>
+                <artifactId>common.loader.mysql5</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

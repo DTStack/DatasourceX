@@ -77,6 +77,19 @@ public class Greenplum6Test extends BaseTest {
     }
 
 
+    @Test
+    public void getTableListBySchema() {
+        List<String> list = client.getTableListBySchema(source, SqlQueryDTO.builder().tableNamePattern("loader_test").limit(20).build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
+    }
+
+    @Test
+    public void getFlinkColumnMetaData() {
+        List<ColumnMetaDTO> list = client.getFlinkColumnMetaData(source, SqlQueryDTO.builder().tableName("loader_test").build());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(list));
+    }
+
+
     /**
      * 获取连接测试
      */

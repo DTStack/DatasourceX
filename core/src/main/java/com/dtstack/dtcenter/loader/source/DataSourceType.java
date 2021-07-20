@@ -23,7 +23,7 @@ public enum DataSourceType {
     Polardb_For_MySQL(28, 2, "PolarDB for MySQL8", "mysql5"),
     Oracle(2, 3, "Oracle", "oracle"),
     SQLServer(3, 4, "SQLServer", "sqlServer"),
-    SQLSERVER_2017_LATER(32, 5, "SQLServer", "sqlServer"),
+    SQLSERVER_2017_LATER(32, 5, "SQLServer JDBC", "sqlServer"),
     PostgreSQL(4, 6, "PostgreSQL", "postgresql"),
     DB2(19, 7, "DB2", "db2"),
     DMDB(35, 8, "DMDB", "dmdb"),
@@ -40,6 +40,7 @@ public enum DataSourceType {
     GREENPLUM6(36, 40, "Greenplum", "greenplum6"),
     LIBRA(21, 41, "GaussDB", "libra"),
     GBase_8a(22, 42, "GBase_8a", "gbase"),
+    DORIS(57, 43, "DorisDB", "doris"),
 
     // FileSystem
     HDFS(6, 60, "HDFS", "hdfs"),
@@ -90,6 +91,7 @@ public enum DataSourceType {
     OPENTSDB(56, 131, "OpenTSDB", "opentsdb"),
     BEATS(16, 132, "Beats", "null"),
     Spark(1002, 133, "Spark", "spark"),
+    KylinRestful(58, 135, "KylinRestful", "kylinrestful")
     ;
 
     DataSourceType(int val, int order, String name, String pluginName) {

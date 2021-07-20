@@ -8,6 +8,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.Greenplum6SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.collections.CollectionUtils;
@@ -18,6 +19,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @company: www.dtstack.com
@@ -75,6 +77,15 @@ public class GreenplumClient extends AbsRdbmsClient {
 
     // 获取当前版本号
     private static final String SHOW_VERSION = "select version()";
+
+    // 获取指定schema下的表，不包括视图
+    private static final String SHOW_TABLE_BY_SCHEMA_SQL = "SELECT table_name FROM information_schema.tables WHERE table_schema = '%s' AND table_type = 'BASE TABLE' %s";
+
+    // 根据schema选表表名模糊查询
+    private static final String SEARCH_SQL = " AND table_name LIKE '%s' ";
+
+    // 限制条数语句
+    private static final String LIMIT_SQL = " LIMIT %s ";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -217,5 +228,31 @@ public class GreenplumClient extends AbsRdbmsClient {
     @Override
     protected String getVersionSql() {
         return SHOW_VERSION;
+    }
+
+    @Override
+    protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) sourceDTO;
+        String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : rdbmsSourceDTO.getSchema();
+        // 如果不传scheme，默认使用当前连接使用的schema
+        if (StringUtils.isBlank(schema)) {
+            throw new DtLoaderException("schema is not empty...");
+        }
+        StringBuilder constr = new StringBuilder();
+        if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+            constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
+        }
+        if (Objects.nonNull(queryDTO.getLimit())) {
+            constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));
+        }
+        return String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema, constr.toString());
+    }
+
+    @Override
+    protected String transferSchemaAndTableName(String schema, String tableName) {
+        if (StringUtils.isBlank(schema)) {
+            return tableName;
+        }
+        return String.format("%s.%s", schema, tableName);
     }
 }
