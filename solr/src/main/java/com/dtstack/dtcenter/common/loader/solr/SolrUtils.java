@@ -27,9 +27,13 @@ public class SolrUtils {
         }
         System.setProperty("solr.kerberos.jaas.appname", "SolrJClient");
         System.setProperty("java.security.auth.login.config", solrLoginConf);
-
-
     }
+
+    public static void destroyKerberosProperty() {
+        System.clearProperty("solr.kerberos.jaas.appname");
+        System.clearProperty("java.security.auth.login.config");
+    }
+
 
     /**
      * solr jaas文件，同时处理 krb5.conf

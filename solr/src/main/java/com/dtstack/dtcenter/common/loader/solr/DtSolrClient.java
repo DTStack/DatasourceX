@@ -72,9 +72,10 @@ public class DtSolrClient extends AbsNoSqlClient {
     }
 
     private static CloudSolrClient getClient(SolrSourceDTO solrSourceDTO) {
-        boolean check = solrSourceDTO.getPoolConfig() != null;
-        IS_OPEN_POOL.set(check);
-        if (!check) {
+        //开启kerberos 认证不走连接池
+        boolean openPool = solrSourceDTO.getPoolConfig() != null && MapUtils.isEmpty(solrSourceDTO.getKerberosConfig());
+        IS_OPEN_POOL.set(openPool);
+        if (!openPool) {
             return getClient(solrSourceDTO.getZkHost(), solrSourceDTO.getChroot(), solrSourceDTO.getKerberosConfig());
         }
 
@@ -116,6 +117,9 @@ public class DtSolrClient extends AbsNoSqlClient {
                 if (Objects.nonNull(solrClient) && Objects.nonNull(solrPool)) {
                     solrPool.returnResource(solrClient);
                 }
+            }
+            if(MapUtils.isNotEmpty(solrSourceDTO.getKerberosConfig())) {
+                SolrUtils.destroyKerberosProperty();
             }
         } catch (IOException e) {
             log.error(e.getMessage(), e);
@@ -262,6 +266,8 @@ public class DtSolrClient extends AbsNoSqlClient {
             }
         } catch (Exception e) {
             throw new DtLoaderException(String.format("executeQuery exception,Cause by:%s", e.getMessage()), e);
+        } finally {
+            closeResource(solrClient, solrSourceDTO);
         }
         return executeResult;
     }
