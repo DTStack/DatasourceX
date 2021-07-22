@@ -44,7 +44,7 @@ public class OracleTest extends BaseTest {
     /**
      * 单元测试需要的数据准备
      */
-    //@BeforeClass
+    @BeforeClass
     public static void beforeClass()  {
         IClient client = ClientCache.getClient(DataSourceType.Oracle.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table LOADER_TEST").build();
