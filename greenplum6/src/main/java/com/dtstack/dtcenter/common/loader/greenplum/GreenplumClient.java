@@ -130,12 +130,12 @@ public class GreenplumClient extends AbsRdbmsClient {
         List<String> tableList = new ArrayList<>();
         try {
             statement = greenplum6SourceDTO.getConnection().createStatement();
+            DBUtil.setFetchSize(statement, queryDTO);
             if (StringUtils.isBlank(greenplum6SourceDTO.getSchema())) {
                 resultSet = statement.executeQuery(TABLE_QUERY_WITHOUT_SCHEMA);
             } else {
                 resultSet = statement.executeQuery(String.format(TABLE_QUERY, greenplum6SourceDTO.getSchema()));
             }
-
             while (resultSet.next()) {
                 tableList.add(resultSet.getString(1));
             }

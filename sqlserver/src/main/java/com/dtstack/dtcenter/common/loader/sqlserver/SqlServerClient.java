@@ -93,6 +93,7 @@ public class SqlServerClient extends AbsRdbmsClient {
             if (Objects.nonNull(queryDTO.getLimit())) {
                 statement.setMaxRows(queryDTO.getLimit());
             }
+            DBUtil.setFetchSize(statement, queryDTO);
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {

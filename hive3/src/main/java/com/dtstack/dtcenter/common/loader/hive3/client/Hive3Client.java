@@ -99,6 +99,7 @@ public class Hive3Client extends AbsRdbmsClient {
         List<String> tableList = new ArrayList<>();
         try {
             statement = hive3SourceDTO.getConnection().createStatement();
+            DBUtil.setFetchSize(statement, queryDTO);
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {

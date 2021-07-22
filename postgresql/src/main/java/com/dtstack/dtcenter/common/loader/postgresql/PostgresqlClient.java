@@ -156,6 +156,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
             }else {
                 querySql = queryDTO.getView() ? String.format(ALL_TABLE_AND_VIEW_SQL, constr.toString()) : String.format(ALL_TABLE_SQL, constr.toString());
             }
+            DBUtil.setFetchSize(statement, queryDTO);
             rs = statement.executeQuery(querySql);
             List<String> tableList = new ArrayList<>();
             while (rs.next()) {
