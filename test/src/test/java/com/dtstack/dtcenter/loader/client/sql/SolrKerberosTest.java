@@ -88,9 +88,10 @@ public class SolrKerberosTest extends BaseTest {
     @Test
     public void executeQuery() {
         SolrQueryDTO solrQueryDTO = new SolrQueryDTO();
-        solrQueryDTO.setQuery("name:红豆").setSort(SolrQueryDTO.SortClause.asc("price")).setRows(4).setFields("price","name","id");
+        solrQueryDTO.setQuery("name:红豆").setSort(SolrQueryDTO.SortClause.asc("price")).setStart(1).setRows(3).setFields("price","name","id");
         List<Map<String,Object>> metaData = client.executeQuery(source, SqlQueryDTO.builder().tableName("qianyi_test").solrQueryDTO(solrQueryDTO).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(metaData));
+        Assert.assertEquals(3, metaData.size());
         Assert.assertNull(System.getProperty("solr.kerberos.jaas.appname"));
     }
 
