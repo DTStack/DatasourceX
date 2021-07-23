@@ -257,6 +257,11 @@ public class DtSolrClient extends AbsNoSqlClient {
         try {
             response = solrClient.query(collection, queryParams);
             SolrDocumentList documents = response.getResults();
+            Map<String, Object> map = new HashMap<>();
+            //查询总数
+            map.put("numFound", documents.getNumFound());
+            map.put("start", documents.getStart());
+            executeResult.add(map);
             for (SolrDocument document : documents) {
                 Map<String, Object> documentMap = new HashMap<>();
                 for (String key : document.keySet()) {
