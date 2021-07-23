@@ -303,7 +303,7 @@ public class DBUtil {
      */
     public static void setFetchSize(Statement statement, SqlQueryDTO sqlQueryDTO) {
 
-        if (ReflectUtil.fieldExists(SqlQueryDTO.class, "fetchSize")) {
+        if (!ReflectUtil.fieldExists(SqlQueryDTO.class, "fetchSize")) {
             return;
         }
         Integer fetchSize = sqlQueryDTO.getFetchSize();
