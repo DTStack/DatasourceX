@@ -13,6 +13,7 @@ import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsOrcWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsParquetWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsTextWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.util.KerberosUtil;
+import com.dtstack.dtcenter.common.loader.hdfs.util.StringUtil;
 import com.dtstack.dtcenter.loader.DtClassConsistent;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
@@ -701,16 +702,17 @@ public class HdfsFileClient implements IHdfsFile {
         int startIndex = typeStruct.indexOf("<") + 1;
         int endIndex = typeStruct.lastIndexOf(">");
         typeStruct = typeStruct.substring(startIndex, endIndex);
-        String[] cols = typeStruct.split(",");
-
-        for (int i = 0; i < cols.length; ++i) {
-            String[] temp = cols[i].split(":");
+        List<String> cols = StringUtil.splitIgnoreQuota(typeStruct, ',');
+        for (String col : cols) {
+            List<String> colNameAndType = StringUtil.splitIgnoreQuota(col, ':');
+            if (CollectionUtils.isEmpty(colNameAndType) || colNameAndType.size() != 2) {
+                continue;
+            }
             ColumnMetaDTO metaDTO = new ColumnMetaDTO();
-            metaDTO.setKey(temp[0]);
-            metaDTO.setType(temp[1]);
+            metaDTO.setKey(colNameAndType.get(0));
+            metaDTO.setType(colNameAndType.get(1));
             columnList.add(metaDTO);
         }
-
         return columnList;
     }
 
