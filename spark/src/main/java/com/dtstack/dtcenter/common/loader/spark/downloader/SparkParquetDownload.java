@@ -10,11 +10,11 @@ import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.parquet.example.data.Group;
 import org.apache.parquet.hadoop.ParquetReader;
 import org.apache.parquet.hadoop.example.GroupReadSupport;
@@ -46,18 +46,16 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class SparkParquetDownload implements IDownloader {
 
-    private int readNum = 0;
+    private final String tableLocation;
 
-    private String tableLocation;
-
-    private List<String> columnNames;
+    private final List<String> columnNames;
 
     // 查询字段在所有字段中的索引
-    private List<Integer> needIndex;
+    private final List<Integer> needIndex;
 
-    private List<String> partitionColumns;
+    private final List<String> partitionColumns;
 
-    private Configuration conf;
+    private final Configuration conf;
 
     private ParquetReader<Group> build;
 
@@ -65,15 +63,13 @@ public class SparkParquetDownload implements IDownloader {
 
     private List<String> paths;
 
-    private JobConf jobConf;
-
     private int currFileIndex = 0;
 
     private String currFile;
 
     private List<String> currentPartData;
 
-    private GroupReadSupport readSupport = new GroupReadSupport();
+    private final GroupReadSupport readSupport = new GroupReadSupport();
 
     private static final int JULIAN_EPOCH_OFFSET_DAYS = 2440588;
 
@@ -81,30 +77,35 @@ public class SparkParquetDownload implements IDownloader {
 
     private static final long NANOS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
 
-    private Map<String, Object> kerberosConfig;
+    private final Map<String, Object> kerberosConfig;
 
     /**
      * 按分区下载
      */
-    private Map<String, String> filterPartition;
+    private final Map<String, String> filterPartition;
+
+    /**
+     * 所有分区
+     */
+    private final List<String> partitions;
 
     private static final String IMPALA_INSERT_STAGING = "_impala_insert_staging";
 
     public SparkParquetDownload(Configuration conf, String tableLocation, List<String> columnNames,
-                               List<String> partitionColumns, List<Integer> needIndex, Map<String, String> filterPartition, Map<String, Object> kerberosConfig){
+                               List<String> partitionColumns, List<Integer> needIndex, Map<String, String> filterPartition,
+                               List<String> partitions, Map<String, Object> kerberosConfig){
+        this.conf = conf;
         this.tableLocation = tableLocation;
         this.columnNames = columnNames;
         this.partitionColumns = partitionColumns;
-        this.conf = conf;
-        this.filterPartition = filterPartition;
-        this.kerberosConfig = kerberosConfig;
         this.needIndex = needIndex;
+        this.filterPartition = filterPartition;
+        this.partitions = partitions;
+        this.kerberosConfig = kerberosConfig;
     }
 
     @Override
     public boolean configure() throws Exception {
-
-        jobConf = new JobConf(conf);
         paths = Lists.newArrayList();
         FileSystem fs =  FileSystem.get(conf);
         // 递归获取表路径下所有文件
@@ -119,9 +120,11 @@ public class SparkParquetDownload implements IDownloader {
 
         currFile = paths.get(currFileIndex);
 
-        if (!isRequiredPartition()) {
+        // 如果分区不存在或者不需要该分区则进行跳过
+        if (!isPartitionExists() || !isRequiredPartition()){
             currFileIndex++;
             nextSplitRecordReader();
+            return;
         }
 
         ParquetReader.Builder<Group> reader = ParquetReader.builder(readSupport, new Path(currFile)).withConf(conf);
@@ -174,9 +177,7 @@ public class SparkParquetDownload implements IDownloader {
                 });
     }
 
-    public List<String> readNextWithKerberos() throws Exception {
-        readNum++;
-
+    private List<String> readNextWithKerberos() {
         List<String> line = null;
         if (currentLine != null){
             line = new ArrayList<>();
@@ -272,6 +273,7 @@ public class SparkParquetDownload implements IDownloader {
         return value;
     }
 
+
     private static String binaryToDecimalStr(Binary binary,int scale){
         BigInteger bi = new BigInteger(binary.getBytes());
         BigDecimal bg = new BigDecimal(bi,scale);
@@ -361,8 +363,49 @@ public class SparkParquetDownload implements IDownloader {
     }
 
     /**
+     * 判断分区是否存在
+     *
+     * @return 分区是否存在
+     */
+    private boolean isPartitionExists() {
+        // 如果 partitions 为 null，表示非分区表，返回 true
+        if (Objects.isNull(partitions)) {
+            return true;
+        }
+        // 如果为空标识是分区表，但是无分区信息，返回 false
+        if (CollectionUtils.isEmpty(partitions)) {
+            return false;
+        }
+        String curPathPartition = getCurPathPartition();
+        if (StringUtils.isBlank(curPathPartition)) {
+            return false;
+        }
+        return partitions.contains(curPathPartition);
+    }
+
+    /**
+     * 获取当前路径的分区路径
+     *
+     * @return 分区
+     */
+    private String getCurPathPartition() {
+        StringBuilder curPart = new StringBuilder();
+        for (String part : currFile.split("/")) {
+            if(part.contains("=")){
+                curPart.append(part).append("/");
+            }
+        }
+        String curPartString = curPart.toString();
+        if (StringUtils.isNotBlank(curPartString)) {
+            return curPartString.substring(0, curPartString.length() - 1);
+        }
+        return curPartString;
+    }
+
+    /**
      * 判断是否是指定的分区，支持多级分区
-     * @return
+     *
+     * @return 是否需要该分区
      */
     private boolean isRequiredPartition(){
         if (filterPartition != null && !filterPartition.isEmpty()) {

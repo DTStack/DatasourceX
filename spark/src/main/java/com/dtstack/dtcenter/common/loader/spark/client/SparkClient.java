@@ -14,6 +14,7 @@ import com.dtstack.dtcenter.common.loader.spark.downloader.SparkORCDownload;
 import com.dtstack.dtcenter.common.loader.spark.downloader.SparkParquetDownload;
 import com.dtstack.dtcenter.common.loader.spark.downloader.SparkTextDownload;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
@@ -76,6 +77,9 @@ public class SparkClient extends AbsRdbmsClient {
 
     // null 名称的字段名
     private static final String NULL_COLUMN = "null";
+
+    // spark table client
+    private static final ITable TABLE_CLIENT = new SparkTableClient();
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -312,56 +316,40 @@ public class SparkClient extends AbsRdbmsClient {
     }
 
     @Override
-    public IDownloader getDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        SparkSourceDTO sparkSourceDTO = (SparkSourceDTO) iSource;
-        List<Map<String, Object>> list = executeQuery(sparkSourceDTO, SqlQueryDTO.builder().sql("desc formatted " + queryDTO.getTableName()).build());
-        // 获取表路径、字段分隔符、存储方式
-        String tableLocation = null;
-        String fieldDelimiter = "\001";
-        String storageMode = null;
-        for (Map<String, Object> map : list) {
-            String colName = MapUtils.getString(map, "col_name");
-            String dataType = MapUtils.getString(map, "data_type");
-            if (colName.contains("Location") && StringUtils.isNotBlank(dataType)) {
-                tableLocation = dataType.trim();
-                continue;
-            }
-
-            if (colName.contains("InputFormat")) {
-                storageMode = dataType;
-                continue;
-            }
-
-            if (colName.contains("field.delim")) {
-                fieldDelimiter = dataType;
-                break;
-            }
-
-            if (Objects.nonNull(dataType) && dataType.contains("field.delim")) {
-                fieldDelimiter = MapUtils.getString(map, "comment");
-                break;
-            }
-        }
+    public IDownloader getDownloader(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        SparkSourceDTO sparkSourceDTO = (SparkSourceDTO) sourceDTO;
+        Integer clearStatus = beforeQuery(sparkSourceDTO, queryDTO, false);
+        Table table;
         // 普通字段集合
         ArrayList<String> columnNames = new ArrayList<>();
         // 分区字段集合
         ArrayList<String> partitionColumns = new ArrayList<>();
-        // 获取所有字段信息
-        List<ColumnMetaDTO> columnMetaData = getColumnMetaData(sparkSourceDTO, queryDTO);
+        // 分区表所有分区 如果为 null 标识不是分区表，如果为空标识分区表无分区
+        List<String> partitions = null;
+        try {
+            // 获取表详情信息
+            table = getTable(sparkSourceDTO, queryDTO);
+            for (ColumnMetaDTO columnMetaDatum : table.getColumns()) {
+                // 非分区字段
+                if (columnMetaDatum.getPart()) {
+                    partitionColumns.add(columnMetaDatum.getKey());
+                    continue;
+                }
+                columnNames.add(columnMetaDatum.getKey());
+            }
+            // 分区表
+            if (CollectionUtils.isNotEmpty(partitionColumns)) {
+                partitions = TABLE_CLIENT.showPartitions(sparkSourceDTO, queryDTO.getTableName());
+            }
+        } catch (Exception e) {
+            throw new DtLoaderException(String.format("failed to get table detail: %s", e.getMessage()), e);
+        } finally {
+            DBUtil.clearAfterGetConnection(sparkSourceDTO, clearStatus);
+        }
         // 查询的字段列表，支持按字段获取数据
         List<String> columns = queryDTO.getColumns();
         // 需要的字段索引（包括分区字段索引）
         List<Integer> needIndex = Lists.newArrayList();
-
-        for (ColumnMetaDTO columnMetaDatum : columnMetaData) {
-            // 非分区字段
-            if (columnMetaDatum.getPart()) {
-                partitionColumns.add(columnMetaDatum.getKey());
-                continue;
-            }
-            columnNames.add(columnMetaDatum.getKey());
-        }
-
         // columns字段不为空且不包含*时获取指定字段的数据
         if (CollectionUtils.isNotEmpty(columns) && !columns.contains("*")) {
             // 保证查询字段的顺序!
@@ -372,8 +360,8 @@ public class SparkClient extends AbsRdbmsClient {
                 }
                 // 判断查询字段是否存在
                 boolean check = false;
-                for (int j = 0; j < columnMetaData.size(); j++) {
-                    if (column.equalsIgnoreCase(columnMetaData.get(j).getKey())) {
+                for (int j = 0; j < table.getColumns().size(); j++) {
+                    if (column.equalsIgnoreCase(table.getColumns().get(j).getKey())) {
                         needIndex.add(j);
                         check = true;
                         break;
@@ -390,15 +378,11 @@ public class SparkClient extends AbsRdbmsClient {
             throw new DtLoaderException("defaultFS incorrect format");
         }
         Configuration conf = HadoopConfUtil.getHdfsConf(sparkSourceDTO.getDefaultFS(), sparkSourceDTO.getConfig(), sparkSourceDTO.getKerberosConfig());
-
-        String finalStorageMode = storageMode;
-        Configuration finalConf = conf;
-        String finalTableLocation = tableLocation;
-        String finalFieldDelimiter = fieldDelimiter;
+        List<String> finalPartitions = partitions;
         return KerberosLoginUtil.loginWithUGI(sparkSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
-                        return createDownloader(finalStorageMode, finalConf, finalTableLocation, columnNames, finalFieldDelimiter, partitionColumns, needIndex, queryDTO.getPartitionColumns(), sparkSourceDTO.getKerberosConfig());
+                        return createDownloader(table.getStoreType(), conf, table.getPath(), columnNames, table.getDelim(), partitionColumns, needIndex, queryDTO.getPartitionColumns(), finalPartitions, sparkSourceDTO.getKerberosConfig());
                     } catch (Exception e) {
                         throw new DtLoaderException(String.format("create downloader exception,%s", e.getMessage()), e);
                     }
@@ -408,39 +392,49 @@ public class SparkClient extends AbsRdbmsClient {
 
     /**
      * 根据存储格式创建对应的hiveDownloader
-     * @param storageMode
-     * @param conf
-     * @param tableLocation
-     * @param columnNames
-     * @param fieldDelimiter
-     * @param partitionColumns
-     * @param filterPartitions
-     * @param kerberosConfig
-     * @return
-     * @throws Exception
+     *
+     * @param storageMode      存储格式
+     * @param conf             配置
+     * @param tableLocation    表hdfs路径
+     * @param columnNames      字段集合
+     * @param fieldDelimiter   textFile 表列分隔符
+     * @param partitionColumns 分区字段集合
+     * @param needIndex        需要查询的字段索引位置
+     * @param filterPartitions 需要查询的分区
+     * @param partitions       全部分区
+     * @param kerberosConfig   kerberos 配置
+     * @return downloader
+     * @throws Exception 异常信息
      */
-    private @NotNull IDownloader createDownloader(String storageMode, Configuration conf, String tableLocation, ArrayList<String> columnNames, String fieldDelimiter, ArrayList<String> partitionColumns, List<Integer> needIndex, Map<String, String> filterPartitions, Map<String, Object> kerberosConfig) throws Exception {
+    private @NotNull IDownloader createDownloader(String storageMode, Configuration conf, String tableLocation,
+                                                  ArrayList<String> columnNames, String fieldDelimiter,
+                                                  ArrayList<String> partitionColumns, List<Integer> needIndex,
+                                                  Map<String, String> filterPartitions, List<String> partitions,
+                                                  Map<String, Object> kerberosConfig) throws Exception {
         // 根据存储格式创建对应的hiveDownloader
         if (StringUtils.isBlank(storageMode)) {
             throw new DtLoaderException("Hive table reads for this storage type are not supported");
         }
 
-        if (storageMode.contains("Text")){
-            SparkTextDownload hiveTextDownload = new SparkTextDownload(conf, tableLocation, columnNames, fieldDelimiter, partitionColumns, filterPartitions, needIndex, kerberosConfig);
-            hiveTextDownload.configure();
-            return hiveTextDownload;
+        if (StringUtils.containsIgnoreCase(storageMode, "text")) {
+            SparkTextDownload sparkTextDownload = new SparkTextDownload(conf, tableLocation, columnNames,
+                    fieldDelimiter, partitionColumns, filterPartitions, needIndex, partitions, kerberosConfig);
+            sparkTextDownload.configure();
+            return sparkTextDownload;
         }
 
-        if (storageMode.contains("Orc")){
-            SparkORCDownload hiveORCDownload = new SparkORCDownload(conf, tableLocation, columnNames, partitionColumns, needIndex, kerberosConfig);
-            hiveORCDownload.configure();
-            return hiveORCDownload;
+        if (StringUtils.containsIgnoreCase(storageMode, "orc")) {
+            SparkORCDownload sparkORCDownload = new SparkORCDownload(conf, tableLocation, columnNames,
+                    partitionColumns, needIndex, partitions, kerberosConfig);
+            sparkORCDownload.configure();
+            return sparkORCDownload;
         }
 
-        if (storageMode.contains("Parquet")){
-            SparkParquetDownload hiveParquetDownload = new SparkParquetDownload(conf, tableLocation, columnNames, partitionColumns, needIndex, filterPartitions, kerberosConfig);
-            hiveParquetDownload.configure();
-            return hiveParquetDownload;
+        if (StringUtils.containsIgnoreCase(storageMode, "parquet")) {
+            SparkParquetDownload sparkParquetDownload = new SparkParquetDownload(conf, tableLocation, columnNames,
+                    partitionColumns, needIndex, filterPartitions, partitions, kerberosConfig);
+            sparkParquetDownload.configure();
+            return sparkParquetDownload;
         }
 
         throw new DtLoaderException("Hive table reads for this storage type are not supported");

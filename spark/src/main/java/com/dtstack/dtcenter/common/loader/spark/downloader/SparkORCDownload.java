@@ -9,6 +9,8 @@ import com.google.common.collect.Lists;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -38,6 +40,7 @@ import java.util.Properties;
  * 下载hive表:存储结构为ORC
  * Date: 2020/6/3
  * Company: www.dtstack.com
+ *
  * @author wangchuan
  */
 @Slf4j
@@ -49,35 +52,44 @@ public class SparkORCDownload implements IDownloader {
     private JobConf conf;
     private RecordReader recordReader;
 
-    private int readerCount = 0;
     private Object key;
     private Object value;
     private StructObjectInspector inspector;
     private List<? extends StructField> fields;
 
-    private String tableLocation;
-    private List<String> columnNames;
-    private Configuration configuration;
+    private final String tableLocation;
+    private final List<String> columnNames;
+    private final Configuration configuration;
 
     private InputSplit[] splits;
     private int splitIndex = 0;
 
     private InputSplit currentSplit;
 
-    private List<String> partitionColumns;
+    private final List<String> partitionColumns;
 
-    private Map<String, Object> kerberosConfig;
+    private final Map<String, Object> kerberosConfig;
 
-    // 需要查询字段的索引
-    private List<Integer> needIndex;
+    /**
+     * 需要查询字段的索引
+     */
+    private final List<Integer> needIndex;
 
-    public SparkORCDownload(Configuration configuration, String tableLocation, List<String> columnNames, List<String> partitionColumns, List<Integer> needIndex, Map<String, Object> kerberosConfig){
+    /**
+     * 所有分区
+     */
+    private final List<String> partitions;
+
+    public SparkORCDownload(Configuration configuration, String tableLocation, List<String> columnNames,
+                           List<String> partitionColumns, List<Integer> needIndex,
+                           List<String> partitions, Map<String, Object> kerberosConfig){
+        this.configuration = configuration;
         this.tableLocation = tableLocation;
         this.columnNames = columnNames;
         this.partitionColumns = partitionColumns;
-        this.configuration = configuration;
-        this.kerberosConfig = kerberosConfig;
         this.needIndex = needIndex;
+        this.partitions = partitions;
+        this.kerberosConfig = kerberosConfig;
     }
 
     @Override
@@ -96,17 +108,17 @@ public class SparkORCDownload implements IDownloader {
         }
         FileInputFormat.setInputPaths(conf, targetFilePath);
         splits = inputFormat.getSplits(conf, SPLIT_NUM);
-        if(splits !=null && splits.length > 0){
-            initRecordReader();
-            key = recordReader.createKey();
-            value = recordReader.createValue();
-
-            Properties p = new Properties();
-            p.setProperty("columns", StringUtil.join(columnNames,","));
-            orcSerde.initialize(conf, p);
-
-            this.inspector = (StructObjectInspector) orcSerde.getObjectInspector();
-            fields = inspector.getAllStructFieldRefs();
+        if(ArrayUtils.isNotEmpty(splits)){
+            boolean isInit = initRecordReader();
+            if (isInit) {
+                key = recordReader.createKey();
+                value = recordReader.createValue();
+                Properties p = new Properties();
+                p.setProperty("columns", StringUtil.join(columnNames,","));
+                orcSerde.initialize(conf, p);
+                this.inspector = (StructObjectInspector) orcSerde.getObjectInspector();
+                fields = inspector.getAllStructFieldRefs();
+            }
         }
         return true;
     }
@@ -132,7 +144,7 @@ public class SparkORCDownload implements IDownloader {
                 });
     }
 
-    public List<String> readNextWithKerberos() throws Exception {
+    public List<String> readNextWithKerberos() {
         List<String> row = new ArrayList<>();
 
         // 分区字段的值
@@ -166,12 +178,11 @@ public class SparkORCDownload implements IDownloader {
             for (int index = 0; index < columnNames.size(); index++) {
                 row.add(getFieldByIndex(index));
             }
-            if (CollectionUtils.isNotEmpty(partitionColumns)) {
+            if(CollectionUtils.isNotEmpty(partitionColumns)){
                 row.addAll(partitions);
             }
         }
 
-        readerCount++;
         return row;
     }
 
@@ -205,7 +216,7 @@ public class SparkORCDownload implements IDownloader {
     }
 
     private boolean initRecordReader() throws IOException {
-        if(splitIndex > splits.length){
+        if(splitIndex > splits.length - 1){
             return false;
         }
         OrcSplit orcSplit = (OrcSplit)splits[splitIndex];
@@ -216,23 +227,24 @@ public class SparkORCDownload implements IDownloader {
             close();
         }
 
+        // 如果路径不存在，重新进行初始化 recordReader orcSplit.getPath().toString() 可以拿到当前逻辑切片的 hdfs 文件路径
+        if (!isPartitionExists(orcSplit.getPath().toString())) {
+            return initRecordReader();
+        }
+
         recordReader = inputFormat.getRecordReader(orcSplit, conf, Reporter.NULL);
         return true;
     }
 
     public boolean nextRecord() throws IOException {
-
         if(recordReader.next(key, value)){
             return true;
         }
-
-        for(int i=splitIndex; i<splits.length; i++){
-            initRecordReader();
-            if(recordReader.next(key, value)){
+        for (int i = splitIndex; i < splits.length; i++) {
+            if (initRecordReader() && recordReader.next(key, value)) {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -264,5 +276,46 @@ public class SparkORCDownload implements IDownloader {
     @Override
     public List<String> getContainers() {
         return Collections.emptyList();
+    }
+
+    /**
+     * 判断分区是否存在
+     *
+     * @param path hdfs 文件路径
+     * @return 分区是否存在
+     */
+    private boolean isPartitionExists(String path) {
+        // 如果 partitions 为 null，表示非分区表，返回 true
+        if (Objects.isNull(partitions)) {
+            return true;
+        }
+        // 如果为空标识是分区表，但是无分区信息，返回 false
+        if (CollectionUtils.isEmpty(partitions)) {
+            return false;
+        }
+        String curPathPartition = getCurPathPartition(path);
+        if (StringUtils.isBlank(curPathPartition)) {
+            return false;
+        }
+        return partitions.contains(curPathPartition);
+    }
+
+    /**
+     * 获取当前路径的分区路径
+     *
+     * @return 分区
+     */
+    private String getCurPathPartition(String path) {
+        StringBuilder curPart = new StringBuilder();
+        for (String part : path.split("/")) {
+            if(part.contains("=")){
+                curPart.append(part).append("/");
+            }
+        }
+        String curPartString = curPart.toString();
+        if (StringUtils.isNotBlank(curPartString)) {
+            return curPartString.substring(0, curPartString.length() - 1);
+        }
+        return curPartString;
     }
 }

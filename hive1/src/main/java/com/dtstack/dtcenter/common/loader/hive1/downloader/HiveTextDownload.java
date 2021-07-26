@@ -7,6 +7,7 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -47,16 +48,14 @@ public class HiveTextDownload implements IDownloader {
     private LongWritable key;
     private Text value;
 
-    private int readNum = 0;
-
     private RecordReader recordReader;
-    private String tableLocation;
-    private String fieldDelimiter;
-    private Configuration configuration;
-    private List<String> columnNames;
-
+    private final String tableLocation;
+    private final String fieldDelimiter;
+    private final Configuration configuration;
+    private final List<String> columnNames;
+    
     // 需要查询的字段索引
-    private List<Integer> needIndex;
+    private final List<Integer> needIndex;
 
     private List<String> paths;
     private String currFile;
@@ -64,12 +63,18 @@ public class HiveTextDownload implements IDownloader {
 
     private InputSplit[] splits;
     private int splitIndex = 0;
-    private List<String> partitionColumns;
-    private Map<String, Object> kerberosConfig;
+    private final List<String> partitionColumns;
+    private final Map<String, Object> kerberosConfig;
+
     /**
      * 按分区下载
      */
-    private Map<String, String> filterPartition;
+    private final Map<String, String> filterPartition;
+
+    /**
+     * 所有分区
+     */
+    private final List<String> partitions;
 
     /**
      * 当前分区的值
@@ -77,7 +82,8 @@ public class HiveTextDownload implements IDownloader {
     private List<String> currentPartData;
 
     public HiveTextDownload(Configuration configuration, String tableLocation, List<String> columnNames, String fieldDelimiter,
-                            List<String> partitionColumns, Map<String, String> filterPartition, List<Integer> needIndex, Map<String, Object> kerberosConfig){
+                            List<String> partitionColumns, Map<String, String> filterPartition, List<Integer> needIndex,
+                            List<String> partitions, Map<String, Object> kerberosConfig){
         this.tableLocation = tableLocation;
         this.columnNames = columnNames;
         this.fieldDelimiter = fieldDelimiter;
@@ -85,6 +91,7 @@ public class HiveTextDownload implements IDownloader {
         this.configuration = configuration;
         this.filterPartition = filterPartition;
         this.kerberosConfig = kerberosConfig;
+        this.partitions = partitions;
         this.needIndex = needIndex;
     }
 
@@ -149,10 +156,7 @@ public class HiveTextDownload implements IDownloader {
         if(splits.length == 0){
             return nextRecordReader();
         }
-
-        if(splits != null && splits.length > 0){
-            nextSplitRecordReader();
-        }
+        nextSplitRecordReader();
         return true;
     }
 
@@ -183,10 +187,11 @@ public class HiveTextDownload implements IDownloader {
             currentPartData = HdfsOperator.parsePartitionDataFromUrl(currFile,partitionColumns);
         }
 
-        if (!isRequiredPartition()){
+        // 如果分区不存在或者不需要该分区则进行跳过
+        if (!isPartitionExists() || !isRequiredPartition()){
             currFileIndex++;
             splitIndex = 0;
-            nextFile();
+            return nextFile();
         }
 
         currFileIndex++;
@@ -218,14 +223,13 @@ public class HiveTextDownload implements IDownloader {
     }
 
     @Override
-    public List<String> getMetaInfo(){
+    public List<String> getMetaInfo() {
         List<String> metaInfo = new ArrayList<>(columnNames);
         if(CollectionUtils.isNotEmpty(partitionColumns)){
             metaInfo.addAll(partitionColumns);
         }
         return metaInfo;
     }
-
 
     @Override
     public List<String> readNext(){
@@ -234,16 +238,15 @@ public class HiveTextDownload implements IDownloader {
                     try {
                         return readNextWithKerberos();
                     } catch (Exception e){
-                        throw new DtLoaderException(String.format("Abnormal reading file，%s", e.getMessage()), e);
+                        throw new DtLoaderException(String.format("Abnormal reading file,%s", e.getMessage()), e);
                     }
                 });
     }
 
     public List<String> readNextWithKerberos(){
-        readNum++;
         String line = value.toString();
         value.clear();
-        String[] fields = line.split(fieldDelimiter, -1);
+        String[] fields = StringUtils.splitPreserveAllTokens(line, fieldDelimiter);
         List<String> row = Lists.newArrayList(fields);
         if(CollectionUtils.isNotEmpty(partitionColumns)){
             row.addAll(currentPartData);
@@ -272,7 +275,6 @@ public class HiveTextDownload implements IDownloader {
                         throw new DtLoaderException(String.format("Download file is abnormal,%s", e.getMessage()), e);
                     }
                 });
-
     }
 
     @Override
@@ -289,8 +291,49 @@ public class HiveTextDownload implements IDownloader {
     }
 
     /**
+     * 判断分区是否存在
+     *
+     * @return 分区是否存在
+     */
+    private boolean isPartitionExists() {
+        // 如果 partitions 为 null，表示非分区表，返回 true
+        if (Objects.isNull(partitions)) {
+            return true;
+        }
+        // 如果为空标识是分区表，但是无分区信息，返回 false
+        if (CollectionUtils.isEmpty(partitions)) {
+            return false;
+        }
+        String curPathPartition = getCurPathPartition();
+        if (StringUtils.isBlank(curPathPartition)) {
+            return false;
+        }
+        return partitions.contains(curPathPartition);
+    }
+
+    /**
+     * 获取当前路径的分区路径
+     *
+     * @return 分区
+     */
+    private String getCurPathPartition() {
+        StringBuilder curPart = new StringBuilder();
+        for (String part : currFile.split("/")) {
+            if(part.contains("=")){
+                curPart.append(part).append("/");
+            }
+        }
+        String curPartString = curPart.toString();
+        if (StringUtils.isNotBlank(curPartString)) {
+            return curPartString.substring(0, curPartString.length() - 1);
+        }
+        return curPartString;
+    }
+
+    /**
      * 判断是否是指定的分区，支持多级分区
-     * @return
+     *
+     * @return 是否需要该分区
      */
     private boolean isRequiredPartition(){
         if (filterPartition != null && !filterPartition.isEmpty()) {
