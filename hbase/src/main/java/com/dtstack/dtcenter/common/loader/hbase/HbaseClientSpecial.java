@@ -212,6 +212,7 @@ public class HbaseClientSpecial implements IHbase {
                 Delete delete = new Delete(Bytes.toBytes(rowKey));
                 delete.addColumn(Bytes.toBytes(family), Bytes.toBytes(qualifier));
                 table.delete(delete);
+                log.info("delete hbase rowKey success , rowKey {}", rowKey);
             }
             return true;
         } catch (DtLoaderException e) {
