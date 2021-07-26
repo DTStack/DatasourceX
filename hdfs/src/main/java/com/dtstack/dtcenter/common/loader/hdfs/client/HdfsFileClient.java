@@ -14,6 +14,7 @@ import com.dtstack.dtcenter.common.loader.hdfs.fileMerge.core.CombineServer;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsOrcWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsParquetWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsTextWriter;
+import com.dtstack.dtcenter.common.loader.hdfs.util.StringUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
