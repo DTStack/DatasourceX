@@ -458,6 +458,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
                 case 3:
                     // DELETE /${index}
                     httpMethod = DELETE;
+                    log.info("delete es index, index : {}", index);
                     endpoint = String.format(ENDPOINT_DELETE_FORMAT, index);
                     break;
                 case 4:

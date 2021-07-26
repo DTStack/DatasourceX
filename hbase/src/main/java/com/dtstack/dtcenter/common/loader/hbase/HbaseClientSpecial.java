@@ -146,7 +146,9 @@ public class HbaseClientSpecial implements IHbase {
             admin = connection.getAdmin();
             admin.disableTable(tbName);
             admin.deleteTable(tbName);
+            log.info("delete hbase table success, table name {}", tbName);
         } catch (Exception e) {
+            log.error("delete hbase table error, table name: {}", tbName, e);
             throw new DtLoaderException(String.format("hbase failed to delete table！table name: %s", tableName), e);
         } finally {
             close(admin);
