@@ -131,6 +131,22 @@ public class HbaseClientTest extends BaseTest {
         Assert.assertFalse(check);
     }
 
+    @Test
+    public void deleteHbaseTable() {
+        Boolean check = HBASE_CLIENT.deleteHbaseTable(source, "loader_test_2");
+        Assert.assertTrue(check);
+        Boolean check1 = HBASE_CLIENT.createHbaseTable(source, "loader_test_2", new String[]{"info1", "info2"});
+        Assert.assertTrue(check1);
+    }
+
+    @Test
+    public void deleteHbaseTable_1() {
+        Boolean check = HBASE_CLIENT.deleteHbaseTable(source,"default", "loader_test_2");
+        Assert.assertTrue(check);
+        Boolean check1 = HBASE_CLIENT.createHbaseTable(source,"default", "loader_test_2", new String[]{"info1", "info2"});
+        Assert.assertTrue(check1);
+    }
+
     /**
      * 已注try-catch
      * 创建已经存在的表测试，需要测试自己手动修改表名，目前暂时不支持hbase删除表

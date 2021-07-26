@@ -42,6 +42,18 @@ public class HbaseProxy implements IHbase {
     }
 
     @Override
+    public Boolean deleteHbaseTable(ISourceDTO source, String tableName) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.deleteHbaseTable(source, tableName),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public Boolean deleteHbaseTable(ISourceDTO source, String namespace, String tableName) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.deleteHbaseTable(source, namespace, tableName),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
     public List<String> scanByRegex(ISourceDTO source, String tableName, String regex) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.scanByRegex(source, tableName, regex),
                 targetClient.getClass().getClassLoader());
