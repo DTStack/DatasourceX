@@ -135,6 +135,38 @@ public class HbaseClientSpecial implements IHbase {
     }
 
     @Override
+    public Boolean deleteHbaseTable(ISourceDTO source, String tableName) {
+        HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
+        TableName tbName = TableName.valueOf(tableName);
+        Connection connection = null;
+        Admin admin = null;
+        try {
+            //获取hbase连接
+            connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
+            admin = connection.getAdmin();
+            admin.disableTable(tbName);
+            admin.deleteTable(tbName);
+            log.info("delete hbase table success, table name {}", tbName);
+        } catch (Exception e) {
+            log.error("delete hbase table error, table name: {}", tbName, e);
+            throw new DtLoaderException(String.format("hbase failed to delete table！table name: %s", tableName), e);
+        } finally {
+            close(admin);
+            closeConnection(connection, hbaseSourceDTO);
+            HbaseClient.destroyProperty();
+        }
+        return true;
+    }
+
+    @Override
+    public Boolean deleteHbaseTable(ISourceDTO source, String namespace, String tableName) {
+        if (StringUtils.isNotBlank(namespace) && !tableName.contains(":")) {
+            tableName = String.format("%s:%s", namespace, tableName);
+        }
+        return deleteHbaseTable(source, tableName);
+    }
+
+    @Override
     public List<String> scanByRegex(ISourceDTO source, String tbName, String regex) {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
         Connection connection = null;
@@ -180,6 +212,7 @@ public class HbaseClientSpecial implements IHbase {
                 Delete delete = new Delete(Bytes.toBytes(rowKey));
                 delete.addColumn(Bytes.toBytes(family), Bytes.toBytes(qualifier));
                 table.delete(delete);
+                log.info("delete hbase rowKey success , rowKey {}", rowKey);
             }
             return true;
         } catch (DtLoaderException e) {

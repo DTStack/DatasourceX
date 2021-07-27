@@ -204,6 +204,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
                         FileSystem fs = FileSystem.get(conf);
+                        log.info("delete hdfs file ,remotePath :{}", remotePath);
                         return fs.delete(new Path(remotePath), recursive);
                     } catch (Exception e) {
                         throw new DtLoaderException(String.format("Target path deletion exception,%s", e.getMessage()), e);
