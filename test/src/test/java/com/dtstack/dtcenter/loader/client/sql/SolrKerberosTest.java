@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
+import com.dtstack.dtcenter.loader.cache.pool.config.PoolConfig;
 import com.dtstack.dtcenter.loader.client.BaseTest;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -34,6 +35,7 @@ public class SolrKerberosTest extends BaseTest {
 
     SolrSourceDTO source = SolrSourceDTO.builder()
             .zkHost("worker:2181/solr")
+            .poolConfig(new PoolConfig())
             .build();
 
     @Before
@@ -56,24 +58,28 @@ public class SolrKerberosTest extends BaseTest {
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("connection exception");
         }
+        Assert.assertNull(System.getProperty("solr.kerberos.jaas.appname"));
     }
 
     @Test
     public void getTableList () {
         List<String> databases = client.getTableList(source, SqlQueryDTO.builder().build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(databases));
+        Assert.assertNull(System.getProperty("solr.kerberos.jaas.appname"));
     }
 
     @Test
     public void getPreview() {
         List viewList = client.getPreview(source, SqlQueryDTO.builder().tableName("qianyi_test").previewNum(5).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(viewList));
+        Assert.assertNull(System.getProperty("solr.kerberos.jaas.appname"));
     }
 
     @Test
     public void getColumnMetaData() {
         List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("qianyi_test").build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(metaData));
+        Assert.assertNull(System.getProperty("solr.kerberos.jaas.appname"));
     }
 
     /**
@@ -82,9 +88,16 @@ public class SolrKerberosTest extends BaseTest {
     @Test
     public void executeQuery() {
         SolrQueryDTO solrQueryDTO = new SolrQueryDTO();
-        solrQueryDTO.setQuery("name:红豆").setSort(SolrQueryDTO.SortClause.asc("price")).setRows(4).setFields("price","name","id");
+        solrQueryDTO.setQuery("name:红豆").setSort(SolrQueryDTO.SortClause.asc("price")).setStart(1).setRows(3).setFields("price","name","id");
         List<Map<String,Object>> metaData = client.executeQuery(source, SqlQueryDTO.builder().tableName("qianyi_test").solrQueryDTO(solrQueryDTO).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(metaData));
+        Assert.assertEquals(3, metaData.size());
+        Assert.assertNull(System.getProperty("solr.kerberos.jaas.appname"));
+    }
+
+    @Test
+    public void clearKerberos() {
+        Assert.assertNull(System.getProperty("solr.kerberos.jaas.appname"));
     }
 
 }

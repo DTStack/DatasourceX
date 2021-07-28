@@ -49,6 +49,22 @@ public interface IHbase {
     Boolean createHbaseTable(ISourceDTO source, String namespace, String tableName, String[] colFamily);
 
     /**
+     * hbase 删除表
+     *
+     * @param source    数据源信息
+     * @param tableName 表名
+     */
+    Boolean deleteHbaseTable(ISourceDTO source, String tableName);
+
+    /**
+     * hbase 删除表
+     *
+     * @param source    数据源信息
+     * @param tableName 表名
+     */
+    Boolean deleteHbaseTable(ISourceDTO source, String namespace, String tableName);
+
+    /**
      * hbase 根据正则查询匹配的数据，返回rowkey集合
      *
      * @param source 数据源连接信息
