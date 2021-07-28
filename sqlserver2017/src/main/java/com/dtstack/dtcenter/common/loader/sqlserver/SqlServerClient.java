@@ -66,6 +66,7 @@ public class SqlServerClient extends AbsRdbmsClient {
         try {
             String sql = queryDTO.getView() ? TABLE_QUERY_ALL : TABLE_QUERY;
             statement = sqlserver2017SourceDTO.getConnection().createStatement();
+            DBUtil.setFetchSize(statement, queryDTO);
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {

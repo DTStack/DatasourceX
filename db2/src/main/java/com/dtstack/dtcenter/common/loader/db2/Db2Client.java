@@ -67,6 +67,7 @@ public class Db2Client extends AbsRdbmsClient {
         try {
             String sql = String.format(TABLE_QUERY, db2SourceDTO.getUsername().toUpperCase());
             statement = db2SourceDTO.getConnection().createStatement();
+            DBUtil.setFetchSize(statement, queryDTO);
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {

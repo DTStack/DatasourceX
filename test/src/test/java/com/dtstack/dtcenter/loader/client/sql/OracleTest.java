@@ -135,9 +135,12 @@ public class OracleTest extends BaseTest {
      */
     @Test
     public void getTableList()  {
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
-        List<String> tableList = client.getTableList(source, queryDTO);
-        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().fetchSize(100).build();
+        for (int i =0; i< 20 ; i++) {
+            Long start = System.currentTimeMillis();
+            client.getTableList(source, queryDTO);
+            System.out.println(System.currentTimeMillis() - start);
+        }
     }
 
     /**

@@ -66,6 +66,7 @@ public class LibraClient extends AbsRdbmsClient {
         ResultSet rs = null;
         try {
             statement = libraSourceDTO.getConnection().createStatement();
+            DBUtil.setFetchSize(statement, queryDTO);
             //大小写区分
             rs = statement.executeQuery(String.format("select table_name from information_schema.tables WHERE " +
                     "table_schema in ( '%s' )", StringUtils.isBlank(libraSourceDTO.getSchema()) ? currentDatabase : libraSourceDTO.getSchema()));

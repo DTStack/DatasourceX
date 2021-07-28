@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.presto;
 
 import com.dtstack.dtcenter.common.loader.common.exception.ErrorCode;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -94,7 +95,8 @@ public class PrestoClient<T> extends AbsRdbmsClient<T> {
     @Override
     public List<String> getTableList(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         try {
-            return queryWithSingleColumn(sourceDTO, SHOW_TABLE_SQL, 1,"get table exception according to schema...");
+            Integer fetchSize = ReflectUtil.fieldExists(SqlQueryDTO.class, "fetchSize") ? queryDTO.getFetchSize() : null;
+            return queryWithSingleColumn(sourceDTO, fetchSize, SHOW_TABLE_SQL, 1,"get table exception according to schema...");
         } catch (Exception e) {
             // 如果url 中没有指定到 schema，则获取当前catalog下的所有表，并拼接形式如 "schema"."table"
             if (e.getMessage().contains(SCHEMA_MUST_BE_SET)) {
@@ -221,7 +223,7 @@ public class PrestoClient<T> extends AbsRdbmsClient<T> {
         PrestoSourceDTO prestoSourceDTO = (PrestoSourceDTO) sourceDTO;
         // 对表名进行转换，schema如果传则不可以在表名中出现schema信息
         String tableName = transferSchemaAndTableName(prestoSourceDTO, queryDTO);
-        List<String> result = queryWithSingleColumn(sourceDTO, String.format(SHOW_CREATE_TABLE_SQL, tableName), 1, "failed to get table create sql...");
+        List<String> result = queryWithSingleColumn(sourceDTO, null, String.format(SHOW_CREATE_TABLE_SQL, tableName), 1, "failed to get table create sql...");
         if (CollectionUtils.isEmpty(result)) {
             throw new DtLoaderException("failed to get table create sql...");
         }

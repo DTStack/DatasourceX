@@ -114,6 +114,7 @@ public class InceptorClient extends AbsRdbmsClient {
                 // 设置最大条数
                 maxLimit = queryDTO.getLimit();
             }
+            DBUtil.setFetchSize(statement, queryDTO);
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             int cnt = 0;
