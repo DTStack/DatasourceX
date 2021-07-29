@@ -26,7 +26,7 @@ public enum DataBaseType {
     GBase8a("gbase", "com.gbase.jdbc.Driver", "select 1111"),
     Kylin("kylin", "org.apache.kylin.jdbc.Driver", "select 1111"),
     Kudu("kudu", "org.apache.hive.jdbc.HiveDriver"),
-    Impala("impala", "com.cloudera.impala.jdbc41.Driver"),
+    Impala("impala", "com.cloudera.impala.jdbc.Driver"),
     Clickhouse("clickhouse", "ru.yandex.clickhouse.ClickHouseDriver"),
     HIVE1X("hive1", "org.apache.hive.jdbc.HiveDriver", "show tables"),
     Polardb_For_MySQL("mysql", "com.mysql.jdbc.Driver", "!table"),
