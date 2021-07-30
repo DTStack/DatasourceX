@@ -44,9 +44,9 @@
 
         <!-- 类隔离 jar 包 -->
         <dependency>
-            <groupId>com.cloudera.impala.jdbc</groupId>
+            <groupId>com.cloudera.ImpalaJDBC41</groupId>
             <artifactId>ImpalaJDBC41</artifactId>
-            <version>2.6.12</version>
+            <version>2.6.23</version>
         </dependency>
 
         <dependency>
