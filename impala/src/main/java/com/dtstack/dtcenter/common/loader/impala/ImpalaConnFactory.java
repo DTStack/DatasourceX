@@ -20,7 +20,7 @@ import java.sql.Connection;
 @Slf4j
 public class ImpalaConnFactory extends ConnFactory {
     public ImpalaConnFactory() {
-        this.driverName = DataBaseType.Impala.getDriverClassName();
+        this.driverName = "com.cloudera.impala.jdbc.Driver";
         this.errorPattern = new ImpalaErrorPattern();
     }
 
