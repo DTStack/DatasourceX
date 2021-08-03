@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * hbase queryDTO
@@ -32,4 +33,26 @@ public class HbaseQueryDTO {
     private String endRowKey;
 
     private Long limit;
+
+    private Map<String, ColumnType> columnTypes;
+
+    public enum ColumnType {
+        INT(),
+
+        LONG(),
+
+        STRING(),
+
+        BIG_DECIMAL(),
+
+        BOOLEAN(),
+
+        DOUBLE(),
+
+        FLOAT(),
+
+        SHORT(),
+
+        HEX()
+    }
 }

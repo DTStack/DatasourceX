@@ -500,8 +500,15 @@ public class HbaseClientSpecial implements IHbase {
                 row.put(ROWKEY, Bytes.toString(cell.getRowArray(), cell.getRowOffset(),cell.getRowLength()));
                 String family = Bytes.toString(cell.getFamilyArray(), cell.getFamilyOffset(),cell.getFamilyLength());
                 String qualifier = Bytes.toString(cell.getQualifierArray(), cell.getQualifierOffset(),cell.getQualifierLength());
-                String value = Bytes.toString(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
-                row.put(String.format(FAMILY_QUALIFIER, family, qualifier), value);
+                Object value;
+                String familyQualifier = String.format(FAMILY_QUALIFIER, family, qualifier);
+                if (MapUtils.isNotEmpty(hbaseQueryDTO.getColumnTypes()) && Objects.nonNull(hbaseQueryDTO.getColumnTypes().get(familyQualifier))) {
+                    HbaseQueryDTO.ColumnType columnType = hbaseQueryDTO.getColumnTypes().get(familyQualifier);
+                    value = convertColumnType(columnType, cell);
+                } else {
+                    value = Bytes.toString(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
+                }
+                row.put(familyQualifier, value);
                 //取到最新变动的时间
                 if (cell.getTimestamp() > timestamp) {
                     timestamp = cell.getTimestamp();
@@ -511,6 +518,37 @@ public class HbaseClientSpecial implements IHbase {
             executeResult.add(row);
         }
         return executeResult;
+    }
+
+    /**
+     * 转化 hbase 字段值类型
+     *
+     * @param columnType 字段值类型
+     * @param cell       cell
+     * @return 转化后的值
+     */
+    private Object convertColumnType(HbaseQueryDTO.ColumnType columnType, Cell cell) {
+        switch (columnType) {
+            case INT:
+                return Bytes.toInt(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
+            case LONG:
+                return Bytes.toLong(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
+            case FLOAT:
+                return Bytes.toFloat(cell.getValueArray(), cell.getValueOffset());
+            case DOUBLE:
+                return Bytes.toDouble(cell.getValueArray(), cell.getValueOffset());
+            case BOOLEAN:
+                return Bytes.toBoolean(cell.getValueArray());
+            case HEX:
+                return Bytes.toHex(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
+            case SHORT:
+                return Bytes.toShort(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
+            case BIG_DECIMAL:
+                return Bytes.toBigDecimal(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
+            default:
+                return Bytes.toString(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
+
+        }
     }
 
     /**
