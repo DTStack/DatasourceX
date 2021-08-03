@@ -239,7 +239,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
      * @param scan scan对象
      * @param timestampFilter 时间戳过滤器
      */
-    private void fillTimestampFilter(Scan scan, TimestampFilter timestampFilter) throws IOException {
+    public static void fillTimestampFilter(Scan scan, TimestampFilter timestampFilter) throws IOException {
         CompareOp compareOp = timestampFilter.getCompareOp();
         Long comparator = timestampFilter.getComparator();
         if (Objects.isNull(comparator)) {

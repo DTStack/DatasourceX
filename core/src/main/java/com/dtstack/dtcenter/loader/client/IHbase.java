@@ -1,5 +1,9 @@
 package com.dtstack.dtcenter.loader.client;
 
+import com.dtstack.dtcenter.loader.dto.HbaseQueryDTO;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.filter.Filter;
+import com.dtstack.dtcenter.loader.dto.filter.TimestampFilter;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 
 import java.util.List;
@@ -43,6 +47,22 @@ public interface IHbase {
      * @return 创建结果
      */
     Boolean createHbaseTable(ISourceDTO source, String namespace, String tableName, String[] colFamily);
+
+    /**
+     * hbase 删除表
+     *
+     * @param source    数据源信息
+     * @param tableName 表名
+     */
+    Boolean deleteHbaseTable(ISourceDTO source, String tableName);
+
+    /**
+     * hbase 删除表
+     *
+     * @param source    数据源信息
+     * @param tableName 表名
+     */
+    Boolean deleteHbaseTable(ISourceDTO source, String namespace, String tableName);
 
     /**
      * hbase 根据正则查询匹配的数据，返回rowkey集合
@@ -119,4 +139,14 @@ public interface IHbase {
      * @return 预览数据
      */
     List<List<String>> preview(ISourceDTO source, String tableName, Map<String, List<String>> familyQualifierMap, Integer previewNum);
+
+    /**
+     * hbase 自定义查询
+     *
+     * @param source          数据源信息
+     * @param hbaseQueryDTO   hbase 查询条件
+     * @param timestampFilter 时间戳过滤
+     * @return 查询结果
+     */
+    List<Map<String, Object>> executeQuery(ISourceDTO source, HbaseQueryDTO hbaseQueryDTO, TimestampFilter timestampFilter);
 }

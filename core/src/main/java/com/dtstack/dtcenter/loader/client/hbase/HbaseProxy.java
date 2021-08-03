@@ -2,6 +2,8 @@ package com.dtstack.dtcenter.loader.client.hbase;
 
 import com.dtstack.dtcenter.loader.ClassLoaderCallBackMethod;
 import com.dtstack.dtcenter.loader.client.IHbase;
+import com.dtstack.dtcenter.loader.dto.HbaseQueryDTO;
+import com.dtstack.dtcenter.loader.dto.filter.TimestampFilter;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 
 import java.util.List;
@@ -36,6 +38,18 @@ public class HbaseProxy implements IHbase {
     @Override
     public Boolean createHbaseTable(ISourceDTO source, String namespace, String tableName, String[] colFamily) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.createHbaseTable(source, namespace, tableName, colFamily),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public Boolean deleteHbaseTable(ISourceDTO source, String tableName) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.deleteHbaseTable(source, tableName),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public Boolean deleteHbaseTable(ISourceDTO source, String namespace, String tableName) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.deleteHbaseTable(source, namespace, tableName),
                 targetClient.getClass().getClassLoader());
     }
 
@@ -78,6 +92,12 @@ public class HbaseProxy implements IHbase {
     @Override
     public List<List<String>> preview(ISourceDTO source, String tableName, Map<String, List<String>> familyQualifierMap, Integer previewNum) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.preview(source, tableName, familyQualifierMap, previewNum),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public List<Map<String, Object>> executeQuery(ISourceDTO source, HbaseQueryDTO hbaseQueryDTO, TimestampFilter timestampFilter) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeQuery(source, hbaseQueryDTO, timestampFilter),
                 targetClient.getClass().getClassLoader());
     }
 }
