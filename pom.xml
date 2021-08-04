@@ -56,6 +56,7 @@
         <module>inceptor</module>
         <module>influxdb</module>
         <module>opentsdb</module>
+        <module>phoenix4_8</module>
         <module>test</module>
     </modules>
     <packaging>pom</packaging>
