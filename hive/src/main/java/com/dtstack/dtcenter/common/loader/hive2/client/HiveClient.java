@@ -104,7 +104,7 @@ public class HiveClient extends AbsRdbmsClient {
                 tableList.add(rs.getString(columnSize == 1 ? 1 : 2));
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("get table exception,%", e.getMessage()), e);
+            throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(hiveSourceDTO, clearStatus));
         }

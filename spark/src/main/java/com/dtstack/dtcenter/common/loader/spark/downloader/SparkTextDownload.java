@@ -150,10 +150,7 @@ public class SparkTextDownload implements IDownloader {
         if(splits.length == 0){
             return nextRecordReader();
         }
-
-        if(splits != null && splits.length > 0){
-            nextSplitRecordReader();
-        }
+        nextSplitRecordReader();
         return true;
     }
 

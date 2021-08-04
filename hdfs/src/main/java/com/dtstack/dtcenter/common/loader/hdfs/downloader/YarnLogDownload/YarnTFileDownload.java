@@ -285,10 +285,9 @@ public class YarnTFileDownload implements IDownloader {
         String fileLengthStr = currValueStream.readUTF();
         currFileLength = Long.parseLong(fileLengthStr);
 
-        if (StringUtils.isNotBlank(logType) && !currFileType.toUpperCase().startsWith(logType)) {
-            currValueStream.skipBytes(Integer.valueOf(fileLengthStr));
-            return nextLogType();
-        } else if (StringUtils.isNotBlank(containerId) && !containerId.equals(currLogKey.toString())) {
+        Boolean startLogType = StringUtils.isNotBlank(logType) && !currFileType.toUpperCase().startsWith(logType);
+        Boolean equalsContainerId = StringUtils.isNotBlank(containerId) && !containerId.equals(currLogKey.toString());
+        if (startLogType || equalsContainerId) {
             currValueStream.skipBytes(Integer.valueOf(fileLengthStr));
             return nextLogType();
         }
@@ -353,9 +352,7 @@ public class YarnTFileDownload implements IDownloader {
 
         if (readNum <= 0) {
             //close stream
-            if (currValueStream != null) {
-                currValueStream.close();
-            }
+            currValueStream.close();
 
             boolean hasNext = nextLogFile();
             if (!hasNext) {

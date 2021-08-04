@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.common.utils;
 
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.utils.AssertUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
@@ -289,7 +290,7 @@ public class DateUtil {
     }
 
     public static Date stringToDate(String strDate) {
-        assert StringUtils.isNotBlank(strDate);
+        AssertUtils.notBlank(strDate, "strDate not null");
 
         try {
             return datetimeFormatter.parse(strDate);

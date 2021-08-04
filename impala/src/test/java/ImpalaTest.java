@@ -3,6 +3,7 @@ import com.dtstack.dtcenter.common.loader.impala.ImpalaConnFactory;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
+import com.dtstack.dtcenter.loader.utils.AssertUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
@@ -32,6 +33,6 @@ public class ImpalaTest {
                 .build();
         IClient client = new ImpalaClient();
         List<String> list = client.getTableList(source, SqlQueryDTO.builder().build());
-        System.out.println(list);
+        AssertUtils.notNull(list, "");
     }
 }

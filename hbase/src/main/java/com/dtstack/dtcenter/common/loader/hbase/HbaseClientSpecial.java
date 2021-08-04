@@ -593,7 +593,7 @@ public class HbaseClientSpecial implements IHbase {
      * @param hbaseSourceDTO hbase数据源信息
      */
     private static void closeConnection(Connection connection, HbaseSourceDTO hbaseSourceDTO) {
-        if (connection != null && ((hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())))) {
+        if (connection != null && (hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig()))) {
             try {
                 connection.close();
             } catch (IOException e) {

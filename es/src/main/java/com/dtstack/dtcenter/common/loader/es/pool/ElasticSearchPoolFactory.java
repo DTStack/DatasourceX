@@ -122,7 +122,7 @@ public class ElasticSearchPoolFactory implements PooledObjectFactory<RestHighLev
     public void activateObject(PooledObject<RestHighLevelClient> pooledObject) throws Exception {
         RestHighLevelClient client = pooledObject.getObject();
         // ping 一下，使其没有空闲
-        boolean response = client.ping(RequestOptions.DEFAULT);
+        client.ping(RequestOptions.DEFAULT);
     }
 
     /**

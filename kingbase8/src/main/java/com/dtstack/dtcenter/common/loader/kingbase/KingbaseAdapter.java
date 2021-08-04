@@ -58,9 +58,10 @@ public class KingbaseAdapter {
             //FIXME 正常来说，需要精确映射成int/long/double等
             case Types.NUMERIC:
                 return JavaType.TYPE_DECIMAL.getFlinkSqlType();
+            default:
+                return null;
 
         }
-        return null;
     }
 
     public enum JavaType{
