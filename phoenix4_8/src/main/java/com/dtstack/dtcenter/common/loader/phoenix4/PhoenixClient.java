@@ -64,12 +64,12 @@ public class PhoenixClient extends AbsRdbmsClient {
      */
     @Override
     protected String transferSchemaAndTableName(String schema, String tableName) {
+        if (!tableName.startsWith("\"") || !tableName.endsWith("\"")) {
+            tableName = String.format("\"%s\"", tableName);
+        }
         // schema为空直接返回
         if (StringUtils.isBlank(schema)) {
             return tableName;
-        }
-        if (!tableName.startsWith("\"") || !tableName.endsWith("\"")) {
-            tableName = String.format("\"%s\"", tableName);
         }
         if (!schema.startsWith("\"") || !schema.endsWith("\"")){
             schema = String.format("\"%s\"", schema);

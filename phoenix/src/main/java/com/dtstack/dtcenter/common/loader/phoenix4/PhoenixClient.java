@@ -64,12 +64,12 @@ public class PhoenixClient extends AbsRdbmsClient {
      */
     @Override
     protected String transferSchemaAndTableName(String schema, String tableName) {
+        if (!tableName.startsWith("\"") || !tableName.endsWith("\"")) {
+            tableName = String.format("\"%s\"", tableName);
+        }
         // schema为空直接返回
         if (StringUtils.isBlank(schema)) {
             return tableName;
-        }
-        if (!tableName.startsWith("\"") || !tableName.endsWith("\"")) {
-            tableName = String.format("\"%s\"", tableName);
         }
         if (!schema.startsWith("\"") || !schema.endsWith("\"")){
             schema = String.format("\"%s\"", schema);
@@ -126,7 +126,7 @@ public class PhoenixClient extends AbsRdbmsClient {
             while (rs.next()) {
                 if (StringUtils.isBlank(rdbmsSourceDTO.getSchema()) && StringUtils.isNotBlank(rs.getString(2))) {
                     // 返回 "schema"."tableName"形式
-                    tableList.add(String.format("\"%s\".\"%s\"", rs.getString(2), rs.getString(3)));
+                    tableList.add(String.format("%s.%s", rs.getString(2), rs.getString(3)));
                 }else {
                     tableList.add(rs.getString(3));
                 }
