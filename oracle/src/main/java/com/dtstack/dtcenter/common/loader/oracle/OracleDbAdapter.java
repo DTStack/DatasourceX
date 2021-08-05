@@ -53,9 +53,8 @@ public class OracleDbAdapter {
                 return JavaType.TYPE_DOUBLE.getFlinkSqlType();
             case Types.REAL:
                 return JavaType.TYPE_FLOAT.getFlinkSqlType();
-
             default:
-                throw new DtLoaderException("oracle collection of this field type is not supported！");
+                return "not support";
         }
     }
 
