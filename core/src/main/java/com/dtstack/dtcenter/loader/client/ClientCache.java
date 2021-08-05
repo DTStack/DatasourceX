@@ -220,6 +220,7 @@ public class ClientCache {
             IKerberos kerberos = KERBEROS_CLIENT.get(pluginName);
             if (kerberos == null) {
                 synchronized (KERBEROS_CLIENT) {
+                    kerberos = KERBEROS_CLIENT.get(pluginName);
                     if (kerberos == null) {
                         kerberos = KerberosClientFactory.createPluginClass(pluginName);
                         KERBEROS_CLIENT.put(pluginName, kerberos);
@@ -257,6 +258,7 @@ public class ClientCache {
             IHbase hbase = HBASE_CLIENT.get(pluginName);
             if (hbase == null) {
                 synchronized (HBASE_CLIENT) {
+                    hbase = HBASE_CLIENT.get(pluginName);
                     if (hbase == null) {
                         hbase = HbaseClientFactory.createPluginClass(pluginName);
                         HBASE_CLIENT.put(pluginName, hbase);
@@ -286,6 +288,7 @@ public class ClientCache {
             ITable table = TABLE_CLIENT.get(pluginName);
             if (table == null) {
                 synchronized (TABLE_CLIENT) {
+                    table = TABLE_CLIENT.get(pluginName);
                     if (table == null) {
                         table = TableClientFactory.createPluginClass(pluginName);
                         TABLE_CLIENT.put(pluginName, table);
@@ -315,6 +318,7 @@ public class ClientCache {
             ITsdb tsdb = TSDB_CLIENT.get(pluginName);
             if (tsdb == null) {
                 synchronized (TSDB_CLIENT) {
+                    tsdb = TSDB_CLIENT.get(pluginName);
                     if (tsdb == null) {
                         tsdb = TsdbClientFactory.createPluginClass(pluginName);
                         TSDB_CLIENT.put(pluginName, tsdb);

@@ -427,7 +427,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
         Boolean result = false;
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
-            return null;
+            return false;
         }
         //索引
         String index = queryDTO.getTableName();
@@ -474,8 +474,6 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
                     endpoint = String.format(ENDPOINT_DELETE_QUERY_FORMAT, index);
                     break;
                 default:
-                    httpMethod = POST;
-                    endpoint = index;
             }
             Response response = execute(lowLevelClient, entity, httpMethod, endpoint);
             if (response != null && (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK
