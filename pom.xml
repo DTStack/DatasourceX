@@ -57,6 +57,7 @@
         <module>influxdb</module>
         <module>opentsdb</module>
         <module>doris</module>
+        <module>phoenix4_8</module>
         <module>test</module>
         <module>kylinrestful</module>
     </modules>
