@@ -10,6 +10,9 @@ import java.sql.Types;
  * @Description:
  */
 public class OracleDbAdapter {
+
+    private static final String NOT_SUPPORT = "not support";
+
     public static String mapColumnTypeJdbc2Oracle(final int columnType, int precision, int scale) {
         //TODO 转化成用户读(oracle显示)类型
         return null;
@@ -54,7 +57,7 @@ public class OracleDbAdapter {
             case Types.REAL:
                 return JavaType.TYPE_FLOAT.getFlinkSqlType();
             default:
-                return "not support";
+                return NOT_SUPPORT;
         }
     }
 
