@@ -137,9 +137,6 @@ public class OracleClient extends AbsRdbmsClient {
                 ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
                 columnMetaDTO.setKey(rsMetaData.getColumnName(i + 1));
                 String flinkSqlType = OracleDbAdapter.mapColumnTypeJdbc2Java(rsMetaData.getColumnType(i + 1), rsMetaData.getPrecision(i + 1), rsMetaData.getScale(i + 1));
-                if (StringUtils.isBlank(flinkSqlType)) {
-                    throw new DtLoaderException(String.format("oracle不支持%s类型字段的采集", rsMetaData.getColumnTypeName(i + 1)));
-                }
                 columnMetaDTO.setType(flinkSqlType);
                 columnMetaDTO.setPart(false);
                 // 获取字段精度

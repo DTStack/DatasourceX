@@ -53,9 +53,8 @@ public class OracleDbAdapter {
                 return JavaType.TYPE_DOUBLE.getFlinkSqlType();
             case Types.REAL:
                 return JavaType.TYPE_FLOAT.getFlinkSqlType();
-
             default:
-                throw new DtLoaderException("oracle不支持该字段类型的采集！");
+                return "not support";
         }
     }
 
