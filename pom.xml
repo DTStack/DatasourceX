@@ -14,6 +14,7 @@
         <module>db2</module>
         <module>dm</module>
         <module>es</module>
+        <module>es7</module>
         <module>gbase</module>
         <module>greenplum6</module>
         <module>hbase</module>

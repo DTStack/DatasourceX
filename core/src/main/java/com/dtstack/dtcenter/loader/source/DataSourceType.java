@@ -69,7 +69,7 @@ public enum DataSourceType {
     PHOENIX5(38, 103, "Phoenix5.x", "phoenix5"),
     ES(11, 104, "ElasticSearch5.x", "es"),
     ES6(33, 105, "ElasticSearch6.x", "es"),
-    ES7(46, 106, "ElasticSearch7.x", "es"),
+    ES7(46, 106, "ElasticSearch7.x", "es7"),
     MONGODB(13, 107, "MongoDB", "mongo"),
     REDIS(12, 108, "Redis", "redis"),
     SOLR(53, 109, "Solr", "solr"),
