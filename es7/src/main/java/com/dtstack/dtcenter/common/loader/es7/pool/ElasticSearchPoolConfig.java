@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.common.loader.es.pool;
+package com.dtstack.dtcenter.common.loader.es7.pool;
 
 import lombok.Data;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;

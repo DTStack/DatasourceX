@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.common.loader.es;
+package com.dtstack.dtcenter.common.loader.es7;
 
 import com.dtstack.dtcenter.common.loader.common.exception.AbsErrorPattern;
 import com.dtstack.dtcenter.common.loader.common.exception.ConnErrorCode;

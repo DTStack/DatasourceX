@@ -76,6 +76,16 @@ public interface DtClassConsistent {
         public static final String XML_SUFFIX = ".xml";
 
         /**
+         * .crt文件后缀
+         */
+        public static final String CRT_SUFFIX = ".crt";
+
+        /**
+         * .p12 文件后缀
+         */
+        public static final String P12_SUFFIX = ".p12";
+
+        /**
          * 数据库中对应关系字段
          */
         public static final String KEY = "key";

@@ -1,19 +1,21 @@
-package com.dtstack.dtcenter.common.loader.es;
+package com.dtstack.dtcenter.common.loader.es7;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
 import com.dtstack.dtcenter.common.loader.common.nosql.AbsNoSqlClient;
 import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
 import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
-import com.dtstack.dtcenter.common.loader.es.pool.ElasticSearchManager;
-import com.dtstack.dtcenter.common.loader.es.pool.ElasticSearchPool;
+import com.dtstack.dtcenter.common.loader.es7.pool.ElasticSearchManager;
+import com.dtstack.dtcenter.common.loader.es7.pool.ElasticSearchPool;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.utils.AssertUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +54,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import javax.net.ssl.SSLContext;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -347,18 +350,19 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
      * @param address
      * @param username
      * @param password
-     * @param keyPath ssl 认证文件绝对路径
+     * @param keyPath ssl 认证文件目录所在路径
      * @return
      */
     private static RestHighLevelClient getClient(String address, String username, String password, String keyPath) {
-        if (StringUtils.isNotBlank(keyPath) && keyPath.endsWith(".crt")) {
+        String path = dealSslPath(keyPath);
+        if (StringUtils.isNotBlank(path) && path.endsWith(DtClassConsistent.PublicConsistent.CRT_SUFFIX)) {
             //when that CA certificate is available as a PEM encoded file.
-            return getClientForCrt(address, username, password, keyPath);
-        } else if (StringUtils.isNotBlank(keyPath) && keyPath.endsWith(".p12")) {
+            return getClientForCrt(address, username, password, path);
+        } else if (StringUtils.isNotBlank(path) && path.endsWith(DtClassConsistent.PublicConsistent.P12_SUFFIX)) {
             //when that CA certificate is available in a PKCS#12 keystore
-            return getClientForP12(address, username, password, keyPath);
+            return getClientForP12(address, username, password, path);
         }
-        log.info("Get ES data source connection, address : {}, userName : {}, trustStorePath:{}", address, username, keyPath);
+        log.info("Get ES data source connection, address : {}, userName : {}, trustStorePath:{}", address, username, path);
         List<HttpHost> httpHosts = dealHost(address, null);
         RestClientBuilder restClientBuilder = RestClient.builder(httpHosts.toArray(new HttpHost[httpHosts.size()]));
         //有用户名密码情况
@@ -370,6 +374,30 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         }
         //无用户名密码
         return new RestHighLevelClient(restClientBuilder);
+    }
+
+    /**
+     *  获取认证文件的路径
+     * @param keyPath
+     * @return
+     */
+    private static String dealSslPath(String keyPath) {
+        if (StringUtils.isEmpty(keyPath)) {
+            return null;
+        }
+        //直接传认证文件
+        File file = new File(keyPath);
+        if (file.isFile() && (file.getName().endsWith(DtClassConsistent.PublicConsistent.CRT_SUFFIX) || file.getName().endsWith(DtClassConsistent.PublicConsistent.P12_SUFFIX))) {
+            return keyPath;
+        }
+        AssertUtils.isTrue(file.isDirectory(), "keyPath invalid, please check the keyPath");
+        //如果是文件夹，取第一个
+        for (File f : file.listFiles()) {
+            if (f.isFile() && (f.getName().endsWith(DtClassConsistent.PublicConsistent.CRT_SUFFIX) || f.getName().endsWith(DtClassConsistent.PublicConsistent.P12_SUFFIX))) {
+                return f.getAbsolutePath();
+            }
+        }
+        throw new DtLoaderException("keyPath not find .crt or .p12 file");
     }
 
     private static RestHighLevelClient getClientForP12(String address, String username, String password, String trustStorePath) {

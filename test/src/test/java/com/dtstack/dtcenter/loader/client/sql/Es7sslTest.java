@@ -30,7 +30,7 @@ public class Es7sslTest extends BaseTest {
             .url("172.16.21.75:9200")
             .username("elastic")
             .password("elastic")
-            .keyPath(Es7sslTest.class.getResource("/ssl").getPath() + "/ca.crt")
+            .keyPath(Es7sslTest.class.getResource("/ssl-crt").getPath())
             .build();
 
     /**

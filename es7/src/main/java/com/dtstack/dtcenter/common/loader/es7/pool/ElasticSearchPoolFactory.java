@@ -1,4 +1,4 @@
-package com.dtstack.dtcenter.common.loader.es.pool;
+package com.dtstack.dtcenter.common.loader.es7.pool;
 
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
