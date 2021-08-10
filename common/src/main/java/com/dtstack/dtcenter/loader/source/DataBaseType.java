@@ -6,7 +6,6 @@ package com.dtstack.dtcenter.loader.source;
  * @Date ：Created in 10:39 2020/7/27
  * @Description：数据源基础
  */
-@Deprecated
 public enum DataBaseType {
     MySql("mysql", "com.mysql.jdbc.Driver"),
     TDDL("mysql", "com.mysql.jdbc.Driver"),
