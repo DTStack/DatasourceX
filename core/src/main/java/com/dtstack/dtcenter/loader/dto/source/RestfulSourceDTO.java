@@ -40,6 +40,16 @@ public class RestfulSourceDTO implements ISourceDTO {
      */
     private Map<String, String> headers;
 
+    /**
+     * 连接超时时间，单位：秒
+     */
+    private Integer connectTimeout;
+
+    /**
+     * socket 超时时间，单位：秒
+     */
+    private Integer socketTimeout;
+
     @Override
     public Connection getConnection() {
         throw new DtLoaderException("The method is not supported");

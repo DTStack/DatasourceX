@@ -59,6 +59,7 @@
         <module>doris</module>
         <module>test</module>
         <module>kylinrestful</module>
+        <module>restful</module>
     </modules>
     <packaging>pom</packaging>
 
