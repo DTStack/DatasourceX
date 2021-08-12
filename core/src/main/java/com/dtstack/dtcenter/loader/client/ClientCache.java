@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.loader.client.hbase.HbaseClientFactory;
 import com.dtstack.dtcenter.loader.client.hdfs.HdfsFileClientFactory;
 import com.dtstack.dtcenter.loader.client.kerberos.KerberosClientFactory;
 import com.dtstack.dtcenter.loader.client.mq.KafkaClientFactory;
+import com.dtstack.dtcenter.loader.client.restful.RestfulClientFactory;
 import com.dtstack.dtcenter.loader.client.sql.DataSourceClientFactory;
 import com.dtstack.dtcenter.loader.client.table.TableClientFactory;
 import com.dtstack.dtcenter.loader.client.tsdb.TsdbClientFactory;
@@ -57,6 +58,11 @@ public class ClientCache {
      * tsdb 客户端缓存
      */
     private static final Map<String, ITsdb> TSDB_CLIENT = Maps.newConcurrentMap();
+
+    /**
+     * restful 客户端缓存
+     */
+    private static final Map<String, IRestful> RESTFUL_CLIENT = Maps.newConcurrentMap();
 
     protected static String userDir = String.format("%s/pluginLibs/", System.getProperty("user.dir"));
 
@@ -332,4 +338,32 @@ public class ClientCache {
         }
     }
 
+    /**
+     * 获取 restful Client 客户端
+     *
+     * @param sourceType 数据源类型
+     * @return restful Client 客户端
+     */
+    public static IRestful getRestful(Integer sourceType) {
+        String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
+        return getRestful(pluginName);
+    }
+
+    private static IRestful getRestful(String pluginName) {
+        try {
+            IRestful restful = RESTFUL_CLIENT.get(pluginName);
+            if (restful == null) {
+                synchronized (RESTFUL_CLIENT) {
+                    restful = RESTFUL_CLIENT.get(pluginName);
+                    if (restful == null) {
+                        restful = RestfulClientFactory.createPluginClass(pluginName);
+                        RESTFUL_CLIENT.put(pluginName, restful);
+                    }
+                }
+            }
+            return restful;
+        } catch (Throwable e) {
+            throw new ClientAccessException(e);
+        }
+    }
 }
