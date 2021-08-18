@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.common.loader.common.DtClassThreadFactory;
 import com.dtstack.dtcenter.common.loader.common.exception.ErrorCode;
 import com.dtstack.dtcenter.common.loader.common.utils.CollectionUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.connection.CacheConnectionHelper;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -232,7 +233,8 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     @Override
     public List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO) {
         String sql = getTableBySchemaSql(source, queryDTO);
-        return queryWithSingleColumn(source, sql, 1,"get table exception according to schema...");
+        Integer fetchSize = ReflectUtil.fieldExists(SqlQueryDTO.class, "fetchSize") ? queryDTO.getFetchSize() : null;
+        return queryWithSingleColumn(source, fetchSize, sql, 1,"get table exception according to schema...");
     }
 
     /**
@@ -243,7 +245,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @param errMsg      错误信息
      * @return 查询结果
      */
-    protected List<String> queryWithSingleColumn(ISourceDTO source, String sql, Integer columnIndex, String errMsg) {
+    protected List<String> queryWithSingleColumn(ISourceDTO source, Integer fetchSize, String sql, Integer columnIndex, String errMsg) {
         Integer clearStatus = beforeQuery(source, SqlQueryDTO.builder().sql(sql).build(), true);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
         log.info("The SQL executed by method queryWithSingleColumn is:{}", sql);
@@ -252,6 +254,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         List<String> result = new ArrayList<>();
         try {
             statement = rdbmsSourceDTO.getConnection().createStatement();
+            DBUtil.setFetchSize(statement, fetchSize);
             rs = statement.executeQuery(sql);
             while (rs.next()) {
                 result.add(rs.getString(columnIndex == null ? 1 : columnIndex));
@@ -540,7 +543,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     public List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO){
         // 获取表信息需要通过show databases 语句
         String sql = getShowDbSql();
-        return queryWithSingleColumn(source, sql, 1, "get All database exception");
+        return queryWithSingleColumn(source, null, sql, 1, "get All database exception");
     }
 
     @Override
@@ -616,7 +619,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     public String getCurrentDatabase(ISourceDTO source) {
         // 获取根据schema获取表的sql
         String sql = getCurrentDbSql();
-        List<String> result = queryWithSingleColumn(source, sql, 1, "failed to get the currently used database");
+        List<String> result = queryWithSingleColumn(source, null, sql, 1, "failed to get the currently used database");
         if (CollectionUtils.isEmpty(result)) {
             throw new DtLoaderException("failed to get the currently used database");
         }
@@ -643,7 +646,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     @Override
     public List<String> getCatalogs(ISourceDTO source) {
         String showCatalogsSql = getCatalogSql();
-        return queryWithSingleColumn(source, showCatalogsSql, 1, "failed to get data source directory list");
+        return queryWithSingleColumn(source, null, showCatalogsSql, 1, "failed to get data source directory list");
     }
 
     /**
@@ -688,7 +691,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     @Override
     public String getVersion(ISourceDTO source) {
         String showVersionSql = getVersionSql();
-        List<String> result = queryWithSingleColumn(source, showVersionSql, 1, "failed to get data source version");
+        List<String> result = queryWithSingleColumn(source, null, showVersionSql, 1, "failed to get data source version");
         return CollectionUtils.isNotEmpty(result) ? result.get(0) : "";
     }
 

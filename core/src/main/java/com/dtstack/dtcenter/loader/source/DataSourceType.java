@@ -119,6 +119,11 @@ public enum DataSourceType {
         RDBM_S.add(HIVE.val);
         RDBM_S.add(HIVE1X.val);
         RDBM_S.add(HIVE3X.val);
+        RDBM_S.add(Spark.val);
+        RDBM_S.add(SparkThrift2_1.val);
+        RDBM_S.add(Presto.val);
+        RDBM_S.add(Kylin.val);
+        RDBM_S.add(VERTICA.val);
         RDBM_S.add(GREENPLUM6.val);
         RDBM_S.add(LIBRA.val);
         RDBM_S.add(GBase_8a.val);

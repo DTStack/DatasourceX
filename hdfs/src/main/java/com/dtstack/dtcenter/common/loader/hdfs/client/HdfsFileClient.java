@@ -14,6 +14,7 @@ import com.dtstack.dtcenter.common.loader.hdfs.fileMerge.core.CombineServer;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsOrcWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsParquetWriter;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsTextWriter;
+import com.dtstack.dtcenter.common.loader.hdfs.util.StringUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -28,7 +29,6 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
@@ -564,16 +564,17 @@ public class HdfsFileClient implements IHdfsFile {
         int startIndex = typeStruct.indexOf("<") + 1;
         int endIndex = typeStruct.lastIndexOf(">");
         typeStruct = typeStruct.substring(startIndex, endIndex);
-        String[] cols = typeStruct.split(",");
-
-        for (int i = 0; i < cols.length; ++i) {
-            String[] temp = cols[i].split(":");
+        List<String> cols = StringUtil.splitIgnoreQuota(typeStruct, ',');
+        for (String col : cols) {
+            List<String> colNameAndType = StringUtil.splitIgnoreQuota(col, ':');
+            if (CollectionUtils.isEmpty(colNameAndType) || colNameAndType.size() != 2) {
+                continue;
+            }
             ColumnMetaDTO metaDTO = new ColumnMetaDTO();
-            metaDTO.setKey(temp[0]);
-            metaDTO.setType(temp[1]);
+            metaDTO.setKey(colNameAndType.get(0));
+            metaDTO.setType(colNameAndType.get(1));
             columnList.add(metaDTO);
         }
-
         return columnList;
     }
 

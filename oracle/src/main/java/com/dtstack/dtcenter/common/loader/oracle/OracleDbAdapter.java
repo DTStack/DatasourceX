@@ -10,6 +10,9 @@ import java.sql.Types;
  * @Description:
  */
 public class OracleDbAdapter {
+
+    private static final String NOT_SUPPORT = "not support";
+
     public static String mapColumnTypeJdbc2Oracle(final int columnType, int precision, int scale) {
         //TODO 转化成用户读(oracle显示)类型
         return null;
@@ -53,9 +56,8 @@ public class OracleDbAdapter {
                 return JavaType.TYPE_DOUBLE.getFlinkSqlType();
             case Types.REAL:
                 return JavaType.TYPE_FLOAT.getFlinkSqlType();
-
             default:
-                throw new DtLoaderException("oracle collection of this field type is not supported！");
+                return NOT_SUPPORT;
         }
     }
 
