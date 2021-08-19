@@ -66,6 +66,9 @@ public class SqlServerClient extends AbsRdbmsClient {
     // 获取当前版本号
     private static final String SHOW_VERSION = "SELECT @@VERSION";
 
+    // 创建 schema
+    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema %s ";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new SQLServerConnFactory();
@@ -239,5 +242,10 @@ public class SqlServerClient extends AbsRdbmsClient {
     @Override
     public String getVersion(ISourceDTO source) {
         return SHOW_VERSION;
+    }
+
+    @Override
+    protected String getCreateDatabaseSql(String dbName, String comment) {
+        return String.format(CREATE_SCHEMA_SQL_TMPL, dbName);
     }
 }
