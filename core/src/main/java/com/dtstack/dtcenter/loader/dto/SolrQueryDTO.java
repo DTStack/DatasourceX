@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.loader.dto;
 
 import com.dtstack.dtcenter.loader.dto.contant.SolrCommonParams;
+import com.dtstack.dtcenter.loader.utils.AssertUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,7 +40,7 @@ public class SolrQueryDTO {
     }
 
     public SolrQueryDTO(String k, String v, String... params) {
-        assert params.length % 2 == 0;
+        AssertUtils.isTrue(params.length % 2 == 0, "params length % 2 != 0 ");
         this.set(k, v);
         for (int i = 0; i < params.length; i += 2) {
             this.set(params[i], params[i + 1]);

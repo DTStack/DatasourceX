@@ -296,4 +296,27 @@ public class DBUtil {
         }
         return temp;
     }
+
+
+    /**
+     * JDBC 每次读取数据的行数
+     */
+    public static void setFetchSize(Statement statement, SqlQueryDTO sqlQueryDTO) {
+
+        if (!ReflectUtil.fieldExists(SqlQueryDTO.class, "fetchSize")) {
+            return;
+        }
+        Integer fetchSize = sqlQueryDTO.getFetchSize();
+        setFetchSize(statement, fetchSize);
+    }
+
+    public static void setFetchSize(Statement statement, Integer fetchSize) {
+        try {
+            if (fetchSize != null && fetchSize > 0) {
+                statement.setFetchSize(fetchSize);
+            }
+        } catch (Exception e) {
+            log.error("set fetchSize error,{}", e.getMessage());
+        }
+    }
 }

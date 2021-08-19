@@ -74,19 +74,6 @@ public class HdfsFileDownload implements IDownloader {
         this.kerberosConfig = kerberosConfig;
     }
 
-    public void configure(String defaultJobOwner) throws IOException {
-        jobOwner = jobOwner == null ? defaultJobOwner : jobOwner;
-        Configuration configuration = YarnConfUtil.getFullConfiguration(defaultFs, hdfsConfig, yarnConf, kerberosConfig);
-        yarnConfiguration = new YarnConfiguration(configuration);
-        paths = checkPath(path);
-        if (paths.size() == 0) {
-            throw new RuntimeException("Illegal path:" + path);
-        }
-        nextRecordReader();
-        key = new LongWritable();
-        value = new Text();
-    }
-
     private List<String> checkPath(String tableLocation) throws IOException {
 
         Path inputPath = new Path(tableLocation);
@@ -147,10 +134,7 @@ public class HdfsFileDownload implements IDownloader {
         if (splits.length == 0) {
             return nextRecordReader();
         }
-
-        if (splits != null && splits.length > 0) {
-            nextSplitRecordReader();
-        }
+        nextSplitRecordReader();
         return true;
     }
 
@@ -207,7 +191,15 @@ public class HdfsFileDownload implements IDownloader {
 
     @Override
     public boolean configure() throws Exception {
-        configure(jobOwner);
+        Configuration configuration = YarnConfUtil.getFullConfiguration(defaultFs, hdfsConfig, yarnConf, kerberosConfig);
+        yarnConfiguration = new YarnConfiguration(configuration);
+        paths = checkPath(path);
+        if (paths.size() == 0) {
+            throw new RuntimeException("Illegal path:" + path);
+        }
+        nextRecordReader();
+        key = new LongWritable();
+        value = new Text();
         return true;
     }
 
@@ -239,7 +231,7 @@ public class HdfsFileDownload implements IDownloader {
         } catch (IOException e) {
             logger.error("readNext error", e);
         }
-        String line = new String(value.toString());
+        String line = value.toString();
         line = line + CRLF;
         return line;
     }

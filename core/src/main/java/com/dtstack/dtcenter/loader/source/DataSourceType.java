@@ -69,7 +69,7 @@ public enum DataSourceType {
     PHOENIX5(38, 103, "Phoenix5.x", "phoenix5"),
     ES(11, 104, "ElasticSearch5.x", "es"),
     ES6(33, 105, "ElasticSearch6.x", "es"),
-    ES7(46, 106, "ElasticSearch7.x", "es"),
+    ES7(46, 106, "ElasticSearch7.x", "es7"),
     MONGODB(13, 107, "MongoDB", "mongo"),
     REDIS(12, 108, "Redis", "redis"),
     SOLR(53, 109, "Solr", "solr"),
@@ -119,6 +119,11 @@ public enum DataSourceType {
         RDBM_S.add(HIVE.val);
         RDBM_S.add(HIVE1X.val);
         RDBM_S.add(HIVE3X.val);
+        RDBM_S.add(Spark.val);
+        RDBM_S.add(SparkThrift2_1.val);
+        RDBM_S.add(Presto.val);
+        RDBM_S.add(Kylin.val);
+        RDBM_S.add(VERTICA.val);
         RDBM_S.add(GREENPLUM6.val);
         RDBM_S.add(LIBRA.val);
         RDBM_S.add(GBase_8a.val);

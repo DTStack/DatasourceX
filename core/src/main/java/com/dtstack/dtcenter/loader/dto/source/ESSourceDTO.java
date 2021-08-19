@@ -29,6 +29,12 @@ public class ESSourceDTO extends RdbmsSourceDTO {
      */
     private String id;
 
+    /**
+     * ssl 证书绝对路径,只支持.p12 和 .crt 文件
+     *
+     */
+    private String keyPath;
+
 
     @Override
     public Integer getSourceType() {

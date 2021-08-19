@@ -97,6 +97,11 @@ public class SqlQueryDTO {
      */
     private List<Filter> hbaseFilter;
 
+    /**
+     *  JDBC 每次读取数据的行数，使用 DBUtil.setFetchSize()
+     */
+    private Integer fetchSize;
+
 
     /**
      * solr 自定义查询

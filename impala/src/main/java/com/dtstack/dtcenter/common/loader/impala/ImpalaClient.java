@@ -76,6 +76,7 @@ public class ImpalaClient extends AbsRdbmsClient {
                 // 设置最大条数
                 statement.setMaxRows(queryDTO.getLimit());
             }
+            DBUtil.setFetchSize(statement, queryDTO);
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {

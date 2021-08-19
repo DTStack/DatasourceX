@@ -119,7 +119,7 @@ public class MathUtil {
 
     public static Boolean getBoolean(Object obj){
         if(obj == null){
-            return null;
+            return false;
         }
 
         if(obj instanceof String){

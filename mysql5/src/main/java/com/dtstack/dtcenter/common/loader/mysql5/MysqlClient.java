@@ -99,15 +99,15 @@ public class MysqlClient extends AbsRdbmsClient {
         }
 
         int precision = rsMetaData.getPrecision(los + 1);
-        if (precision >= 16383 & precision <= 65535) {
+        if (precision >= 16383 && precision <= 65535) {
             return "TEXT";
         }
 
-        if (precision >= 4194303 & precision <= 16777215) {
+        if (precision >= 4194303 && precision <= 16777215) {
             return "MEDIUMTEXT";
         }
 
-        if (precision >= 536870911 & precision <= 2147483647) {
+        if (precision >= 536870911 && precision <= 2147483647) {
             return "LONGTEXT";
         }
 

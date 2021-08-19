@@ -59,22 +59,8 @@ public class OdpsPoolFactory implements PooledObjectFactory<Odps> {
      */
     @Override
     public void destroyObject(PooledObject<Odps> pooledObject) throws Exception {
-        Odps odps = pooledObject.getObject();
-        boolean check = false;
-        try {
-            Tables tables = odps.tables();
-            tables.iterator().hasNext();
-            check = true;
-        } catch (Exception e) {
-            log.error("check odps connect error..{}", e.getMessage(), e);
-        }
-        if (Objects.nonNull(odps) && !check) {
-            try {
-                odps = null;
-            } catch (Exception e) {
-                throw new DtLoaderException(String.format("close client error,%s", e.getMessage()), e);
-            }
-        }
+        passivateObject(pooledObject);
+        pooledObject.markAbandoned();
     }
 
     /**

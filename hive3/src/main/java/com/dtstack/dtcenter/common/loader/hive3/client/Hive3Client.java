@@ -103,13 +103,14 @@ public class Hive3Client extends AbsRdbmsClient {
         List<String> tableList = new ArrayList<>();
         try {
             statement = hive3SourceDTO.getConnection().createStatement();
+            DBUtil.setFetchSize(statement, queryDTO);
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
                 tableList.add(rs.getString(columnSize == 1 ? 1 : 2));
             }
         } catch (Exception e) {
-            throw new DtLoaderException(String.format("get table exception,%", e.getMessage()), e);
+            throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
         } finally {
             DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(hive3SourceDTO, clearStatus));
         }

@@ -105,6 +105,7 @@ public class SparkClient extends AbsRdbmsClient {
         List<String> tableList = new ArrayList<>();
         try {
             statement = sparkSourceDTO.getConnection().createStatement();
+            DBUtil.setFetchSize(statement, queryDTO);
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {

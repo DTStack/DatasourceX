@@ -135,6 +135,38 @@ public class HbaseClientSpecial implements IHbase {
     }
 
     @Override
+    public Boolean deleteHbaseTable(ISourceDTO source, String tableName) {
+        HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
+        TableName tbName = TableName.valueOf(tableName);
+        Connection connection = null;
+        Admin admin = null;
+        try {
+            //获取hbase连接
+            connection = HbaseConnFactory.getHbaseConn(hbaseSourceDTO);
+            admin = connection.getAdmin();
+            admin.disableTable(tbName);
+            admin.deleteTable(tbName);
+            log.info("delete hbase table success, table name {}", tbName);
+        } catch (Exception e) {
+            log.error("delete hbase table error, table name: {}", tbName, e);
+            throw new DtLoaderException(String.format("hbase failed to delete table！table name: %s", tableName), e);
+        } finally {
+            close(admin);
+            closeConnection(connection, hbaseSourceDTO);
+            HbaseClient.destroyProperty();
+        }
+        return true;
+    }
+
+    @Override
+    public Boolean deleteHbaseTable(ISourceDTO source, String namespace, String tableName) {
+        if (StringUtils.isNotBlank(namespace) && !tableName.contains(":")) {
+            tableName = String.format("%s:%s", namespace, tableName);
+        }
+        return deleteHbaseTable(source, tableName);
+    }
+
+    @Override
     public List<String> scanByRegex(ISourceDTO source, String tbName, String regex) {
         HbaseSourceDTO hbaseSourceDTO = (HbaseSourceDTO) source;
         Connection connection = null;
@@ -180,6 +212,7 @@ public class HbaseClientSpecial implements IHbase {
                 Delete delete = new Delete(Bytes.toBytes(rowKey));
                 delete.addColumn(Bytes.toBytes(family), Bytes.toBytes(qualifier));
                 table.delete(delete);
+                log.info("delete hbase rowKey success , rowKey {}", rowKey);
             }
             return true;
         } catch (DtLoaderException e) {
@@ -467,8 +500,15 @@ public class HbaseClientSpecial implements IHbase {
                 row.put(ROWKEY, Bytes.toString(cell.getRowArray(), cell.getRowOffset(),cell.getRowLength()));
                 String family = Bytes.toString(cell.getFamilyArray(), cell.getFamilyOffset(),cell.getFamilyLength());
                 String qualifier = Bytes.toString(cell.getQualifierArray(), cell.getQualifierOffset(),cell.getQualifierLength());
-                String value = Bytes.toString(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
-                row.put(String.format(FAMILY_QUALIFIER, family, qualifier), value);
+                Object value;
+                String familyQualifier = String.format(FAMILY_QUALIFIER, family, qualifier);
+                if (MapUtils.isNotEmpty(hbaseQueryDTO.getColumnTypes()) && Objects.nonNull(hbaseQueryDTO.getColumnTypes().get(familyQualifier))) {
+                    HbaseQueryDTO.ColumnType columnType = hbaseQueryDTO.getColumnTypes().get(familyQualifier);
+                    value = convertColumnType(columnType, cell);
+                } else {
+                    value = Bytes.toString(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
+                }
+                row.put(familyQualifier, value);
                 //取到最新变动的时间
                 if (cell.getTimestamp() > timestamp) {
                     timestamp = cell.getTimestamp();
@@ -478,6 +518,37 @@ public class HbaseClientSpecial implements IHbase {
             executeResult.add(row);
         }
         return executeResult;
+    }
+
+    /**
+     * 转化 hbase 字段值类型
+     *
+     * @param columnType 字段值类型
+     * @param cell       cell
+     * @return 转化后的值
+     */
+    private Object convertColumnType(HbaseQueryDTO.ColumnType columnType, Cell cell) {
+        switch (columnType) {
+            case INT:
+                return Bytes.toInt(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
+            case LONG:
+                return Bytes.toLong(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
+            case FLOAT:
+                return Bytes.toFloat(cell.getValueArray(), cell.getValueOffset());
+            case DOUBLE:
+                return Bytes.toDouble(cell.getValueArray(), cell.getValueOffset());
+            case BOOLEAN:
+                return Bytes.toBoolean(cell.getValueArray());
+            case HEX:
+                return Bytes.toHex(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
+            case SHORT:
+                return Bytes.toShort(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
+            case BIG_DECIMAL:
+                return Bytes.toBigDecimal(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
+            default:
+                return Bytes.toString(cell.getValueArray(), cell.getValueOffset(),cell.getValueLength());
+
+        }
     }
 
     /**
@@ -522,7 +593,7 @@ public class HbaseClientSpecial implements IHbase {
      * @param hbaseSourceDTO hbase数据源信息
      */
     private static void closeConnection(Connection connection, HbaseSourceDTO hbaseSourceDTO) {
-        if (connection != null && ((hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig())))) {
+        if (connection != null && (hbaseSourceDTO.getPoolConfig() == null || MapUtils.isNotEmpty(hbaseSourceDTO.getKerberosConfig()))) {
             try {
                 connection.close();
             } catch (IOException e) {
