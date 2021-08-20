@@ -29,8 +29,8 @@ import java.util.Objects;
  * @Description：SqlServer 客户端
  */
 public class SqlServerClient extends AbsRdbmsClient {
-    private static final String TABLE_QUERY_ALL = "select a.name, b.name from sys.objects a left join sys.schemas b on a.schema_id = b.schema_id where a.type='U' or a.type='V'";
-    private static final String TABLE_QUERY = "select a.name, b.name from sys.objects a left join sys.schemas b on a.schema_id = b.schema_id where a.type='U'";
+    private static final String TABLE_QUERY_ALL = "select table_name, table_schema from information_schema.tables where table_type in ('VIEW', 'BASE TABLE')";
+    private static final String TABLE_QUERY = "select table_name, table_schema from information_schema.tables where table_type in ('BASE TABLE')";
 
     private static final String SEARCH_BY_COLUMN_SQL = " and charIndex('%s',%s) > 0 ";
 
@@ -39,26 +39,12 @@ public class SqlServerClient extends AbsRdbmsClient {
     // 获取正在使用数据库
     private static final String CURRENT_DB = "Select Name From Master..SysDataBases Where DbId=(Select Dbid From Master..SysProcesses Where Spid = @@spid)";
 
-    /**
-     * 获取所有的表和对应的schema-备用
-     */
-    private static final String TABLE_QUERY_ALL_SCHEMA = "select sys.objects.name tableName,sys.schemas.name schemaName from sys.objects,sys.schemas where sys.objects.type='U' and sys.objects.schema_id=sys.schemas.schema_id";
-    private static final String TABLE_QUERY_SCHEMA = "select sys.objects.name tableName,sys.schemas.name schemaName from sys.objects,sys.schemas where sys.objects.type='U' or type='V' and sys.objects.schema_id=sys.schemas.schema_id";
-
-    /**
-     * 根据schema获取对应的表：开启cdc的表。TODO 目前只有流计算使用该方法
-     */
-    private static final String TABLE_BY_SCHEMA = "SELECT sys.tables.name AS table_name,sys.schemas.name AS schema_name \n" +
-            "FROM sys.tables LEFT JOIN sys.schemas ON sys.tables.schema_id=sys.schemas.schema_id \n" +
-            "WHERE sys.tables.type='U' AND sys.tables.is_tracked_by_cdc =1\n" +
-            "AND sys.schemas.name = '%s'";
-
     private static final String SEARCH_LIMIT_SQL = "select top %s table_name from information_schema.tables where 1=1";
     private static final String SEARCH_SQL = "select table_name from information_schema.tables where 1=1";
     private static final String SCHEMA_SQL = " and table_schema='%s'";
     private static final String TABLE_NAME_SQL = " and charIndex('%s',table_name) > 0";
 
-    private static final String SCHEMAS_QUERY = "select distinct(sys.schemas.name) as schema_name from sys.objects,sys.schemas where sys.objects.type='U' and sys.objects.schema_id=sys.schemas.schema_id";
+    private static final String SCHEMAS_QUERY = "select DISTINCT(name) as schema_name from sys.schemas where schema_id < 16384";
     private static String SQL_SERVER_COLUMN_NAME = "column_name";
     private static String SQL_SERVER_COLUMN_COMMENT = "column_description";
     private static final String COMMENT_QUERY = "SELECT B.name AS column_name, C.value AS column_description FROM sys.tables A INNER JOIN sys.columns B ON B.object_id = A.object_id LEFT JOIN sys.extended_properties C ON C.major_id = B.object_id AND C.minor_id = B.column_id WHERE A.name = N";
@@ -91,6 +77,10 @@ public class SqlServerClient extends AbsRdbmsClient {
             String sql = queryDTO.getView() ? TABLE_QUERY_ALL : TABLE_QUERY;
             if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
                 sql = sql + String.format(SEARCH_BY_COLUMN_SQL, queryDTO.getTableNamePattern(), "b.name");
+            }
+            // 查询schema下的
+            if (StringUtils.isNotBlank(sqlserverSourceDTO.getSchema())) {
+                sql += String.format(SCHEMA_SQL, sqlserverSourceDTO.getSchema());
             }
             statement = sqlserverSourceDTO.getConnection().createStatement();
             if (Objects.nonNull(queryDTO.getLimit())) {
