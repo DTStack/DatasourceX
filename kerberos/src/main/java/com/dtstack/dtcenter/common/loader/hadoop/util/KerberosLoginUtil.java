@@ -118,10 +118,8 @@ public class KerberosLoginUtil {
             confMap.put(HadoopConfTool.RM_PRINCIPAL, principal);
         }
 
-        // 处理 Default 角色
-        if (MapUtils.getString(confMap, SECURITY_TO_LOCAL) == null || "DEFAULT".equals(MapUtils.getString(confMap, SECURITY_TO_LOCAL))) {
-            confMap.put(SECURITY_TO_LOCAL, SECURITY_TO_LOCAL_DEFAULT);
-        }
+        // 处理 auth_to_local 规则，兼容所有 principal 短名处理
+        confMap.put(SECURITY_TO_LOCAL, SECURITY_TO_LOCAL_DEFAULT);
 
         // 判断缓存UGI，如果存在则直接使用
         UGICacheData cacheData = UGI_INFO.get(principal + "_" + keytab);
