@@ -68,6 +68,7 @@ public class SqlServerClient extends AbsRdbmsClient {
     @Override
     public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         SqlserverSourceDTO sqlserverSourceDTO = (SqlserverSourceDTO) iSource;
+        String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : sqlserverSourceDTO.getSchema();
         Integer clearStatus = beforeQuery(sqlserverSourceDTO, queryDTO, false);
 
         Statement statement = null;
@@ -79,8 +80,8 @@ public class SqlServerClient extends AbsRdbmsClient {
                 sql = sql + String.format(SEARCH_BY_COLUMN_SQL, queryDTO.getTableNamePattern(), "b.name");
             }
             // 查询schema下的
-            if (StringUtils.isNotBlank(sqlserverSourceDTO.getSchema())) {
-                sql += String.format(SCHEMA_SQL, sqlserverSourceDTO.getSchema());
+            if (StringUtils.isNotBlank(schema)) {
+                sql += String.format(SCHEMA_SQL, schema);
             }
             statement = sqlserverSourceDTO.getConnection().createStatement();
             if (Objects.nonNull(queryDTO.getLimit())) {
@@ -88,9 +89,10 @@ public class SqlServerClient extends AbsRdbmsClient {
             }
             DBUtil.setFetchSize(statement, queryDTO);
             rs = statement.executeQuery(sql);
-            int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
-                tableList.add(String.format(TABLE_SHOW, rs.getString(2), rs.getString(1)));
+                String tableName = StringUtils.isNotBlank(schema) ? rs.getString(1) :
+                        String.format(TABLE_SHOW, rs.getString(2), rs.getString(1));
+                tableList.add(tableName);
             }
         } catch (Exception e) {
             throw new DtLoaderException(String.format("get table exception,%s", e.getMessage()), e);
@@ -132,7 +134,8 @@ public class SqlServerClient extends AbsRdbmsClient {
     @Override
     public IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception {
         SqlserverSourceDTO sqlserverSourceDTO = (SqlserverSourceDTO) source;
-        SqlServerDownloader sqlServerDownloader = new SqlServerDownloader(getCon(sqlserverSourceDTO), queryDTO.getSql(), sqlserverSourceDTO.getSchema());
+        String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : sqlserverSourceDTO.getSchema();
+        SqlServerDownloader sqlServerDownloader = new SqlServerDownloader(getCon(sqlserverSourceDTO), queryDTO.getSql(), schema);
         sqlServerDownloader.configure();
         return sqlServerDownloader;
     }
