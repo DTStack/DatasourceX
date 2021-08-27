@@ -93,6 +93,8 @@ public class DtSolrClient extends AbsNoSqlClient {
             //开启kerberos
             if (MapUtils.isNotEmpty(kerberosConfig)) {
                 SolrUtils.initKerberosConfig(kerberosConfig);
+                // 做一步特殊操作，用于刷新 Krb5HttpClientBuilder 类中的静态变量 jaasConfig，不然会有缓存
+                Krb5HttpClientBuilder.regenerateJaasConfiguration();
                 Krb5HttpClientBuilder krbBuild = new Krb5HttpClientBuilder();
                 SolrHttpClientBuilder kb = krbBuild.getBuilder();
                 HttpClientUtil.setHttpClientBuilder(kb);
