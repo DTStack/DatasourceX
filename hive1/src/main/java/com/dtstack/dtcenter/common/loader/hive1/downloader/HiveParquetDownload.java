@@ -263,7 +263,7 @@ public class HiveParquetDownload implements IDownloader {
                     value = longToDecimalStr(longVal,dm.getScale());
                 } else if ("BINARY".equals(type.asPrimitiveType().getPrimitiveTypeName().name())) {
                     Binary binary = currentLine.getBinary(index, 0);
-                    value = new String(StringUtil.encodeHex(binary.getBytes()));
+                    value = new String(StringUtil.encodeHex(binary.getBytesUnsafe()));
                 } else {
                     Binary binary = currentLine.getBinary(index,0);
                     value = binaryToDecimalStr(binary,dm.getScale());

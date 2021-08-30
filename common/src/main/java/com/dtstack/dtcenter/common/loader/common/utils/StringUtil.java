@@ -9,14 +9,13 @@ public class StringUtil {
     }
 
     public static char[] encodeHex(byte[] data, char[] toDigits) {
-        int l = data.length;
-        char[] out = new char[l * 3];
+        int length = data.length;
+        char[] out = new char[length * 3];
         int i = 0;
-
-        for (int var5 = 0; i < l; ++i) {
-            out[var5++] = toDigits[(240 & data[i]) >>> 4];
-            out[var5++] = toDigits[15 & data[i]];
-            out[var5++] = ' ';
+        for (int var = 0; i < length; ++i) {
+            out[var++] = toDigits[(240 & data[i]) >>> 4];
+            out[var++] = toDigits[15 & data[i]];
+            out[var++] = ' ';
         }
 
         return out;
