@@ -19,9 +19,9 @@ public class HttpClient {
 
     public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
-    public static final String POST = "POST";
+    public static final String POST_REQUEST = "POST";
 
-    public static final String GET = "GET";
+    public static final String GET_REQUEST = "GET";
 
     public String authorization;
     /**
@@ -75,11 +75,11 @@ public class HttpClient {
 
     public String post(String apiPath, String body) {
         String httpFullAPI = getUrl(apiPath);
-        return execute(httpFullAPI, POST, body);
+        return execute(httpFullAPI, POST_REQUEST, body);
     }
 
     public String get(String apiPath, String body) {
         String httpFullAPI = getUrl(apiPath);
-        return execute(httpFullAPI, GET, body);
+        return execute(httpFullAPI, GET_REQUEST, body);
     }
 }

@@ -27,7 +27,7 @@ public class JSONUtil {
         }
 
         try {
-            JSONObject jsonStr = JSONObject.parseObject(content);
+            JSONObject.parseObject(content);
             return true;
         } catch (Exception e) {
             return false;
@@ -46,7 +46,7 @@ public class JSONUtil {
         }
 
         try {
-            JSONArray jsonStr = JSONArray.parseArray(content);
+            JSONArray.parseArray(content);
             return true;
         } catch (Exception e) {
             return false;

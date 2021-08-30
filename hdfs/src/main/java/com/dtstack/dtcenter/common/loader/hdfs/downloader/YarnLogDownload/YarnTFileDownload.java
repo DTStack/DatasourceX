@@ -353,9 +353,7 @@ public class YarnTFileDownload implements IDownloader {
 
         if (readNum <= 0) {
             //close stream
-            if (currValueStream != null) {
-                currValueStream.close();
-            }
+            currValueStream.close();
 
             boolean hasNext = nextLogFile();
             if (!hasNext) {
