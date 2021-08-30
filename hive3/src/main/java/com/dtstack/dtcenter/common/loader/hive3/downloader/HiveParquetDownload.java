@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hive3.downloader;
 
+import com.dtstack.dtcenter.common.loader.common.utils.StringUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.hive3.GroupTypeIgnoreCase;
@@ -262,7 +263,7 @@ public class HiveParquetDownload implements IDownloader {
                     value = longToDecimalStr(longVal,dm.getScale());
                 } else if ("BINARY".equals(type.asPrimitiveType().getPrimitiveTypeName().name())) {
                     Binary binary = currentLine.getBinary(index, 0);
-                    value = String.valueOf(binary);
+                    value = new String(StringUtil.encodeHex(binary.getBytes()));
                 }  else {
                     Binary binary = currentLine.getBinary(index,0);
                     value = binaryToDecimalStr(binary,dm.getScale());
