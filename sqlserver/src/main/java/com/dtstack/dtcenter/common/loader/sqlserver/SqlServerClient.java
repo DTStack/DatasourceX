@@ -32,7 +32,7 @@ public class SqlServerClient extends AbsRdbmsClient {
     private static final String TABLE_QUERY_ALL = "select table_name, table_schema from information_schema.tables where table_type in ('VIEW', 'BASE TABLE')";
     private static final String TABLE_QUERY = "select table_name, table_schema from information_schema.tables where table_type in ('BASE TABLE')";
 
-    private static final String SEARCH_BY_COLUMN_SQL = " and charIndex('%s',%s) > 0 ";
+    private static final String SEARCH_BY_COLUMN_SQL = " and charIndex('%s', a.name) > 0 ";
 
     private static final String TABLE_SHOW = "[%s].[%s]";
 
@@ -77,7 +77,7 @@ public class SqlServerClient extends AbsRdbmsClient {
         try {
             String sql = queryDTO.getView() ? TABLE_QUERY_ALL : TABLE_QUERY;
             if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-                sql = sql + String.format(SEARCH_BY_COLUMN_SQL, queryDTO.getTableNamePattern(), "b.name");
+                sql = sql + String.format(SEARCH_BY_COLUMN_SQL, queryDTO.getTableNamePattern());
             }
             // 查询schema下的
             if (StringUtils.isNotBlank(schema)) {
