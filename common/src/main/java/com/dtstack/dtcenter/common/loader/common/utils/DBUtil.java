@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.common.utils;
 
+import com.dtstack.dtcenter.common.loader.common.base.CallBack;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
@@ -37,7 +38,7 @@ public class DBUtil {
      * @return
      */
     public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Boolean closeConn) {
-        return executeQuery(conn, sql, null, null, closeConn);
+        return executeQuery(conn, sql, null, null, closeConn, null);
     }
 
     /**
@@ -50,7 +51,7 @@ public class DBUtil {
      * @param closeConn
      * @return
      */
-    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, Integer queryTimeout, Boolean closeConn) {
+    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, Integer queryTimeout, Boolean closeConn, CallBack<Object, Object> fieldProcess) {
         List<Map<String, Object>> result = Lists.newArrayList();
         ResultSet res = null;
         Statement statement = null;
@@ -77,7 +78,12 @@ public class DBUtil {
                 while (res.next()) {
                     Map<String, Object> row = Maps.newLinkedHashMap();
                     for (int i = 0; i < columns; i++) {
-                        row.put(columnName.get(i), res.getObject(i + 1));
+                        Object value = res.getObject(i + 1);
+                        // 增加字段处理
+                        if (Objects.nonNull(fieldProcess)) {
+                            value = fieldProcess.execute(value);
+                        }
+                        row.put(columnName.get(i), value);
                     }
                     result.add(row);
                 }
@@ -100,7 +106,7 @@ public class DBUtil {
      * @return
      */
     public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Boolean closeConn, List<Object> preFields, Integer queryTimeout) {
-        return executeQuery(conn, sql, null, closeConn, preFields, queryTimeout);
+        return executeQuery(conn, sql, null, closeConn, preFields, queryTimeout, null);
     }
 
     /**
@@ -114,7 +120,7 @@ public class DBUtil {
      * @param queryTimeout
      * @return
      */
-    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, Boolean closeConn, List<Object> preFields, Integer queryTimeout) {
+    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, Boolean closeConn, List<Object> preFields, Integer queryTimeout, CallBack<Object, Object> fieldProcess) {
         List<Map<String, Object>> result = Lists.newArrayList();
         ResultSet res = null;
         PreparedStatement statement = null;
@@ -147,7 +153,12 @@ public class DBUtil {
             while (res.next()) {
                 Map<String, Object> row = Maps.newLinkedHashMap();
                 for (int i = 0; i < columns; i++) {
-                    row.put(columnName.get(i), res.getObject(i + 1));
+                    Object value = res.getObject(i + 1);
+                    // 增加字段处理
+                    if (Objects.nonNull(fieldProcess)) {
+                        value = fieldProcess.execute(value);
+                    }
+                    row.put(columnName.get(i), value);
                 }
                 result.add(row);
             }
