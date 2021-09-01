@@ -29,10 +29,10 @@ import java.util.Objects;
  * @Description：SqlServer 客户端
  */
 public class SqlServerClient extends AbsRdbmsClient {
-    private static final String TABLE_QUERY_ALL = "select a.name, b.name from sys.objects a left join sys.schemas b on a.schema_id = b.schema_id where a.type='U' or a.type='V'";
+    private static final String TABLE_QUERY_ALL = "select a.name, b.name from sys.objects a left join sys.schemas b on a.schema_id = b.schema_id where (a.type='U' or a.type='V')";
     private static final String TABLE_QUERY = "select a.name, b.name from sys.objects a left join sys.schemas b on a.schema_id = b.schema_id where a.type='U'";
 
-    private static final String SEARCH_BY_COLUMN_SQL = " and charIndex('%s',%s) > 0 ";
+    private static final String SEARCH_BY_COLUMN_SQL = " and charIndex('%s', a.name) > 0 ";
 
     private static final String TABLE_SHOW = "[%s].[%s]";
 
@@ -87,7 +87,7 @@ public class SqlServerClient extends AbsRdbmsClient {
         try {
             String sql = queryDTO.getView() ? TABLE_QUERY_ALL : TABLE_QUERY;
             if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-                sql = sql + String.format(SEARCH_BY_COLUMN_SQL, queryDTO.getTableNamePattern(), "b.name");
+                sql = sql + String.format(SEARCH_BY_COLUMN_SQL, queryDTO.getTableNamePattern());
             }
             statement = sqlserverSourceDTO.getConnection().createStatement();
             if (Objects.nonNull(queryDTO.getLimit())) {
