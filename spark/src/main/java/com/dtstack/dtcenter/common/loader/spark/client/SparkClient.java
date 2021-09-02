@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.TableUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
@@ -81,6 +82,12 @@ public class SparkClient extends AbsRdbmsClient {
     // spark table client
     private static final ITable TABLE_CLIENT = new SparkTableClient();
 
+    // show tables
+    private static final String SHOW_TABLE_SQL = "show tables";
+
+    // show tables like 'xxx'
+    private static final String SHOW_TABLE_LIKE_SQL = "show tables like '*%s*'";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new SparkConnFactory();
@@ -95,16 +102,26 @@ public class SparkClient extends AbsRdbmsClient {
     private final static int TEST_CONN_TIMEOUT = 30;
 
     @Override
-    public List<String> getTableList(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        Integer clearStatus = beforeQuery(iSource, queryDTO, false);
-        SparkSourceDTO sparkSourceDTO = (SparkSourceDTO) iSource;
+    public List<String> getTableList(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        Integer clearStatus = beforeQuery(sourceDTO, queryDTO, false);
+        SparkSourceDTO sparkSourceDTO = (SparkSourceDTO) sourceDTO;
         // 获取表信息需要通过show tables 语句
-        String sql = "show tables";
+        String sql;
+        if (Objects.nonNull(queryDTO) && StringUtils.isNotEmpty(queryDTO.getTableNamePattern())) {
+            // 模糊查询
+            sql = String.format(SHOW_TABLE_LIKE_SQL, queryDTO.getTableNamePattern());
+        } else {
+            sql = SHOW_TABLE_SQL;
+        }
         Statement statement = null;
         ResultSet rs = null;
         List<String> tableList = new ArrayList<>();
         try {
             statement = sparkSourceDTO.getConnection().createStatement();
+            if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
+                // 设置最大条数
+                statement.setMaxRows(queryDTO.getLimit());
+            }
             DBUtil.setFetchSize(statement, queryDTO);
             rs = statement.executeQuery(sql);
             int columnSize = rs.getMetaData().getColumnCount();
@@ -489,8 +506,12 @@ public class SparkClient extends AbsRdbmsClient {
             tableInfo.setName(queryDTO.getTableName());
             // 获取表注释
             tableInfo.setComment(getTableMetaComment(sparkSourceDTO.getConnection(), queryDTO.getTableName()));
-            // 处理字段信息
-            tableInfo.setColumns(getColumnMetaData(sparkSourceDTO.getConnection(), queryDTO.getTableName(), queryDTO.getFilterPartitionColumns()));
+            // 先获取全部字段，再过滤
+            List<ColumnMetaDTO> columnMetaDTOS = getColumnMetaData(sparkSourceDTO.getConnection(), queryDTO.getTableName(), false);
+            // 分区字段不为空表示是分区表
+            if (ReflectUtil.fieldExists(Table.class, "isPartitionTable")) {
+                tableInfo.setIsPartitionTable(CollectionUtils.isNotEmpty(TableUtil.getPartitionColumns(columnMetaDTOS)));
+            }
             // 获取表结构信息
             getTable(tableInfo, sparkSourceDTO, queryDTO.getTableName());
         } catch (Exception e) {
