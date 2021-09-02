@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.TableUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosConfigUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
@@ -410,8 +411,13 @@ public class InceptorClient extends AbsRdbmsClient {
             tableInfo.setName(queryDTO.getTableName());
             // 获取表注释
             tableInfo.setComment(getTableMetaComment(inceptorSourceDTO.getConnection(), queryDTO.getTableName()));
-            // 处理字段信息
-            tableInfo.setColumns(getColumnMetaData(inceptorSourceDTO.getConnection(), queryDTO.getTableName(), queryDTO.getFilterPartitionColumns()));
+            // 先获取全部字段，再过滤
+            List<ColumnMetaDTO> columnMetaDTOS = getColumnMetaData(inceptorSourceDTO.getConnection(), queryDTO.getTableName(), false);
+            // 分区字段不为空表示是分区表
+            if (ReflectUtil.fieldExists(Table.class, "isPartitionTable")) {
+                tableInfo.setIsPartitionTable(CollectionUtils.isNotEmpty(TableUtil.getPartitionColumns(columnMetaDTOS)));
+            }
+            tableInfo.setColumns(TableUtil.filterPartitionColumns(columnMetaDTOS, queryDTO.getFilterPartitionColumns()));
             // 获取表结构信息
             getTable(tableInfo, inceptorSourceDTO, queryDTO.getTableName());
         } catch (Exception e) {

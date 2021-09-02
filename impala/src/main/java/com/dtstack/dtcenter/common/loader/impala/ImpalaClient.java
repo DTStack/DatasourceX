@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.TableUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -15,6 +17,7 @@ import com.dtstack.dtcenter.loader.dto.source.ImpalaSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -251,8 +254,13 @@ public class ImpalaClient extends AbsRdbmsClient {
             tableInfo.setName(queryDTO.getTableName());
             // 获取表注释
             tableInfo.setComment(getTableMetaComment(impalaSourceDTO.getConnection(), schema, queryDTO.getTableName()));
-            // 处理字段信息
-            tableInfo.setColumns(getColumnMetaData(impalaSourceDTO.getConnection(), schema, queryDTO.getTableName(), queryDTO.getFilterPartitionColumns()));
+            // 先获取全部字段，再过滤
+            List<ColumnMetaDTO> columnMetaDTOS = getColumnMetaData(impalaSourceDTO.getConnection(), schema, queryDTO.getTableName(), false);
+            // 分区字段不为空表示是分区表
+            if (ReflectUtil.fieldExists(Table.class, "isPartitionTable")) {
+                tableInfo.setIsPartitionTable(CollectionUtils.isNotEmpty(TableUtil.getPartitionColumns(columnMetaDTOS)));
+            }
+            tableInfo.setColumns(TableUtil.filterPartitionColumns(columnMetaDTOS, queryDTO.getFilterPartitionColumns()));
             // 获取表结构信息
             getTable(tableInfo, impalaSourceDTO, schema, queryDTO.getTableName());
         } catch (Exception e) {
