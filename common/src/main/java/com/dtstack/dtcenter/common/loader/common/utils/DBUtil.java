@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.common.utils;
 
+import com.dtstack.dtcenter.common.loader.common.base.CallBack;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
@@ -46,7 +47,7 @@ public class DBUtil {
      * @return
      */
     public static List<Map<String, Object>> executeQuery(Connection conn, String sql) {
-        return executeQuery(conn, sql, MAX_QUERY_ROW, null);
+        return executeQuery(conn, sql, MAX_QUERY_ROW, null, null);
     }
 
     /**
@@ -58,7 +59,7 @@ public class DBUtil {
      * @param queryTimeout
      * @return
      */
-    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, Integer queryTimeout) {
+    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, Integer queryTimeout, CallBack<Object, Object> fieldProcess) {
         List<Map<String, Object>> result = Lists.newArrayList();
         ResultSet res = null;
         Statement statement = null;
@@ -87,7 +88,12 @@ public class DBUtil {
                     Map<String, Integer> columnRepeatSign = Maps.newHashMap();
                     for (int i = 0; i < columns; i++) {
                         String column = dealRepeatColumn(row, columnName.get(i), columnRepeatSign);
-                        row.put(column, res.getObject(i + 1));
+                        Object value = res.getObject(i + 1);
+                        // 增加字段处理
+                        if (Objects.nonNull(fieldProcess)) {
+                            value = fieldProcess.execute(value);
+                        }
+                        row.put(column, value);
                     }
                     result.add(row);
                 }
@@ -111,7 +117,7 @@ public class DBUtil {
      * @param queryTimeout
      * @return
      */
-    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, List<Object> preFields, Integer queryTimeout) {
+    public static List<Map<String, Object>> executeQuery(Connection conn, String sql, Integer limit, List<Object> preFields, Integer queryTimeout, CallBack<Object, Object> fieldProcess) {
         List<Map<String, Object>> result = Lists.newArrayList();
         ResultSet res = null;
         PreparedStatement statement = null;
@@ -146,7 +152,12 @@ public class DBUtil {
                 Map<String, Integer> columnRepeatSign = Maps.newHashMap();
                 for (int i = 0; i < columns; i++) {
                     String column = dealRepeatColumn(row, columnName.get(i), columnRepeatSign);
-                    row.put(column, res.getObject(i + 1));
+                    Object value = res.getObject(i + 1);
+                    // 增加字段处理
+                    if (Objects.nonNull(fieldProcess)) {
+                        value = fieldProcess.execute(value);
+                    }
+                    row.put(column, value);
                 }
                 result.add(row);
             }
