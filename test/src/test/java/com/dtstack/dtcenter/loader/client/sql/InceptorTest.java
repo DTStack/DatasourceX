@@ -8,7 +8,6 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.InceptorSourceDTO;
-import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -18,6 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,13 +36,13 @@ public class InceptorTest extends BaseTest {
      * 构建数据源信息
      */
     private static final InceptorSourceDTO INCEPTOR_SOURCE_DTO = InceptorSourceDTO.builder()
-            .url("jdbc:hive2://tdh6-node3:10000/default;principal=hive/tdh6-node3@TDH")
+            .url("jdbc:hive2://tdh6-node1:10000/default")
             .schema("default")
             .defaultFS("hdfs://nameservice1")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.nameservice1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.nameservice1.nn1\": \"172.16.100.192:8020\",\n" +
-                    "    \"dfs.namenode.rpc-address.nameservice1.nn2\": \"172.16.101.204:8020\",\n" +
+                    "    \"dfs.namenode.rpc-address.nameservice1.nn1\": \"tdh6-node1:8020\",\n" +
+                    "    \"dfs.namenode.rpc-address.nameservice1.nn2\": \"tdh6-node3:8020\",\n" +
                     "    \"dfs.client.failover.proxy.provider.nameservice1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
                     "    \"dfs.nameservices\": \"nameservice1\"\n" +
                     "}")
@@ -54,13 +54,14 @@ public class InceptorTest extends BaseTest {
      */
     @BeforeClass
     public static void beforeClass() {
+        System.setProperty("HADOOP_USER_NAME","hive");
         // 准备 Kerberos 参数
-        Map<String, Object> kerberosConfig = new HashMap<>();
-        String localKerberosPath = HiveKerberosTest.class.getResource("/tdh/inceptor").getPath();
-        kerberosConfig.put("principal", "hive/tdh6-node3@TDH");
-        kerberosConfig.put("principalFile", localKerberosPath + "/inceptor.keytab");
-        kerberosConfig.put("java.security.krb5.conf", localKerberosPath + "/krb5.conf");
-        INCEPTOR_SOURCE_DTO.setKerberosConfig(kerberosConfig);
+//        Map<String, Object> kerberosConfig = new HashMap<>();
+//        String localKerberosPath = HiveKerberosTest.class.getResource("/inceptor").getPath();
+//        kerberosConfig.put("principal", "hive/tdh6-node1@TDH");
+//        kerberosConfig.put("principalFile", localKerberosPath + "/inceptor.keytab");
+//        kerberosConfig.put("java.security.krb5.conf", localKerberosPath + "/krb5.conf");
+//        INCEPTOR_SOURCE_DTO.setKerberosConfig(kerberosConfig);
 
         // inceptor 不支持单条插入语法 - 只有当底层存储是星环hbase、es、事务orc表才支持。
         // 此处先将文件上传到hdfs上再使用 load data 语法进行倒入数据 - 导入数据失败。。。手动去机器上传的
@@ -88,7 +89,12 @@ public class InceptorTest extends BaseTest {
         INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_orc_not_tran").build();
         INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_orc_not_tran (id int, name string) STORED AS ORC").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_orc_not_tran STORED AS ORC as select * from loader_test_text").build();
+        INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
+
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_parquet").build();
+        INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_parquet STORED AS parquet as select * from loader_test_text").build();
         INCEPTOR_CLIENT.executeSqlWithoutResultSet(INCEPTOR_SOURCE_DTO, queryDTO);
     }
 
@@ -129,7 +135,40 @@ public class InceptorTest extends BaseTest {
         IDownloader downloader = client.getDownloader(INCEPTOR_SOURCE_DTO, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
         while (!downloader.reachedEnd()) {
-            Assert.assertNotNull(downloader.readNext());
+            System.out.println(downloader.readNext());
+        }
+    }
+
+    @Test
+    public void getDownloader_orc() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.INCEPTOR.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_orc_not_tran").columns(Arrays.asList("*")).build();
+        IDownloader downloader = client.getDownloader(INCEPTOR_SOURCE_DTO, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
+        while (!downloader.reachedEnd()) {
+            System.out.println(downloader.readNext());
+        }
+    }
+
+    @Test
+    public void getDownloader_text() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.INCEPTOR.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_text").columns(Arrays.asList("*")).build();
+        IDownloader downloader = client.getDownloader(INCEPTOR_SOURCE_DTO, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
+        while (!downloader.reachedEnd()) {
+            System.out.println(downloader.readNext());
+        }
+    }
+
+    @Test
+    public void getDownloader_par() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.INCEPTOR.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_parquet").columns(Arrays.asList("*")).build();
+        IDownloader downloader = client.getDownloader(INCEPTOR_SOURCE_DTO, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
+        while (!downloader.reachedEnd()) {
+            System.out.println(downloader.readNext());
         }
     }
 
