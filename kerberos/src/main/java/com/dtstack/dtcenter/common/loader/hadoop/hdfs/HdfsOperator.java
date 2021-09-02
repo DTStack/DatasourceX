@@ -61,13 +61,17 @@ public class HdfsOperator {
      * @return
      */
     public static boolean checkConnection(String defaultFS, String config, Map<String, Object> kerberosConfig) {
-        try {
-            FileSystem fs = getFileSystem(kerberosConfig, config, defaultFS);
-            fs.getStatus(new Path("/"));
-            return Boolean.TRUE;
-        } catch (Exception e) {
-            throw new DtLoaderException(ERROR_ADAPTER.connAdapter(e.getMessage(), ERROR_PATTERN), e);
-        }
+        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
+                (PrivilegedAction<Boolean>) () -> {
+                    try {
+                        FileSystem fs = getFileSystem(kerberosConfig, config, defaultFS);
+                        fs.getStatus(new Path("/"));
+                        return Boolean.TRUE;
+                    } catch (IOException e) {
+                        throw new DtLoaderException(ERROR_ADAPTER.connAdapter(e.getMessage(), ERROR_PATTERN), e);
+                    }
+                }
+        );
     }
 
     /**
