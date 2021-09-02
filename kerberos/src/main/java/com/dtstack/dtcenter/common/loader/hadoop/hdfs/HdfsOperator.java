@@ -5,6 +5,7 @@ import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
 import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -61,17 +62,13 @@ public class HdfsOperator {
      * @return
      */
     public static boolean checkConnection(String defaultFS, String config, Map<String, Object> kerberosConfig) {
-        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) () -> {
-                    try {
-                        FileSystem fs = getFileSystem(kerberosConfig, config, defaultFS);
-                        fs.getStatus(new Path("/"));
-                        return Boolean.TRUE;
-                    } catch (IOException e) {
-                        throw new DtLoaderException(ERROR_ADAPTER.connAdapter(e.getMessage(), ERROR_PATTERN), e);
-                    }
-                }
-        );
+        try {
+            FileSystem fs = getFileSystem(kerberosConfig, config, defaultFS);
+            fs.getStatus(new Path("/"));
+            return Boolean.TRUE;
+        } catch (Exception e) {
+            throw new DtLoaderException(ERROR_ADAPTER.connAdapter(e.getMessage(), ERROR_PATTERN), e);
+        }
     }
 
     /**
@@ -88,15 +85,18 @@ public class HdfsOperator {
     public static FileSystem getFileSystem(Map<String, Object> kerberosConfig, String config, String defaultFS) {
         Configuration conf = HadoopConfUtil.getHdfsConf(defaultFS, config, kerberosConfig);
         log.info("get Hdfs FileSystem message, defaultFS : {}, config : {}, kerberosConfig : {}", defaultFS, config, kerberosConfig);
-        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<FileSystem>) () -> {
-                    try {
-                        return FileSystem.get(conf);
-                    } catch (IOException e) {
-                        throw new DtLoaderException(String.format("Hdfs check connect error,%s", e.getMessage()), e);
+        // 加锁原因：UGI.doAs 没有锁，如果已经认证成功，在 FileSystem.get(conf) 执行前别的线程进行 kerberos 认证，此时 fs 正常获取，但是是不可用的
+        synchronized (DataSourceType.class) {
+            return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
+                    (PrivilegedAction<FileSystem>) () -> {
+                        try {
+                            return FileSystem.get(conf);
+                        } catch (IOException e) {
+                            throw new DtLoaderException(String.format("Hdfs check connect error,%s", e.getMessage()), e);
+                        }
                     }
-                }
-        );
+            );
+        }
     }
 
     /**
