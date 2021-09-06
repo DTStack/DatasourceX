@@ -5,6 +5,8 @@ import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.inceptor.GroupTypeIgnoreCase;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
+import com.dtstack.dtcenter.common.loader.common.enums.ColumnType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
@@ -37,6 +39,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -44,7 +47,7 @@ public class InceptorParquetDownload implements IDownloader {
 
     private final String tableLocation;
 
-    private final List<String> columnNames;
+    private final List<ColumnMetaDTO> columns;
 
     // 查询字段在所有字段中的索引
     private final List<Integer> needIndex;
@@ -87,12 +90,11 @@ public class InceptorParquetDownload implements IDownloader {
 
     private static final String IMPALA_INSERT_STAGING = "_impala_insert_staging";
 
-    public InceptorParquetDownload(Configuration conf, String tableLocation, List<String> columnNames,
-                                   List<String> partitionColumns, List<Integer> needIndex, Map<String, String> filterPartition,
+    public InceptorParquetDownload(Configuration conf, String tableLocation, List<ColumnMetaDTO> columns, List<String> partitionColumns, List<Integer> needIndex, Map<String, String> filterPartition,
                                    List<String> partitions, Map<String, Object> kerberosConfig){
         this.conf = conf;
         this.tableLocation = tableLocation;
-        this.columnNames = columnNames;
+        this.columns = columns;
         this.partitionColumns = partitionColumns;
         this.needIndex = needIndex;
         this.filterPartition = filterPartition;
@@ -154,7 +156,7 @@ public class InceptorParquetDownload implements IDownloader {
 
     @Override
     public List<String> getMetaInfo() {
-        List<String> metaInfo = new ArrayList<>(columnNames);
+        List<String> metaInfo = columns.stream().map(ColumnMetaDTO::getKey).collect(Collectors.toList());
         if(CollectionUtils.isNotEmpty(partitionColumns)){
             metaInfo.addAll(partitionColumns);
         }
@@ -181,18 +183,18 @@ public class InceptorParquetDownload implements IDownloader {
             if (CollectionUtils.isNotEmpty(needIndex)) {
                 for (Integer index : needIndex) {
                     // 表示该字段为分区字段
-                    if (index > columnNames.size() - 1 && CollectionUtils.isNotEmpty(currentPartData)) {
+                    if (index > columns.size() - 1 && CollectionUtils.isNotEmpty(currentPartData)) {
                         // 分区字段的索引
-                        int partIndex = index - columnNames.size();
+                        int partIndex = index - columns.size();
                         if (partIndex < currentPartData.size()) {
                             line.add(currentPartData.get(partIndex));
                         } else {
                             line.add(null);
                         }
-                    } else if (index < columnNames.size()) {
-                        Integer fieldIndex = isFieldExists(columnNames.get(index));
+                    } else if (index < columns.size()) {
+                        Integer fieldIndex = isFieldExists(columns.get(index).getKey());
                         if (fieldIndex != -1) {
-                            line.add(getFieldByIndex(fieldIndex));
+                            line.add(getFieldByIndex(columns.get(index).getType(), fieldIndex));
                         }else {
                             line.add(null);
                         }
@@ -202,10 +204,10 @@ public class InceptorParquetDownload implements IDownloader {
                 }
                 // needIndex为空表示获取所有字段
             } else {
-                for (int index = 0; index < columnNames.size(); index++) {
-                    Integer fieldIndex = isFieldExists(columnNames.get(index));
+                for (int index = 0; index < columns.size(); index++) {
+                    Integer fieldIndex = isFieldExists(columns.get(index).getKey());
                     if (fieldIndex != -1) {
-                        line.add(getFieldByIndex(fieldIndex));
+                        line.add(getFieldByIndex(columns.get(index).getType(), fieldIndex));
                     }else {
                         line.add(null);
                     }
@@ -236,40 +238,77 @@ public class InceptorParquetDownload implements IDownloader {
     }
 
     // 获取指定index下的字段值
-    private String getFieldByIndex (Integer index) {
-        Type type = currentLine.getType().getType(index);
-        String value;
-        try{
-            // 处理时间戳类型
-            if("INT96".equals(type.asPrimitiveType().getPrimitiveTypeName().name())){
-                long time = getTimestampMillis(currentLine.getInt96(index,0));
-                value = String.valueOf(time);
-            } else if (type.getOriginalType() != null && type.getOriginalType().name().equalsIgnoreCase("DATE")){
-                value = currentLine.getValueToString(index,0);
-                value = new Timestamp(Integer.parseInt(value) * 60 * 60 * 24 * 1000L).toString().substring(0,10);
-            } else if (type.getOriginalType() != null && type.getOriginalType().name().equalsIgnoreCase("DECIMAL")){
-                DecimalMetadata dm = ((PrimitiveType) type).getDecimalMetadata();
-                String primitiveTypeName = currentLine.getType().getType(index).asPrimitiveType().getPrimitiveTypeName().name();
-                if ("INT32".equals(primitiveTypeName)){
-                    int intVal = currentLine.getInteger(index,0);
-                    value = longToDecimalStr((long)intVal,dm.getScale());
-                } else if("INT64".equals(primitiveTypeName)){
-                    long longVal = currentLine.getLong(index,0);
-                    value = longToDecimalStr(longVal,dm.getScale());
-                } else {
-                    Binary binary = currentLine.getBinary(index,0);
-                    value = binaryToDecimalStr(binary,dm.getScale());
-                }
-            } else if ("BINARY".equals(type.asPrimitiveType().getPrimitiveTypeName().name())) {
-                Binary binary = currentLine.getBinary(index, 0);
-                value = new String(StringUtil.encodeHex(binary.getBytesUnsafe()));
-            } else {
-                value = currentLine.getValueToString(index,0);
+    private String getFieldByIndex(String type, int index) {
+        Object data = null;
+        ColumnType columnType = ColumnType.fromString(type);
+
+        try {
+            if (index == -1) {
+                return null;
             }
-        } catch (Exception e){
-            value = null;
+
+            Type colSchemaType = currentLine.getType().getType(index);
+            switch (columnType.name().toLowerCase()) {
+                case "tinyint":
+                case "smallint":
+                case "int":
+                    data = currentLine.getInteger(index, 0);
+                    break;
+                case "bigint":
+                    data = currentLine.getLong(index, 0);
+                    break;
+                case "float":
+                    data = currentLine.getFloat(index, 0);
+                    break;
+                case "double":
+                    data = currentLine.getDouble(index, 0);
+                    break;
+                case "binary":
+                    Binary binaryData = currentLine.getBinary(index, 0);
+                    data = StringUtil.encodeHex(binaryData.getBytes());
+                    break;
+                case "char":
+                case "varchar":
+                case "string":
+                    data = currentLine.getString(index, 0);
+                    break;
+                case "boolean":
+                    data = currentLine.getBoolean(index, 0);
+                    break;
+                case "timestamp": {
+                    long time = getTimestampMillis(currentLine.getInt96(index, 0));
+                    data = new Timestamp(time);
+                    break;
+                }
+                case "decimal": {
+                    DecimalMetadata dm = ((PrimitiveType) colSchemaType).getDecimalMetadata();
+                    String primitiveTypeName = currentLine.getType().getType(index).asPrimitiveType().getPrimitiveTypeName().name();
+                    if (ColumnType.INT32.name().equals(primitiveTypeName)) {
+                        int intVal = currentLine.getInteger(index, 0);
+                        data = longToDecimalStr(intVal, dm.getScale());
+                    } else if (ColumnType.INT64.name().equals(primitiveTypeName)) {
+                        long longVal = currentLine.getLong(index, 0);
+                        data = longToDecimalStr(longVal, dm.getScale());
+                    } else {
+                        Binary binary = currentLine.getBinary(index, 0);
+                        data = binaryToDecimalStr(binary, dm.getScale());
+                    }
+                    break;
+                }
+                case "date": {
+                    String val = currentLine.getValueToString(index, 0);
+                    data = new Timestamp(Integer.parseInt(val) * MILLIS_IN_DAY).toString().substring(0, 10);
+                    break;
+                }
+                default:
+                    data = currentLine.getValueToString(index, 0);
+                    break;
+            }
+        } catch (Exception e) {
+            log.error("{}", e.getMessage(), e);
         }
-        return value;
+
+        return String.valueOf(data);
     }
 
 

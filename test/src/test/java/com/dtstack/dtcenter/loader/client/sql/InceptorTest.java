@@ -142,7 +142,7 @@ public class InceptorTest extends BaseTest {
     @Test
     public void getDownloader_orc() throws Exception {
         IClient client = ClientCache.getClient(DataSourceType.INCEPTOR.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_orc_not_tran").columns(Arrays.asList("*")).build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_orc_not_tran").build();
         IDownloader downloader = client.getDownloader(INCEPTOR_SOURCE_DTO, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
         while (!downloader.reachedEnd()) {
