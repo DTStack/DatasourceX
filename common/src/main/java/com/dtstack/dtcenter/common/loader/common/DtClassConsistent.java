@@ -88,6 +88,13 @@ public interface DtClassConsistent {
         public static final String PRIMARY_KEY = "primary_key";
         public static final String REMARKS = "REMARKS";
 
+        public static final String LEFT_PARENTHESIS_SYMBOL = "(";
+        public static final String RIGHT_PARENTHESIS_SYMBOL = ")";
+
+
+        public static final String DATA_TYPE_UNSIGNED = "UNSIGNED";
+
+
         @Deprecated
         public static final String USE_DB = "use `%s`";
     }
