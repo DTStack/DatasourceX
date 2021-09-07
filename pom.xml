@@ -62,6 +62,7 @@
         <module>test</module>
         <module>kylinrestful</module>
         <module>restful</module>
+        <module>trino</module>
     </modules>
     <packaging>pom</packaging>
 

@@ -61,6 +61,7 @@ public enum DataSourceType {
     Presto(48, 89, "Presto", "presto"),
     OceanBase(49, 90, "OceanBase", "oceanbase"),
     INCEPTOR(52, 91, "Inceptor", "inceptor"),
+    TRINO(59, 92, "Trino", "trino"),
 
     // NoSQL
     HBASE(8, 100, "HBase", "hbase"),
@@ -138,6 +139,7 @@ public enum DataSourceType {
         RDBM_S.add(OceanBase.val);
         RDBM_S.add(INCEPTOR.val);
         RDBM_S.add(KINGBASE8.val);
+        RDBM_S.add(TRINO.val);
 
         KAFKA_S.add(KAFKA.val);
         KAFKA_S.add(KAFKA_09.val);
