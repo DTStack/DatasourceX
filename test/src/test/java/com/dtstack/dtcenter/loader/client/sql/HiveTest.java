@@ -42,17 +42,17 @@ public class HiveTest extends BaseTest {
      * 构建数据源信息
      */
     private static final HiveSourceDTO source = HiveSourceDTO.builder()
-            .url("jdbc:hive2://172.16.100.214:10000/default")
+            .url("jdbc:hive2://kudu3:10000/default")
             .schema("default")
             .defaultFS("hdfs://ns1")
             .username("admin")
             .config("{\n" +
-                    "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.101.227:9000\",\n" +
-                    "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.101.196:9000\",\n" +
-                    "    \"dfs.nameservices\": \"ns1\"\n" +
-                    "}")
+                    "            \"dfs.ha.namenodes.ns1\" : \"nn1,nn2\",\n" +
+                    "            \"dfs.namenode.rpc-address.ns1.nn2\" : \"kudu2:9000\",\n" +
+                    "            \"dfs.client.failover.proxy.provider.ns1\" : \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
+                    "            \"dfs.namenode.rpc-address.ns1.nn1\" : \"kudu1:9000\",\n" +
+                    "            \"dfs.nameservices\" : \"ns1\"\n" +
+                    "          }")
             .poolConfig(PoolConfig.builder().build())
             .build();
 
@@ -75,6 +75,26 @@ public class HiveTest extends BaseTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_parquet values (1, 'wc1'),(2,'wc2')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
+
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_downloader").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_downloader (id1 SMALLINT,\n" +
+                "id2 INT,\n" +
+                "id3 DOUBLE,\n" +
+                "id4 STRING,\n" +
+                "id5 TIMESTAMP,\n" +
+                "id6 DECIMAL(22,2), \n" +
+                "id7 VARCHAR(100),\n" +
+                "id8 CHAR(10),\n" +
+                "id9 DATE,\n" +
+                "id10 BINARY,\n" +
+                "id11 BIGINT,\n" +
+                "id12 BOOLEAN,\n" +
+                "id13 FLOAT,\n" +
+                "id14 TINYINT) STORED AS PARQUET").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_downloader select 4, 100, 30.25,'loader_test',current_timestamp(), 120.01,'varchar', 'char column', '2019-05-22', '0101010000101',1234567,true,90.2,1").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
     /**
@@ -85,6 +105,17 @@ public class HiveTest extends BaseTest {
         Connection con = client.getCon(source);
         Assert.assertNotNull(con);
         con.close();
+    }
+
+    @Test
+    public void getDownloader_01() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("loader_test_downloader").build();
+        IDownloader downloader = client.getDownloader(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
+        while (!downloader.reachedEnd()) {
+            System.out.println(downloader.readNext());
+        }
     }
 
     /**

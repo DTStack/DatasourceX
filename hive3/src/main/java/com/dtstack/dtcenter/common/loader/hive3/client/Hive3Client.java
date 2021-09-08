@@ -315,7 +315,7 @@ public class Hive3Client extends AbsRdbmsClient {
         Integer clearStatus = beforeQuery(hive3SourceDTO, queryDTO, false);
         Table table;
         // 普通字段集合
-        ArrayList<String> columnNames = new ArrayList<>();
+        ArrayList<ColumnMetaDTO> commonColumn = new ArrayList<>();
         // 分区字段集合
         ArrayList<String> partitionColumns = new ArrayList<>();
         // 分区表所有分区 如果为 null 标识不是分区表，如果为空标识分区表无分区
@@ -329,7 +329,7 @@ public class Hive3Client extends AbsRdbmsClient {
                     partitionColumns.add(columnMetaDatum.getKey());
                     continue;
                 }
-                columnNames.add(columnMetaDatum.getKey());
+                commonColumn.add(columnMetaDatum);
             }
             // 分区表
             if (CollectionUtils.isNotEmpty(partitionColumns)) {
@@ -376,7 +376,7 @@ public class Hive3Client extends AbsRdbmsClient {
         return KerberosLoginUtil.loginWithUGI(hive3SourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
-                        return createDownloader(table.getStoreType(), conf, table.getPath(), columnNames, table.getDelim(), partitionColumns, needIndex, queryDTO.getPartitionColumns(), finalPartitions, hive3SourceDTO.getKerberosConfig());
+                        return createDownloader(table.getStoreType(), conf, table.getPath(), commonColumn, table.getDelim(), partitionColumns, needIndex, queryDTO.getPartitionColumns(), finalPartitions, hive3SourceDTO.getKerberosConfig());
                     } catch (Exception e) {
                         throw new DtLoaderException(String.format("create downloader exception,%s", e.getMessage()), e);
                     }
@@ -390,7 +390,7 @@ public class Hive3Client extends AbsRdbmsClient {
      * @param storageMode      存储格式
      * @param conf             配置
      * @param tableLocation    表hdfs路径
-     * @param columnNames      字段集合
+     * @param columns          字段集合
      * @param fieldDelimiter   textFile 表列分隔符
      * @param partitionColumns 分区字段集合
      * @param needIndex        需要查询的字段索引位置
@@ -401,7 +401,7 @@ public class Hive3Client extends AbsRdbmsClient {
      * @throws Exception 异常信息
      */
     private @NotNull IDownloader createDownloader(String storageMode, Configuration conf, String tableLocation,
-                                                  ArrayList<String> columnNames, String fieldDelimiter,
+                                                  List<ColumnMetaDTO> columns, String fieldDelimiter,
                                                   ArrayList<String> partitionColumns, List<Integer> needIndex,
                                                   Map<String, String> filterPartitions, List<String> partitions,
                                                   Map<String, Object> kerberosConfig) throws Exception {
@@ -410,6 +410,7 @@ public class Hive3Client extends AbsRdbmsClient {
             throw new DtLoaderException("Hive table reads for this storage type are not supported");
         }
 
+        List<String> columnNames = columns.stream().map(ColumnMetaDTO::getKey).collect(Collectors.toList());
         if (StringUtils.containsIgnoreCase(storageMode, "text")) {
             HiveTextDownload hiveTextDownload = new HiveTextDownload(conf, tableLocation, columnNames,
                     fieldDelimiter, partitionColumns, filterPartitions, needIndex, partitions, kerberosConfig);
@@ -425,7 +426,7 @@ public class Hive3Client extends AbsRdbmsClient {
         }
 
         if (StringUtils.containsIgnoreCase(storageMode, "parquet")) {
-            HiveParquetDownload hiveParquetDownload = new HiveParquetDownload(conf, tableLocation, columnNames,
+            HiveParquetDownload hiveParquetDownload = new HiveParquetDownload(conf, tableLocation, columns,
                     partitionColumns, needIndex, filterPartitions, partitions, kerberosConfig);
             hiveParquetDownload.configure();
             return hiveParquetDownload;

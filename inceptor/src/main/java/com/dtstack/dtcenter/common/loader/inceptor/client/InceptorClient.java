@@ -5,14 +5,19 @@ import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.TableUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosConfigUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.inceptor.InceptorConnFactory;
 import com.dtstack.dtcenter.common.loader.inceptor.downloader.InceptorDownload;
+import com.dtstack.dtcenter.common.loader.inceptor.downloader.InceptorORCDownload;
+import com.dtstack.dtcenter.common.loader.inceptor.downloader.InceptorParquetDownload;
+import com.dtstack.dtcenter.common.loader.inceptor.downloader.InceptorTextDownload;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
+import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
@@ -22,6 +27,7 @@ import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -29,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 
+import org.apache.hadoop.conf.Configuration;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -72,6 +79,11 @@ public class InceptorClient extends AbsRdbmsClient {
 
     // 根据schema选表表名模糊查询
     private static final String SEARCH_SQL = " like '%s' ";
+
+    // null 名称的字段名
+    private static final String NULL_COLUMN = "null";
+
+    private static final ITable TABLE_CLIENT = new InceptorTableClient();
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -350,9 +362,136 @@ public class InceptorClient extends AbsRdbmsClient {
         );
     }
 
+    private IDownloader getDownloaderFromHdfs(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        InceptorSourceDTO inceptorSourceDTO = (InceptorSourceDTO) sourceDTO;
+        Integer clearStatus = beforeQuery(inceptorSourceDTO, queryDTO, false);
+        Table table;
+        // 普通字段集合
+        ArrayList<ColumnMetaDTO> commonColumn = new ArrayList<>();
+        // 分区字段集合
+        ArrayList<String> partitionColumns = new ArrayList<>();
+        // 分区表所有分区 如果为 null 标识不是分区表，如果为空标识分区表无分区
+        List<String> partitions = null;
+        try {
+            // 获取表详情信息
+            table = getTable(inceptorSourceDTO, queryDTO);
+            for (ColumnMetaDTO columnMetaDatum : table.getColumns()) {
+                // 非分区字段
+                if (columnMetaDatum.getPart()) {
+                    partitionColumns.add(columnMetaDatum.getKey());
+                    continue;
+                }
+                commonColumn.add(columnMetaDatum);
+            }
+            // 分区表
+            if (CollectionUtils.isNotEmpty(partitionColumns)) {
+                partitions = TABLE_CLIENT.showPartitions(inceptorSourceDTO, queryDTO.getTableName());
+            }
+        } catch (Exception e) {
+            throw new DtLoaderException(String.format("failed to get table detail: %s", e.getMessage()), e);
+        } finally {
+            DBUtil.clearAfterGetConnection(inceptorSourceDTO, clearStatus);
+        }
+        // 查询的字段列表，支持按字段获取数据
+        List<String> columns = queryDTO.getColumns();
+        // 需要的字段索引（包括分区字段索引）
+        List<Integer> needIndex = Lists.newArrayList();
+        // columns字段不为空且不包含*时获取指定字段的数据
+        if (CollectionUtils.isNotEmpty(columns) && !columns.contains("*")) {
+            // 保证查询字段的顺序!
+            for (String column : columns) {
+                if (NULL_COLUMN.equalsIgnoreCase(column)) {
+                    needIndex.add(Integer.MAX_VALUE);
+                    continue;
+                }
+                // 判断查询字段是否存在
+                boolean check = false;
+                for (int j = 0; j < table.getColumns().size(); j++) {
+                    if (column.equalsIgnoreCase(table.getColumns().get(j).getKey())) {
+                        needIndex.add(j);
+                        check = true;
+                        break;
+                    }
+                }
+                if (!check) {
+                    throw new DtLoaderException("The query field does not exist! Field name：" + column);
+                }
+            }
+        }
+
+        // 校验高可用配置
+        if (StringUtils.isBlank(inceptorSourceDTO.getDefaultFS()) || !inceptorSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
+            throw new DtLoaderException("defaultFS incorrect format");
+        }
+        Configuration conf = HadoopConfUtil.getHdfsConf(inceptorSourceDTO.getDefaultFS(), inceptorSourceDTO.getConfig(), inceptorSourceDTO.getKerberosConfig());
+        List<String> finalPartitions = partitions;
+        return KerberosLoginUtil.loginWithUGI(inceptorSourceDTO.getKerberosConfig()).doAs(
+                (PrivilegedAction<IDownloader>) () -> {
+                    try {
+                        return createDownloader(table.getStoreType(), conf, table.getPath(), commonColumn, table.getDelim(), partitionColumns, needIndex, queryDTO.getPartitionColumns(), finalPartitions, inceptorSourceDTO.getKerberosConfig());
+                    } catch (Exception e) {
+                        throw new DtLoaderException(String.format("create downloader exception,%s", e.getMessage()), e);
+                    }
+                }
+        );
+    }
+
+    /**
+     * 根据存储格式创建对应的inceptorDownloader
+     *
+     * @param storageMode      存储格式
+     * @param conf             配置
+     * @param tableLocation    表hdfs路径
+     * @param columns          字段集合
+     * @param fieldDelimiter   textFile 表列分隔符
+     * @param partitionColumns 分区字段集合
+     * @param needIndex        需要查询的字段索引位置
+     * @param filterPartitions 需要查询的分区
+     * @param partitions       全部分区
+     * @param kerberosConfig   kerberos 配置
+     * @return downloader
+     * @throws Exception 异常信息
+     */
+    private IDownloader createDownloader(String storageMode, Configuration conf, String tableLocation, List<ColumnMetaDTO> columns,
+                                         String fieldDelimiter,
+                                         ArrayList<String> partitionColumns, List<Integer> needIndex,
+                                         Map<String, String> filterPartitions, List<String> partitions,
+                                         Map<String, Object> kerberosConfig) throws Exception {
+        // 根据存储格式创建对应的inceptorDownloader
+        if (StringUtils.isBlank(storageMode)) {
+            throw new DtLoaderException("inceptor table reads for this storage type are not supported");
+        }
+        List<String> columnNames = columns.stream().map(ColumnMetaDTO::getKey).collect(Collectors.toList());
+        if (StringUtils.containsIgnoreCase(storageMode, "text")) {
+            InceptorTextDownload inceptorTextDownload = new InceptorTextDownload(conf, tableLocation, columnNames,
+                    fieldDelimiter, partitionColumns, filterPartitions, needIndex, kerberosConfig);
+            inceptorTextDownload.configure();
+            return inceptorTextDownload;
+        }
+
+        if (StringUtils.containsIgnoreCase(storageMode, "orc")) {
+            InceptorORCDownload inceptorORCDownload = new InceptorORCDownload(conf, tableLocation, columnNames,
+                    partitionColumns, needIndex, partitions, kerberosConfig);
+            inceptorORCDownload.configure();
+            return inceptorORCDownload;
+        }
+
+        if (StringUtils.containsIgnoreCase(storageMode, "parquet")) {
+            InceptorParquetDownload inceptorParquetDownload = new InceptorParquetDownload(conf, tableLocation, columns,
+                    partitionColumns, needIndex, filterPartitions, partitions, kerberosConfig);
+            inceptorParquetDownload.configure();
+            return inceptorParquetDownload;
+        }
+
+        throw new DtLoaderException("inceptor table reads for this storage type are not supported");
+    }
+
     @Override
     public IDownloader getDownloader(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) throws Exception {
-        return getDownloader(sourceDTO, queryDTO.getSql(), 100);
+        if (StringUtils.isNotBlank(queryDTO.getSql())) {
+            return getDownloader(sourceDTO, queryDTO.getSql(), 100);
+        }
+        return getDownloaderFromHdfs(sourceDTO, queryDTO);
     }
 
     @Override

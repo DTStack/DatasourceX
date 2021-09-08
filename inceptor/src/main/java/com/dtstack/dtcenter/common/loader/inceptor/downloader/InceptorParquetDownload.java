@@ -1,12 +1,12 @@
-package com.dtstack.dtcenter.common.loader.hive2.downloader;
+package com.dtstack.dtcenter.common.loader.inceptor.downloader;
 
-import com.dtstack.dtcenter.common.loader.common.enums.ColumnType;
 import com.dtstack.dtcenter.common.loader.common.utils.StringUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
-import com.dtstack.dtcenter.common.loader.hive2.GroupTypeIgnoreCase;
+import com.dtstack.dtcenter.common.loader.inceptor.GroupTypeIgnoreCase;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
+import com.dtstack.dtcenter.common.loader.common.enums.ColumnType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
@@ -41,14 +41,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-/**
- * 下载hive表:存储结构为PARQUET
- * Date: 2020/6/3
- * Company: www.dtstack.com
- * @author wangchuan
- */
+
 @Slf4j
-public class HiveParquetDownload implements IDownloader {
+public class InceptorParquetDownload implements IDownloader {
 
     private final String tableLocation;
 
@@ -95,9 +90,8 @@ public class HiveParquetDownload implements IDownloader {
 
     private static final String IMPALA_INSERT_STAGING = "_impala_insert_staging";
 
-    public HiveParquetDownload(Configuration conf, String tableLocation, List<ColumnMetaDTO> columns,
-                               List<String> partitionColumns, List<Integer> needIndex, Map<String, String> filterPartition,
-                               List<String> partitions, Map<String, Object> kerberosConfig){
+    public InceptorParquetDownload(Configuration conf, String tableLocation, List<ColumnMetaDTO> columns, List<String> partitionColumns, List<Integer> needIndex, Map<String, String> filterPartition,
+                                   List<String> partitions, Map<String, Object> kerberosConfig){
         this.conf = conf;
         this.tableLocation = tableLocation;
         this.columns = columns;
