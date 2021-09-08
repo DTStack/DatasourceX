@@ -608,13 +608,26 @@ public class HdfsFileClient implements IHdfsFile {
                         Configuration conf = getHadoopConf(hdfsSourceDTO);
                         FileSystem fs = FileSystem.get(conf);
                         for (String HDFSDirPath : HDFSDirPaths) {
-                            org.apache.hadoop.fs.FileStatus fileStatus = fs.getFileStatus(new Path(HDFSDirPath));
-                            ContentSummary contentSummary = fs.getContentSummary(new Path(HDFSDirPath));
-                            HDFSContentSummary hdfsContentSummary = HDFSContentSummary.builder()
-                                    .directoryCount(contentSummary.getDirectoryCount())
-                                    .fileCount(contentSummary.getFileCount())
-                                    .ModifyTime(fileStatus.getModificationTime())
-                                    .spaceConsumed(contentSummary.getLength()).build();
+                            Path hdfsPath = new Path(HDFSDirPath);
+                            // 判断路径是否存在，不存在则返回空对象
+                            HDFSContentSummary hdfsContentSummary;
+                            if (!fs.exists(hdfsPath)) {
+                                log.warn("execute method getContentSummary: path {} not exists!", HDFSDirPath);
+                                hdfsContentSummary = HDFSContentSummary.builder()
+                                        .directoryCount(0L)
+                                        .fileCount(0L)
+                                        .ModifyTime(0L)
+                                        .spaceConsumed(0L).build();
+
+                            } else {
+                                org.apache.hadoop.fs.FileStatus fileStatus = fs.getFileStatus(hdfsPath);
+                                ContentSummary contentSummary = fs.getContentSummary(hdfsPath);
+                                hdfsContentSummary = HDFSContentSummary.builder()
+                                        .directoryCount(contentSummary.getDirectoryCount())
+                                        .fileCount(contentSummary.getFileCount())
+                                        .ModifyTime(fileStatus.getModificationTime())
+                                        .spaceConsumed(contentSummary.getLength()).build();
+                            }
                             HDFSContentSummaries.add(hdfsContentSummary);
                         }
                         return HDFSContentSummaries;
