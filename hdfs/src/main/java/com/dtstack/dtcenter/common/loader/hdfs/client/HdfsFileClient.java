@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hdfs.client;
 
+import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
@@ -457,7 +458,7 @@ public class HdfsFileClient implements IHdfsFile {
                     try {
                         Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
                         FileSystem fs = FileSystem.get(conf);
-                        for (String HDFSDirPath : HDFSDirPaths) {
+                        for (String HDFSDirPath : hdfsDirPaths) {
                             Path hdfsPath = new Path(HDFSDirPath);
                             // 判断路径是否存在，不存在则返回空对象
                             HDFSContentSummary hdfsContentSummary;
@@ -467,8 +468,11 @@ public class HdfsFileClient implements IHdfsFile {
                                         .directoryCount(0L)
                                         .fileCount(0L)
                                         .ModifyTime(0L)
-                                        .spaceConsumed(0L).build();
-
+                                        .spaceConsumed(0L)
+                                        .build();
+                                if (ReflectUtil.fieldExists(hdfsContentSummary.getClass(), "isExists")) {
+                                    hdfsContentSummary.setIsExists(false);
+                                }
                             } else {
                                 org.apache.hadoop.fs.FileStatus fileStatus = fs.getFileStatus(hdfsPath);
                                 ContentSummary contentSummary = fs.getContentSummary(hdfsPath);
@@ -477,10 +481,13 @@ public class HdfsFileClient implements IHdfsFile {
                                         .fileCount(contentSummary.getFileCount())
                                         .ModifyTime(fileStatus.getModificationTime())
                                         .spaceConsumed(contentSummary.getLength()).build();
+                                if (ReflectUtil.fieldExists(hdfsContentSummary.getClass(), "isExists")) {
+                                    hdfsContentSummary.setIsExists(true);
+                                }
                             }
-                            HDFSContentSummaries.add(hdfsContentSummary);
+                            hdfsContentSummaries.add(hdfsContentSummary);
                         }
-                        return HDFSContentSummaries;
+                        return hdfsContentSummaries;
                     } catch (Exception e) {
                         throw new DtLoaderException(String.format("获取HDFS文件信息失败：%s", e.getMessage()), e);
                     }

@@ -30,4 +30,7 @@ public class HDFSContentSummary implements Serializable {
 
     // 文件(夹)更新时间
     private Long ModifyTime;
+
+    // 路径是否存在
+    private Boolean isExists;
 }
