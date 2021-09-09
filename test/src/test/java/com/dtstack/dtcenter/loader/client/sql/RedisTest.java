@@ -3,11 +3,21 @@ package com.dtstack.dtcenter.loader.client.sql;
 import com.dtstack.dtcenter.loader.client.BaseTest;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
+import com.dtstack.dtcenter.loader.client.IRedis;
+import com.dtstack.dtcenter.loader.dto.RedisQueryDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.RedisSourceDTO;
+import com.dtstack.dtcenter.loader.enums.RedisCompareOp;
+import com.dtstack.dtcenter.loader.enums.RedisDataType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import com.dtstack.dtcenter.loader.utils.AssertUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.Map;
 
 /**
  * @company: www.dtstack.com
@@ -21,6 +31,62 @@ public class RedisTest extends BaseTest {
             .password("DT@Stack#123")
             .schema("1")
             .build();
+
+
+    @Test
+    public void executeQuery_String() {
+        IRedis client = ClientCache.getRedis(DataSourceType.REDIS.getVal());
+        Map<String,Object> map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.STRING).keys(Arrays.asList("loader_test_string1")).redisCompareOp(RedisCompareOp.EQUAL).build());
+        assert MapUtils.isNotEmpty(map);
+        map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.STRING).keys(Arrays.asList("loader_test_string")).redisCompareOp(RedisCompareOp.LIKE).build());
+        assert MapUtils.isNotEmpty(map);
+        map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.STRING).keys(Arrays.asList("loader_test_string1","loader_test_string2","loader_test_string3")).redisCompareOp(RedisCompareOp.IN).build());
+        assert MapUtils.isNotEmpty(map);
+    }
+
+    @Test
+    public void executeQuery_hash() {
+        IRedis client = ClientCache.getRedis(DataSourceType.REDIS.getVal());
+        Map<String,Object> map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.HASH).keys(Arrays.asList("loader_test_hash")).redisCompareOp(RedisCompareOp.EQUAL).build());
+        assert MapUtils.isNotEmpty(map);
+        map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.HASH).keys(Arrays.asList("loader_test_hash")).redisCompareOp(RedisCompareOp.LIKE).build());
+        assert MapUtils.isNotEmpty(map);
+        map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.HASH).keys(Arrays.asList("loader_test_hash1","loader_test_hash")).redisCompareOp(RedisCompareOp.IN).build());
+        assert MapUtils.isNotEmpty(map);
+    }
+
+    @Test
+    public void executeQuery_set() {
+        IRedis client = ClientCache.getRedis(DataSourceType.REDIS.getVal());
+        Map<String,Object> map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.SET).keys(Arrays.asList("loader_test_set")).redisCompareOp(RedisCompareOp.EQUAL).build());
+        assert MapUtils.isNotEmpty(map);
+        map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.SET).keys(Arrays.asList("loader_test_set")).redisCompareOp(RedisCompareOp.LIKE).build());
+        assert MapUtils.isNotEmpty(map);
+        map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.SET).keys(Arrays.asList("loader_test_set","loader_test_set1","loader_test_set2")).redisCompareOp(RedisCompareOp.IN).build());
+        assert MapUtils.isNotEmpty(map);
+    }
+
+    @Test
+    public void executeQuery_list() {
+        IRedis client = ClientCache.getRedis(DataSourceType.REDIS.getVal());
+        Map<String,Object> map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.LIST).keys(Arrays.asList("loader_test_list")).redisCompareOp(RedisCompareOp.EQUAL).build());
+        assert MapUtils.isNotEmpty(map);
+        map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.LIST).keys(Arrays.asList("loader_test_list")).redisCompareOp(RedisCompareOp.LIKE).build());
+        assert MapUtils.isNotEmpty(map);
+        map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.LIST).keys(Arrays.asList("loader_test_list","loader_test_list1","loader_test_list2")).redisCompareOp(RedisCompareOp.IN).build());
+        assert MapUtils.isNotEmpty(map);
+    }
+
+    @Test
+    public void executeQuery_zset() {
+        IRedis client = ClientCache.getRedis(DataSourceType.REDIS.getVal());
+        Map<String,Object> map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.ZSET).keys(Arrays.asList("loader_test_zset")).redisCompareOp(RedisCompareOp.EQUAL).build());
+        assert MapUtils.isNotEmpty(map);
+        map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.ZSET).keys(Arrays.asList("loader_test_zset")).redisCompareOp(RedisCompareOp.LIKE).build());
+        assert MapUtils.isNotEmpty(map);
+        map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.ZSET).keys(Arrays.asList("loader_test_zset","loader_test_zset1","loader_test_zset2")).redisCompareOp(RedisCompareOp.IN).build());
+        assert MapUtils.isNotEmpty(map);
+    }
 
     /**
      * 连通性测试
