@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.util.List;
 
@@ -23,28 +24,31 @@ import java.util.List;
 public class RedisQueryDTO {
 
     /**
-     * redis，executorQuery 开始行
+     * redis，executorQuery 开始行,todo 暂未使用
      */
     private Integer startRow;
 
     /**
-     * redis，executorQuery 限制条数
+     * redis，executorQuery 限制条数，todo 暂未使用
      */
     private Integer limit;
 
     /**
      * redis 数据类型
      */
+    @NonNull
     private RedisDataType redisDataType;
 
     /**
-     * 操作符
+     * 操作符,= or like
      */
+    @NonNull
     private RedisCompareOp redisCompareOp;
 
     /**
-     * keys
+     * keys，
      */
+    @NonNull
     private List<String> keys;
 
 }

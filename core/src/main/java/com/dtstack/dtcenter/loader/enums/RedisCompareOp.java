@@ -14,9 +14,4 @@ public enum RedisCompareOp {
      * like
      */
     LIKE,
-
-    /**
-     * in
-     */
-    IN,
 }

@@ -184,6 +184,19 @@ public class RedisUtils {
     }
 
     /**
+     * 校验传入的key 类型是否一致
+     * @param jedis
+     * @param keys
+     * @param dataType
+     */
+    private static void checkKeysType(JedisCommands jedis, List<String> keys, RedisDataType dataType) {
+        for (String key : keys) {
+            String type = jedis.type(key);
+            AssertUtils.isTrue(dataType.name().equalsIgnoreCase(type), String.format("redis key :%s,expect type:%s, actual type: %s", key, dataType.name(), type));
+        }
+    }
+
+    /**
      * 获取所有的key ,模糊查询
      * @param queryDTO
      * @param function
@@ -191,8 +204,9 @@ public class RedisUtils {
      */
     public static List<String> getRedisKeys(JedisCommands jedis, RedisQueryDTO queryDTO, BiFunction<String, ScanParams, ScanResult<String>> function) {
         List<String> list = new ArrayList<>();
-        //如果不是模糊查询，直接返回
+        //如果不是模糊查询，校验传入的key 类型是否一致
         if (!RedisCompareOp.LIKE.equals(queryDTO.getRedisCompareOp())) {
+            checkKeysType(jedis, queryDTO.getKeys(), queryDTO.getRedisDataType());
             return queryDTO.getKeys();
         }
         String dataType = queryDTO.getRedisDataType().name();
