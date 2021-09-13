@@ -168,4 +168,23 @@ public interface DtClassConsistent {
          */
         public static final String DEFAULT_FIELD_DELIMIT = "\001";
     }
+
+    class SSLConsistent {
+
+        public static final String SSL = "SSL";
+
+        public static final String SSL_VERIFICATION = "SSLVerification";
+
+        public static final String SSL_KEYSTORE_PATH = "SSLKeyStorePath";
+
+        public static final String SSL_KEYSTORE_PASSWORD = "SSLKeyStorePassword";
+
+        public static final String SSL_KEYSTORE_TYPE = "SSLKeyStoreType";
+
+        public static final String SSL_TRUST_STORE_PATH = "SSLTrustStorePath";
+
+        public static final String SSL_TRUSTSTORE_PASSWORD = "SSLTrustStorePassword";
+
+        public static final String SSL_TRUSTSTORE_TYPE = "SSLTrustStoreType";
+    }
 }

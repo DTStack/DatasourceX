@@ -241,11 +241,28 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * 执行查询sql，结果为单列
      *
      * @param source      数据源信息
+     * @param fetchSize   fetchSize
      * @param sql         sql信息
+     * @param columnIndex 取第几列
      * @param errMsg      错误信息
      * @return 查询结果
      */
     protected List<String> queryWithSingleColumn(ISourceDTO source, Integer fetchSize, String sql, Integer columnIndex, String errMsg) {
+        return queryWithSingleColumn(source, fetchSize, sql, columnIndex, errMsg, null);
+    }
+
+    /**
+     * 执行查询sql，结果为单列
+     *
+     * @param source      数据源信息
+     * @param fetchSize   fetchSize
+     * @param sql         sql信息
+     * @param columnIndex 取第几列
+     * @param errMsg      错误信息
+     * @param limit       条数限制
+     * @return 查询结果
+     */
+    protected List<String> queryWithSingleColumn(ISourceDTO source, Integer fetchSize, String sql, Integer columnIndex, String errMsg, Integer limit) {
         Integer clearStatus = beforeQuery(source, SqlQueryDTO.builder().sql(sql).build(), true);
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
         log.info("The SQL executed by method queryWithSingleColumn is:{}", sql);
@@ -255,6 +272,9 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         try {
             statement = rdbmsSourceDTO.getConnection().createStatement();
             DBUtil.setFetchSize(statement, fetchSize);
+            if (Objects.nonNull(limit)) {
+                statement.setMaxRows(limit);
+            }
             rs = statement.executeQuery(sql);
             while (rs.next()) {
                 result.add(rs.getString(columnIndex == null ? 1 : columnIndex));
