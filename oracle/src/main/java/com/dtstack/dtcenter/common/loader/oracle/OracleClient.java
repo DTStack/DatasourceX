@@ -409,7 +409,9 @@ public class OracleClient extends AbsRdbmsClient {
      */
     @Override
     protected String transferSchemaAndTableName(String schema, String tableName) {
-        if (!tableName.startsWith("\"") || !tableName.endsWith("\"")) {
+        // 表名中可以带点、不可以带双引号，表名可能为 schema."tableName"、"schema".tableName、
+        // "schema"."tableName"、schema.tableName，第四种情况不做考虑
+        if (!tableName.startsWith("\"") && !tableName.endsWith("\"")) {
             tableName = String.format("\"%s\"", tableName);
             // 如果tableName包含Schema操作，无其他方法，只能去判断长度
         } else if (indexCount(tableName, "\"") >= 4) {
@@ -418,7 +420,7 @@ public class OracleClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(schema)) {
             return tableName;
         }
-        if (!schema.startsWith("\"") || !schema.endsWith("\"")){
+        if (!schema.startsWith("\"") && !schema.endsWith("\"")){
             schema = String.format("\"%s\"", schema);
         }
         return String.format("%s.%s", schema, tableName);
