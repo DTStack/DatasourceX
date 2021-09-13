@@ -48,6 +48,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.dtstack.dtcenter</groupId>
+            <artifactId>common.loader.kerberos</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>io.trino</groupId>
             <artifactId>trino-jdbc</artifactId>
             <version>359</version>
