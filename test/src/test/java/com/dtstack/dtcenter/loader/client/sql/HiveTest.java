@@ -390,6 +390,5 @@ public class HiveTest extends BaseTest {
         Assert.assertEquals(database.getComment(), "test_comment");
         Assert.assertEquals(database.getOwnerName(), "admin");
         Assert.assertTrue(StringUtils.isNotBlank(database.getLocation()));
-        Assert.assertEquals(database.getLocation(), "admin");
     }
 }
