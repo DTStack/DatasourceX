@@ -5,12 +5,14 @@ import com.dtstack.dtcenter.loader.client.BaseTest;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
+import com.dtstack.dtcenter.loader.dto.Database;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.Hive3SourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -349,5 +351,17 @@ public class Hive3Test extends BaseTest {
     @Test
     public void tableIsNotTransTable() {
         Assert.assertFalse(client.getTable(source, SqlQueryDTO.builder().tableName("loader_test_orc_not_tran").build()).getIsTransTable());
+    }
+
+    /**
+     * 获取数据库详细信息
+     */
+    @Test
+    public void getDatabase() {
+        Database database = client.getDatabase(source, "loader_test_db");
+        Assert.assertEquals(database.getDbName(), "loader_test_db");
+        Assert.assertEquals(database.getComment(), "test_comment");
+        Assert.assertEquals(database.getOwnerName(), "hive");
+        Assert.assertTrue(StringUtils.isNotBlank(database.getLocation()));
     }
 }

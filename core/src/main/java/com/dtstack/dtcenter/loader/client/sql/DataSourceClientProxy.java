@@ -5,6 +5,7 @@ import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.downloader.DownloaderProxy;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
+import com.dtstack.dtcenter.loader.dto.Database;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -187,6 +188,12 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     @Override
     public List<String> listFileNames(ISourceDTO sourceDTO, String path, Boolean includeDir, Boolean recursive, Integer maxNum, String regexStr) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.listFileNames(sourceDTO, path, includeDir, recursive, maxNum, regexStr),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public Database getDatabase(ISourceDTO sourceDTO, String dbName) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getDatabase(sourceDTO, dbName),
                 targetClient.getClass().getClassLoader());
     }
 }

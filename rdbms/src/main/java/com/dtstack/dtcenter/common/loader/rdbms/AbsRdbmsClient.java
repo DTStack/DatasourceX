@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.rdbms;
 
+import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.DtClassThreadFactory;
 import com.dtstack.dtcenter.common.loader.common.exception.ErrorCode;
 import com.dtstack.dtcenter.common.loader.common.utils.CollectionUtil;
@@ -9,6 +10,7 @@ import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.connection.CacheConnectionHelper;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
+import com.dtstack.dtcenter.loader.dto.Database;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -16,9 +18,11 @@ import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import com.dtstack.dtcenter.loader.utils.AssertUtils;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
@@ -728,4 +732,42 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     public List<String> listFileNames(ISourceDTO sourceDTO, String path, Boolean includeDir, Boolean recursive, Integer maxNum, String regexStr) {
         throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }
+
+    @Override
+    public Database getDatabase(ISourceDTO sourceDTO, String dbName) {
+        AssertUtils.notBlank(dbName, "database name can't be empty.");
+        String descDbSql = getDescDbSql(dbName);
+        List<Map<String, Object>> result = executeQuery(sourceDTO, SqlQueryDTO.builder().sql(descDbSql).build());
+        if (CollectionUtils.isEmpty(result)) {
+            throw new DtLoaderException("result is empty when get database info.");
+        }
+        return parseDbResult(result);
+    }
+
+    /**
+     * 解析执行结果
+     *
+     * @param result 执行结果
+     * @return db 信息
+     */
+    public Database parseDbResult(List<Map<String, Object>> result){
+        Map<String, Object> dbInfoMap = result.get(0);
+        Database database = new Database();
+        database.setDbName(MapUtils.getString(dbInfoMap, DtClassConsistent.PublicConsistent.DB_NAME));
+        database.setComment(MapUtils.getString(dbInfoMap, DtClassConsistent.PublicConsistent.COMMENT));
+        database.setOwnerName(MapUtils.getString(dbInfoMap, DtClassConsistent.PublicConsistent.OWNER_NAME));
+        database.setLocation(MapUtils.getString(dbInfoMap, DtClassConsistent.PublicConsistent.LOCATION));
+        return database;
+    }
+
+    /**
+     * 获取描述数据库信息的 sql，数据源自身取实现
+     *
+     * @param dbName 数据库名称
+     * @return sql for desc database
+     */
+    public String getDescDbSql(String dbName) {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
+
 }

@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.loader.client.BaseTest;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
+import com.dtstack.dtcenter.loader.dto.Database;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.SparkSourceDTO;
@@ -71,6 +72,10 @@ public class SparkTest extends BaseTest{
         queryDTO = SqlQueryDTO.builder().sql("create table loader_test_parquet (id int comment '中文_id', name string comment '中文_name') STORED AS PARQUET").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_parquet values (1, 'wc1'),(2,'wc2')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("drop database if exists loader_test_db").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create database loader_test_db comment 'test_comment'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -307,4 +312,14 @@ public class SparkTest extends BaseTest{
         assert !client.isTableExistsInDatabase(source, "test_n", "default");
     }
 
+    /**
+     * 获取数据库详细信息
+     */
+    @Test
+    public void getDatabase() {
+        Database database = client.getDatabase(source, "loader_test_db");
+        Assert.assertEquals(database.getDbName(), "loader_test_db");
+        Assert.assertEquals(database.getComment(), "test_comment");
+        Assert.assertTrue(StringUtils.isNotBlank(database.getLocation()));
+    }
 }
