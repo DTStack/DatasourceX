@@ -219,7 +219,7 @@ public class ConnFactory {
         }
         try {
             conn.setSchema(schema);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.warn(String.format("setting schema exception : %s", e.getMessage()), e);
         }
         return conn;
