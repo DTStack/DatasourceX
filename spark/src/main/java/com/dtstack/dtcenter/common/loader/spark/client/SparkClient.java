@@ -17,6 +17,7 @@ import com.dtstack.dtcenter.common.loader.spark.downloader.SparkTextDownload;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.ITable;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
+import com.dtstack.dtcenter.loader.dto.Database;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -56,7 +57,7 @@ import java.util.stream.Collectors;
  * @Description：Spark 连接
  */
 @Slf4j
-public class SparkClient extends AbsRdbmsClient {
+public class SparkClient<T> extends AbsRdbmsClient<T> {
 
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select current_database()";
@@ -87,6 +88,9 @@ public class SparkClient extends AbsRdbmsClient {
 
     // show tables like 'xxx'
     private static final String SHOW_TABLE_LIKE_SQL = "show tables like '*%s*'";
+
+    // desc db info
+    private static final String DESC_DB_INFO = "desc database %s";
 
     @Override
     protected ConnFactory getConnFactory() {
@@ -659,5 +663,33 @@ public class SparkClient extends AbsRdbmsClient {
             throw new DtLoaderException("database name cannot be empty!");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_BY_SCHEMA_LIKE, dbName, tableName)).build()));
+    }
+
+    @Override
+    public String getDescDbSql(String dbName) {
+        return String.format(DESC_DB_INFO, dbName);
+    }
+
+    @Override
+    public Database parseDbResult(List<Map<String, Object>> result) {
+        Database database = new Database();
+        for (Map<String, Object> rowMap : result) {
+            String descKey = MapUtils.getString(rowMap, DtClassConsistent.PublicConsistent.SPARK_DESC_DATABASE_KEY);
+            String descValue = MapUtils.getString(rowMap, DtClassConsistent.PublicConsistent.SPARK_DESC_DATABASE_VALUE);
+            if (StringUtils.equalsIgnoreCase(DtClassConsistent.PublicConsistent.DATABASE_NAME, descKey)) {
+                database.setDbName(descValue);
+                continue;
+            }
+
+            if (StringUtils.equalsIgnoreCase(DtClassConsistent.PublicConsistent.DESCRIPTION, descKey)) {
+                database.setComment(descValue);
+                continue;
+            }
+
+            if (StringUtils.equalsIgnoreCase(DtClassConsistent.PublicConsistent.LOCATION_SPARK, descKey)) {
+                database.setLocation(descValue);
+            }
+        }
+        return database;
     }
 }

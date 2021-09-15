@@ -86,12 +86,28 @@ public interface DtClassConsistent {
         public static final String P12_SUFFIX = ".p12";
 
         /**
+         * spark desc database xx 返回字段 key
+         */
+        public static final String SPARK_DESC_DATABASE_KEY = "database_description_item";
+
+        /**
+         * spark desc database xx 返回字段 value
+         */
+        public static final String SPARK_DESC_DATABASE_VALUE = "database_description_value";
+
+        /**
          * 数据库中对应关系字段
          */
         public static final String KEY = "key";
         public static final String NAME = "name";
         public static final String TYPE = "type";
         public static final String COMMENT = "comment";
+        public static final String DB_NAME = "db_name";
+        public static final String DATABASE_NAME = "Database Name";
+        public static final String DESCRIPTION = "Description";
+        public static final String LOCATION_SPARK = "Location";
+        public static final String OWNER_NAME = "owner_name";
+        public static final String LOCATION = "location";
         public static final String IS_PART = "isPart";
         public static final String COL_NAME = "col_name";
         public static final String DATA_TYPE = "data_type";

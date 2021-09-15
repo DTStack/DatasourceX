@@ -89,6 +89,9 @@ public class Hive3Client extends AbsRdbmsClient {
     // show tables like 'xxx'
     private static final String SHOW_TABLE_LIKE_SQL = "show tables like '*%s*'";
 
+    // desc db info
+    private static final String DESC_DB_INFO = "desc database %s";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new HiveConnFactory();
@@ -645,5 +648,10 @@ public class Hive3Client extends AbsRdbmsClient {
             DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
         return createTableSql.toString();
+    }
+
+    @Override
+    public String getDescDbSql(String dbName) {
+        return String.format(DESC_DB_INFO, dbName);
     }
 }

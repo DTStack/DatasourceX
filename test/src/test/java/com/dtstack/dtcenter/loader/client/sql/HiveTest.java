@@ -6,6 +6,7 @@ import com.dtstack.dtcenter.loader.client.BaseTest;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
+import com.dtstack.dtcenter.loader.dto.Database;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
@@ -94,6 +95,10 @@ public class HiveTest extends BaseTest {
                 "id14 TINYINT) STORED AS PARQUET").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_downloader select 4, 100, 30.25,'loader_test',current_timestamp(), 120.01,'varchar', 'char column', '2019-05-22', '0101010000101',1234567,true,90.2,1").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("drop database if exists loader_test_db").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create database loader_test_db comment 'test_comment'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
     }
 
@@ -373,5 +378,17 @@ public class HiveTest extends BaseTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         Table table = client.getTable(source, SqlQueryDTO.builder().tableName("loader_test_issue_120").build());
         Assert.assertEquals("    ", table.getDelim());
+    }
+
+    /**
+     * 获取数据库详细信息
+     */
+    @Test
+    public void getDatabase() {
+        Database database = client.getDatabase(source, "loader_test_db");
+        Assert.assertEquals(database.getDbName(), "loader_test_db");
+        Assert.assertEquals(database.getComment(), "test_comment");
+        Assert.assertEquals(database.getOwnerName(), "admin");
+        Assert.assertTrue(StringUtils.isNotBlank(database.getLocation()));
     }
 }

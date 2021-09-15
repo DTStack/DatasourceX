@@ -85,6 +85,9 @@ public class InceptorClient extends AbsRdbmsClient {
 
     private static final ITable TABLE_CLIENT = new InceptorTableClient();
 
+    // desc db info
+    private static final String DESC_DB_INFO = "desc database %s";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new InceptorConnFactory();
@@ -675,5 +678,10 @@ public class InceptorClient extends AbsRdbmsClient {
     @Override
     protected String addPercentSign(String str) {
         return "*" + str + "*";
+    }
+
+    @Override
+    public String getDescDbSql(String dbName) {
+        return String.format(DESC_DB_INFO, dbName);
     }
 }

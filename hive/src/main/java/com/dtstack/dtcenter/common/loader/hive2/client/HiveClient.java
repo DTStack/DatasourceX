@@ -88,6 +88,9 @@ public class HiveClient extends AbsRdbmsClient {
     // show tables like 'xxx'
     private static final String SHOW_TABLE_LIKE_SQL = "show tables like '*%s*'";
 
+    // desc db info
+    private static final String DESC_DB_INFO = "desc database %s";
+
     @Override
     protected ConnFactory getConnFactory() {
         return new HiveConnFactory();
@@ -622,5 +625,10 @@ public class HiveClient extends AbsRdbmsClient {
             throw new DtLoaderException("database name cannot be empty!");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_BY_SCHEMA_LIKE, dbName, tableName)).build()));
+    }
+
+    @Override
+    public String getDescDbSql(String dbName) {
+        return String.format(DESC_DB_INFO, dbName);
     }
 }
