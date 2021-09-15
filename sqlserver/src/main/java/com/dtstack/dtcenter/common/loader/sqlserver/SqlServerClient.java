@@ -12,8 +12,11 @@ import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SqlserverSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -200,5 +203,15 @@ public class SqlServerClient extends AbsRdbmsClient {
     @Override
     protected String getCurrentDbSql() {
         return CURRENT_DB;
+    }
+
+    @Override
+    protected String doDealType(ResultSetMetaData rsMetaData, Integer los) throws SQLException {
+        String typeName = rsMetaData.getColumnTypeName(los + 1);
+        // 适配 sqlServer 2012 自增字段，返回值类型如 -> int identity，只需要返回 int
+        if (StringUtils.containsIgnoreCase(typeName, "identity") && typeName.split(" ").length > 1) {
+            return typeName.split(" ")[0];
+        }
+        return typeName;
     }
 }
