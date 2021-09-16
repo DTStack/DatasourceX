@@ -24,14 +24,14 @@ import java.util.List;
 public class RedisQueryDTO {
 
     /**
-     * redis，executorQuery 开始行,todo 暂未使用
+     * redis，模糊查询限制key的条数
      */
-    private Integer startRow;
+    private Integer keyLimit;
 
     /**
-     * redis，executorQuery 限制条数，todo 暂未使用
+     * redis，查询结果条数限制， 只针对list,zset
      */
-    private Integer limit;
+    private Integer ResultLimit;
 
     /**
      * redis 数据类型

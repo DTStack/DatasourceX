@@ -5,6 +5,7 @@ import com.dtstack.dtcenter.loader.client.IRedis;
 import com.dtstack.dtcenter.loader.dto.RedisQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 
+import java.util.List;
 import java.util.Map;
 
 public class RedisProxy implements IRedis {
@@ -20,4 +21,12 @@ public class RedisProxy implements IRedis {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.executeQuery(source, queryDTO),
                 targetClient.getClass().getClassLoader());
     }
+
+    @Override
+    public List<String> preViewKey(ISourceDTO source, RedisQueryDTO queryDTO) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.preViewKey(source, queryDTO),
+                targetClient.getClass().getClassLoader());
+    }
+
+
 }

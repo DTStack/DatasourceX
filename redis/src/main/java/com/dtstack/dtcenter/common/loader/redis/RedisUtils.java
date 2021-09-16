@@ -36,6 +36,7 @@ import redis.clients.util.Pool;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,8 @@ public class RedisUtils {
     private static Pattern HOST_PORT_PATTERN = Pattern.compile("(?<host>(.*)):((?<port>\\d+))*");
     private static final int DEFAULT_PORT = 6379;
     private static final int TIME_OUT = 5 * 1000;
+
+    private static final int LIMIT_MAX_KEY = 1000;
 
     private static final IErrorPattern ERROR_PATTERN = new RedisErrorPattern();
 
@@ -183,6 +186,30 @@ public class RedisUtils {
         }
     }
 
+    public static List<String> getRedisKeys(ISourceDTO source, RedisQueryDTO queryDTO) {
+        RedisSourceDTO redisSourceDTO = (RedisSourceDTO) source;
+        RedisMode redisMode = redisSourceDTO.getRedisMode() != null ? redisSourceDTO.getRedisMode() : RedisMode.Standalone;
+        Pool<Jedis> redisPool = null;
+        Jedis jedis = null;
+        JedisCluster jedisCluster = null;
+        try {
+            if (RedisMode.Standalone.equals(redisMode) || RedisMode.Sentinel.equals(redisMode)) {
+                redisPool = RedisMode.Standalone.equals(redisMode) ? getRedisPool(redisSourceDTO) : getSentinelPool(redisSourceDTO);
+                jedis = redisPool.getResource();
+                int db = StringUtils.isEmpty(redisSourceDTO.getSchema()) ? 0 : Integer.parseInt(redisSourceDTO.getSchema());
+                jedis.select(db);
+                return getRedisKeys(jedis, queryDTO, jedis::scan);
+            } else {
+                jedisCluster = getRedisCluster(redisSourceDTO);
+                return getRedisKeys(jedisCluster, queryDTO, jedisCluster::scan);
+            }
+        } finally {
+            // 关闭
+            close(jedis, jedisCluster, redisPool);
+
+        }
+    }
+
     /**
      * 校验传入的key 类型是否一致
      * @param jedis
@@ -213,12 +240,17 @@ public class RedisUtils {
         for (String key : queryDTO.getKeys()) {
             String cursor = ScanParams.SCAN_POINTER_START;
             ScanParams scanParam = new ScanParams();
-            scanParam.match("*" + key + "*");
+            scanParam.match(key);
+            int count = 0;
+            int keyLimit = queryDTO.getKeyLimit() != null && queryDTO.getKeyLimit() > 0 ? queryDTO.getKeyLimit() : LIMIT_MAX_KEY;
             do {
                 ScanResult<String> scan = function.apply(cursor, scanParam);
                 for (String scanKey : scan.getResult()) {
                     if (dataType.equalsIgnoreCase(jedis.type(scanKey))) {
                         list.add(scanKey);
+                        if (++count >= keyLimit) {
+                            return list;
+                        }
                     }
                 }
                 cursor = scan.getStringCursor();
@@ -236,6 +268,7 @@ public class RedisUtils {
 
         RedisDataType dataType = queryDTO.getRedisDataType();
         Map<String, Object> result;
+        Integer limit = queryDTO.getResultLimit() != null && queryDTO.getResultLimit() > 0 ? queryDTO.getResultLimit() - 1 : -1;
         switch (dataType) {
             case STRING:
                 result = getStringRedisValue(jedis, keys);
@@ -244,13 +277,13 @@ public class RedisUtils {
                 result = getHashRedisValue(jedis, keys);
                 break;
             case LIST:
-                result = getListRedisValue(jedis, keys);
+                result = getListRedisValue(jedis, keys, limit);
                 break;
             case SET:
                 result = getSetRedisValue(jedis, keys);
                 break;
             case ZSET:
-                result = getSortSetRedisValue(jedis, keys);
+                result = getSortSetRedisValue(jedis, keys, limit);
                 break;
             default:
                 throw new DtLoaderException("Unsupported dataType");
@@ -283,13 +316,13 @@ public class RedisUtils {
      * @param keys
      * @return
      */
-    private static Map<String, Object> getListRedisValue(JedisCommands jedis, List<String> keys) {
+    private static Map<String, Object> getListRedisValue(JedisCommands jedis, List<String> keys, Integer limit) {
         Map<String, Object> resultMap = new HashMap<>();
         if (CollectionUtils.isEmpty(keys)) {
             return resultMap;
         }
         for (String key : keys) {
-            List<String> result = jedis.lrange(key, 0, -1);
+            List<String> result = jedis.lrange(key, 0, limit);
             result = CollectionUtils.isEmpty(result) ? new ArrayList<>() : result;
             resultMap.put(key, result);
         }
@@ -310,13 +343,14 @@ public class RedisUtils {
         ScanParams scanParams = new ScanParams();
         for (String key : keys) {
             String cursor = ScanParams.SCAN_POINTER_START;
+            List<String> list = new ArrayList<>();
             do {
                 ScanResult<String> scanResult = jedis.sscan(key, cursor, scanParams);
                 List<String> result = scanResult.getResult();
-                result = CollectionUtils.isEmpty(result) ? new ArrayList<>() : result;
-                resultMap.put(key, result);
+                list.addAll(result);
                 cursor = scanResult.getStringCursor();
             } while (!ScanParams.SCAN_POINTER_START.equals(cursor));
+            resultMap.put(key, list);
         }
         return resultMap;
     }
@@ -327,24 +361,15 @@ public class RedisUtils {
      * @param keys
      * @return
      */
-    private static Map<String, Object> getSortSetRedisValue(JedisCommands jedis, List<String> keys) {
+    private static Map<String, Object> getSortSetRedisValue(JedisCommands jedis, List<String> keys, Integer limit) {
         Map<String, Object> resultMap = new HashMap<>();
         if (CollectionUtils.isEmpty(keys)) {
             return resultMap;
         }
-        ScanParams scanParams = new ScanParams();
         for (String key : keys) {
-            String cursor = ScanParams.SCAN_POINTER_START;
-           do {
-                ScanResult<Tuple> scanResult = jedis.zscan(key, cursor, scanParams);
-                List<Tuple> tuples = scanResult.getResult();
-                List<String> list = new ArrayList<>();
-                if (CollectionUtils.isNotEmpty(tuples)) {
-                    list = tuples.stream().map(Tuple::getElement).collect(Collectors.toList());
-                }
-                resultMap.put(key, list);
-                cursor = scanResult.getStringCursor();
-            } while (!ScanParams.SCAN_POINTER_START.equals(cursor));
+            Set<String> result = jedis.zrange(key, 0, limit);
+            result = CollectionUtils.isEmpty(result) ? new HashSet<>() : result;
+            resultMap.put(key, result);
         }
         return resultMap;
     }

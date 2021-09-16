@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.loader.client;
 import com.dtstack.dtcenter.loader.dto.RedisQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,4 +22,6 @@ public interface IRedis {
      * @return
      */
     Map<String, Object> executeQuery(ISourceDTO source, RedisQueryDTO queryDTO);
+
+    List<String> preViewKey(ISourceDTO source, RedisQueryDTO queryDTO);
 }
