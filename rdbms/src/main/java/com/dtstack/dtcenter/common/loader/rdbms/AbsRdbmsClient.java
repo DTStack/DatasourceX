@@ -463,6 +463,19 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
     }
 
     /**
+     * 获取限制条数 sql
+     *
+     * @param limit 限制条数
+     * @return 限制条数 sql
+     */
+    protected String limitSql(Integer limit) {
+        if (Objects.isNull(limit) || limit < 1) {
+            throw new DtLoaderException(String.format("limit number [%s] is error", limit));
+        }
+        return " limit " + limit;
+    }
+
+    /**
      * 处理schema和表名
      *
      * @param schema
