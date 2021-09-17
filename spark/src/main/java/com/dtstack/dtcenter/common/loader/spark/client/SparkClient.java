@@ -517,6 +517,7 @@ public class SparkClient<T> extends AbsRdbmsClient<T> {
             if (ReflectUtil.fieldExists(Table.class, "isPartitionTable")) {
                 tableInfo.setIsPartitionTable(CollectionUtils.isNotEmpty(TableUtil.getPartitionColumns(columnMetaDTOS)));
             }
+            tableInfo.setColumns(TableUtil.filterPartitionColumns(columnMetaDTOS, queryDTO.getFilterPartitionColumns()));
             // 获取表结构信息
             getTable(tableInfo, sparkSourceDTO, queryDTO.getTableName());
         } catch (Exception e) {
