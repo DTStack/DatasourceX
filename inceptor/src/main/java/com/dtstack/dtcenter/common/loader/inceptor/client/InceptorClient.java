@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.inceptor.client;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.EnvUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosConfigUtil;
@@ -81,9 +82,6 @@ public class InceptorClient extends AbsRdbmsClient {
     protected DataSourceType getSourceType() {
         return DataSourceType.INCEPTOR;
     }
-
-    // 测试连通性超时时间。单位：秒
-    private final static int TEST_CONN_TIMEOUT = 30;
 
     // metaStore 地址 key
     private final static String META_STORE_URIS_KEY = "hive.metastore.uris";
@@ -270,7 +268,7 @@ public class InceptorClient extends AbsRdbmsClient {
             Callable<Boolean> call = () -> testConnection(sourceDTO);
             future = executor.submit(call);
             // 如果在设定超时(以秒为单位)之内，还没得到连通性测试结果，则认为连通性测试连接超时，不继续阻塞
-            return future.get(TEST_CONN_TIMEOUT, TimeUnit.SECONDS);
+            return future.get(EnvUtil.getTestConnTimeout(), TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             throw new DtLoaderException(String.format("Test connection timeout,%s", e.getMessage()), e);
         } catch (Exception e) {
