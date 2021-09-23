@@ -35,6 +35,7 @@ import redis.clients.util.Pool;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -256,6 +257,7 @@ public class RedisUtils {
                 cursor = scan.getStringCursor();
             } while (!ScanParams.SCAN_POINTER_START.equals(cursor));
         }
+        list.sort(Comparator.naturalOrder());
         return list;
     }
 
