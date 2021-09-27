@@ -670,7 +670,7 @@ public class SparkClient extends AbsRdbmsClient {
         } catch (Exception e) {
             throw new DtLoaderException(String.format("failed to get the create table sql：%s", e.getMessage()), e);
         } finally {
-            DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
         return createTableSql.toString();
     }
