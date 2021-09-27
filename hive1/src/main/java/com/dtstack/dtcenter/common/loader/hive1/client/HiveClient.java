@@ -18,6 +18,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import com.google.common.collect.Lists;
@@ -538,5 +539,36 @@ public class HiveClient extends AbsRdbmsClient {
             throw new DtLoaderException("数据库名称不能为空！");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_BY_SCHEMA_LIKE, dbName, tableName)).build()));
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : rdbmsSourceDTO.getSchema();
+        // 获取表信息需要通过show databases 语句
+        String tableName ;
+        if (StringUtils.isNotEmpty(schema)) {
+            tableName = String.format("%s.%s", schema, queryDTO.getTableName());
+        } else {
+            tableName = queryDTO.getTableName();
+        }
+        String sql = String.format("show create table %s", tableName);
+        Statement statement = null;
+        ResultSet rs = null;
+        StringBuilder createTableSql = new StringBuilder();
+        try {
+            statement = rdbmsSourceDTO.getConnection().createStatement();
+            rs = statement.executeQuery(sql);
+            int columnSize = rs.getMetaData().getColumnCount();
+            while (rs.next()) {
+                createTableSql.append(rs.getString(columnSize == 1 ? 1 : 2));
+            }
+        } catch (Exception e) {
+            throw new DtLoaderException(String.format("failed to get the create table sql：%s", e.getMessage()), e);
+        } finally {
+            DBUtil.closeDBResources(rs, statement, rdbmsSourceDTO.clearAfterGetConnection(clearStatus));
+        }
+        return createTableSql.toString();
     }
 }
