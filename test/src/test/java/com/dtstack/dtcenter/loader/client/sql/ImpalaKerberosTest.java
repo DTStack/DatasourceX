@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.loader.client.sql;
 
+import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.BaseTest;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -49,7 +50,7 @@ public class ImpalaKerberosTest extends BaseTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists nanqi").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
-        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (id int comment 'ID', name string comment '姓名_name') comment 'table comment'").build();
+        queryDTO = SqlQueryDTO.builder().sql("create table nanqi (`class` int comment 'ID', `name` string comment '姓名_name') comment 'table comment'").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into nanqi values (1, 'nanqi')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -60,6 +61,22 @@ public class ImpalaKerberosTest extends BaseTest {
         IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
         Connection con1 = client.getCon(source);
         con1.close();
+    }
+
+    @Test
+    public void downloader() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
+        IDownloader downloader = client.getDownloader(source, SqlQueryDTO.builder().sql("select * from nanqi").build());
+        while(!downloader.reachedEnd()) {
+            System.out.println(downloader.readNext());
+        }
+    }
+
+    @Test
+    public void ex() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
+        List<Map<String, Object>> list= client.executeQuery(source, SqlQueryDTO.builder().sql("select * from nanqi order by name limit 100 offset 0").build());
+        System.out.println(list);
     }
 
     @Test
