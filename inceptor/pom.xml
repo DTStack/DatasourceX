@@ -49,6 +49,47 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>inceptor-exec</artifactId>
+            <version>8.0.1</version>
+        </dependency>
+
+        <dependency>
+            <artifactId>inceptor-serde</artifactId>
+            <groupId>org.apache.hive</groupId>
+            <version>8.0.1</version>
+        </dependency>
+
+        <dependency>
+            <artifactId>parquet-hadoop</artifactId>
+            <groupId>org.apache.parquet</groupId>
+            <version>1.8.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.xerial.snappy</groupId>
+                    <artifactId>snappy-java</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>commons-codec</artifactId>
+                    <groupId>commons-codec</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-core-asl</artifactId>
+                    <groupId>org.codehaus.jackson</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-mapper-asl</artifactId>
+                    <groupId>org.codehaus.jackson</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>2.7.3</version>
