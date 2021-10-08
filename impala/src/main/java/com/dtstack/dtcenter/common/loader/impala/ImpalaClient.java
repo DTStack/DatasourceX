@@ -316,9 +316,9 @@ public class ImpalaClient extends AbsRdbmsClient {
                 continue;
             }
 
-            if (tableInfo.getStoreType() == null && colName.contains("InputFormat:")) {
+            if (tableInfo.getStoreType() == null && colName.contains("InputFormat")) {
                 for (StoredType hiveStoredType : StoredType.values()) {
-                    if (dataType.contains(hiveStoredType.getInputFormatClass())) {
+                    if (StringUtils.containsIgnoreCase(dataType, hiveStoredType.getInputFormatClass())) {
                         tableInfo.setStoreType(hiveStoredType.getValue());
                         break;
                     }
