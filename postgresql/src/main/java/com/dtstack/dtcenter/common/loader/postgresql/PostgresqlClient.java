@@ -28,6 +28,10 @@ import java.util.List;
  */
 @Slf4j
 public class PostgresqlClient extends AbsRdbmsClient {
+    private static final String SMALLSERIAL = "smallserial";
+
+    private static final String SERIAL = "serial";
+
     private static final String BIGSERIAL = "bigserial";
 
     private static final String DATABASE_QUERY = "select nspname from pg_namespace";
@@ -118,7 +122,13 @@ public class PostgresqlClient extends AbsRdbmsClient {
     protected String doDealType(ResultSetMetaData rsMetaData, Integer los) throws SQLException {
         String type = super.doDealType(rsMetaData, los);
 
-        // bigserial 需要转换
+        // smallserial、serial、bigserial 需要转换
+        if (SMALLSERIAL.equalsIgnoreCase(type)) {
+            return "int2";
+        }
+        if (SERIAL.equalsIgnoreCase(type)) {
+            return "int4";
+        }
         if (BIGSERIAL.equalsIgnoreCase(type)) {
             return "int8";
         }
