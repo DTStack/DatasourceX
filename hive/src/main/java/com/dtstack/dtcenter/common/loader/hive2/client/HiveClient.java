@@ -374,7 +374,7 @@ public class HiveClient extends AbsRdbmsClient {
     private void transformDelim(Table table) {
         Boolean isLazySimpleSerDe = ReflectUtil.fieldExists(Table.class, "isLazySimpleSerDe") ? table.getIsLazySimpleSerDe() : true;
         String fieldDelimiter = table.getDelim();
-        String finalFieldDelimiter = isLazySimpleSerDe ? fieldDelimiter.charAt(0) == '\\' ? fieldDelimiter.substring(0, 2) : fieldDelimiter.substring(0, 1) : fieldDelimiter;
+        String finalFieldDelimiter = isLazySimpleSerDe ? (fieldDelimiter.charAt(0) == '\\' ? fieldDelimiter.substring(0, 2) : fieldDelimiter.substring(0, 1)) : fieldDelimiter;
         table.setDelim(finalFieldDelimiter);
     }
 
