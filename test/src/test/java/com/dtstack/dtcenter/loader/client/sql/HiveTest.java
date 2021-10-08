@@ -42,15 +42,15 @@ public class HiveTest extends BaseTest {
      * 构建数据源信息
      */
     private static final HiveSourceDTO source = HiveSourceDTO.builder()
-            .url("jdbc:hive2://172.16.100.214:10000/default")
-            .schema("default")
+            .url("jdbc:hive2://172.16.20.255:10004/auto_test")
+            .schema("auto_test")
             .defaultFS("hdfs://ns1")
             .username("admin")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.101.227:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn2\": \"172.16.20.255:9000\",\n" +
                     "    \"dfs.client.failover.proxy.provider.ns1\": \"org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider\",\n" +
-                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.101.196:9000\",\n" +
+                    "    \"dfs.namenode.rpc-address.ns1.nn1\": \"172.16.21.253:9000\",\n" +
                     "    \"dfs.nameservices\": \"ns1\"\n" +
                     "}")
             .poolConfig(PoolConfig.builder().build())
@@ -59,7 +59,7 @@ public class HiveTest extends BaseTest {
     /**
      * 数据准备
      */
-    @BeforeClass
+    //@BeforeClass
     public static void beforeClass()  {
         System.setProperty("HADOOP_USER_NAME", "admin");
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
@@ -85,6 +85,18 @@ public class HiveTest extends BaseTest {
         Connection con = client.getCon(source);
         Assert.assertNotNull(con);
         con.close();
+    }
+
+    @Test
+    public void getDownloader_1() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("dl_store_g").build();
+        IDownloader downloader = client.getDownloader(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
+        while (!downloader.reachedEnd()){
+            Object obj = downloader.readNext();
+            System.out.println(obj);
+        }
     }
 
     /**

@@ -294,6 +294,7 @@ public class Hive3Client extends AbsRdbmsClient {
         String tableLocation = null;
         String fieldDelimiter = "\001";
         String storageMode = null;
+        boolean isLazySimpleSerDe = true;
         for (Map<String, Object> map : list) {
             String colName = MapUtils.getString(map, "col_name");
             String dataType = MapUtils.getString(map, "data_type");
@@ -315,6 +316,16 @@ public class Hive3Client extends AbsRdbmsClient {
             if (Objects.nonNull(dataType) && dataType.contains("field.delim")) {
                 fieldDelimiter = MapUtils.getString(map, "comment");
                 break;
+            }
+
+            //单字符作为分隔符 org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            //多字符作为分隔符  org.apache.hadoop.hive.contrib.serde2.MultiDelimitSerDe,org.apache.hadoop.hive.contrib.serde2.RegexSerDe
+            if (colName.contains("SerDe Library")) {
+                if (StringUtils.containsIgnoreCase(dataType, "LazySimpleSerDe")) {
+                    isLazySimpleSerDe = true;
+                } else {
+                    isLazySimpleSerDe = false;
+                }
             }
         }
         // 普通字段集合
@@ -369,7 +380,7 @@ public class Hive3Client extends AbsRdbmsClient {
         String finalStorageMode = storageMode;
         Configuration finalConf = conf;
         String finalTableLocation = tableLocation;
-        String finalFieldDelimiter = fieldDelimiter;
+        String finalFieldDelimiter = isLazySimpleSerDe ? fieldDelimiter.charAt(0) == '\\' ? fieldDelimiter.substring(0, 2) : fieldDelimiter.substring(0, 1) : fieldDelimiter;
         return KerberosLoginUtil.loginWithUGI(Hive3SourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
