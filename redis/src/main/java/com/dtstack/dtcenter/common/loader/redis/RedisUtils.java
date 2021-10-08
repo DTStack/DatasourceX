@@ -4,11 +4,15 @@ import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
 import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
 import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.common.utils.AddressUtil;
+import com.dtstack.dtcenter.loader.dto.RedisQueryDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RedisSourceDTO;
+import com.dtstack.dtcenter.loader.enums.RedisCompareOp;
+import com.dtstack.dtcenter.loader.enums.RedisDataType;
 import com.dtstack.dtcenter.loader.enums.RedisMode;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.utils.AssertUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -19,18 +23,27 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisCommands;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisSentinelPool;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.util.Pool;
 
 import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -46,6 +59,8 @@ public class RedisUtils {
     private static Pattern HOST_PORT_PATTERN = Pattern.compile("(?<host>(.*)):((?<port>\\d+))*");
     private static final int DEFAULT_PORT = 6379;
     private static final int TIME_OUT = 5 * 1000;
+
+    private static final int LIMIT_MAX_KEY = 1000;
 
     private static final IErrorPattern ERROR_PATTERN = new RedisErrorPattern();
 
@@ -138,6 +153,256 @@ public class RedisUtils {
         redisResult.add(resultMap);
         result.add(redisResult);
         return result;
+    }
+
+    public static Map<String, Object> executeQuery(ISourceDTO source, RedisQueryDTO queryDTO) {
+        RedisSourceDTO redisSourceDTO = (RedisSourceDTO) source;
+        AssertUtils.notNull(queryDTO.getKeys(), "keys not null");
+        AssertUtils.notNull(queryDTO.getRedisDataType(), "redis data type not null");
+        AssertUtils.notNull(queryDTO.getRedisCompareOp(), "operate not null");
+        log.info("get Redis connected, host : {}, port : {}", redisSourceDTO.getMaster(), redisSourceDTO.getHostPort());
+        return execute(redisSourceDTO, queryDTO);
+    }
+
+    private static Map<String, Object> execute(RedisSourceDTO redisSourceDTO, RedisQueryDTO queryDTO) {
+        RedisMode redisMode = redisSourceDTO.getRedisMode() != null ? redisSourceDTO.getRedisMode() : RedisMode.Standalone;
+        Pool<Jedis> redisPool = null;
+        Jedis jedis = null;
+        JedisCluster jedisCluster = null;
+        try {
+            if (RedisMode.Standalone.equals(redisMode) || RedisMode.Sentinel.equals(redisMode)) {
+                redisPool = RedisMode.Standalone.equals(redisMode) ? getRedisPool(redisSourceDTO) : getSentinelPool(redisSourceDTO);
+                jedis = redisPool.getResource();
+                int db = StringUtils.isEmpty(redisSourceDTO.getSchema()) ? 0 : Integer.parseInt(redisSourceDTO.getSchema());
+                jedis.select(db);
+                return getRedisValues(jedis, queryDTO, jedis::scan);
+            } else {
+                jedisCluster = getRedisCluster(redisSourceDTO);
+                return getRedisValues(jedisCluster, queryDTO, jedisCluster::scan);
+            }
+        } finally {
+            // 关闭
+            close(jedis, jedisCluster, redisPool);
+
+        }
+    }
+
+    public static List<String> getRedisKeys(ISourceDTO source, RedisQueryDTO queryDTO) {
+        RedisSourceDTO redisSourceDTO = (RedisSourceDTO) source;
+        RedisMode redisMode = redisSourceDTO.getRedisMode() != null ? redisSourceDTO.getRedisMode() : RedisMode.Standalone;
+        Pool<Jedis> redisPool = null;
+        Jedis jedis = null;
+        JedisCluster jedisCluster = null;
+        try {
+            if (RedisMode.Standalone.equals(redisMode) || RedisMode.Sentinel.equals(redisMode)) {
+                redisPool = RedisMode.Standalone.equals(redisMode) ? getRedisPool(redisSourceDTO) : getSentinelPool(redisSourceDTO);
+                jedis = redisPool.getResource();
+                int db = StringUtils.isEmpty(redisSourceDTO.getSchema()) ? 0 : Integer.parseInt(redisSourceDTO.getSchema());
+                jedis.select(db);
+                return getRedisKeys(jedis, queryDTO, jedis::scan);
+            } else {
+                jedisCluster = getRedisCluster(redisSourceDTO);
+                return getRedisKeys(jedisCluster, queryDTO, jedisCluster::scan);
+            }
+        } finally {
+            // 关闭
+            close(jedis, jedisCluster, redisPool);
+
+        }
+    }
+
+    /**
+     * 校验传入的key 类型是否一致
+     * @param jedis
+     * @param keys
+     * @param dataType
+     */
+    private static void checkKeysType(JedisCommands jedis, List<String> keys, RedisDataType dataType) {
+        for (String key : keys) {
+            String type = jedis.type(key);
+            AssertUtils.isTrue(dataType.name().equalsIgnoreCase(type), String.format("redis key :%s,expect type:%s, actual type: %s", key, dataType.name(), type));
+        }
+    }
+
+    /**
+     * 获取所有的key ,模糊查询
+     * @param queryDTO
+     * @param function
+     * @return
+     */
+    public static List<String> getRedisKeys(JedisCommands jedis, RedisQueryDTO queryDTO, BiFunction<String, ScanParams, ScanResult<String>> function) {
+        List<String> list = new ArrayList<>();
+        //如果不是模糊查询，校验传入的key 类型是否一致
+        if (!RedisCompareOp.LIKE.equals(queryDTO.getRedisCompareOp())) {
+            checkKeysType(jedis, queryDTO.getKeys(), queryDTO.getRedisDataType());
+            return queryDTO.getKeys();
+        }
+        String dataType = queryDTO.getRedisDataType().name();
+        for (String key : queryDTO.getKeys()) {
+            String cursor = ScanParams.SCAN_POINTER_START;
+            ScanParams scanParam = new ScanParams();
+            scanParam.match(key);
+            int count = 0;
+            int keyLimit = queryDTO.getKeyLimit() != null && queryDTO.getKeyLimit() > 0 ? queryDTO.getKeyLimit() : LIMIT_MAX_KEY;
+            do {
+                ScanResult<String> scan = function.apply(cursor, scanParam);
+                for (String scanKey : scan.getResult()) {
+                    if (dataType.equalsIgnoreCase(jedis.type(scanKey))) {
+                        list.add(scanKey);
+                        if (++count >= keyLimit) {
+                            return list;
+                        }
+                    }
+                }
+                cursor = scan.getStringCursor();
+            } while (!ScanParams.SCAN_POINTER_START.equals(cursor));
+        }
+        list.sort(Comparator.naturalOrder());
+        return list;
+    }
+
+
+
+
+    private static Map<String, Object> getRedisValues(JedisCommands jedis, RedisQueryDTO queryDTO, BiFunction<String, ScanParams, ScanResult<String>> function) {
+
+        List<String> keys = getRedisKeys(jedis, queryDTO, function);
+
+        RedisDataType dataType = queryDTO.getRedisDataType();
+        Map<String, Object> result;
+        Integer limit = queryDTO.getResultLimit() != null && queryDTO.getResultLimit() > 0 ? queryDTO.getResultLimit() - 1 : -1;
+        switch (dataType) {
+            case STRING:
+                result = getStringRedisValue(jedis, keys);
+                break;
+            case HASH:
+                result = getHashRedisValue(jedis, keys);
+                break;
+            case LIST:
+                result = getListRedisValue(jedis, keys, limit);
+                break;
+            case SET:
+                result = getSetRedisValue(jedis, keys);
+                break;
+            case ZSET:
+                result = getSortSetRedisValue(jedis, keys, limit);
+                break;
+            default:
+                throw new DtLoaderException("Unsupported dataType");
+        }
+        return result;
+    }
+
+
+    /**
+     * 查询 string 类型
+     * @param jedis
+     * @param keys
+     * @return
+     */
+    private static Map<String, Object> getStringRedisValue(JedisCommands jedis, List<String> keys) {
+        Map<String, Object> resultMap = new HashMap<>();
+        if (CollectionUtils.isEmpty(keys)) {
+            return resultMap;
+        }
+        for (String key : keys) {
+            String result = jedis.get(key);
+            resultMap.put(key, result);
+        }
+        return resultMap;
+    }
+
+    /**
+     * 查询list类型
+     * @param jedis
+     * @param keys
+     * @return
+     */
+    private static Map<String, Object> getListRedisValue(JedisCommands jedis, List<String> keys, Integer limit) {
+        Map<String, Object> resultMap = new HashMap<>();
+        if (CollectionUtils.isEmpty(keys)) {
+            return resultMap;
+        }
+        for (String key : keys) {
+            List<String> result = jedis.lrange(key, 0, limit);
+            result = CollectionUtils.isEmpty(result) ? new ArrayList<>() : result;
+            resultMap.put(key, result);
+        }
+        return resultMap;
+    }
+
+    /**
+     * 查询set 类型， smembers
+     * @param jedis
+     * @param keys
+     * @return
+     */
+    private static Map<String, Object> getSetRedisValue(JedisCommands jedis, List<String> keys) {
+        Map<String, Object> resultMap = new HashMap<>();
+        if (CollectionUtils.isEmpty(keys)) {
+            return resultMap;
+        }
+        ScanParams scanParams = new ScanParams();
+        for (String key : keys) {
+            String cursor = ScanParams.SCAN_POINTER_START;
+            List<String> list = new ArrayList<>();
+            do {
+                ScanResult<String> scanResult = jedis.sscan(key, cursor, scanParams);
+                List<String> result = scanResult.getResult();
+                list.addAll(result);
+                cursor = scanResult.getStringCursor();
+            } while (!ScanParams.SCAN_POINTER_START.equals(cursor));
+            resultMap.put(key, list);
+        }
+        return resultMap;
+    }
+
+    /**
+     * 查询zset 类型，zrange
+     * @param jedis
+     * @param keys
+     * @return
+     */
+    private static Map<String, Object> getSortSetRedisValue(JedisCommands jedis, List<String> keys, Integer limit) {
+        Map<String, Object> resultMap = new HashMap<>();
+        if (CollectionUtils.isEmpty(keys)) {
+            return resultMap;
+        }
+        for (String key : keys) {
+            Set<String> result = jedis.zrange(key, 0, limit);
+            result = CollectionUtils.isEmpty(result) ? new HashSet<>() : result;
+            resultMap.put(key, result);
+        }
+        return resultMap;
+    }
+
+
+    /**
+     * 查询hash 类型的表
+     * @param jedis
+     * @param keys
+     * @return
+     */
+    private static Map<String, Object> getHashRedisValue(JedisCommands jedis, List<String> keys) {
+        Map<String, Object> resultMap = new HashMap<>();
+        if (CollectionUtils.isEmpty(keys)) {
+            return resultMap;
+        }
+        ScanParams scanParams = new ScanParams();
+        for (String key : keys) {
+            String cursor = ScanParams.SCAN_POINTER_START;
+            do {
+                ScanResult<Map.Entry<String, String>> scanResult = jedis.hscan(key, cursor, scanParams);
+                List<Map.Entry<String, String>> tuples = scanResult.getResult();
+                List<String> list = new ArrayList<>();
+                if (CollectionUtils.isNotEmpty(tuples)) {
+                    list = tuples.stream().map(Map.Entry::getKey).collect(Collectors.toList());
+                }
+                resultMap.put(key, list);
+                cursor = scanResult.getStringCursor();
+            } while (!ScanParams.SCAN_POINTER_START.equals(cursor));
+        }
+        return resultMap;
     }
 
     private static boolean checkConnectionStandalone(ISourceDTO source) {

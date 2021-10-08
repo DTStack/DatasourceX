@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.loader.client.hbase.HbaseClientFactory;
 import com.dtstack.dtcenter.loader.client.hdfs.HdfsFileClientFactory;
 import com.dtstack.dtcenter.loader.client.kerberos.KerberosClientFactory;
 import com.dtstack.dtcenter.loader.client.mq.KafkaClientFactory;
+import com.dtstack.dtcenter.loader.client.redis.RedisClientFactory;
 import com.dtstack.dtcenter.loader.client.restful.RestfulClientFactory;
 import com.dtstack.dtcenter.loader.client.sql.DataSourceClientFactory;
 import com.dtstack.dtcenter.loader.client.table.TableClientFactory;
@@ -63,6 +64,11 @@ public class ClientCache {
      * restful 客户端缓存
      */
     private static final Map<String, IRestful> RESTFUL_CLIENT = Maps.newConcurrentMap();
+
+    /**
+     * redis 客户端缓存
+     */
+    private static final Map<String, IRedis> REDIS_CLIENT = Maps.newConcurrentMap();
 
     protected static String userDir = String.format("%s/pluginLibs/", System.getProperty("user.dir"));
 
@@ -362,6 +368,29 @@ public class ClientCache {
                 }
             }
             return restful;
+        } catch (Throwable e) {
+            throw new ClientAccessException(e);
+        }
+    }
+
+    public static IRedis getRedis(Integer sourceType) {
+        String pluginName = DataSourceType.getSourceType(sourceType).getPluginName();
+        return getRedis(pluginName);
+    }
+
+    private static IRedis getRedis(String pluginName) {
+        try {
+            IRedis iRedis = REDIS_CLIENT.get(pluginName);
+            if (iRedis == null) {
+                synchronized (REDIS_CLIENT) {
+                    iRedis = REDIS_CLIENT.get(pluginName);
+                    if (iRedis == null) {
+                        iRedis = RedisClientFactory.createPluginClass(pluginName);
+                        REDIS_CLIENT.put(pluginName, iRedis);
+                    }
+                }
+            }
+            return iRedis;
         } catch (Throwable e) {
             throw new ClientAccessException(e);
         }
