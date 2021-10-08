@@ -344,6 +344,7 @@ public class HiveClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(hive1SourceDTO.getDefaultFS()) || !hive1SourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
             throw new DtLoaderException("defaultFS incorrect format");
         }
+        transformDelim(table);
         Configuration conf = HadoopConfUtil.getHdfsConf(hive1SourceDTO.getDefaultFS(), hive1SourceDTO.getConfig(), hive1SourceDTO.getKerberosConfig());
         List<String> finalPartitions = partitions;
         return KerberosLoginUtil.loginWithUGI(hive1SourceDTO.getKerberosConfig()).doAs(
@@ -355,6 +356,18 @@ public class HiveClient extends AbsRdbmsClient {
                     }
                 }
         );
+    }
+
+    /**
+     * 获取hdfs 里真正的切分符
+     *
+     * @param table
+     */
+    private void transformDelim(Table table) {
+        Boolean isLazySimpleSerDe = ReflectUtil.fieldExists(Table.class, "isLazySimpleSerDe") ? table.getIsLazySimpleSerDe() : true;
+        String fieldDelimiter = table.getDelim();
+        String finalFieldDelimiter = isLazySimpleSerDe ? fieldDelimiter.charAt(0) == '\\' ? fieldDelimiter.substring(0, 2) : fieldDelimiter.substring(0, 1) : fieldDelimiter;
+        table.setDelim(finalFieldDelimiter);
     }
 
     /**
@@ -495,14 +508,13 @@ public class HiveClient extends AbsRdbmsClient {
             }
 
             if (colName.contains("field.delim")) {
-                // trim 之后不会空则取 trim 后的值
-                tableInfo.setDelim(StringUtils.isEmpty(dataType) ? dataTypeOrigin : dataType);
+                tableInfo.setDelim(dataTypeOrigin);
                 continue;
             }
 
             if (dataType.contains("field.delim")) {
                 String delimit = MapUtils.getString(row, "comment", "");
-                tableInfo.setDelim(StringUtils.isEmpty(delimit.trim()) ? delimit : delimit.trim());
+                tableInfo.setDelim(delimit);
                 continue;
             }
 
@@ -550,6 +562,18 @@ public class HiveClient extends AbsRdbmsClient {
                     if (dataType.contains(hiveStoredType.getInputFormatClass())) {
                         tableInfo.setStoreType(hiveStoredType.getValue());
                         break;
+                    }
+                }
+            }
+
+            //单字符作为分隔符 org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            //多字符作为分隔符  org.apache.hadoop.hive.contrib.serde2.MultiDelimitSerDe,org.apache.hadoop.hive.contrib.serde2.RegexSerDe
+            if (colName.contains("SerDe Library")) {
+                if (ReflectUtil.fieldExists(Table.class, "isLazySimpleSerDe")) {
+                    if (StringUtils.containsIgnoreCase(dataType, "LazySimpleSerDe")) {
+                        tableInfo.setIsTransTable(true);
+                    } else {
+                        tableInfo.setIsTransTable(false);
                     }
                 }
             }

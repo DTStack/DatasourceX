@@ -82,4 +82,9 @@ public class Table {
      * 是否是视图
      */
     private Boolean isView = false;
+
+    /**
+     * 是否是单字符作为分隔符
+     */
+    private Boolean isLazySimpleSerDe = true;
 }
