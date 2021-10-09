@@ -188,6 +188,7 @@ public class RedisUtils {
     }
 
     public static List<String> getRedisKeys(ISourceDTO source, RedisQueryDTO queryDTO) {
+        AssertUtils.notNull(queryDTO.getRedisDataType(), "redis data type not null");
         RedisSourceDTO redisSourceDTO = (RedisSourceDTO) source;
         RedisMode redisMode = redisSourceDTO.getRedisMode() != null ? redisSourceDTO.getRedisMode() : RedisMode.Standalone;
         Pool<Jedis> redisPool = null;
@@ -199,10 +200,10 @@ public class RedisUtils {
                 jedis = redisPool.getResource();
                 int db = StringUtils.isEmpty(redisSourceDTO.getSchema()) ? 0 : Integer.parseInt(redisSourceDTO.getSchema());
                 jedis.select(db);
-                return getRedisKeys(jedis, queryDTO, jedis::scan);
+                return previewRedisKeys(jedis, queryDTO, jedis::scan);
             } else {
                 jedisCluster = getRedisCluster(redisSourceDTO);
-                return getRedisKeys(jedisCluster, queryDTO, jedisCluster::scan);
+                return previewRedisKeys(jedisCluster, queryDTO, jedisCluster::scan);
             }
         } finally {
             // 关闭
@@ -244,6 +245,50 @@ public class RedisUtils {
             scanParam.match(key);
             int count = 0;
             int keyLimit = queryDTO.getKeyLimit() != null && queryDTO.getKeyLimit() > 0 ? queryDTO.getKeyLimit() : LIMIT_MAX_KEY;
+            do {
+                ScanResult<String> scan = function.apply(cursor, scanParam);
+                for (String scanKey : scan.getResult()) {
+                    if (dataType.equalsIgnoreCase(jedis.type(scanKey))) {
+                        list.add(scanKey);
+                        if (++count >= keyLimit) {
+                            return list;
+                        }
+                    }
+                }
+                cursor = scan.getStringCursor();
+            } while (!ScanParams.SCAN_POINTER_START.equals(cursor));
+        }
+        list.sort(Comparator.naturalOrder());
+        return list;
+    }
+
+    public static List<String> previewRedisKeys(JedisCommands jedis, RedisQueryDTO queryDTO, BiFunction<String, ScanParams, ScanResult<String>> function) {
+        List<String> list = new ArrayList<>();
+        String dataType = queryDTO.getRedisDataType().name();
+        int keyLimit = queryDTO.getKeyLimit() != null && queryDTO.getKeyLimit() > 0 ? queryDTO.getKeyLimit() : LIMIT_MAX_KEY;
+        if (queryDTO.getKeys() != null) {
+            for (String key : queryDTO.getKeys()) {
+                String cursor = ScanParams.SCAN_POINTER_START;
+                ScanParams scanParam = new ScanParams();
+                scanParam.match(key);
+                int count = 0;
+                do {
+                    ScanResult<String> scan = function.apply(cursor, scanParam);
+                    for (String scanKey : scan.getResult()) {
+                        if (dataType.equalsIgnoreCase(jedis.type(scanKey))) {
+                            list.add(scanKey);
+                            if (++count >= keyLimit) {
+                                return list;
+                            }
+                        }
+                    }
+                    cursor = scan.getStringCursor();
+                } while (!ScanParams.SCAN_POINTER_START.equals(cursor));
+            }
+        } else {
+            String cursor = ScanParams.SCAN_POINTER_START;
+            ScanParams scanParam = new ScanParams();
+            int count = 0;
             do {
                 ScanResult<String> scan = function.apply(cursor, scanParam);
                 for (String scanKey : scan.getResult()) {
