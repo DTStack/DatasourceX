@@ -266,42 +266,25 @@ public class RedisUtils {
         List<String> list = new ArrayList<>();
         String dataType = queryDTO.getRedisDataType().name();
         int keyLimit = queryDTO.getKeyLimit() != null && queryDTO.getKeyLimit() > 0 ? queryDTO.getKeyLimit() : LIMIT_MAX_KEY;
-        if (queryDTO.getKeys() != null) {
-            for (String key : queryDTO.getKeys()) {
-                String cursor = ScanParams.SCAN_POINTER_START;
-                ScanParams scanParam = new ScanParams();
-                scanParam.match(key);
-                int count = 0;
-                do {
-                    ScanResult<String> scan = function.apply(cursor, scanParam);
-                    for (String scanKey : scan.getResult()) {
-                        if (dataType.equalsIgnoreCase(jedis.type(scanKey))) {
-                            list.add(scanKey);
-                            if (++count >= keyLimit) {
-                                return list;
-                            }
-                        }
-                    }
-                    cursor = scan.getStringCursor();
-                } while (!ScanParams.SCAN_POINTER_START.equals(cursor));
-            }
-        } else {
-            String cursor = ScanParams.SCAN_POINTER_START;
-            ScanParams scanParam = new ScanParams();
-            int count = 0;
-            do {
-                ScanResult<String> scan = function.apply(cursor, scanParam);
-                for (String scanKey : scan.getResult()) {
-                    if (dataType.equalsIgnoreCase(jedis.type(scanKey))) {
-                        list.add(scanKey);
-                        if (++count >= keyLimit) {
-                            return list;
-                        }
+        String cursor = ScanParams.SCAN_POINTER_START;
+        ScanParams scanParam = new ScanParams();
+        if (queryDTO.getKeyPattern() != null) {
+            scanParam.match(queryDTO.getKeyPattern() + "*");
+        }
+        int count = 0;
+        do {
+            ScanResult<String> scan = function.apply(cursor, scanParam);
+            for (String scanKey : scan.getResult()) {
+                if (dataType.equalsIgnoreCase(jedis.type(scanKey))) {
+                    list.add(scanKey);
+                    if (++count >= keyLimit) {
+                        return list;
                     }
                 }
-                cursor = scan.getStringCursor();
-            } while (!ScanParams.SCAN_POINTER_START.equals(cursor));
-        }
+            }
+            cursor = scan.getStringCursor();
+        } while (!ScanParams.SCAN_POINTER_START.equals(cursor));
+
         list.sort(Comparator.naturalOrder());
         return list;
     }

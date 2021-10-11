@@ -93,15 +93,12 @@ public class RedisTest extends BaseTest {
     @Test
     public void previewKey() {
         IRedis client = ClientCache.getRedis(DataSourceType.REDIS.getVal());
-        List<String> map = client.preViewKey(source, RedisQueryDTO.builder().redisDataType(RedisDataType.ZSET).keys(Arrays.asList("loader_test_zset")).build());
+        List<String> map = client.preViewKey(source, RedisQueryDTO.builder().redisDataType(RedisDataType.ZSET).build());
         assert CollectionUtils.isNotEmpty(map);
-
-        List<String> map1 = client.preViewKey(source, RedisQueryDTO.builder().redisDataType(RedisDataType.HASH).build());
-        assert CollectionUtils.isNotEmpty(map1);
-
-        List<String> map2 = client.preViewKey(source, RedisQueryDTO.builder().redisDataType(RedisDataType.HASH).keys(Arrays.asList("loader_test*")).build());
-        System.out.println(map2);
+        List<String> map1 = client.preViewKey(source, RedisQueryDTO.builder().redisDataType(RedisDataType.HASH).keyPattern("loader_test").build());
+        List<String> map2 = client.preViewKey(source, RedisQueryDTO.builder().redisDataType(RedisDataType.HASH).keyPattern("loader").build());
         assert CollectionUtils.isNotEmpty(map2);
+        assert map1.size() == map2.size();
     }
 
     /**

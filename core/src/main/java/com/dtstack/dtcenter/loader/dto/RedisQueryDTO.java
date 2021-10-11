@@ -49,4 +49,10 @@ public class RedisQueryDTO {
      */
     private List<String> keys;
 
+
+    /**
+     * keys 模糊查询
+     */
+    private String keyPattern;
+
 }
