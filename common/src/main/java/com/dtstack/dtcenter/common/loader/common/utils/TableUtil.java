@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.common.utils;
 
+import com.dtstack.dtcenter.common.loader.common.convert.ColumnTypeConverter;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
@@ -44,5 +45,19 @@ public class TableUtil {
             return columnMetaDTOS;
         }
         return columnMetaDTOS.stream().filter(ColumnMetaDTO::getPart).collect(Collectors.toList());
+    }
+
+    /**
+     * 处理字段类型
+     *
+     * @param columnMetaDTOS 字段、类型集合
+     * @param converter      转化器
+     * @return 转化后的类型
+     */
+    public static List<ColumnMetaDTO> dealColumnType(List<ColumnMetaDTO> columnMetaDTOS, ColumnTypeConverter converter) {
+        for (ColumnMetaDTO columnMetaDTO : columnMetaDTOS) {
+            columnMetaDTO.setType(converter.convert(columnMetaDTO.getType()));
+        }
+        return columnMetaDTOS;
     }
 }
