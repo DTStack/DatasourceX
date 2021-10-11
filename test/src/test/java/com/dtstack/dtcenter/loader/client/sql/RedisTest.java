@@ -11,10 +11,14 @@ import com.dtstack.dtcenter.loader.enums.RedisCompareOp;
 import com.dtstack.dtcenter.loader.enums.RedisDataType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -84,6 +88,20 @@ public class RedisTest extends BaseTest {
         assert MapUtils.isNotEmpty(map);
         map = client.executeQuery(source, RedisQueryDTO.builder().redisDataType(RedisDataType.ZSET).keys(Arrays.asList("loader_test_zset","loader_test_zset1","loader_test_zset2")).redisCompareOp(RedisCompareOp.EQUAL).build());
         assert MapUtils.isNotEmpty(map);
+    }
+
+    @Test
+    public void previewKey() {
+        IRedis client = ClientCache.getRedis(DataSourceType.REDIS.getVal());
+        List<String> map = client.preViewKey(source, RedisQueryDTO.builder().redisDataType(RedisDataType.ZSET).keys(Arrays.asList("loader_test_zset")).build());
+        assert CollectionUtils.isNotEmpty(map);
+
+        List<String> map1 = client.preViewKey(source, RedisQueryDTO.builder().redisDataType(RedisDataType.HASH).build());
+        assert CollectionUtils.isNotEmpty(map1);
+
+        List<String> map2 = client.preViewKey(source, RedisQueryDTO.builder().redisDataType(RedisDataType.HASH).keys(Arrays.asList("loader_test*")).build());
+        System.out.println(map2);
+        assert CollectionUtils.isNotEmpty(map2);
     }
 
     /**

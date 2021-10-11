@@ -42,13 +42,11 @@ public class RedisQueryDTO {
     /**
      * 操作符,= or like
      */
-    @NonNull
     private RedisCompareOp redisCompareOp;
 
     /**
      * keys，
      */
-    @NonNull
     private List<String> keys;
 
 }
