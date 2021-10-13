@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.hive2.client;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.EnvUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.TableUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
@@ -21,6 +22,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
 import com.dtstack.dtcenter.loader.dto.source.HiveSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
@@ -60,9 +62,6 @@ public class HiveClient extends AbsRdbmsClient {
 
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select current_database()";
-
-    // 测试连通性超时时间。单位：秒
-    private final static int TEST_CONN_TIMEOUT = 30;
 
     // 创建库指定注释
     private static final String CREATE_DB_WITH_COMMENT = "create database if not exists %s comment '%s'";
@@ -279,7 +278,7 @@ public class HiveClient extends AbsRdbmsClient {
             Callable<Boolean> call = () -> testConnection(sourceDTO);
             future = executor.submit(call);
             // 如果在设定超时(以秒为单位)之内，还没得到连通性测试结果，则认为连通性测试连接超时，不继续阻塞
-            return future.get(TEST_CONN_TIMEOUT, TimeUnit.SECONDS);
+            return future.get(EnvUtil.getTestConnTimeout(), TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             throw new DtLoaderException(String.format("Test connect timeout！,%s", e.getMessage()), e);
         } catch (Exception e) {
@@ -373,6 +372,7 @@ public class HiveClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(hiveSourceDTO.getDefaultFS()) || !hiveSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
             throw new DtLoaderException("defaultFS incorrect format");
         }
+        transformDelim(table);
         Configuration conf = HadoopConfUtil.getHdfsConf(hiveSourceDTO.getDefaultFS(), hiveSourceDTO.getConfig(), hiveSourceDTO.getKerberosConfig());
         List<String> finalPartitions = partitions;
         return KerberosLoginUtil.loginWithUGI(hiveSourceDTO.getKerberosConfig()).doAs(
@@ -384,6 +384,18 @@ public class HiveClient extends AbsRdbmsClient {
                     }
                 }
         );
+    }
+
+    /**
+     * 获取hdfs 里真正的切分符
+     *
+     * @param table
+     */
+    private void transformDelim(Table table) {
+        Boolean isLazySimpleSerDe = ReflectUtil.fieldExists(Table.class, "isLazySimpleSerDe") ? table.getIsLazySimpleSerDe() : true;
+        String fieldDelimiter = table.getDelim();
+        String finalFieldDelimiter = isLazySimpleSerDe ? (fieldDelimiter.charAt(0) == '\\' ? fieldDelimiter.substring(0, 2) : fieldDelimiter.substring(0, 1)) : fieldDelimiter;
+        table.setDelim(finalFieldDelimiter);
     }
 
     /**
@@ -462,7 +474,7 @@ public class HiveClient extends AbsRdbmsClient {
             }
         }
 
-        return "select * from " + sqlQueryDTO.getTableName() + partSql.toString();
+        return "select * from " + sqlQueryDTO.getTableName() + partSql.toString() + limitSql(sqlQueryDTO.getPreviewNum());
     }
 
     @Override
@@ -536,14 +548,13 @@ public class HiveClient extends AbsRdbmsClient {
             }
 
             if (colName.contains("field.delim")) {
-                // trim 之后不会空则取 trim 后的值
-                tableInfo.setDelim(StringUtils.isEmpty(dataType) ? dataTypeOrigin : dataType);
+                tableInfo.setDelim(dataTypeOrigin);
                 continue;
             }
 
             if (dataType.contains("field.delim")) {
                 String delimit = MapUtils.getString(row, "comment", "");
-                tableInfo.setDelim(StringUtils.isEmpty(delimit.trim()) ? delimit : delimit.trim());
+                tableInfo.setDelim(delimit);
                 continue;
             }
 
@@ -594,6 +605,18 @@ public class HiveClient extends AbsRdbmsClient {
                     }
                 }
             }
+
+            //单字符作为分隔符 org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            //多字符作为分隔符  org.apache.hadoop.hive.contrib.serde2.MultiDelimitSerDe,org.apache.hadoop.hive.contrib.serde2.RegexSerDe
+            if (colName.contains("SerDe Library")) {
+                if (ReflectUtil.fieldExists(Table.class, "isLazySimpleSerDe")) {
+                    if (StringUtils.containsIgnoreCase(dataType, "LazySimpleSerDe")) {
+                        tableInfo.setIsTransTable(true);
+                    } else {
+                        tableInfo.setIsTransTable(false);
+                    }
+                }
+            }
         }
         // text 未获取到分隔符情况下添加默认值
         if (StringUtils.equalsIgnoreCase(StoredType.TEXTFILE.getValue(), tableInfo.getStoreType()) && Objects.isNull(tableInfo.getDelim())) {
@@ -625,6 +648,37 @@ public class HiveClient extends AbsRdbmsClient {
             throw new DtLoaderException("database name cannot be empty!");
         }
         return CollectionUtils.isNotEmpty(executeQuery(source, SqlQueryDTO.builder().sql(String.format(TABLE_BY_SCHEMA_LIKE, dbName, tableName)).build()));
+    }
+
+    @Override
+    public String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO) {
+        Integer clearStatus = beforeQuery(source, queryDTO, false);
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : rdbmsSourceDTO.getSchema();
+        // 获取表信息需要通过show databases 语句
+        String tableName ;
+        if (StringUtils.isNotEmpty(schema)) {
+            tableName = String.format("%s.%s", schema, queryDTO.getTableName());
+        } else {
+            tableName = queryDTO.getTableName();
+        }
+        String sql = String.format("show create table %s", tableName);
+        Statement statement = null;
+        ResultSet rs = null;
+        StringBuilder createTableSql = new StringBuilder();
+        try {
+            statement = rdbmsSourceDTO.getConnection().createStatement();
+            rs = statement.executeQuery(sql);
+            int columnSize = rs.getMetaData().getColumnCount();
+            while (rs.next()) {
+                createTableSql.append(rs.getString(columnSize == 1 ? 1 : 2));
+            }
+        } catch (Exception e) {
+            throw new DtLoaderException(String.format("failed to get the create table sql：%s", e.getMessage()), e);
+        } finally {
+            DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
+        }
+        return createTableSql.toString();
     }
 
     @Override

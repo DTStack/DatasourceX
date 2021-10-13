@@ -20,6 +20,7 @@ import oracle.jdbc.OracleResultSetMetaData;
 import oracle.sql.BLOB;
 import oracle.sql.CLOB;
 import oracle.xdb.XMLType;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -77,6 +78,12 @@ public class OracleClient extends AbsRdbmsClient {
     private static final String VIEW_SEARCH_SQL = " AND REGEXP_LIKE (VIEW_NAME, '%s', 'i') ";
     // 限制条数语句
     private static final String LIMIT_SQL = " AND ROWNUM <= %s ";
+    // 获取表注释
+    private static final String COMMENTS_SQL = "SELECT COMMENTS FROM  all_tab_comments WHERE TABLE_NAME = '%s' ";
+    // 表注释获取条件限制
+    private static final String COMMENTS_CONDITION_SQL = " AND OWNER = '%s' ";
+    // 表注释字段
+    private static final String ORACLE_TABLE_COMMENT = "COMMENTS";
     /* ----------------------------------------------------------------------------------------- */
 
     // 获取 oracle PDB 列表前 设置 session
@@ -110,33 +117,20 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     @Override
-    public String getTableMetaComment(ISourceDTO iSource, SqlQueryDTO queryDTO) {
-        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) iSource;
-        Integer clearStatus = beforeColumnQuery(oracleSourceDTO, queryDTO);
-
-        String tableName = queryDTO.getTableName();
-        if (tableName.contains(".")) {
-            tableName = tableName.split("\\.")[1];
+    public String getTableMetaComment(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        OracleSourceDTO oracleSourceDTO = (OracleSourceDTO) sourceDTO;
+        String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : oracleSourceDTO.getSchema();
+        StringBuilder commentQuerySql = new StringBuilder();
+        commentQuerySql.append(String.format(COMMENTS_SQL, queryDTO.getTableName()));
+        if (StringUtils.isNotBlank(schema)) {
+            commentQuerySql.append(String.format(COMMENTS_CONDITION_SQL, schema));
         }
-        tableName = tableName.replace("\"", "");
-
-        Statement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            DatabaseMetaData metaData = oracleSourceDTO.getConnection().getMetaData();
-            resultSet = metaData.getTables(null, null, tableName, null);
-            while (resultSet.next()) {
-                String comment = resultSet.getString(DtClassConsistent.PublicConsistent.REMARKS);
-                return comment;
-            }
-        } catch (Exception e) {
-            throw new DtLoaderException(String.format("get table: %s's information error. Please contact the DBA to check the database、table information.",
-                    queryDTO.getTableName()), e);
-        } finally {
-            DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(oracleSourceDTO, clearStatus));
+        commentQuerySql.append(String.format(LIMIT_SQL, 1));
+        List<Map<String, Object>> queryResult = executeQuery(oracleSourceDTO, SqlQueryDTO.builder().sql(commentQuerySql.toString()).build());
+        if (CollectionUtils.isEmpty(queryResult) || MapUtils.isEmpty(queryResult.get(0))) {
+            return "";
         }
-        return "";
+        return MapUtils.getString(queryResult.get(0), ORACLE_TABLE_COMMENT, "");
     }
 
     @Override
@@ -409,7 +403,9 @@ public class OracleClient extends AbsRdbmsClient {
      */
     @Override
     protected String transferSchemaAndTableName(String schema, String tableName) {
-        if (!tableName.startsWith("\"") || !tableName.endsWith("\"")) {
+        // 表名中可以带点、不可以带双引号，表名可能为 schema."tableName"、"schema".tableName、
+        // "schema"."tableName"、schema.tableName，第四种情况不做考虑
+        if (!tableName.startsWith("\"") && !tableName.endsWith("\"")) {
             tableName = String.format("\"%s\"", tableName);
             // 如果tableName包含Schema操作，无其他方法，只能去判断长度
         } else if (indexCount(tableName, "\"") >= 4) {
@@ -418,7 +414,7 @@ public class OracleClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(schema)) {
             return tableName;
         }
-        if (!schema.startsWith("\"") || !schema.endsWith("\"")){
+        if (!schema.startsWith("\"") && !schema.endsWith("\"")){
             schema = String.format("\"%s\"", schema);
         }
         return String.format("%s.%s", schema, tableName);

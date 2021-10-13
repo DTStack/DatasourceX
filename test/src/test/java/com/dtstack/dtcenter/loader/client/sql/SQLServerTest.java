@@ -56,6 +56,12 @@ public class SQLServerTest extends BaseTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("insert into LOADER_TEST values (1, '中文LOADER_TEST')").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
+
+        queryDTO = SqlQueryDTO.builder().sql("drop view if exists loader_test_view").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create view loader_test_view as select * from LOADER_TEST").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+
         // 添加表注释
         String commentSql = "exec sp_addextendedproperty N'MS_Description', N'中文_comment', N'SCHEMA', N'dev', N'TABLE', N'LOADER_TEST'";
         queryDTO = SqlQueryDTO.builder().sql(commentSql).build();
@@ -160,9 +166,19 @@ public class SQLServerTest extends BaseTest {
      */
     @Test
     public void getTableList() {
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().build();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().view(true).tableNamePattern("loader_test").build();
         List<String> tableList = client.getTableList(source, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+    }
+
+    /**
+     * 获取表列表
+     */
+    @Test
+    public void getTableList_view() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().view(true).tableNamePattern("loader_test_view").build();
+        List<String> tableList = client.getTableList(source, queryDTO);
+        Assert.assertEquals("[dev].[loader_test_view]", tableList.get(0));
     }
 
     /**

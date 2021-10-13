@@ -65,7 +65,7 @@ public class KerberosLoginUtil {
         }
     }
 
-    public static synchronized UserGroupInformation loginWithUGI(Map<String, Object> confMap) {
+    public static UserGroupInformation loginWithUGI(Map<String, Object> confMap) {
         return loginWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
     }
 
@@ -76,13 +76,13 @@ public class KerberosLoginUtil {
      * @param confMap
      * @return
      */
-    public static synchronized UserGroupInformation loginWithUGI(String jdbcUrl, Map<String, Object> confMap) {
+    public static UserGroupInformation loginWithUGI(String jdbcUrl, Map<String, Object> confMap) {
         String principal = KerberosConfigUtil.getPrincipalFromUrl(jdbcUrl);
         confMap.put(HadoopConfTool.PRINCIPAL, principal);
         return loginWithUGI(confMap, HadoopConfTool.PRINCIPAL, HadoopConfTool.PRINCIPAL_FILE, HadoopConfTool.KEY_JAVA_SECURITY_KRB5_CONF);
     }
 
-    public static synchronized UserGroupInformation loginWithUGI(Map<String, Object> confMap, String principal, String keytab, String krb5Conf) {
+    public static UserGroupInformation loginWithUGI(Map<String, Object> confMap, String principal, String keytab, String krb5Conf) {
         synchronized (DataSourceType.class) {
             // 非 Kerberos 认证，需要重新刷 UGI 信息
             if (MapUtils.isEmpty(confMap)) {

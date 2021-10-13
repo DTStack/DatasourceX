@@ -60,7 +60,7 @@ public class HiveTest extends BaseTest {
     /**
      * 数据准备
      */
-    @BeforeClass
+    //@BeforeClass
     public static void beforeClass()  {
         System.setProperty("HADOOP_USER_NAME", "admin");
         IClient client = ClientCache.getClient(DataSourceType.HIVE.getVal());

@@ -130,8 +130,10 @@ public class InceptorTest extends BaseTest {
 
     @Test
     public void getDownloader() throws Exception {
+        System.setProperty("HADOOP_USER_NAME", "hive");
         IClient client = ClientCache.getClient(DataSourceType.INCEPTOR.getVal());
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from loader_test_text").build();
+        long start = System.currentTimeMillis();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("select * from tag_test_text").build();
         IDownloader downloader = client.getDownloader(INCEPTOR_SOURCE_DTO, queryDTO);
         Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
         while (!downloader.reachedEnd()) {
@@ -170,6 +172,34 @@ public class InceptorTest extends BaseTest {
         while (!downloader.reachedEnd()) {
             System.out.println(downloader.readNext());
         }
+    }
+
+    @Test
+    public void getDownloader_text() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.INCEPTOR.getVal());
+
+        long start = System.currentTimeMillis();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("tag_test_text").columns(Arrays.asList("*")).build();
+        IDownloader downloader = client.getDownloader(INCEPTOR_SOURCE_DTO, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
+        while (!downloader.reachedEnd()) {
+            System.out.println(downloader.readNext());
+        }
+        System.out.println((System.currentTimeMillis() - start) / 1000);
+    }
+
+    @Test
+    public void getDownloader_par() throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.INCEPTOR.getVal());
+        long start = System.currentTimeMillis();
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("tag_test_parquet").columns(Arrays.asList("*")).build();
+        IDownloader downloader = client.getDownloader(INCEPTOR_SOURCE_DTO, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
+        while (!downloader.reachedEnd()) {
+            //Object obj = downloader.readNext();
+            System.out.println(downloader.readNext());
+        }
+        System.out.println((System.currentTimeMillis() - start) / 1000);
     }
 
     @Test
@@ -243,6 +273,7 @@ public class InceptorTest extends BaseTest {
 
     /**
      * loader_test_orc_not_tran 为空表时，判断是否能够获取元数据信息
+     *
      * @throws Exception
      */
     @Test
