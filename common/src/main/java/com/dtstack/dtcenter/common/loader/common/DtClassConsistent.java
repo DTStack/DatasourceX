@@ -95,6 +95,9 @@ public interface DtClassConsistent {
         public static final String DATA_TYPE_UNSIGNED = "UNSIGNED";
 
 
+        public static final String LEFT_GREATER_SYMBOL = "<";
+        public static final String RIGHT_GREATER_SYMBOL = ">";
+
         @Deprecated
         public static final String USE_DB = "use `%s`";
     }
