@@ -175,34 +175,6 @@ public class InceptorTest extends BaseTest {
     }
 
     @Test
-    public void getDownloader_text() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.INCEPTOR.getVal());
-
-        long start = System.currentTimeMillis();
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("tag_test_text").columns(Arrays.asList("*")).build();
-        IDownloader downloader = client.getDownloader(INCEPTOR_SOURCE_DTO, queryDTO);
-        Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
-        while (!downloader.reachedEnd()) {
-            System.out.println(downloader.readNext());
-        }
-        System.out.println((System.currentTimeMillis() - start) / 1000);
-    }
-
-    @Test
-    public void getDownloader_par() throws Exception {
-        IClient client = ClientCache.getClient(DataSourceType.INCEPTOR.getVal());
-        long start = System.currentTimeMillis();
-        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("tag_test_parquet").columns(Arrays.asList("*")).build();
-        IDownloader downloader = client.getDownloader(INCEPTOR_SOURCE_DTO, queryDTO);
-        Assert.assertTrue(CollectionUtils.isNotEmpty(downloader.getMetaInfo()));
-        while (!downloader.reachedEnd()) {
-            //Object obj = downloader.readNext();
-            System.out.println(downloader.readNext());
-        }
-        System.out.println((System.currentTimeMillis() - start) / 1000);
-    }
-
-    @Test
     public void testCon() {
         Assert.assertTrue(INCEPTOR_CLIENT.testCon(INCEPTOR_SOURCE_DTO));
         INCEPTOR_SOURCE_DTO.setMetaStoreUris("xx");
