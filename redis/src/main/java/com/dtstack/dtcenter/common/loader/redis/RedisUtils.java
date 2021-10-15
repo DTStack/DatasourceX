@@ -419,10 +419,10 @@ public class RedisUtils {
         ScanParams scanParams = new ScanParams();
         for (String key : keys) {
             String cursor = ScanParams.SCAN_POINTER_START;
+            List<String> list = new ArrayList<>();
             do {
                 ScanResult<Map.Entry<String, String>> scanResult = jedis.hscan(key, cursor, scanParams);
                 List<Map.Entry<String, String>> tuples = scanResult.getResult();
-                List<String> list = new ArrayList<>();
                 if (CollectionUtils.isNotEmpty(tuples)) {
                     list = tuples.stream().map(Map.Entry::getKey).collect(Collectors.toList());
                 }
