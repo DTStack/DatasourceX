@@ -4,6 +4,7 @@ import com.dtstack.dtcenter.loader.client.BaseTest;
 import com.dtstack.dtcenter.loader.client.ClientCache;
 import com.dtstack.dtcenter.loader.client.IClient;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.TbdsHdfsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.junit.Test;
@@ -15,8 +16,8 @@ import org.junit.Test;
  * @Date ：Created in 23:58 2020/2/28
  * @Description：HDFS 测试
  */
-public class HdfsTest extends BaseTest {
-    HdfsSourceDTO source = HdfsSourceDTO.builder()
+public class TbdsHdfsTest extends BaseTest {
+    TbdsHdfsSourceDTO source = TbdsHdfsSourceDTO.builder()
             .defaultFS("hdfs://ns1")
             .config("{\n" +
                     "    \"dfs.ha.namenodes.ns1\": \"nn1,nn2\",\n" +
@@ -29,7 +30,7 @@ public class HdfsTest extends BaseTest {
 
     @Test
     public void testCon() {
-        IClient client = ClientCache.getClient(DataSourceType.HDFS.getVal());
+        IClient client = ClientCache.getClient(DataSourceType.TBDS_HDFS.getVal());
         Boolean isConnected = client.testCon(source);
         if (Boolean.FALSE.equals(isConnected)) {
             throw new DtLoaderException("connection exception");
