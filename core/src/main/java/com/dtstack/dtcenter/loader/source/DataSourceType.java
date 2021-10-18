@@ -92,7 +92,11 @@ public enum DataSourceType {
     OPENTSDB(56, 131, "OpenTSDB", "opentsdb"),
     BEATS(16, 132, "Beats", "null"),
     Spark(1002, 133, "Spark", "spark"),
-    KylinRestful(58, 135, "KylinRestful", "kylinrestful")
+    KylinRestful(58, 135, "KylinRestful", "kylinrestful"),
+
+    TBDS_HDFS(60, 136, "TBDS_HDFS", "tbds_hdfs"),
+    TBDS_HBASE(61, 137, "TBDS_HBASE", "tbds_hbase"),
+    TBDS_KAFKA(62, 138, "TBDS_KAFKA", "tbds_kafka"),
     ;
 
     DataSourceType(int val, int order, String name, String pluginName) {
@@ -146,6 +150,7 @@ public enum DataSourceType {
         KAFKA_S.add(KAFKA_10.val);
         KAFKA_S.add(KAFKA_11.val);
         KAFKA_S.add(KAFKA_2X.val);
+        KAFKA_S.add(TBDS_KAFKA.val);
     }
 
     /**
