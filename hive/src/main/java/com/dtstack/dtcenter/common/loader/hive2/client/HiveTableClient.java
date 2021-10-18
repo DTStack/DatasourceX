@@ -56,6 +56,16 @@ public class HiveTableClient extends AbsTableClient {
                 break;
             }
         }
+        if (StringUtils.isEmpty(tableType)) {
+            for (Map<String, Object> row : result) {
+                String colName = MapUtils.getString(row, "col_name");
+                if (StringUtils.containsIgnoreCase(colName, "Type")) {
+                    tableType = MapUtils.getString(row, "data_type");
+                    break;
+                }
+            }
+        }
+        log.info("table schema :{},table name:{}, type:{}", schema, tableName, tableType);
         return StringUtils.containsIgnoreCase(tableType, "VIEW");
     }
 
