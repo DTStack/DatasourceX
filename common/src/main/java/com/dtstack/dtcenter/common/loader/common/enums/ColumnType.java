@@ -54,6 +54,8 @@ public enum ColumnType {
     DATE, TIMESTAMP, TIME,
     DECIMAL, YEAR, BIT,
 
+    ARRAY, MAP, STRUCT,
+
     OBJECT;
 
     public static List<ColumnType> TIME_TYPE = Arrays.asList(
@@ -82,6 +84,10 @@ public enum ColumnType {
 
         if (type.contains(DtClassConsistent.PublicConsistent.LEFT_PARENTHESIS_SYMBOL)) {
             type = type.substring(0, type.indexOf(DtClassConsistent.PublicConsistent.LEFT_PARENTHESIS_SYMBOL));
+        }
+
+        if (type.contains(DtClassConsistent.PublicConsistent.LEFT_GREATER_SYMBOL)) {
+            type = type.substring(0, type.indexOf(DtClassConsistent.PublicConsistent.LEFT_GREATER_SYMBOL));
         }
 
         type = type.toUpperCase(Locale.ENGLISH);
