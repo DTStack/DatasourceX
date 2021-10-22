@@ -62,10 +62,10 @@ public class SparkClient extends AbsRdbmsClient {
     private static final String CURRENT_DB = "select current_database()";
 
     // 创建库指定注释
-    private static final String CREATE_DB_WITH_COMMENT = "create database if not exists %s comment '%s'";
+    private static final String CREATE_DB_WITH_COMMENT = "create database %s comment '%s'";
 
     // 创建库
-    private static final String CREATE_DB = "create database if not exists %s";
+    private static final String CREATE_DB = "create database %s";
 
     // 查询指定schema下的表
     private static final String TABLE_BY_SCHEMA = "show tables in %s";

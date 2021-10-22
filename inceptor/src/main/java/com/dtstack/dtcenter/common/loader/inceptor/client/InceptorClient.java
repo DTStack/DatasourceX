@@ -67,7 +67,7 @@ public class InceptorClient extends AbsRdbmsClient {
     private static final String CREATE_DB_WITH_COMMENT = "create database if not exists %s comment '%s'";
 
     // 创建库
-    private static final String CREATE_DB = "create database if not exists %s";
+    private static final String CREATE_DB = "create database %s";
 
     // 模糊查询查询指定schema下的表
     private static final String TABLE_BY_SCHEMA_LIKE = "show tables in %s like '%s'";

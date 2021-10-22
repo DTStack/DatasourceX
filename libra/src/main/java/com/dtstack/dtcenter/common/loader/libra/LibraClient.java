@@ -32,7 +32,7 @@ public class LibraClient extends AbsRdbmsClient {
     private static final String DATABASE_QUERY = "select nspname from pg_namespace";
 
     // 创建schema
-    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
+    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema %s ";
 
     // 判断schema是否存在
     private static final String DATABASE_IS_EXISTS = "select nspname from pg_namespace where nspname = '%s'";

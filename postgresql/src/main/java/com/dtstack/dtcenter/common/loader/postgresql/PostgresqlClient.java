@@ -69,7 +69,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
     private static final String SHOW_VERSION = "show server_version";
 
     // 创建 schema
-    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
+    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema %s ";
 
     // 查询表注释
     private static final String TABLE_COMMENT = "select relname as tabname, cast(obj_description(oid,'pg_class') as varchar) as comment from pg_class c where relname = '%s' %s";

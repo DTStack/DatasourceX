@@ -44,7 +44,7 @@ public class MysqlClient extends AbsRdbmsClient {
     private static final String LIMIT_SQL = " limit %s ";
 
     // 创建数据库
-    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
+    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema %s ";
 
     @Override
     protected ConnFactory getConnFactory() {
