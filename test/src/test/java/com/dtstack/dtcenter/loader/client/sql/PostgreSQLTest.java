@@ -48,7 +48,7 @@ public class PostgreSQLTest extends BaseTest {
     /**
      * 数据准备
      */
-    @BeforeClass
+    //@BeforeClass
     public static void beforeClass() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
@@ -163,6 +163,12 @@ public class PostgreSQLTest extends BaseTest {
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
+    @Test
+    public void getTableListPattern()  {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().schema("public").view(true).tableNamePattern("tb").build();
+        List<String> tableList = client.getTableList(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
+    }
     /**
      * 获取java 标准字段属性
      */
