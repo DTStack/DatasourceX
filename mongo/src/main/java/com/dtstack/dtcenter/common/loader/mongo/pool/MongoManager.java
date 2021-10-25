@@ -10,6 +10,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
+import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -83,6 +84,7 @@ public class MongoManager {
                 .maxWaitTime(poolConfig.getConnectionTimeout().intValue())
                 .minConnectionsPerHost(poolConfig.getMinimumIdle())
                 .connectionsPerHost(poolConfig.getMaximumPoolSize())
+                .readPreference(ReadPreference.secondaryPreferred())
                 .build();
         Matcher matcher = USER_PWD_PATTERN.matcher(hostPorts);
         if (matcher.matches()) {
