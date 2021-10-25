@@ -51,7 +51,7 @@ public class OceanBaseClient<T> extends AbsRdbmsClient<T> {
     private static final String LIMIT_SQL = " limit %s ";
 
     // 创建数据库
-    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
+    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema %s ";
 
     // 判断table是否在schema中
     private static final String TABLE_IS_IN_SCHEMA = "select table_name from information_schema.tables where table_schema='%s' and table_name = '%s'";
