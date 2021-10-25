@@ -14,6 +14,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
+import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
@@ -240,6 +241,7 @@ public class MongoDBUtils {
         hostPorts = hostPorts.trim();
         MongoClientOptions options = MongoClientOptions.builder()
                 .serverSelectionTimeout(TIME_OUT)
+                .readPreference(ReadPreference.secondaryPreferred())
                 .build();
         Matcher matcher = USER_PWD_PATTERN.matcher(hostPorts);
         if (matcher.matches()) {
