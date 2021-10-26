@@ -31,18 +31,18 @@ import java.util.Objects;
  * @Description：SqlServer 客户端
  */
 public class SqlServerClient extends AbsRdbmsClient {
-    private static final String TABLE_QUERY_ALL = "select table_name, table_schema from information_schema.tables where table_type in ('VIEW', 'BASE TABLE')";
-    private static final String TABLE_QUERY = "select table_name, table_schema from information_schema.tables where table_type in ('BASE TABLE')";
+    private static final String TABLE_QUERY_ALL = "select table_name, table_schema from INFORMATION_SCHEMA.TABLES where table_type in ('VIEW', 'BASE TABLE')";
+    private static final String TABLE_QUERY = "select table_name, table_schema from INFORMATION_SCHEMA.TABLES where table_type in ('BASE TABLE')";
 
-    private static final String SEARCH_BY_COLUMN_SQL = " and charIndex('%s', a.name) > 0 ";
+    private static final String SEARCH_BY_COLUMN_SQL = " and charIndex('%s', table_name) > 0 ";
 
     private static final String TABLE_SHOW = "[%s].[%s]";
 
     // 获取正在使用数据库
     private static final String CURRENT_DB = "Select Name From Master..SysDataBases Where DbId=(Select Dbid From Master..SysProcesses Where Spid = @@spid)";
 
-    private static final String SEARCH_LIMIT_SQL = "select top %s table_name from information_schema.tables where 1=1";
-    private static final String SEARCH_SQL = "select table_name from information_schema.tables where 1=1";
+    private static final String SEARCH_LIMIT_SQL = "select top %s table_name from INFORMATION_SCHEMA.TABLES where 1=1";
+    private static final String SEARCH_SQL = "select table_name from INFORMATION_SCHEMA.TABLES where 1=1";
     private static final String SCHEMA_SQL = " and table_schema='%s'";
     private static final String TABLE_NAME_SQL = " and charIndex('%s',table_name) > 0";
 
