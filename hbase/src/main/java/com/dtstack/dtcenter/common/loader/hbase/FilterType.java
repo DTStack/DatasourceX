@@ -4,7 +4,6 @@ import com.dtstack.dtcenter.loader.enums.HbaseFilterType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.hadoop.hbase.filter.CompareFilter;
 import org.apache.hadoop.hbase.filter.Filter;
-import org.apache.hadoop.hbase.filter.PageFilter;
 import org.apache.hadoop.hbase.filter.RowFilter;
 import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
 
@@ -21,8 +20,8 @@ public enum FilterType {
 
         @Override
         public Filter getFilter(com.dtstack.dtcenter.loader.dto.filter.Filter filter) {
-            com.dtstack.dtcenter.loader.dto.filter.PageFilter pageFilter = (com.dtstack.dtcenter.loader.dto.filter.PageFilter) filter;
-            return new PageFilter(pageFilter.getPageSize());
+            // 不在提供 PageFilter
+            return null;
         }
     },
 
