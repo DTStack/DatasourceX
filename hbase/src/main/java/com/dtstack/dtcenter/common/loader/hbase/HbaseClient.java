@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.hbase;
 import com.dtstack.dtcenter.common.loader.common.nosql.AbsNoSqlClient;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.filter.PageFilter;
 import com.dtstack.dtcenter.loader.dto.filter.RowFilter;
 import com.dtstack.dtcenter.loader.dto.filter.TimestampFilter;
 import com.dtstack.dtcenter.loader.dto.source.HbaseSourceDTO;
@@ -30,7 +31,6 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
-import org.apache.hadoop.hbase.filter.PageFilter;
 import org.apache.hadoop.hbase.io.TimeRange;
 import org.apache.hadoop.hbase.util.Bytes;
 
@@ -172,6 +172,8 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
                 }
             }
             boolean isAccurateQuery = false;
+            // 设置 pageFilter hyperbase 不支持，多 region 情况下可能也不准确，通过 limit 限制
+            long limit = Long.MAX_VALUE;
             if (hbaseFilter != null && hbaseFilter.size() > 0) {
                 for (com.dtstack.dtcenter.loader.dto.filter.Filter filter : hbaseFilter){
                     if (getAccurateQuery(table, results, filter)) {
@@ -184,17 +186,30 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
                         fillTimestampFilter(scan, timestampFilter);
                         continue;
                     }
+                    // 分页额外处理
+                    if (filter instanceof PageFilter) {
+                        limit = ((PageFilter) filter).getPageSize();
+                    }
                     //将core包下的filter转换成hbase包下的filter
                     Filter transFilter = FilterType.get(filter);
-                    filterList.add(transFilter);
+                    if (Objects.nonNull(transFilter)) {
+                        filterList.add(transFilter);
+                    }
                 }
                 FilterList filters = new FilterList(filterList);
                 scan.setFilter(filters);
             }
+            scan.setMaxResultSize(limit);
             if(!isAccurateQuery){
                 rs = table.getScanner(scan);
                 for (Result r : rs) {
+                    if (CollectionUtils.isEmpty(r.listCells())) {
+                        continue;
+                    }
                     results.add(r);
+                    if (results.size() >= limit) {
+                        break;
+                    }
                 }
             }
         } catch (Exception e){

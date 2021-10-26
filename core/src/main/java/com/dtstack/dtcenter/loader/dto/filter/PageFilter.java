@@ -9,6 +9,7 @@ import com.dtstack.dtcenter.loader.enums.HbaseFilterType;
  * date：Created in 上午10:06 2020/8/25
  * company: www.dtstack.com
  */
+@Deprecated
 public class PageFilter extends Filter {
 
     private long pageSize;
