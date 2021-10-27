@@ -20,6 +20,7 @@ import org.apache.parquet.hadoop.ParquetReader;
 import org.apache.parquet.hadoop.example.GroupReadSupport;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.schema.DecimalMetadata;
+import org.apache.parquet.schema.GroupType;
 import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.Type;
 
@@ -243,8 +244,12 @@ public class HiveParquetDownload implements IDownloader {
         Type type = currentLine.getType().getType(index);
         String value;
         try{
+            //类型是 GroupType 不能强转成 PrimitiveType, 如map
+            if(type instanceof GroupType) {
+                value = currentLine.getValueToString(index,0);
+            }
             // 处理时间戳类型
-            if("INT96".equals(type.asPrimitiveType().getPrimitiveTypeName().name())){
+           else if("INT96".equals(type.asPrimitiveType().getPrimitiveTypeName().name())){
                 long time = getTimestampMillis(currentLine.getInt96(index,0));
                 value = String.valueOf(time);
             } else if (type.getOriginalType() != null && type.getOriginalType().name().equalsIgnoreCase("DATE")){
