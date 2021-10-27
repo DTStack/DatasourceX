@@ -28,8 +28,8 @@ import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.filter.CompareFilter;
+import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
-import org.apache.hadoop.hbase.filter.PageFilter;
 import org.apache.hadoop.hbase.filter.RegexStringComparator;
 import org.apache.hadoop.hbase.util.Bytes;
 
@@ -323,7 +323,6 @@ public class HbaseClientSpecial implements IHbase {
             }
             // 数据预览限制返回条数
             scan.setMaxResultSize(previewNum);
-            scan.setFilter(new PageFilter(previewNum));
             rs = table.getScanner(scan);
             List<Result> results = Lists.newArrayList();
             for (Result row : rs) {
@@ -447,7 +446,10 @@ public class HbaseClientSpecial implements IHbase {
                     convertFilter(loaderFilterList, hbaseFilterList);
                     scan.setFilter(hbaseFilterList);
                 } else {
-                    scan.setFilter(FilterType.get(loaderFilter));
+                    Filter filter = FilterType.get(loaderFilter);
+                    if (Objects.nonNull(filter)) {
+                        scan.setFilter(filter);
+                    }
                 }
             }
             // 设置启始 rowKey
@@ -569,7 +571,10 @@ public class HbaseClientSpecial implements IHbase {
                 convertFilter(filterList, filterNew);
                 hbaseFilterList.addFilter(filterNew);
             } else {
-                hbaseFilterList.addFilter(FilterType.get(filter));
+                Filter filterConvert = FilterType.get(filter);
+                if (Objects.nonNull(filterConvert)) {
+                    hbaseFilterList.addFilter(filterConvert);
+                }
             }
         }
     }

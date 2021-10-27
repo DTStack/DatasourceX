@@ -75,6 +75,18 @@ public class HadoopConfUtil {
         return combineHdfsConfig(conf, config, kerberosConfig);
     }
 
+    public static Configuration getHdfsConf(String tbdsUsername, String tbdsSecureId, String tbdsSecureKey, String defaultFS, String config, Map<String, Object> kerberosConfig) {
+        Configuration conf = new Configuration(false);
+        //tdbs 校验
+        conf.set("hadoop.security.authentication", "tbds");
+        conf.set("hadoop_security_authentication_tbds_username", tbdsUsername);
+        conf.set("hadoop_security_authentication_tbds_secureid", tbdsSecureId);
+        conf.set("hadoop_security_authentication_tbds_securekey", tbdsSecureKey);
+        // 设置默认属性
+        setHadoopDefaultConfig(conf, defaultFS, kerberosConfig);
+        return combineHdfsConfig(conf, config, kerberosConfig);
+    }
+
     /**
      * 设置 HDFS 配置信息
      *

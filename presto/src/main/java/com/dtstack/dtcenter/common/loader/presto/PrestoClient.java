@@ -41,7 +41,7 @@ public class PrestoClient<T> extends AbsRdbmsClient<T> {
     private static final String SHOW_DB_LIKE = "SHOW SCHEMAS LIKE '%s'";
 
     // 创建schema
-    private static final String CREATE_SCHEMA = "CREATE SCHEMA IF NOT EXISTS %s";
+    private static final String CREATE_SCHEMA = "CREATE SCHEMA %s";
 
     // 判断table是否在schema中 ，不过滤视图
     private static final String TABLE_IS_IN_SCHEMA = "SELECT table_name FROM information_schema.tables WHERE table_schema='%s' AND table_name = '%s'";

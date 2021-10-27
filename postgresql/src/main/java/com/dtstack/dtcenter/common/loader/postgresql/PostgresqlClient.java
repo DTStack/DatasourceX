@@ -45,7 +45,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
     private static final String DONT_EXIST = "doesn't exist";
 
     // 获取指定schema下的表，包括视图
-    private static final String SHOW_TABLE_AND_VIEW_BY_SCHEMA_SQL = "SELECT table_name FROM information_schema.tables WHERE table_schema = '%s' ";
+    private static final String SHOW_TABLE_AND_VIEW_BY_SCHEMA_SQL = "SELECT table_name FROM information_schema.tables WHERE table_schema = '%s' %s";
 
     // 获取指定schema下的表，不包括视图
     private static final String SHOW_TABLE_BY_SCHEMA_SQL = "SELECT table_name FROM information_schema.tables WHERE table_schema = '%s' AND table_type = 'BASE TABLE' %s";
@@ -69,7 +69,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
     private static final String SHOW_VERSION = "show server_version";
 
     // 创建 schema
-    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema if not exists %s ";
+    private static final String CREATE_SCHEMA_SQL_TMPL = "create schema %s ";
 
     // 查询表注释
     private static final String TABLE_COMMENT = "select relname as tabname, cast(obj_description(oid,'pg_class') as varchar) as comment from pg_class c where relname = '%s' %s";
@@ -156,7 +156,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
             String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : postgresqlSourceDTO.getSchema();
             String querySql;
             if (StringUtils.isNotBlank(schema)) {
-                querySql = queryDTO.getView() ? String.format(SHOW_TABLE_AND_VIEW_BY_SCHEMA_SQL, schema) : String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema, constr.toString());
+                querySql = queryDTO.getView() ? String.format(SHOW_TABLE_AND_VIEW_BY_SCHEMA_SQL, schema, constr.toString()) : String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema, constr.toString());
             }else {
                 querySql = queryDTO.getView() ? String.format(ALL_TABLE_AND_VIEW_SQL, constr.toString()) : String.format(ALL_TABLE_SQL, constr.toString());
             }
