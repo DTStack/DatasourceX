@@ -10,6 +10,7 @@ import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @company: www.dtstack.com
@@ -275,6 +276,23 @@ public interface IHdfsFile {
      * @throws Exception
      */
     IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat);
+
+    /**
+     * 根据文件格式获取对应的downlaoder
+     *
+     * @param source          数据源信息
+     * @param tableLocation   表路径
+     * @param allColumns      所有字段信息
+     * @param filterColumns   需要查询的字段信息
+     * @param filterPartition 过滤分区信息 key：分区字段, value: 分区值
+     * @param partitions      分区表所有分区(如果是分区表需要传过来,不然有可能会查询到非关联分区),也可以用来过滤分区
+     * @param fieldDelimiter  字段分隔符
+     * @param fileFormat      存储类型
+     * @return 数据下载器
+     */
+    IDownloader getDownloaderByFormatWithType(ISourceDTO source, String tableLocation,
+                                              List<ColumnMetaDTO> allColumns, List<String> filterColumns, Map<String, String> filterPartition,
+                                              List<String> partitions, String fieldDelimiter, String fileFormat);
 
     /**
      * 获取hdfs上存储文件的字段信息

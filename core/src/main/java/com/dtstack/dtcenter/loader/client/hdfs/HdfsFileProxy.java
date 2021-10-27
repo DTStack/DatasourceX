@@ -15,6 +15,7 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @company: www.dtstack.com
@@ -267,6 +268,16 @@ public class HdfsFileProxy implements IHdfsFile {
     public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat) {
         try {
             return ClassLoaderCallBackMethod.callbackAndReset(() -> new DownloaderProxy(targetClient.getDownloaderByFormat(source, tableLocation, columnNames, fieldDelimiter, fileFormat)),
+                    targetClient.getClass().getClassLoader());
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public IDownloader getDownloaderByFormatWithType(ISourceDTO source, String tableLocation, List<ColumnMetaDTO> allColumns, List<String> filterColumns, Map<String, String> filterPartition, List<String> partitions, String fieldDelimiter, String fileFormat) {
+        try {
+            return ClassLoaderCallBackMethod.callbackAndReset(() -> new DownloaderProxy(targetClient.getDownloaderByFormatWithType(source, tableLocation, allColumns, filterColumns, filterPartition, partitions, fieldDelimiter, fileFormat)),
                     targetClient.getClass().getClassLoader());
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);

@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.hdfs.client;
 
+import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
@@ -10,6 +11,9 @@ import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsORCDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsParquetDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.HdfsTextDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.downloader.YarnLogDownload.YarnTFileDownload;
+import com.dtstack.dtcenter.common.loader.hdfs.downloader.tableDownload.HiveORCDownload;
+import com.dtstack.dtcenter.common.loader.hdfs.downloader.tableDownload.HiveParquetDownload;
+import com.dtstack.dtcenter.common.loader.hdfs.downloader.tableDownload.HiveTextDownload;
 import com.dtstack.dtcenter.common.loader.hdfs.fileMerge.core.CombineMergeBuilder;
 import com.dtstack.dtcenter.common.loader.hdfs.fileMerge.core.CombineServer;
 import com.dtstack.dtcenter.common.loader.hdfs.hdfswriter.HdfsOrcWriter;
@@ -40,6 +44,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.yarn.logaggregation.filecontroller.ifile.LogAggregationIndexedFileController;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.security.PrivilegedAction;
@@ -47,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -61,6 +67,9 @@ public class HdfsFileClient implements IHdfsFile {
 
     // yarn聚合日志格式，默认TFIle
     private static final String LOG_FORMAT = "yarn.log-aggregation.file-formats";
+
+    // null 名称的字段名
+    private static final String NULL_COLUMN = "null";
 
     @Override
     public FileStatus getStatus(ISourceDTO iSource, String location) {
@@ -359,47 +368,106 @@ public class HdfsFileClient implements IHdfsFile {
 
     @Override
     public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat) {
+        return null;
+    }
+
+    @Override
+    public IDownloader getDownloaderByFormatWithType(ISourceDTO source, String tableLocation, List<ColumnMetaDTO> allColumns, List<String> filterColumns, Map<String, String> filterPartition, List<String> partitions, String fieldDelimiter, String fileFormat) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
+        Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
+        // 普通字段集合
+        ArrayList<ColumnMetaDTO> commonColumn = new ArrayList<>();
+        // 分区字段集合
+        ArrayList<String> partitionColumns = new ArrayList<>();
+        if (CollectionUtils.isEmpty(allColumns)) {
+            throw new DtLoaderException("allColumns 字段信息不能为空");
+        }
+        for (ColumnMetaDTO columnMetaDatum : allColumns) {
+            // 非分区字段
+            if (columnMetaDatum.getPart()) {
+                partitionColumns.add(columnMetaDatum.getKey());
+                continue;
+            }
+            commonColumn.add(columnMetaDatum);
+        }
+        // 需要的字段索引（包括分区字段索引）
+        List<Integer> needIndex = Lists.newArrayList();
+        // columns字段不为空且不包含 * 时获取指定字段的数据
+        if (CollectionUtils.isNotEmpty(filterColumns) && !filterColumns.contains("*")) {
+            // 保证查询字段的顺序!
+            for (String column : filterColumns) {
+                if (NULL_COLUMN.equalsIgnoreCase(column)) {
+                    needIndex.add(Integer.MAX_VALUE);
+                    continue;
+                }
+                // 判断查询字段是否存在
+                boolean check = false;
+                for (int j = 0; j < allColumns.size(); j++) {
+                    if (column.equalsIgnoreCase(allColumns.get(j).getKey())) {
+                        needIndex.add(j);
+                        check = true;
+                        break;
+                    }
+                }
+                if (!check) {
+                    throw new DtLoaderException("The query field does not exist! Field name：" + column);
+                }
+            }
+        }
         return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
                 (PrivilegedAction<IDownloader>) () -> {
                     try {
-                        return createDownloader(hdfsSourceDTO, tableLocation, columnNames, fieldDelimiter, fileFormat, hdfsSourceDTO.getKerberosConfig());
+                        return createDownloader(fileFormat, conf, tableLocation, commonColumn, fieldDelimiter, partitionColumns, needIndex, filterPartition, partitions, hdfsSourceDTO.getKerberosConfig());
                     } catch (Exception e) {
                         throw new DtLoaderException(String.format("create downloader exception : %s", e.getMessage()), e);
                     }
                 }
         );
-
     }
 
     /**
-     * 根据存储格式创建对应的hdfs下载器
+     * 根据存储格式创建对应的hiveDownloader
      *
-     * @param hdfsSourceDTO
-     * @param tableLocation
-     * @param fieldDelimiter
-     * @param fileFormat
-     * @return
+     * @param storageMode      存储格式
+     * @param conf             配置
+     * @param tableLocation    表hdfs路径
+     * @param columns          字段集合
+     * @param fieldDelimiter   textFile 表列分隔符
+     * @param partitionColumns 分区字段集合
+     * @param needIndex        需要查询的字段索引位置
+     * @param filterPartitions 需要查询的分区
+     * @param partitions       全部分区
+     * @param kerberosConfig   kerberos 配置
+     * @return downloader 数据下载器
+     * @throws Exception 异常信息
      */
-    private IDownloader createDownloader(HdfsSourceDTO hdfsSourceDTO, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat, Map<String, Object> kerberosConfig) throws Exception {
-        if (FileFormat.TEXT.getVal().equals(fileFormat)) {
-            HdfsTextDownload hdfsTextDownload = new HdfsTextDownload(hdfsSourceDTO, tableLocation, columnNames, fieldDelimiter, null, kerberosConfig);
-            hdfsTextDownload.configure();
-            return hdfsTextDownload;
+    private IDownloader createDownloader(String storageMode, Configuration conf, String tableLocation,
+                                         List<ColumnMetaDTO> columns, String fieldDelimiter,
+                                         ArrayList<String> partitionColumns, List<Integer> needIndex,
+                                         Map<String, String> filterPartitions, List<String> partitions,
+                                         Map<String, Object> kerberosConfig) throws Exception {
+        List<String> columnNames = columns.stream().map(ColumnMetaDTO::getKey).collect(Collectors.toList());
+        if (StringUtils.equalsIgnoreCase(FileFormat.TEXT.getVal(), storageMode)) {
+            HiveTextDownload hiveTextDownload = new HiveTextDownload(conf, tableLocation, columnNames,
+                    fieldDelimiter, partitionColumns, filterPartitions,
+                    needIndex, partitions, kerberosConfig);
+            hiveTextDownload.configure();
+            return hiveTextDownload;
         }
 
-        if (FileFormat.ORC.getVal().equals(fileFormat)) {
-            HdfsORCDownload hdfsORCDownload = new HdfsORCDownload(hdfsSourceDTO, tableLocation, columnNames, null, kerberosConfig);
-            hdfsORCDownload.configure();
-            return hdfsORCDownload;
+        if (StringUtils.equalsIgnoreCase(FileFormat.ORC.getVal(), storageMode)) {
+            HiveORCDownload hiveORCDownload = new HiveORCDownload(conf, tableLocation, columnNames,
+                    partitionColumns, needIndex, partitions, kerberosConfig);
+            hiveORCDownload.configure();
+            return hiveORCDownload;
         }
 
-        if (FileFormat.PARQUET.getVal().equals(fileFormat)) {
-            HdfsParquetDownload hdfsParquetDownload = new HdfsParquetDownload(hdfsSourceDTO, tableLocation, columnNames, null, kerberosConfig);
-            hdfsParquetDownload.configure();
-            return hdfsParquetDownload;
+        if (StringUtils.equalsIgnoreCase(FileFormat.PARQUET.getVal(), storageMode)) {
+            HiveParquetDownload hiveParquetDownload = new HiveParquetDownload(conf, tableLocation, columns,
+                    partitionColumns, needIndex, filterPartitions, partitions, kerberosConfig);
+            hiveParquetDownload.configure();
+            return hiveParquetDownload;
         }
-
         throw new DtLoaderException("This storage type file is not currently supported for writing to hdfs");
     }
 
