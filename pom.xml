@@ -63,6 +63,8 @@
         <module>kylinrestful</module>
         <module>restful</module>
         <module>trino</module>
+        <module>tbds_hbase</module>
+        <module>tbds_kafka</module>
     </modules>
     <packaging>pom</packaging>
 
