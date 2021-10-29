@@ -148,8 +148,8 @@ public class ImpalaDownload implements IDownloader {
 
         } else {
             // 读取下一页
-            //todo 大数据量情况下，会有严重的性能问题,后续优化
-            String limitSQL = String.format("SELECT * FROM (%s) t LIMIT %s , %s", sql, readLine, pageSize);
+            String names = columnNames.stream().map(column -> column.getName().contains("`") ? column.getName() : String.format("`%s`", column.getName())).collect(Collectors.joining(","));
+            String limitSQL = String.format("SELECT * FROM (%s) t ORDER BY %s LIMIT %s OFFSET %s", sql,names, pageSize, readLine);
             try (ResultSet resultSet = statement.executeQuery(limitSQL);) {
                 List<List<String>> pageTemp = new ArrayList<>(100);
                 while (resultSet.next()) {
