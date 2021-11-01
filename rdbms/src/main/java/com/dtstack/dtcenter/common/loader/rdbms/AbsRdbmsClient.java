@@ -295,6 +295,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         List<ColumnMetaDTO> columns = new ArrayList<>();
         try {
             statement = rdbmsSourceDTO.getConnection().createStatement();
+            statement.setMaxRows(1);
             String queryColumnSql = queryDTO.getSql();
             rs = statement.executeQuery(queryColumnSql);
             ResultSetMetaData rsMetaData = rs.getMetaData();
@@ -337,6 +338,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         List<ColumnMetaDTO> columns = new ArrayList<>();
         try {
             statement = rdbmsSourceDTO.getConnection().createStatement();
+            statement.setMaxRows(1);
             String queryColumnSql =
                     "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(rdbmsSourceDTO.getSchema(), queryDTO.getTableName()) + " where 1=2";
 
