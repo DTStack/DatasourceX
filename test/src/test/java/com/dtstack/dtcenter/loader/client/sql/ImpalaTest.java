@@ -31,8 +31,10 @@ import java.util.Map;
  */
 public class ImpalaTest extends BaseTest {
     private static ImpalaSourceDTO source = ImpalaSourceDTO.builder()
-            .url("jdbc:impala://172.16.101.17:21050/default")
+            .url("jdbc:impala://172.16.23.254:8191/default;AuthMech=3")
             .defaultFS("hdfs://ns1")
+            .username("hxb")
+            .password("admin123")
             .poolConfig(new PoolConfig())
             .build();
 
@@ -69,6 +71,27 @@ public class ImpalaTest extends BaseTest {
         client.executeSqlWithoutResultSet(source, queryDTO);
         queryDTO = SqlQueryDTO.builder().sql("create table loader_download_1(id int comment 'ID', name string comment '姓名_name') COMMENT 'table comment' row format delimited fields terminated by ','").build();
         client.executeSqlWithoutResultSet(source, queryDTO);
+
+        client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
+        queryDTO = SqlQueryDTO.builder().sql("drop table if exists loader_test_q").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("create table loader_test_q (`class` int comment 'ID', `name` string comment '姓名_name') comment 'table comment'").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+        queryDTO = SqlQueryDTO.builder().sql("insert into loader_test_q values (1, 'nanqi')").build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+    }
+
+
+    @Test
+    public void downloadBySql1 () throws Exception {
+        IClient client = ClientCache.getClient(DataSourceType.IMPALA.getVal());
+        IDownloader downloader = client.getDownloader(source, SqlQueryDTO.builder().sql("select * from loader_test_q").build());
+        Assert.assertEquals(2, downloader.getMetaInfo().size());
+        while (!downloader.reachedEnd()) {
+            List<List> result = (List<List>) downloader.readNext();
+            Assert.assertTrue(CollectionUtils.isNotEmpty(result));
+        }
+        downloader.close();
     }
 
     @Test
