@@ -19,6 +19,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.apache.zookeeper.client.ZooKeeperSaslClient;
 import sun.security.krb5.Config;
 
 import javax.annotation.PreDestroy;
@@ -101,6 +102,7 @@ public class HbasePoolManager {
                     try {
                         // 每次都清空 Configuration
                         javax.security.auth.login.Configuration.setConfiguration(null);
+                        ZooKeeperSaslClient.logout();
                         if (MapUtils.isNotEmpty(kerberosConfig)) {
                             // hbase zk kerberos 需要写 jaas 文件
                             String jaasConf = JaasUtil.writeJaasConf(kerberosConfig);

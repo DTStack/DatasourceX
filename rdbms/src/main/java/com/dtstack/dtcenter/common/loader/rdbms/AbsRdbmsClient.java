@@ -330,6 +330,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         List<ColumnMetaDTO> columns = new ArrayList<>();
         try {
             statement = rdbmsSourceDTO.getConnection().createStatement();
+            statement.setMaxRows(1);
             String queryColumnSql = queryDTO.getSql();
             rs = statement.executeQuery(queryColumnSql);
             ResultSetMetaData rsMetaData = rs.getMetaData();
@@ -372,6 +373,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         List<ColumnMetaDTO> columns = new ArrayList<>();
         try {
             statement = rdbmsSourceDTO.getConnection().createStatement();
+            statement.setMaxRows(1);
             String queryColumnSql =
                     "select " + CollectionUtil.listToStr(queryDTO.getColumns()) + " from " + transferSchemaAndTableName(rdbmsSourceDTO, queryDTO) + " where 1=2";
 
@@ -466,7 +468,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
                 //一个columnData存储一行数据信息
                 ArrayList<Object> columnData = Lists.newArrayList();
                 for (int i = 0; i < len; i++) {
-                    Object result = dealResult(rs.getObject(i + 1));
+                    String result = dealPreviewResult(rs.getObject(i + 1));
                     columnData.add(result);
                 }
                 previewList.add(columnData);
@@ -477,6 +479,18 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
             DBUtil.closeDBResources(rs, stmt, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
         return previewList;
+    }
+
+    /**
+     * 处理 RDBMS 数据源数据预览结果，返回 string 类型
+     *
+     * @param result 查询结果
+     * @return 处理后的结果
+     */
+    protected String dealPreviewResult(Object result) {
+        Object dealResult = dealResult(result);
+        // 提前进行 toString
+        return Objects.isNull(dealResult) ? null : dealResult.toString();
     }
 
     /**

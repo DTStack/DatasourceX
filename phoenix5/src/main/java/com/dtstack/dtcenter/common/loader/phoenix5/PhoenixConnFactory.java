@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -107,6 +108,14 @@ public class PhoenixConnFactory extends ConnFactory {
                     try {
                         return DriverManager.getConnection(phoenix5SourceDTO.getUrl(), props);
                     } catch (Exception e) {
+                        if (e instanceof SQLException) {
+                            props.setProperty("phoenix.schema.isNamespaceMappingEnabled","true");
+                            try {
+                                return DriverManager.getConnection(phoenix5SourceDTO.getUrl(), props);
+                            } catch (SQLException throwables) {
+                                throw new DtLoaderException("getPhoenix5Connection error : " + e.getMessage(), e);
+                            }
+                        }
                         throw new DtLoaderException("getPhoenix5Connection error : " + e.getMessage(), e);
                     }
                 }
