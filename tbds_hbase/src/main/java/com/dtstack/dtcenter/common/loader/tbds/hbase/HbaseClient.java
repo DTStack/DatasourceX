@@ -246,19 +246,19 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
         }
         switch (compareOp) {
             case LESS:
-                scan.setTimeRange(TimeRange.INITIAL_MIN_TIMESTAMP, comparator);
+                scan.setTimeRange(0L, comparator);
                 break;
             case EQUAL:
                 scan.setTimeStamp(comparator);
                 break;
             case GREATER:
-                scan.setTimeRange(comparator + 1, TimeRange.INITIAL_MAX_TIMESTAMP);
+                scan.setTimeRange(comparator + 1, Long.MAX_VALUE);
                 break;
             case LESS_OR_EQUAL:
-                scan.setTimeRange(TimeRange.INITIAL_MIN_TIMESTAMP, comparator + 1);
+                scan.setTimeRange(0L, comparator + 1);
                 break;
             case GREATER_OR_EQUAL:
-                scan.setTimeRange(comparator, TimeRange.INITIAL_MAX_TIMESTAMP);
+                scan.setTimeRange(comparator, Long.MAX_VALUE);
                 break;
             default:
         }
