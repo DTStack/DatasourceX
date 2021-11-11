@@ -1,5 +1,6 @@
 package com.dtstack.dtcenter.common.loader.restful.http;
 
+import com.dtstack.dtcenter.common.loader.restful.http.request.HttpAddressManager;
 import com.dtstack.dtcenter.common.loader.restful.http.request.HttpDeleteWithEntity;
 import com.dtstack.dtcenter.common.loader.restful.http.request.HttpGetWithEntity;
 import com.dtstack.dtcenter.common.loader.restful.http.request.HttpPutWithEntity;
@@ -30,6 +31,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -59,10 +61,9 @@ public class HttpClient implements Closeable {
      */
     private final ScheduledExecutorService clearConnService;
 
-    /**
-     * 请求 url
-     */
-    private final String url;
+    private final HttpAddressManager httpAddressManager;
+
+    private String authorization;
 
     /**
      * header 集合
@@ -70,11 +71,15 @@ public class HttpClient implements Closeable {
     private final Map<String, String> headers;
 
     HttpClient(RestfulSourceDTO sourceDTO, CloseableHttpAsyncClient httpclient, ScheduledExecutorService clearConnService) {
-        this.url = sourceDTO.getUrl();
+        this.httpAddressManager = HttpAddressManager.createHttpAddressManager(sourceDTO);
         this.headers = sourceDTO.getHeaders();
         this.httpclient = httpclient;
         this.unCompletedTaskNum = new AtomicInteger(0);
         this.clearConnService = clearConnService;
+        //用户名密码base64加密
+        String userName = StringUtils.isEmpty(sourceDTO.getUsername()) ? "" : sourceDTO.getUsername();
+        String password = StringUtils.isEmpty(sourceDTO.getPassword()) ? "" : sourceDTO.getPassword();
+        this.authorization = Base64.getEncoder().encodeToString((userName + ":" + password).getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
@@ -162,7 +167,7 @@ public class HttpClient implements Closeable {
      * @return response
      */
     public Response post(String bodyData, Map<String, String> cookies, Map<String, String> headers) {
-        HttpPost request = new HttpPost(url);
+        HttpPost request = new HttpPost(httpAddressManager.getAddress());
         setHeaderAndCookie(request, cookies, headers);
         return execute(request, bodyData);
     }
@@ -176,7 +181,7 @@ public class HttpClient implements Closeable {
      * @return response
      */
     public Response delete(String bodyData, Map<String, String> cookies, Map<String, String> headers) {
-        HttpDeleteWithEntity request = new HttpDeleteWithEntity(url);
+        HttpDeleteWithEntity request = new HttpDeleteWithEntity(httpAddressManager.getAddress());
         setHeaderAndCookie(request, cookies, headers);
         return execute(request, bodyData);
     }
@@ -190,7 +195,7 @@ public class HttpClient implements Closeable {
      * @return response
      */
     public Response put(String bodyData, Map<String, String> cookies, Map<String, String> headers) {
-        HttpPutWithEntity request = new HttpPutWithEntity(url);
+        HttpPutWithEntity request = new HttpPutWithEntity(httpAddressManager.getAddress());
         setHeaderAndCookie(request, cookies, headers);
         return execute(request, bodyData);
     }
@@ -205,7 +210,7 @@ public class HttpClient implements Closeable {
      * @return response
      */
     public Response postMultipart(Map<String, String> params, Map<String, String> cookies, Map<String, String> headers, Map<String, File> files) {
-        HttpPost request = new HttpPost(url);
+        HttpPost request = new HttpPost(httpAddressManager.getAddress());
         setHeaderAndCookie(request, cookies, headers);
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         if (MapUtils.isNotEmpty(files)) {
@@ -255,9 +260,11 @@ public class HttpClient implements Closeable {
      * @return Response
      */
     private Response execute(HttpEntityEnclosingRequestBase request, String bodyData) {
+
+        request.addHeader("Content-Type", "application/json");
+        request.addHeader("Authorization", "Basic " +  authorization);
         // body 不为空时设置 entity
         if (StringUtils.isNotEmpty(bodyData)) {
-            request.addHeader("Content-Type", "application/json");
             request.setEntity(generateStringEntity(bodyData));
         }
         unCompletedTaskNum.incrementAndGet();
@@ -323,7 +330,7 @@ public class HttpClient implements Closeable {
     private URI createURI(Map<String, String> params) {
         URIBuilder builder;
         try {
-            builder = new URIBuilder(url);
+            builder = new URIBuilder(httpAddressManager.getAddress());
         } catch (URISyntaxException e) {
             throw new DtLoaderException(e.getMessage(), e);
         }
