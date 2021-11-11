@@ -97,6 +97,7 @@ public enum DataSourceType {
     TBDS_HDFS(60, 136, "TBDS_HDFS", "tbds_hdfs"),
     TBDS_HBASE(61, 137, "TBDS_HBASE", "tbds_hbase"),
     TBDS_KAFKA(62, 138, "TBDS_KAFKA", "tbds_kafka"),
+    DorisRestful(64, 139, "DorisRestful", "dorisrestful"),
     ;
 
     DataSourceType(int val, int order, String name, String pluginName) {
