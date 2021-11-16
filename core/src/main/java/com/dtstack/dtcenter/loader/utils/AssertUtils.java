@@ -1,5 +1,7 @@
 package com.dtstack.dtcenter.loader.utils;
 
+import com.alibaba.fastjson.JSONObject;
+import com.dtstack.dtcenter.loader.dto.restful.Response;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -55,6 +57,15 @@ public class AssertUtils {
         if (CollectionUtils.isEmpty(collection)) {
             throw new DtLoaderException(message);
         }
+    }
+
+    public static void isTrue(Response response, Integer code) {
+        if (response == null) {
+            throw new DtLoaderException("response is null");
+        }
+        JSONObject jsonObject = JSONObject.parseObject(response.getContent());
+        Integer statusCode = jsonObject.getInteger("code");
+        AssertUtils.isTrue(200 == response.getStatusCode() && code.equals(statusCode), response.toString());
     }
 
 }
