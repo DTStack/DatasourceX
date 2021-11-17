@@ -5,6 +5,7 @@ import com.dtstack.dtcenter.common.loader.restful.http.request.HttpDeleteWithEnt
 import com.dtstack.dtcenter.common.loader.restful.http.request.HttpGetWithEntity;
 import com.dtstack.dtcenter.common.loader.restful.http.request.HttpPutWithEntity;
 import com.dtstack.dtcenter.loader.dto.restful.Response;
+import com.dtstack.dtcenter.loader.dto.source.DorisRestfulSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RestfulSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
@@ -77,9 +78,11 @@ public class HttpClient implements Closeable {
         this.unCompletedTaskNum = new AtomicInteger(0);
         this.clearConnService = clearConnService;
         //用户名密码base64加密
-        String userName = StringUtils.isEmpty(sourceDTO.getUsername()) ? "" : sourceDTO.getUsername();
-        String password = StringUtils.isEmpty(sourceDTO.getPassword()) ? "" : sourceDTO.getPassword();
-        this.authorization = Base64.getEncoder().encodeToString((userName + ":" + password).getBytes(StandardCharsets.UTF_8));
+        if (sourceDTO instanceof DorisRestfulSourceDTO) {
+            String userName = StringUtils.isEmpty(sourceDTO.getUsername()) ? "" : sourceDTO.getUsername();
+            String password = StringUtils.isEmpty(sourceDTO.getPassword()) ? "" : sourceDTO.getPassword();
+            this.authorization = "Basic " + Base64.getEncoder().encodeToString((userName + ":" + password).getBytes(StandardCharsets.UTF_8));
+        }
     }
 
     @Override
@@ -262,7 +265,9 @@ public class HttpClient implements Closeable {
     private Response execute(HttpEntityEnclosingRequestBase request, String bodyData) {
 
         request.addHeader("Content-Type", "application/json");
-        request.addHeader("Authorization", "Basic " +  authorization);
+        if (Objects.nonNull(authorization)) {
+            request.addHeader("Authorization", authorization);
+        }
         // body 不为空时设置 entity
         if (StringUtils.isNotEmpty(bodyData)) {
             request.setEntity(generateStringEntity(bodyData));
