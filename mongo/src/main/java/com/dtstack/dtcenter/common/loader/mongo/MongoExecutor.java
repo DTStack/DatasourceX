@@ -144,10 +144,14 @@ public class MongoExecutor {
     }
 
     private void find(String sqlQuery, Integer startRow, Integer limit, List<Map<String, Object>> list, MongoCollection<Document> collection, boolean isOne) {
+        // 走 count 逻辑, 此时其他参数都不生效
+        if (RegExpUtil.isCount(sqlQuery)) {
+            count(sqlQuery, list, collection);
+            return;
+        }
         FindIterable<Document> findIterable;
         String queryStr = String.format("[%s]", RegExpUtil.getQuery(sqlQuery));
         BasicDBList queryList = (BasicDBList) JSON.parse(queryStr);
-
         //find
         BasicDBObject findObject = new BasicDBObject();
         if (queryList.size() > 0) {

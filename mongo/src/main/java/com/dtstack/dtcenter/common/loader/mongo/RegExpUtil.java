@@ -41,6 +41,7 @@ public class RegExpUtil {
     static String limitRegExp = "\\.limit\\(([\\w\\W].*?)\\)[;|.]";
     static String batchSizeRegExp = "\\.batchSize\\(([\\w\\W].*?)\\)[;|.]";
     static String sortRegExp = "\\.sort\\(([\\w\\W].*?)\\)[;|.]";
+    static String countRegExp = "\\.count\\(.*\\)[;|.]";
 
     public static String getCollectionName(String sql) {
         return getWithRegExp(sql, collectionRegExp);
@@ -70,6 +71,12 @@ public class RegExpUtil {
 
     public static String getSort(String sql) {
         return getWithRegExp(sql, sortRegExp);
+    }
+
+    public static Boolean isCount(String sql) {
+        Pattern r = Pattern.compile(countRegExp);
+        Matcher m = r.matcher(sql);
+        return m.find();
     }
 
     private static String getWithRegExp(String s, String regExp) {
