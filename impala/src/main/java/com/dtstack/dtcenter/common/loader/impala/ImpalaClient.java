@@ -337,6 +337,10 @@ public class ImpalaClient extends AbsRdbmsClient {
         if (StringUtils.equalsIgnoreCase(StoredType.TEXTFILE.getValue(), tableInfo.getStoreType()) && Objects.isNull(tableInfo.getDelim())) {
             tableInfo.setDelim(DtClassConsistent.HiveConsistent.DEFAULT_FIELD_DELIMIT);
         }
+
+        if (StringUtils.containsIgnoreCase(tableInfo.getExternalOrManaged(), "VIEW")) {
+            tableInfo.setIsView(true);
+        }
     }
 
     @Override
