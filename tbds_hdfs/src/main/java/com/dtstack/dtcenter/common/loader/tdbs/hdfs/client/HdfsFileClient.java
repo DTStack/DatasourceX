@@ -1,9 +1,7 @@
 package com.dtstack.dtcenter.common.loader.tdbs.hdfs.client;
 
-import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
-import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
-import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
-import com.dtstack.dtcenter.common.loader.tdbs.hdfs.YarnConfUtil;
+import com.dtstack.dtcenter.common.loader.tdbs.hdfs.HadoopConfUtil;
+import com.dtstack.dtcenter.common.loader.tdbs.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.common.loader.tdbs.hdfs.downloader.HdfsFileDownload;
 import com.dtstack.dtcenter.common.loader.tdbs.hdfs.downloader.HdfsORCDownload;
 import com.dtstack.dtcenter.common.loader.tdbs.hdfs.downloader.HdfsParquetDownload;
@@ -14,6 +12,7 @@ import com.dtstack.dtcenter.common.loader.tdbs.hdfs.fileMerge.core.CombineServer
 import com.dtstack.dtcenter.common.loader.tdbs.hdfs.hdfswriter.HdfsOrcWriter;
 import com.dtstack.dtcenter.common.loader.tdbs.hdfs.hdfswriter.HdfsParquetWriter;
 import com.dtstack.dtcenter.common.loader.tdbs.hdfs.hdfswriter.HdfsTextWriter;
+import com.dtstack.dtcenter.common.loader.tdbs.hdfs.util.SecurityUtils;
 import com.dtstack.dtcenter.common.loader.tdbs.hdfs.util.StringUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
@@ -38,10 +37,8 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
-import org.apache.hadoop.yarn.logaggregation.filecontroller.ifile.LogAggregationIndexedFileController;
 
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,9 +54,6 @@ import java.util.Map;
 public class HdfsFileClient implements IHdfsFile {
 
     private static final String PATH_DELIMITER = "/";
-
-    // yarn聚合日志格式，默认TFIle
-    private static final String LOG_FORMAT = "yarn.log-aggregation.file-formats";
 
     @Override
     public FileStatus getStatus(ISourceDTO iSource, String location) {
@@ -81,15 +75,13 @@ public class HdfsFileClient implements IHdfsFile {
     @Override
     public IDownloader getLogDownloader(ISourceDTO iSource, SqlQueryDTO queryDTO) {
         TbdsHdfsSourceDTO hdfsSourceDTO = (TbdsHdfsSourceDTO) iSource;
-        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
-                (PrivilegedAction<IDownloader>) () -> {
-                    try {
-                        return createYarnLogDownload(hdfsSourceDTO);
-                    } catch (Exception e) {
-                        throw new DtLoaderException(String.format("create downloader exception,%s", e.getMessage()), e);
-                    }
-                }
-        );
+        return SecurityUtils.login(() -> {
+            try {
+                return createYarnLogDownload(hdfsSourceDTO);
+            } catch (Exception e) {
+                throw new DtLoaderException(String.format("create downloader exception,%s", e.getMessage()), e);
+            }
+        }, hdfsSourceDTO.getConfig());
     }
 
     /**
@@ -100,22 +92,12 @@ public class HdfsFileClient implements IHdfsFile {
      */
     private IDownloader createYarnLogDownload(TbdsHdfsSourceDTO hdfsSourceDTO) throws Exception {
         IDownloader yarnDownload;
-        Configuration configuration = YarnConfUtil.getFullConfiguration(null, hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getKerberosConfig());
-        String fileFormat = configuration.get(LOG_FORMAT);
         boolean containerFiledExists = Arrays.stream(TbdsHdfsSourceDTO.class.getDeclaredFields())
                 .anyMatch(field -> "ContainerId".equalsIgnoreCase(field.getName()));
-        if (StringUtils.isNotBlank(fileFormat) && StringUtils.containsIgnoreCase(fileFormat, "IFile")) {
-            if (!containerFiledExists || StringUtils.isEmpty(hdfsSourceDTO.getContainerId())) {
-                yarnDownload = new LogAggregationIndexedFileController(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig(), null);
-            } else {
-                yarnDownload = new LogAggregationIndexedFileController(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getContainerId());
-            }
+        if (!containerFiledExists || StringUtils.isEmpty(hdfsSourceDTO.getContainerId())) {
+            yarnDownload = new YarnTFileDownload(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig());
         } else {
-            if (!containerFiledExists || StringUtils.isEmpty(hdfsSourceDTO.getContainerId())) {
-                yarnDownload = new YarnTFileDownload(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig());
-            } else {
-                yarnDownload = new YarnTFileDownload(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getContainerId());
-            }
+            yarnDownload = new YarnTFileDownload(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getUser(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getAppIdStr(), hdfsSourceDTO.getReadLimit(), hdfsSourceDTO.getLogType(), hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getContainerId());
         }
         yarnDownload.configure();
         return yarnDownload;
@@ -124,17 +106,15 @@ public class HdfsFileClient implements IHdfsFile {
     @Override
     public IDownloader getFileDownloader(ISourceDTO iSource, String path) {
         TbdsHdfsSourceDTO hdfsSourceDTO = (TbdsHdfsSourceDTO) iSource;
-        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
-                (PrivilegedAction<IDownloader>) () -> {
-                    try {
-                        HdfsFileDownload hdfsFileDownload = new HdfsFileDownload(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), path, hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getKerberosConfig());
-                        hdfsFileDownload.configure();
-                        return hdfsFileDownload;
-                    } catch (Exception e) {
-                        throw new DtLoaderException(String.format("Create file downloader exception,%s", e.getMessage()), e);
-                    }
-                }
-        );
+        return SecurityUtils.login(() -> {
+            try {
+                HdfsFileDownload hdfsFileDownload = new HdfsFileDownload(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), path, hdfsSourceDTO.getYarnConf(), hdfsSourceDTO.getKerberosConfig());
+                hdfsFileDownload.configure();
+                return hdfsFileDownload;
+            } catch (Exception e) {
+                throw new DtLoaderException(String.format("Create file downloader exception,%s", e.getMessage()), e);
+            }
+        }, hdfsSourceDTO.getConfig());
     }
 
     /**
@@ -147,7 +127,6 @@ public class HdfsFileClient implements IHdfsFile {
      */
     private org.apache.hadoop.fs.FileStatus getHadoopStatus(ISourceDTO source, String location) {
         TbdsHdfsSourceDTO hdfsSourceDTO = (TbdsHdfsSourceDTO) source;
-
         FileSystem fs = HdfsOperator.getFileSystem(hdfsSourceDTO.getKerberosConfig(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getDefaultFS());
         return HdfsOperator.getFileStatus(fs, location);
     }
@@ -199,72 +178,66 @@ public class HdfsFileClient implements IHdfsFile {
     @Override
     public boolean delete(ISourceDTO source, String remotePath, boolean recursive) {
         TbdsHdfsSourceDTO hdfsSourceDTO = (TbdsHdfsSourceDTO) source;
-        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
-                (PrivilegedAction<Boolean>) () -> {
-                    try {
-                        Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
-                        FileSystem fs = FileSystem.get(conf);
-                        log.info("delete hdfs file ,remotePath :{}", remotePath);
-                        return fs.delete(new Path(remotePath), recursive);
-                    } catch (Exception e) {
-                        throw new DtLoaderException(String.format("Target path deletion exception,%s", e.getMessage()), e);
-                    }
-                }
-        );
+        return SecurityUtils.login(() -> {
+            try {
+                Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
+                FileSystem fs = FileSystem.get(conf);
+                log.info("delete hdfs file ,remotePath :{}", remotePath);
+                return fs.delete(new Path(remotePath), recursive);
+            } catch (Exception e) {
+                throw new DtLoaderException(String.format("Target path deletion exception,%s", e.getMessage()), e);
+            }
+        }, hdfsSourceDTO.getConfig());
     }
 
     @Override
     public boolean copyDirector(ISourceDTO source, String src, String dist) {
         TbdsHdfsSourceDTO hdfsSourceDTO = (TbdsHdfsSourceDTO) source;
-        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
-                (PrivilegedAction<Boolean>) () -> {
-                    try {
-                        Path srcPath = new Path(src);
-                        Path distPath = new Path(dist);
-                        Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getTbdsUsername(), hdfsSourceDTO.getTbdsSecureId(), hdfsSourceDTO.getTbdsSecureKey(), hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
-                        FileSystem fs = FileSystem.get(conf);
-                        if (fs.exists(srcPath)) {
-                            //判断是不是文件夹
-                            if (fs.isDirectory(srcPath)) {
-                                if (!FileUtil.copy(fs, srcPath, fs, distPath, false, conf)) {
-                                    throw new DtLoaderException("copy " + src + " to " + dist + " failed");
-                                }
-                            } else {
-                                throw new DtLoaderException(src + "is not a directory");
-                            }
-                        } else {
-                            throw new DtLoaderException(src + " is not exists");
+        return SecurityUtils.login(() -> {
+            try {
+                Path srcPath = new Path(src);
+                Path distPath = new Path(dist);
+                Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getTbdsUsername(), hdfsSourceDTO.getTbdsSecureId(), hdfsSourceDTO.getTbdsSecureKey(), hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
+                FileSystem fs = FileSystem.get(conf);
+                if (fs.exists(srcPath)) {
+                    //判断是不是文件夹
+                    if (fs.isDirectory(srcPath)) {
+                        if (!FileUtil.copy(fs, srcPath, fs, distPath, false, conf)) {
+                            throw new DtLoaderException("copy " + src + " to " + dist + " failed");
                         }
-                        return true;
-                    } catch (Exception e) {
-                        throw new DtLoaderException(String.format("Target path deletion exception,%s", e.getMessage()), e);
+                    } else {
+                        throw new DtLoaderException(src + "is not a directory");
                     }
+                } else {
+                    throw new DtLoaderException(src + " is not exists");
                 }
-        );
+                return true;
+            } catch (Exception e) {
+                throw new DtLoaderException(String.format("Target path deletion exception,%s", e.getMessage()), e);
+            }
+        }, hdfsSourceDTO.getConfig());
     }
 
     @Override
     public boolean fileMerge(ISourceDTO source, String src, String mergePath, FileFormat fileFormat, Long maxCombinedFileSize, Long needCombineFileSizeLimit) {
         TbdsHdfsSourceDTO hdfsSourceDTO = (TbdsHdfsSourceDTO) source;
-        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
-                (PrivilegedAction<Boolean>) () -> {
-                    try {
-                        Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
-                        CombineServer build = new CombineMergeBuilder()
-                                .sourcePath(src)
-                                .mergedPath(mergePath)
-                                .fileType(fileFormat)
-                                .maxCombinedFileSize(maxCombinedFileSize)
-                                .needCombineFileSizeLimit(needCombineFileSizeLimit)
-                                .configuration(conf)
-                                .build();
-                        build.combine();
-                        return true;
-                    } catch (Exception e) {
-                        throw new DtLoaderException(String.format("File merge exception：%s", e.getMessage()), e);
-                    }
-                }
-        );
+        return SecurityUtils.login(() -> {
+            try {
+                Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
+                CombineServer build = new CombineMergeBuilder()
+                        .sourcePath(src)
+                        .mergedPath(mergePath)
+                        .fileType(fileFormat)
+                        .maxCombinedFileSize(maxCombinedFileSize)
+                        .needCombineFileSizeLimit(needCombineFileSizeLimit)
+                        .configuration(conf)
+                        .build();
+                build.combine();
+                return true;
+            } catch (Exception e) {
+                throw new DtLoaderException(String.format("File merge exception：%s", e.getMessage()), e);
+            }
+        }, hdfsSourceDTO.getConfig());
     }
 
     @Override
@@ -359,16 +332,13 @@ public class HdfsFileClient implements IHdfsFile {
     @Override
     public IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat) {
         TbdsHdfsSourceDTO hdfsSourceDTO = (TbdsHdfsSourceDTO) source;
-        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
-                (PrivilegedAction<IDownloader>) () -> {
-                    try {
-                        return createDownloader(hdfsSourceDTO, tableLocation, columnNames, fieldDelimiter, fileFormat, hdfsSourceDTO.getKerberosConfig());
-                    } catch (Exception e) {
-                        throw new DtLoaderException(String.format("create downloader exception : %s", e.getMessage()), e);
-                    }
-                }
-        );
-
+        return SecurityUtils.login(() -> {
+            try {
+                return createDownloader(hdfsSourceDTO, tableLocation, columnNames, fieldDelimiter, fileFormat, hdfsSourceDTO.getKerberosConfig());
+            } catch (Exception e) {
+                throw new DtLoaderException(String.format("create downloader exception : %s", e.getMessage()), e);
+            }
+        }, hdfsSourceDTO.getConfig());
     }
 
     /**
@@ -415,29 +385,25 @@ public class HdfsFileClient implements IHdfsFile {
     @Override
     public int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) {
         TbdsHdfsSourceDTO hdfsSourceDTO = (TbdsHdfsSourceDTO) source;
-        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
-                (PrivilegedAction<Integer>) () -> {
-                    try {
-                        return writeByPosWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
-                    } catch (Exception e) {
-                        throw new DtLoaderException(String.format("Obtaining the field information of the hdfs file is abnormal : %s", e.getMessage()), e);
-                    }
-                }
-        );
+        return SecurityUtils.login(() -> {
+            try {
+                return writeByPosWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
+            } catch (Exception e) {
+                throw new DtLoaderException(String.format("Obtaining the field information of the hdfs file is abnormal : %s", e.getMessage()), e);
+            }
+        }, hdfsSourceDTO.getConfig());
     }
 
     @Override
     public int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) {
         TbdsHdfsSourceDTO hdfsSourceDTO = (TbdsHdfsSourceDTO) source;
-        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
-                (PrivilegedAction<Integer>) () -> {
-                    try {
-                        return writeByNameWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
-                    } catch (Exception e) {
-                        throw new DtLoaderException(String.format("Obtaining the field information of the hdfs file is abnormal : %s", e.getMessage()), e);
-                    }
-                }
-        );
+        return SecurityUtils.login(() -> {
+            try {
+                return writeByNameWithFileFormat(hdfsSourceDTO, hdfsWriterDTO);
+            } catch (Exception e) {
+                throw new DtLoaderException(String.format("Obtaining the field information of the hdfs file is abnormal : %s", e.getMessage()), e);
+            }
+        }, hdfsSourceDTO.getConfig());
     }
 
     @Override
@@ -452,39 +418,37 @@ public class HdfsFileClient implements IHdfsFile {
         }
         TbdsHdfsSourceDTO hdfsSourceDTO = (TbdsHdfsSourceDTO) source;
         List<HDFSContentSummary> hdfsContentSummaries = Lists.newArrayList();
-        // kerberos认证
-        return KerberosLoginUtil.loginWithUGI(hdfsSourceDTO.getKerberosConfig()).doAs(
-                (PrivilegedAction<List<HDFSContentSummary>>) () -> {
-                    try {
-                        Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getTbdsUsername(), hdfsSourceDTO.getTbdsSecureId(), hdfsSourceDTO.getTbdsSecureKey(), hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
-                        FileSystem fs = FileSystem.get(conf);
-                        for (String hdfsDirPath : hdfsDirPaths) {
-                            Path hdfsPath = new Path(hdfsDirPath);
-                            if (!fs.exists(hdfsPath)) {
-                                log.warn("hdfs path : {} does not exist", hdfsDirPath);
-                                HDFSContentSummary contentSummaryEmpty = HDFSContentSummary.builder()
-                                        .directoryCount(0L)
-                                        .fileCount(0L)
-                                        .ModifyTime(0L)
-                                        .spaceConsumed(0L).build();
-                                hdfsContentSummaries.add(contentSummaryEmpty);
-                                continue;
-                            }
-                            org.apache.hadoop.fs.FileStatus fileStatus = fs.getFileStatus(hdfsPath);
-                            ContentSummary contentSummary = fs.getContentSummary(hdfsPath);
-                            HDFSContentSummary hdfsContentSummary = HDFSContentSummary.builder()
-                                    .directoryCount(contentSummary.getDirectoryCount())
-                                    .fileCount(contentSummary.getFileCount())
-                                    .ModifyTime(fileStatus.getModificationTime())
-                                    .spaceConsumed(contentSummary.getLength()).build();
-                            hdfsContentSummaries.add(hdfsContentSummary);
-                        }
-                        return hdfsContentSummaries;
-                    } catch (Exception e) {
-                        throw new DtLoaderException(String.format("Failed to obtain HDFS file information：%s", e.getMessage()), e);
+
+        return SecurityUtils.login(() -> {
+            try {
+                Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getTbdsUsername(), hdfsSourceDTO.getTbdsSecureId(), hdfsSourceDTO.getTbdsSecureKey(), hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
+                FileSystem fs = FileSystem.get(conf);
+                for (String hdfsDirPath : hdfsDirPaths) {
+                    Path hdfsPath = new Path(hdfsDirPath);
+                    if (!fs.exists(hdfsPath)) {
+                        log.warn("hdfs path : {} does not exist", hdfsDirPath);
+                        HDFSContentSummary contentSummaryEmpty = HDFSContentSummary.builder()
+                                .directoryCount(0L)
+                                .fileCount(0L)
+                                .ModifyTime(0L)
+                                .spaceConsumed(0L).build();
+                        hdfsContentSummaries.add(contentSummaryEmpty);
+                        continue;
                     }
+                    org.apache.hadoop.fs.FileStatus fileStatus = fs.getFileStatus(hdfsPath);
+                    ContentSummary contentSummary = fs.getContentSummary(hdfsPath);
+                    HDFSContentSummary hdfsContentSummary = HDFSContentSummary.builder()
+                            .directoryCount(contentSummary.getDirectoryCount())
+                            .fileCount(contentSummary.getFileCount())
+                            .ModifyTime(fileStatus.getModificationTime())
+                            .spaceConsumed(contentSummary.getLength()).build();
+                    hdfsContentSummaries.add(hdfsContentSummary);
                 }
-        );
+                return hdfsContentSummaries;
+            } catch (Exception e) {
+                throw new DtLoaderException(String.format("Failed to obtain HDFS file information：%s", e.getMessage()), e);
+            }
+        }, hdfsSourceDTO.getConfig());
     }
 
     private int writeByPosWithFileFormat(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {

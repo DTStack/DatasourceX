@@ -1,6 +1,5 @@
 package com.dtstack.dtcenter.common.loader.tdbs.hdfs;
 
-import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;

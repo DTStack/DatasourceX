@@ -1,7 +1,6 @@
 package com.dtstack.dtcenter.common.loader.tdbs.hdfs;
 
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
-import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.TbdsHdfsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;

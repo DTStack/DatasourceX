@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.tdbs.hdfs.downloader.YarnLogDownload;
 
-import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.tdbs.hdfs.YarnConfUtil;
+import com.dtstack.dtcenter.common.loader.tdbs.hdfs.util.SecurityUtils;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
@@ -192,14 +192,13 @@ public class YarnTFileDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() {
-        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) ()->{
-                    try {
-                        return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
-                    } catch (Exception e) {
-                        throw new DtLoaderException(String.format("Abnormal reading file,%s", e.getMessage()), e);
-                    }
-                });
+        return SecurityUtils.login(() -> {
+            try {
+                return isReachedEnd || totalReadByte >= readLimit || !nextRecord();
+            } catch (Exception e) {
+                throw new DtLoaderException(String.format("Abnormal reading file,%s", e.getMessage()), e);
+            }
+        }, hdfsConfig);
     }
 
     @Override
@@ -383,14 +382,13 @@ public class YarnTFileDownload implements IDownloader {
 
     @Override
     public List<String> getContainers() {
-        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<List<String>>) ()->{
-                    try {
-                        return getContainersWithKerberos();
-                    } catch (Exception e){
-                        throw new DtLoaderException(String.format("Abnormal reading file,%s",e.getMessage()), e);
-                    }
-                });
+        return SecurityUtils.login(() -> {
+            try {
+                return getContainersWithKerberos();
+            } catch (Exception e){
+                throw new DtLoaderException(String.format("Abnormal reading file,%s",e.getMessage()), e);
+            }
+        }, hdfsConfig);
     }
 
 

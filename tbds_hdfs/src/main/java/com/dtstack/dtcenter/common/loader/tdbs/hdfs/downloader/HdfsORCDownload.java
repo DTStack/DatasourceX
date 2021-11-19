@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.tdbs.hdfs.downloader;
 
-import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
-import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
+import com.dtstack.dtcenter.common.loader.tdbs.hdfs.HdfsOperator;
+import com.dtstack.dtcenter.common.loader.tdbs.hdfs.util.SecurityUtils;
 import com.dtstack.dtcenter.common.loader.tdbs.hdfs.YarnConfUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.dto.source.TbdsHdfsSourceDTO;
@@ -111,14 +111,13 @@ public class HdfsORCDownload implements IDownloader {
 
     @Override
     public List<String> readNext() {
-        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<List<String>>) ()->{
-                    try {
-                        return readNextWithKerberos();
-                    } catch (Exception e){
-                        throw new DtLoaderException(String.format("Abnormal reading file,%s", e.getMessage()), e);
-                    }
-                });
+        return SecurityUtils.login(() -> {
+            try {
+                return readNextWithKerberos();
+            } catch (Exception e){
+                throw new DtLoaderException(String.format("Abnormal reading file,%s", e.getMessage()), e);
+            }
+        }, hdfsSourceDTO.getConfig());
     }
 
     private List<String> readNextWithKerberos() {
@@ -180,14 +179,13 @@ public class HdfsORCDownload implements IDownloader {
 
     @Override
     public boolean reachedEnd() {
-        return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
-                (PrivilegedAction<Boolean>) ()->{
-                    try {
-                        return recordReader == null || !nextRecord();
-                    } catch (Exception e){
-                        throw new DtLoaderException(String.format("Download file is abnormal,%s", e.getMessage()), e);
-                    }
-                });
+        return SecurityUtils.login(() -> {
+            try {
+                return recordReader == null || !nextRecord();
+            } catch (Exception e){
+                throw new DtLoaderException(String.format("Download file is abnormal,%s", e.getMessage()), e);
+            }
+        }, hdfsSourceDTO.getConfig());
     }
 
     @Override
