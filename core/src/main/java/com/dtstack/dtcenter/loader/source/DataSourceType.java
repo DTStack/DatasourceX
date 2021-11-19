@@ -29,6 +29,7 @@ public enum DataSourceType {
     DMDB(35, 8, "DMDB", "dmdb"),
     RDBMS(5, 9, "RDBMS", "mysql"),
     KINGBASE8(40, 10, "KingbaseES8", "kingbase8"),
+    DMDB_For_Oracle(67, 8, "DMDB", "dmdb"),
 
     // Hadoop
     HIVE(7, 20, "Hive2.x", "hive"),
@@ -145,6 +146,7 @@ public enum DataSourceType {
         RDBM_S.add(INCEPTOR.val);
         RDBM_S.add(KINGBASE8.val);
         RDBM_S.add(TRINO.val);
+        RDBM_S.add(DMDB_For_Oracle.val);
 
         KAFKA_S.add(KAFKA.val);
         KAFKA_S.add(KAFKA_09.val);
