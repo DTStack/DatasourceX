@@ -341,6 +341,11 @@ public class HdfsFileClient implements IHdfsFile {
         }, hdfsSourceDTO.getConfig());
     }
 
+    @Override
+    public IDownloader getDownloaderByFormatWithType(ISourceDTO source, String tableLocation, List<ColumnMetaDTO> allColumns, List<String> filterColumns, Map<String, String> filterPartition, List<String> partitions, String fieldDelimiter, String fileFormat) {
+        return null;
+    }
+
     /**
      * 根据存储格式创建对应的hdfs下载器
      *
