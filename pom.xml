@@ -64,6 +64,9 @@
         <module>restful</module>
         <module>trino</module>
         <module>dorisrestful</module>
+        <module>tbds_hbase</module>
+        <module>tbds_kafka</module>
+        <module>tbds_hdfs</module>
     </modules>
     <packaging>pom</packaging>
 

@@ -1,7 +1,7 @@
 package com.dtstack.dtcenter.common.loader.tdbs.hdfs.hdfswriter;
 
 import com.csvreader.CsvReader;
-import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
+import com.dtstack.dtcenter.common.loader.tdbs.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
