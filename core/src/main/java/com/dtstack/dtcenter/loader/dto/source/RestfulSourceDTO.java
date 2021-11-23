@@ -49,6 +49,11 @@ public class RestfulSourceDTO implements ISourceDTO {
      */
     private Integer socketTimeout;
 
+    /**
+     * kerberos 配置信息
+     */
+    private Map<String, Object> kerberosConfig;
+
     @Override
     public Connection getConnection() {
         throw new DtLoaderException("The method is not supported");
