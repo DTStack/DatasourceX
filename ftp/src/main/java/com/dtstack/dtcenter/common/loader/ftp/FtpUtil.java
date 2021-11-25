@@ -7,7 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPReply;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -127,6 +129,14 @@ public class FtpUtil {
         List<String> fileNames = Lists.newArrayList();
         if (ftpClient == null) {
             return fileNames;
+        }
+        // 开启服务器对UTF-8的支持，如果服务器支持就用UTF-8编码
+        try {
+            if (FTPReply.isPositiveCompletion(ftpClient.sendCommand("OPTS UTF8", "ON"))) {
+                ftpClient.setControlEncoding("UTF-8");
+            }
+        } catch (IOException e) {
+            log.error("设置utf-8编码异常:{}", e.getMessage());
         }
         // SFTP 文件夹队列
         LinkedList<String> dirQueue = Lists.newLinkedList();
