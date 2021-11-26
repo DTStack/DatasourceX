@@ -31,11 +31,20 @@ public class SQLServerTest extends BaseTest {
     private static final IClient client = ClientCache.getClient(DataSourceType.SQLServer.getVal());
 
     private static final SqlserverSourceDTO source = SqlserverSourceDTO.builder()
-            .url("jdbc:sqlserver://172.16.101.246:1433;databaseName=Test_Wangchuan")
+            .url("jdbc:sqlserver://172.16.101.246:1433;databaseName=TestDB")
             .username("sa")
             .password("d@efaX4Wp10")
             .poolConfig(PoolConfig.builder().build())
             .build();
+
+
+    @Test
+    public void executeQuery1() {
+        String sql = "SELECT sys.tables.name FROM sys.tables LEFT JOIN sys.schemas ON sys.tables.schema_id=sys.schemas.schema_id WHERE sys.tables.is_tracked_by_cdc = 1 AND sys.schemas.name = 'test'";
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().sql(sql).build();
+        List<Map<String, Object>> result = client.executeQuery(source, queryDTO);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(result));
+    }
 
     @BeforeClass
     public static void beforeClass() {
@@ -66,6 +75,15 @@ public class SQLServerTest extends BaseTest {
         String commentSql = "exec sp_addextendedproperty N'MS_Description', N'中文_comment', N'SCHEMA', N'dbo', N'TABLE', N'LOADER_TEST'";
         queryDTO = SqlQueryDTO.builder().sql(commentSql).build();
         client.executeSqlWithoutResultSet(source, queryDTO);
+
+        String fieldCommentSql = "EXEC sp_addextendedproperty N'MS_Description', N'id主键 自增长', N'SCHEMA', N'dbo',N'TABLE', N'LOADER_TEST', N'COLUMN', N'id'";
+        queryDTO = SqlQueryDTO.builder().sql(fieldCommentSql).build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+
+        fieldCommentSql = "EXEC sp_addextendedproperty N'MS_Description', N'name 中文', N'SCHEMA', N'dbo',N'TABLE', N'LOADER_TEST', N'COLUMN', N'name'";
+        queryDTO = SqlQueryDTO.builder().sql(fieldCommentSql).build();
+        client.executeSqlWithoutResultSet(source, queryDTO);
+
 
         // 对表启用CDC(变更数据捕获)功能
         String cdcOpenSql = "EXEC sys.sp_cdc_enable_table " +
@@ -216,11 +234,34 @@ public class SQLServerTest extends BaseTest {
     }
 
     /**
+     * 获取表字段信息
+     */
+    @Test
+    public void getColumnMetaData_1() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("[dbo].[LOADER_TEST]").build();
+        List<ColumnMetaDTO> columnMetaData = client.getColumnMetaData(source, queryDTO);
+        Assert.assertEquals("int", columnMetaData.get(0).getType());
+        Assert.assertEquals("varchar", columnMetaData.get(1).getType());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(columnMetaData));
+    }
+
+    /**
      * 获取表注释
      */
     @Test
     public void getTableMetaComment() {
         SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("LOADER_TEST").build();
+        String metaComment = client.getTableMetaComment(source, queryDTO);
+        Assert.assertEquals("中文_comment", metaComment);
+        Assert.assertTrue(StringUtils.isNotBlank(metaComment));
+    }
+
+    /**
+     * 获取表注释
+     */
+    @Test
+    public void getTableMetaComment_1() {
+        SqlQueryDTO queryDTO = SqlQueryDTO.builder().tableName("[dbo].[LOADER_TEST]").build();
         String metaComment = client.getTableMetaComment(source, queryDTO);
         Assert.assertEquals("中文_comment", metaComment);
         Assert.assertTrue(StringUtils.isNotBlank(metaComment));
