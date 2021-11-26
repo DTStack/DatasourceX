@@ -535,6 +535,15 @@ public class HiveClient extends AbsRdbmsClient {
                 continue;
             }
 
+            // 兼容一下返回值 Type 的情况
+            if (colName.contains("Type") && StringUtils.isEmpty(tableInfo.getExternalOrManaged())) {
+                if (ReflectUtil.fieldExists(Table.class, "isView")) {
+                    tableInfo.setIsView(StringUtils.containsIgnoreCase(dataType, "VIEW"));
+                }
+                tableInfo.setExternalOrManaged(dataType);
+                continue;
+            }
+
             if (colName.contains("field.delim")) {
                 tableInfo.setDelim(dataTypeOrigin);
                 continue;
@@ -574,13 +583,6 @@ public class HiveClient extends AbsRdbmsClient {
             if (StringUtils.containsIgnoreCase(dataType, "transactional")) {
                 if (ReflectUtil.fieldExists(Table.class, "isTransTable") && StringUtils.containsIgnoreCase(comment, "true")) {
                     tableInfo.setIsTransTable(true);
-                }
-                continue;
-            }
-
-            if (StringUtils.containsIgnoreCase(colName, "Type")) {
-                if (ReflectUtil.fieldExists(Table.class, "isView")) {
-                    tableInfo.setIsView(StringUtils.containsIgnoreCase(dataType, "VIEW"));
                 }
                 continue;
             }
