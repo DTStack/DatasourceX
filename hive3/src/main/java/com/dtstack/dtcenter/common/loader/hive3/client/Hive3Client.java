@@ -524,6 +524,15 @@ public class Hive3Client extends AbsRdbmsClient {
                 continue;
             }
 
+            // 兼容一下返回值 Type 的情况
+            if (colName.contains("Type") && StringUtils.isEmpty(tableInfo.getExternalOrManaged())) {
+                if (ReflectUtil.fieldExists(Table.class, "isView")) {
+                    tableInfo.setIsView(StringUtils.containsIgnoreCase(dataType, "VIEW"));
+                }
+                tableInfo.setExternalOrManaged(dataType);
+                continue;
+            }
+
             if (colName.contains("field.delim")) {
                 // trim 之后不会空则取 trim 后的值
                 tableInfo.setDelim(StringUtils.isEmpty(dataType) ? dataTypeOrigin : dataType);
