@@ -21,7 +21,9 @@ package com.dtstack.dtcenter.common.loader.hdfs.hdfswriter;
 import com.csvreader.CsvReader;
 import com.dtstack.dtcenter.common.loader.common.utils.DateUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.MathUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.TableUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
+import com.dtstack.dtcenter.common.loader.hdfs.OrcColumnTypeConverter;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.HDFSImportColumn;
 import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
@@ -77,6 +79,7 @@ public class HdfsOrcWriter {
      */
     public static int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
 
+        TableUtil.dealColumnType(hdfsWriterDTO.getColumnsList(), OrcColumnTypeConverter::apply);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Boolean topLineIsTitle = hdfsWriterDTO.getTopLineIsTitle();
         int startLine = hdfsWriterDTO.getStartLine();
@@ -131,7 +134,7 @@ public class HdfsOrcWriter {
                 writeLineNum++;
             }
         } catch (Exception e) {
-            throw new DtLoaderException("The" + (currLineNum - (topLineIsTitle ? 1 : 0)) + " row of data is abnormal, please check");
+            throw new DtLoaderException("The" + (currLineNum - (topLineIsTitle ? 1 : 0)) + " row of data is abnormal, please check", e);
         } finally {
             try {
                 if (writer != null) {
@@ -163,6 +166,7 @@ public class HdfsOrcWriter {
      */
     public static int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO) throws IOException {
 
+        TableUtil.dealColumnType(hdfsWriterDTO.getColumnsList(), OrcColumnTypeConverter::apply);
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) source;
         Configuration conf = HadoopConfUtil.getHdfsConf(hdfsSourceDTO.getDefaultFS(), hdfsSourceDTO.getConfig(), hdfsSourceDTO.getKerberosConfig());
         String typeInfoStr = buildTypeInfo(hdfsWriterDTO.getColumnsList());
@@ -251,7 +255,7 @@ public class HdfsOrcWriter {
                 writeLineNum++;
             }
         } catch (Exception e) {
-            throw new DtLoaderException("The" + currLineNum + "Row data is abnormal, please check");
+            throw new DtLoaderException("The" + currLineNum + "Row data is abnormal, please check", e);
         } finally {
             try {
                 if (writer != null) {
@@ -281,7 +285,7 @@ public class HdfsOrcWriter {
      * @return
      */
     public static String buildTypeInfo(List<ColumnMetaDTO> columnsList) {
-        StringBuffer sb = new StringBuffer("");
+        StringBuilder sb = new StringBuilder();
         for (ColumnMetaDTO columns : columnsList) {
             sb.append(columns.getKey())
                     .append(":")

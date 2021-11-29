@@ -111,7 +111,7 @@ public class HdfsTextWriter {
                 writeLineNum++;
             }
         } catch (final Exception e) {
-            throw new DtLoaderException("the" + currLineNum + "row data is abnormal, please check, data import failed");
+            throw new DtLoaderException("the" + currLineNum + "row data is abnormal, please check, data import failed", e);
         } finally {
             stream.close();
 
@@ -219,7 +219,7 @@ public class HdfsTextWriter {
                 writeLineNum++;
             }
         } catch (final Exception e) {
-            throw new DtLoaderException("(The" + currLineNum + "row data is abnormal, please check, data import failed)");
+            throw new DtLoaderException("(The" + currLineNum + "row data is abnormal, please check, data import failed)", e);
         } finally {
             stream.close();
 
