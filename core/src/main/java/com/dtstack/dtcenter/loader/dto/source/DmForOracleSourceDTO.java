@@ -14,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @Data
 @ToString
 @SuperBuilder
-public class DmForOracleSourceDTO extends RdbmsSourceDTO {
+public class DmForOracleSourceDTO extends DmSourceDTO {
 
     @Override
     public Integer getSourceType() {
