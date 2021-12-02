@@ -120,6 +120,8 @@ public enum DataSourceType {
     TBDS_KAFKA(62, 138, "TBDS_KAFKA", "tbds_kafka"),
     DorisRestful(64, 139, "DorisRestful", "dorisrestful"),
     HIVE3_CDP(65, 140, "Hive3_CDP", "hive3_cdp"),
+    HUAWEI_KAFKA(70, 143, "HUAWEI_KAFKA", "huawei_kafka"),
+    HUAWEI_HBASE(71, 144, "HUAWEI_HBASE", "huawei_hbase"),
     ;
 
     DataSourceType(int val, int order, String name, String pluginName) {

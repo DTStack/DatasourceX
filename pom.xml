@@ -70,6 +70,8 @@
         <module>tbds_hdfs</module>
         <module>hive3_cdp</module>
         <module>sap_hana</module>
+        <module>huawei_hbase</module>
+        <module>huawei_kafka</module>
     </modules>
     <packaging>pom</packaging>
 
