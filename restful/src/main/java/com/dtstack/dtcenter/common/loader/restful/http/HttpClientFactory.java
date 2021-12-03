@@ -1,18 +1,26 @@
 package com.dtstack.dtcenter.common.loader.restful.http;
 
+import java.security.PrivilegedAction;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.dtstack.dtcenter.common.loader.common.DtClassThreadFactory;
+import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RestfulSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.KerberosCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
@@ -69,7 +77,7 @@ public class HttpClientFactory {
         PoolingNHttpClientConnectionManager cm = new PoolingNHttpClientConnectionManager(ioReactor, sessionStrategyRegistry);
 
         // 创建HttpAsyncClient
-        CloseableHttpAsyncClient httpAsyncClient = createPoolingHttpClient(cm, restfulSourceDTO.getConnectTimeout(), restfulSourceDTO.getSocketTimeout());
+        CloseableHttpAsyncClient httpAsyncClient = createPoolingHttpClient(cm, restfulSourceDTO.getConnectTimeout(), restfulSourceDTO.getSocketTimeout(), restfulSourceDTO.getKerberosConfig());
 
         // 启动定时调度
         ScheduledExecutorService clearConnService = initFixedCycleCloseConnection(cm);
@@ -143,10 +151,33 @@ public class HttpClientFactory {
      * @param cm             http connection 管理器
      * @param connectTimeout 连接超时时间
      * @param socketTimeout  socket 超时时间
+     * @param kerberosConfig kerberos 配置
      * @return 异步 http client
      */
-    private static CloseableHttpAsyncClient createPoolingHttpClient(PoolingNHttpClientConnectionManager cm, Integer connectTimeout, Integer socketTimeout) {
+    private static CloseableHttpAsyncClient createPoolingHttpClient(PoolingNHttpClientConnectionManager cm, Integer connectTimeout, Integer socketTimeout, Map<String, Object> kerberosConfig) {
 
+        if (MapUtils.isNotEmpty(kerberosConfig)) {
+            return KerberosLoginUtil.loginWithUGI(kerberosConfig).doAs(
+                    (PrivilegedAction<CloseableHttpAsyncClient>) () -> {
+                        RequestConfig requestConfig = initRequestConfig(connectTimeout, socketTimeout);
+                        HttpAsyncClientBuilder httpAsyncClientBuilder = HttpAsyncClients.custom();
+
+                        // 设置连接管理器
+                        httpAsyncClientBuilder.setConnectionManager(cm);
+
+                        // 设置RequestConfig
+                        if (requestConfig != null) {
+                            httpAsyncClientBuilder.setDefaultRequestConfig(requestConfig);
+                        }
+
+                        // 设置 kerberos 认证
+                        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                        credentialsProvider.setCredentials(AuthScope.ANY, new KerberosCredentials(null));
+                        httpAsyncClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                        return httpAsyncClientBuilder.build();
+                    });
+
+        }
         RequestConfig requestConfig = initRequestConfig(connectTimeout, socketTimeout);
         HttpAsyncClientBuilder httpAsyncClientBuilder = HttpAsyncClients.custom();
 
