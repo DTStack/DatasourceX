@@ -64,4 +64,11 @@ public class DorisClient<T> extends AbsNoSqlClient<T> {
         return restfulClient.executeQuery(sourceDTO, queryDTO);
     }
 
+    @Override
+    public Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO) {
+        DorisRestfulSourceDTO sourceDTO = (DorisRestfulSourceDTO) source;
+        DorisRestfulClient restfulClient = DorisRestfulClientFactory.getRestfulClient();
+        return restfulClient.executeSqlWithoutResultSet(sourceDTO, queryDTO);
+    }
+
 }

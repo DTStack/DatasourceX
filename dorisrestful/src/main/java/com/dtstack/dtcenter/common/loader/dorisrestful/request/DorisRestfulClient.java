@@ -39,7 +39,7 @@ public class DorisRestfulClient implements Closeable {
 
     private static final String PREVIEW_SQL = "{stmt: \"select * from %s limit 10000;\"}";
 
-    private static final String EXECUTE_SQL = "{stmt: \"%s;\"}";
+    private static final String EXECUTE_SQL = "{\"stmt\": \"%s;\"}";
 
     @Override
     public void close() {
@@ -151,8 +151,9 @@ public class DorisRestfulClient implements Closeable {
 
         sourceDTO.setUrl(sourceDTO.getUrl() + String.format(HttpAPI.QUERY_DATA, cluster, schema));
         HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO);
-        String body = String.format(EXECUTE_SQL, sqlQueryDTO.getSql());
-        Response result = httpClient.post(body, null, null);
+        JSONObject bodyObject = new JSONObject();
+        bodyObject.put("stmt", sqlQueryDTO.getSql());
+        Response result = httpClient.post(bodyObject.toJSONString(), null, null);
         AssertUtils.isTrue(result, 0);
 
         JSONArray data = (JSONArray) JSONPath.eval(JSONObject.parse(result.getContent()), DATA_JSON_PATH);
@@ -168,6 +169,22 @@ public class DorisRestfulClient implements Closeable {
             resultList.add(line);
         }
         return resultList;
+    }
+
+
+    public Boolean executeSqlWithoutResultSet(DorisRestfulSourceDTO sourceDTO, SqlQueryDTO sqlQueryDTO) {
+        String cluster = StringUtils.isEmpty(sourceDTO.getCluster()) ? DEFAULT_CLUSTER : sourceDTO.getCluster();
+        String schema = StringUtils.isEmpty(sourceDTO.getSchema()) ? sqlQueryDTO.getSchema() : sourceDTO.getSchema();
+        AssertUtils.notBlank(schema, "schema not null");
+        AssertUtils.notBlank(sqlQueryDTO.getSql(), "sql not null");
+
+        sourceDTO.setUrl(sourceDTO.getUrl() + String.format(HttpAPI.QUERY_DATA, cluster, schema));
+        HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO);
+        JSONObject bodyObject = new JSONObject();
+        bodyObject.put("stmt", sqlQueryDTO.getSql());
+        Response result = httpClient.post(bodyObject.toJSONString(), null, null);
+        AssertUtils.isTrue(result, 0);
+        return true;
     }
 
 
