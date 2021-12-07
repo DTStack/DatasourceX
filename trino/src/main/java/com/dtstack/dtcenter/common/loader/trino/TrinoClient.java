@@ -119,7 +119,7 @@ public class TrinoClient<T> extends AbsRdbmsClient<T> {
             String sql;
             if (StringUtils.isNotEmpty(queryDTO.getTableNamePattern())) {
                 // 模糊查询
-                sql = String.format(SHOW_TABLE_LIKE_SQL, addPercentSign(queryDTO.getTableNamePattern()));
+                sql = String.format(SHOW_TABLE_LIKE_SQL, addFuzzySign(queryDTO));
             } else {
                 sql = SHOW_TABLE_SQL;
             }
@@ -196,7 +196,7 @@ public class TrinoClient<T> extends AbsRdbmsClient<T> {
 
         // 表名模糊查询
         if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-            tableSearchSql.append(String.format(TABLE_NAME_LIKE_SQL, addPercentSign(queryDTO.getTableNamePattern())));
+            tableSearchSql.append(String.format(TABLE_NAME_LIKE_SQL, addFuzzySign(queryDTO)));
         }
 
         // 不包括视图

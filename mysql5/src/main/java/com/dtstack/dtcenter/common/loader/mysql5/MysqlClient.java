@@ -73,7 +73,7 @@ public class MysqlClient extends AbsRdbmsClient {
     private static final String BASE_TABLE = "'BASE TABLE'";
 
     // 表名正则匹配模糊查询
-    private static final String SEARCH_SQL = " AND table_name REGEXP '%s' ";
+    private static final String SEARCH_SQL = " AND table_name LIKE '%s' ";
 
     // 限制条数语句
     private static final String LIMIT_SQL = " limit %s ";
@@ -250,7 +250,7 @@ public class MysqlClient extends AbsRdbmsClient {
         log.info("current used schema：{}", schema);
         StringBuilder constr = new StringBuilder();
         if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-            constr.append(String.format(SEARCH_SQL, queryDTO.getTableNamePattern()));
+            constr.append(String.format(SEARCH_SQL, addFuzzySign(queryDTO)));
         }
         if (Objects.nonNull(queryDTO.getLimit())) {
             constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));

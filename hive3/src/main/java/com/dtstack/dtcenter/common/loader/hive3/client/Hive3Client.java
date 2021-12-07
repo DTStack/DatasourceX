@@ -103,7 +103,7 @@ public class Hive3Client extends AbsRdbmsClient {
     private static final String SHOW_TABLE_SQL = "show tables";
 
     // show tables like 'xxx'
-    private static final String SHOW_TABLE_LIKE_SQL = "show tables like '*%s*'";
+    private static final String SHOW_TABLE_LIKE_SQL = "show tables like '%s'";
 
     // desc db info
     private static final String DESC_DB_INFO = "desc database %s";
@@ -126,7 +126,7 @@ public class Hive3Client extends AbsRdbmsClient {
         String sql;
         if (Objects.nonNull(queryDTO) && StringUtils.isNotEmpty(queryDTO.getTableNamePattern())) {
             // 模糊查询
-            sql = String.format(SHOW_TABLE_LIKE_SQL, queryDTO.getTableNamePattern());
+            sql = String.format(SHOW_TABLE_LIKE_SQL, addFuzzySign(queryDTO));
         } else {
             sql = SHOW_TABLE_SQL;
         }
@@ -705,5 +705,10 @@ public class Hive3Client extends AbsRdbmsClient {
     @Override
     public String getDescDbSql(String dbName) {
         return String.format(DESC_DB_INFO, dbName);
+    }
+
+    @Override
+    protected String getFuzzySign() {
+        return "*";
     }
 }

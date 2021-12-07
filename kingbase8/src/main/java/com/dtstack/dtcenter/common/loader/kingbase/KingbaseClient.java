@@ -263,7 +263,7 @@ public class KingbaseClient extends AbsRdbmsClient {
         String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : rdbmsSourceDTO.getSchema();
         StringBuilder constr = new StringBuilder();
         if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-            constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
+            constr.append(String.format(SEARCH_SQL, addFuzzySign(queryDTO)));
         }
         if (Objects.nonNull(queryDTO.getLimit())) {
             constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));

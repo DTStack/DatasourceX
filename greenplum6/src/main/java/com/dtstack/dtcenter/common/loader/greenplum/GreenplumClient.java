@@ -258,7 +258,7 @@ public class GreenplumClient extends AbsRdbmsClient {
         }
         StringBuilder constr = new StringBuilder();
         if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-            constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
+            constr.append(String.format(SEARCH_SQL, addFuzzySign(queryDTO)));
         }
         if (Objects.nonNull(queryDTO.getLimit())) {
             constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));

@@ -168,7 +168,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
             }
             StringBuilder constr = new StringBuilder();
             if (Objects.nonNull(queryDTO) && StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-                constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
+                constr.append(String.format(SEARCH_SQL, addFuzzySign(queryDTO)));
             }
             //大小写区分，不传schema默认获取所有表，并且表名签名拼接schema，格式："schema"."tableName"
             String schema = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : postgresqlSourceDTO.getSchema();
@@ -373,7 +373,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
         log.info("current used schema：{}", schema);
         StringBuilder constr = new StringBuilder();
         if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-            constr.append(String.format(SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern().trim())));
+            constr.append(String.format(SEARCH_SQL, addFuzzySign(queryDTO)));
         }
         if (Objects.nonNull(queryDTO.getLimit())) {
             constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));

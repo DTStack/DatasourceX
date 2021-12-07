@@ -18,7 +18,6 @@
 
 package com.dtstack.dtcenter.common.loader.oracle;
 
-import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.utils.CollectionUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
@@ -43,7 +42,6 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -91,9 +89,9 @@ public class OracleClient extends AbsRdbmsClient {
     // 表查询基础sql
     private static final String TABLE_BASE_SQL = "SELECT TABLE_NAME FROM (%s) WHERE 1 = 1 %s ";
     // 表名正则匹配模糊查询，忽略大小写
-    private static final String TABLE_SEARCH_SQL = " AND REGEXP_LIKE (TABLE_NAME, '%s', 'i') ";
+    private static final String TABLE_SEARCH_SQL = " AND TABLE_NAME LIKE '%s' ";
     // 视图正则匹配模糊查询，忽略大小写
-    private static final String VIEW_SEARCH_SQL = " AND REGEXP_LIKE (VIEW_NAME, '%s', 'i') ";
+    private static final String VIEW_SEARCH_SQL = " AND VIEW_NAME LIKE '%s' ";
     // 限制条数语句
     private static final String LIMIT_SQL = " AND ROWNUM <= %s ";
     // 获取表注释
@@ -114,7 +112,7 @@ public class OracleClient extends AbsRdbmsClient {
     private static final String LIST_PDB = "SELECT NAME FROM v$pdbs WHERE 1 = 1 %s";
 
     // 表名正则匹配模糊查询，忽略大小写
-    private static final String PDB_SEARCH_SQL = " AND REGEXP_LIKE (NAME, '%s', 'i') ";
+    private static final String PDB_SEARCH_SQL = " AND NAME LIKE '%s' ";
 
     // 获取当前版本号
     private static final String SHOW_VERSION = "select BANNER from v$version";
@@ -360,9 +358,9 @@ public class OracleClient extends AbsRdbmsClient {
     @Override
     protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         // 构造表名模糊查询和条数限制sql
-        String tableConstr = buildSearchSql(TABLE_SEARCH_SQL, queryDTO.getTableNamePattern(), queryDTO.getLimit());
+        String tableConstr = buildSearchSql(TABLE_SEARCH_SQL, queryDTO, queryDTO.getLimit());
         // 构造视图模糊查询和条数限制sql
-        String viewConstr = buildSearchSql(VIEW_SEARCH_SQL, queryDTO.getTableNamePattern(), queryDTO.getLimit());
+        String viewConstr = buildSearchSql(VIEW_SEARCH_SQL, queryDTO, queryDTO.getLimit());
         String schema = queryDTO.getSchema();
         // schema若为空，则查询所有schema下的表
         String searchSql;
@@ -380,14 +378,14 @@ public class OracleClient extends AbsRdbmsClient {
     /**
      * 构造模糊查询、条数限制sql
      * @param tableSearchSql
-     * @param tableNamePattern
+     * @param queryDTO
      * @param limit
      * @return
      */
-    private String buildSearchSql(String tableSearchSql, String tableNamePattern, Integer limit) {
+    private String buildSearchSql(String tableSearchSql, SqlQueryDTO queryDTO, Integer limit) {
         StringBuilder constr = new StringBuilder();
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(tableNamePattern)) {
-            constr.append(String.format(tableSearchSql, tableNamePattern));
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+            constr.append(String.format(tableSearchSql, addFuzzySign(queryDTO)));
         }
         if (Objects.nonNull(limit)) {
             constr.append(String.format(LIMIT_SQL, limit));
@@ -513,7 +511,7 @@ public class OracleClient extends AbsRdbmsClient {
         // 执行后 将从 root 获取 PDB，否则获取到的为当前用户所在的 PDB
         try {
             // 构造 pdb 模糊查询和条数限制sql
-            String pdbConstr = buildSearchSql(PDB_SEARCH_SQL, queryDTO.getTableNamePattern(), queryDTO.getLimit());
+            String pdbConstr = buildSearchSql(PDB_SEARCH_SQL, queryDTO, queryDTO.getLimit());
             // 切换到 cdb root，此处不关闭 connection
             DBUtil.executeSqlWithoutResultSet(oracleSourceDTO.getConnection(), String.format(ALTER_PDB_SESSION, CDB_ROOT));
             List<Map<String, Object>> pdbList = executeQuery(oracleSourceDTO, SqlQueryDTO.builder().sql(String.format(LIST_PDB, pdbConstr)).build(), ConnectionClearStatus.NORMAL.getValue());
