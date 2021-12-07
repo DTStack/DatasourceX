@@ -584,6 +584,15 @@ public class SparkClient<T> extends AbsRdbmsClient<T> {
                 continue;
             }
 
+            // 兼容一下返回值 Type 的情况
+            if ("Type".equals(colName.trim())  && StringUtils.isEmpty(tableInfo.getExternalOrManaged())) {
+                if (ReflectUtil.fieldExists(Table.class, "isView")) {
+                    tableInfo.setIsView(StringUtils.containsIgnoreCase(dataType, "VIEW"));
+                }
+                tableInfo.setExternalOrManaged(dataType);
+                continue;
+            }
+
             // ThriftServer 2.1.x 分隔符为 key
             if (colName.contains("field.delim")) {
                 // trim 之后不会空则取 trim 后的值
