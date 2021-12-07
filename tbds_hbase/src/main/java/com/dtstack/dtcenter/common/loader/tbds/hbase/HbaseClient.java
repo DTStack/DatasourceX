@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.tbds.hbase;
 
 import com.dtstack.dtcenter.common.loader.common.nosql.AbsNoSqlClient;
+import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.filter.RowFilter;
@@ -30,7 +31,6 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
-import org.apache.hadoop.hbase.io.TimeRange;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.Closeable;
@@ -40,7 +40,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -85,13 +84,7 @@ public class HbaseClient<T> extends AbsNoSqlClient<T> {
             closeConnection(hConn,hbaseSourceDTO);
             destroyProperty();
         }
-        if (Objects.nonNull(queryDTO) && StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-            tableList = tableList.stream().filter(table -> table.contains(queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
-        }
-        if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
-            tableList = tableList.stream().limit(queryDTO.getLimit()).collect(Collectors.toList());
-        }
-        return tableList;
+        return SearchUtil.handleSearchAndLimit(tableList, queryDTO);
     }
 
     private static void closeConnection(Connection hConn, TbdsHbaseSourceDTO hbaseSourceDTO) {

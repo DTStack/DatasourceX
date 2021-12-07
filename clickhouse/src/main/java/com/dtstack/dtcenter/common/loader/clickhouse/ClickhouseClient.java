@@ -19,6 +19,7 @@
 package com.dtstack.dtcenter.common.loader.clickhouse;
 
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -101,7 +102,7 @@ public class ClickhouseClient extends AbsRdbmsClient {
         } finally {
             DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(clickHouseSourceDTO, clearStatus));
         }
-        return tableList;
+        return SearchUtil.handleSearchAndLimit(tableList, queryDTO);
     }
 
     @Override

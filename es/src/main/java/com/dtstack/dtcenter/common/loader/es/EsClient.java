@@ -24,6 +24,7 @@ import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
 import com.dtstack.dtcenter.common.loader.common.nosql.AbsNoSqlClient;
 import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
 import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
+import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
 import com.dtstack.dtcenter.common.loader.es.pool.ElasticSearchManager;
 import com.dtstack.dtcenter.common.loader.es.pool.ElasticSearchPool;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -168,7 +169,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         } finally {
             closeResource(null, client, esSourceDTO);
         }
-        return typeList;
+        return SearchUtil.handleSearchAndLimit(typeList, queryDTO);
     }
 
 

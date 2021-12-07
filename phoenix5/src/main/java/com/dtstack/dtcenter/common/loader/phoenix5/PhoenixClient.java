@@ -20,6 +20,7 @@ package com.dtstack.dtcenter.common.loader.phoenix5;
 
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
@@ -135,10 +136,7 @@ public class PhoenixClient extends AbsRdbmsClient {
             if (null == queryDTO) {
                 rs = meta.getTables(null, rdbmsSourceDTO.getSchema(), null, null);
             } else {
-                rs = meta.getTables(null, rdbmsSourceDTO.getSchema(),
-                        StringUtils.isBlank(queryDTO.getTableNamePattern()) ? queryDTO.getTableNamePattern() :
-                                queryDTO.getTableName(),
-                        DBUtil.getTableTypes(queryDTO));
+                rs = meta.getTables(null, rdbmsSourceDTO.getSchema(), null, DBUtil.getTableTypes(queryDTO));
             }
             while (rs.next()) {
                 if (StringUtils.isBlank(rdbmsSourceDTO.getSchema()) && StringUtils.isNotBlank(rs.getString(2))) {
@@ -153,7 +151,7 @@ public class PhoenixClient extends AbsRdbmsClient {
         } finally {
             DBUtil.closeDBResources(rs, null, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
-        return tableList;
+        return SearchUtil.handleSearchAndLimit(tableList, queryDTO);
     }
 
     @Override

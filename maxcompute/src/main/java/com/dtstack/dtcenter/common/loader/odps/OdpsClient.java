@@ -39,6 +39,7 @@ import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
 import com.dtstack.dtcenter.common.loader.common.nosql.AbsNoSqlClient;
 import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
 import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
+import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
 import com.dtstack.dtcenter.common.loader.odps.common.OdpsFields;
 import com.dtstack.dtcenter.common.loader.odps.pool.OdpsManager;
 import com.dtstack.dtcenter.common.loader.odps.pool.OdpsPool;
@@ -176,7 +177,7 @@ public class OdpsClient<T> extends AbsNoSqlClient<T> {
         } finally {
             closeResource(odps, odpsSourceDTO);
         }
-        return tableList;
+        return SearchUtil.handleSearchAndLimit(tableList, queryDTO);
     }
 
     @Override

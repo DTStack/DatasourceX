@@ -2,6 +2,7 @@ package com.dtstack.dtcenter.common.loader.trino;
 
 import com.dtstack.dtcenter.common.loader.common.exception.ErrorCode;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -123,7 +124,7 @@ public class TrinoClient<T> extends AbsRdbmsClient<T> {
             } else {
                 sql = SHOW_TABLE_SQL;
             }
-            return queryWithSingleColumn(sourceDTO, queryDTO.getFetchSize(), sql, 1, "get table exception according to schema...", queryDTO.getLimit());
+            return SearchUtil.handleSearchAndLimit(queryWithSingleColumn(sourceDTO, queryDTO.getFetchSize(), sql, 1, "get table exception according to schema...", queryDTO.getLimit()), queryDTO);
         } catch (Exception e) {
             // 如果url 中没有指定到 schema，则获取当前catalog下的所有表，并拼接形式如 "schema"."table"
             if (e.getMessage().contains(SCHEMA_MUST_BE_SET)) {

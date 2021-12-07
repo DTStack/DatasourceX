@@ -19,6 +19,7 @@
 package com.dtstack.dtcenter.common.loader.dm;
 
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -78,7 +79,6 @@ public class DmClient extends AbsRdbmsClient {
             statement = dmSourceDTO.getConnection().createStatement();
             DBUtil.setFetchSize(statement, queryDTO);
             rs = statement.executeQuery(sql);
-            int columnSize = rs.getMetaData().getColumnCount();
             while (rs.next()) {
                 tableList.add(rs.getString(1));
             }
@@ -87,7 +87,7 @@ public class DmClient extends AbsRdbmsClient {
         } finally {
             DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(dmSourceDTO, clearStatus));
         }
-        return tableList;
+        return SearchUtil.handleSearchAndLimit(tableList, queryDTO);
     }
 
     @Override

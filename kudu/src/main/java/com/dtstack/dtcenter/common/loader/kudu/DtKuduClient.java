@@ -22,6 +22,7 @@ import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
 import com.dtstack.dtcenter.common.loader.common.nosql.AbsNoSqlClient;
 import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
 import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
+import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.TableUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -97,13 +98,7 @@ public class DtKuduClient<T> extends AbsNoSqlClient<T> {
         } catch (KuduException e) {
             log.error(e.getMessage(), e);
         }
-        if (Objects.nonNull(queryDTO) && StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-            tableList = tableList.stream().filter(table -> table.contains(queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
-        }
-        if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
-            tableList = tableList.stream().limit(queryDTO.getLimit()).collect(Collectors.toList());
-        }
-        return tableList;
+        return SearchUtil.handleSearchAndLimit(tableList, queryDTO);
     }
 
     @Override

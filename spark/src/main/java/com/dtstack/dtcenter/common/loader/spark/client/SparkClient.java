@@ -23,6 +23,7 @@ import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.EnvUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.TableUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
@@ -154,7 +155,7 @@ public class SparkClient<T> extends AbsRdbmsClient<T> {
         } finally {
             DBUtil.closeDBResources(rs, statement, DBUtil.clearAfterGetConnection(sparkSourceDTO, clearStatus));
         }
-        return tableList;
+        return SearchUtil.handleSearchAndLimit(tableList, queryDTO);
     }
 
     @Override

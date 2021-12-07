@@ -24,6 +24,7 @@ import com.dtstack.dtcenter.common.loader.common.exception.ErrorCode;
 import com.dtstack.dtcenter.common.loader.common.utils.CollectionUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
 import com.dtstack.dtcenter.loader.IDownloader;
 import com.dtstack.dtcenter.loader.cache.connection.CacheConnectionHelper;
 import com.dtstack.dtcenter.loader.client.IClient;
@@ -59,7 +60,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -227,10 +227,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
             if (null == queryDTO) {
                 rs = meta.getTables(null, null, null, null);
             } else {
-                rs = meta.getTables(null, rdbmsSourceDTO.getSchema(),
-                        StringUtils.isNotBlank(queryDTO.getTableNamePattern()) ? queryDTO.getTableNamePattern() :
-                                queryDTO.getTableName(),
-                        DBUtil.getTableTypes(queryDTO));
+                rs = meta.getTables(null, rdbmsSourceDTO.getSchema(), null, DBUtil.getTableTypes(queryDTO));
             }
             while (rs.next()) {
                 tableList.add(rs.getString(3));
@@ -240,10 +237,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         } finally {
             DBUtil.closeDBResources(rs, null, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
-        if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
-            tableList = tableList.stream().limit(queryDTO.getLimit()).collect(Collectors.toList());
-        }
-        return tableList;
+        return SearchUtil.handleSearchAndLimit(tableList, queryDTO);
     }
 
     /**
@@ -781,7 +775,7 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      * @return 模糊匹配字符
      */
     protected String getFuzzySign() {
-        return "%s";
+        return "%";
     }
 
     @Override

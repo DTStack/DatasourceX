@@ -19,6 +19,7 @@
 package com.dtstack.dtcenter.common.loader.common.utils;
 
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.enums.MatchType;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,7 +47,15 @@ public class SearchUtil {
             return result;
         }
         if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-            result = result.stream().filter(single -> StringUtils.containsIgnoreCase(single, queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
+            if (!ReflectUtil.fieldExists(SqlQueryDTO.class, "matchType")
+                    || Objects.isNull(queryDTO.getMatchType())
+                    || MatchType.ALL.equals(queryDTO.getMatchType())) {
+                result = result.stream().filter(single -> StringUtils.containsIgnoreCase(single, queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
+            } else if (MatchType.PREFIX.equals(queryDTO.getMatchType())) {
+                result = result.stream().filter(single -> StringUtils.startsWithIgnoreCase(single, queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
+            } else if (MatchType.SUFFIX.equals(queryDTO.getMatchType())) {
+                result = result.stream().filter(single -> StringUtils.endsWithIgnoreCase(single, queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
+            }
         }
         if (Objects.nonNull(queryDTO.getLimit())) {
             result = result.stream().limit(queryDTO.getLimit()).collect(Collectors.toList());

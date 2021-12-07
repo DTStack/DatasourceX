@@ -22,6 +22,7 @@ import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
 import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
 import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.common.utils.AddressUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
 import com.dtstack.dtcenter.common.loader.mongo.pool.MongoManager;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -48,10 +49,8 @@ import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * @company: www.dtstack.com
@@ -193,13 +192,7 @@ public class MongoDBUtils {
                 mongoClient.close();
             }
         }
-        if (Objects.nonNull(queryDTO) && StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-            tableList = tableList.stream().filter(table -> table.contains(queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
-        }
-        if (Objects.nonNull(queryDTO) && Objects.nonNull(queryDTO.getLimit())) {
-            tableList = tableList.stream().limit(queryDTO.getLimit()).collect(Collectors.toList());
-        }
-        return tableList;
+        return SearchUtil.handleSearchAndLimit(tableList, queryDTO);
     }
 
     public static List<ServerAddress> getServerAddress(String hostPorts) {

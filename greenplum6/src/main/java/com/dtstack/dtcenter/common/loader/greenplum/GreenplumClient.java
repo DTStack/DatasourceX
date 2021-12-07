@@ -19,6 +19,7 @@
 package com.dtstack.dtcenter.common.loader.greenplum;
 
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -174,7 +175,7 @@ public class GreenplumClient extends AbsRdbmsClient {
         } finally {
             DBUtil.closeDBResources(resultSet, statement, DBUtil.clearAfterGetConnection(greenplum6SourceDTO, clearStatus));
         }
-        return tableList;
+        return SearchUtil.handleSearchAndLimit(tableList, queryDTO);
     }
 
     @Override

@@ -19,6 +19,7 @@
 package com.dtstack.dtcenter.common.loader.kylin;
 
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -76,10 +77,7 @@ public class KylinClient extends AbsRdbmsClient {
             if (null == queryDTO) {
                 rs = meta.getTables(null, null, null, null);
             } else {
-                rs = meta.getTables(null, rdbmsSourceDTO.getSchema(),
-                        StringUtils.isBlank(queryDTO.getTableNamePattern()) ? queryDTO.getTableNamePattern() :
-                                queryDTO.getTableName(),
-                        DBUtil.getTableTypes(queryDTO));
+                rs = meta.getTables(null, rdbmsSourceDTO.getSchema(), null, DBUtil.getTableTypes(queryDTO));
             }
             while (rs.next()) {
                 tableList.add(String.format(TABLE_SHOW, rs.getString(2), rs.getString(3)));
@@ -89,7 +87,7 @@ public class KylinClient extends AbsRdbmsClient {
         } finally {
             DBUtil.closeDBResources(rs, null, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }
-        return tableList;
+        return SearchUtil.handleSearchAndLimit(tableList, queryDTO);
     }
 
     @Override
