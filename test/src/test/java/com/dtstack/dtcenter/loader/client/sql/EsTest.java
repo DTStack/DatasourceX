@@ -48,7 +48,7 @@ public class EsTest extends BaseTest {
 
     private static final ESSourceDTO source = ESSourceDTO.builder()
             .url("172.16.23.96:9201")
-            //.poolConfig(new PoolConfig())
+            .poolConfig(new PoolConfig())
             .build();
 
     /**
@@ -92,13 +92,13 @@ public class EsTest extends BaseTest {
 
     @Test
     public void getPreview() {
-        List viewList = client.getPreview(source, SqlQueryDTO.builder().tableName("commodity").previewNum(5).build());
+        List viewList = client.getPreview(source, SqlQueryDTO.builder().tableName("zy_1").previewNum(5).build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(viewList));
     }
 
     @Test
     public void getColumnMetaData() {
-        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("jnby_tag_0913").build());
+        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().schema("zy_1").tableName("zzz").build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(metaData));
     }
 

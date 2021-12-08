@@ -1,18 +1,21 @@
 package com.dtstack.dtcenter.common.loader.es5.pool;
 
+import com.dtstack.dtcenter.common.loader.es5.consistent.ESEndPoint;
+import com.dtstack.dtcenter.common.loader.es5.consistent.RequestType;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.http.HttpHost;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.common.transport.TransportAddress;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -25,7 +28,7 @@ import java.util.stream.Collectors;
  * @Description：
  */
 @Slf4j
-public class ElasticSearchPoolFactory implements PooledObjectFactory<TransportClient> {
+public class ElasticSearchPoolFactory implements PooledObjectFactory<RestClient> {
 
     private AtomicReference<Set<String>> nodesReference = new AtomicReference<>();
 
@@ -48,21 +51,23 @@ public class ElasticSearchPoolFactory implements PooledObjectFactory<TransportCl
      * @throws Exception
      */
     @Override
-    public PooledObject<TransportClient> makeObject() throws Exception {
+    public PooledObject<RestClient> makeObject() throws Exception {
         // 构建es集群中的所有节点
-        List<HttpHost> nodes = nodesReference.get().stream()
+        HttpHost[] nodes = new HttpHost[nodesReference.get().size()];
+        nodes = nodesReference.get().stream()
                 .map(hostPorts -> HttpHost.create(hostPorts.trim()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()).toArray(nodes);
 
-        TransportAddress[] transportAddresses = nodes
-                .stream()
-                .map(host -> new InetSocketTransportAddress(host.getAddress(), host.getPort()))
-                .toArray(TransportAddress[]::new);
-        TransportClient transportClient = new PreBuiltTransportClient(Settings.builder().build())
-                .addTransportAddresses(transportAddresses);
+        RestClientBuilder builder = RestClient.builder(nodes);
 
-        // 连接池中的连接池对象
-        return new DefaultPooledObject<>(transportClient);
+        // 有密码就增加密码
+        if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
+            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+            builder.setHttpClientConfigCallback(e -> e.setDefaultCredentialsProvider(credentialsProvider));
+        }
+
+        return new DefaultPooledObject<>(builder.build());
     }
 
     /**
@@ -71,8 +76,8 @@ public class ElasticSearchPoolFactory implements PooledObjectFactory<TransportCl
      * @throws Exception
      */
     @Override
-    public void destroyObject(PooledObject<TransportClient> pooledObject) throws Exception {
-        TransportClient client = pooledObject.getObject();
+    public void destroyObject(PooledObject<RestClient> pooledObject) throws Exception {
+        RestClient client = pooledObject.getObject();
         if (Objects.nonNull(client)) {
             try {
                 client.close();
@@ -93,10 +98,10 @@ public class ElasticSearchPoolFactory implements PooledObjectFactory<TransportCl
      * @return
      */
     @Override
-    public boolean validateObject(PooledObject<TransportClient> pooledObject) {
-        TransportClient client = pooledObject.getObject();
+    public boolean validateObject(PooledObject<RestClient> pooledObject) {
+        RestClient client = pooledObject.getObject();
         try {
-            client.listedNodes();
+            client.performRequest(RequestType.GET, ESEndPoint.ENDPOINT_HEALTH_CHECK);
             return true;
         } catch (Exception e) {
             return false;
@@ -113,10 +118,10 @@ public class ElasticSearchPoolFactory implements PooledObjectFactory<TransportCl
      * @throws Exception
      */
     @Override
-    public void activateObject(PooledObject<TransportClient> pooledObject) throws Exception {
-        TransportClient client = pooledObject.getObject();
-        // ping 一下，使其没有空闲
-        client.listedNodes();
+    public void activateObject(PooledObject<RestClient> pooledObject) throws Exception {
+        RestClient client = pooledObject.getObject();
+        // 健康检查一下，使其没有空闲
+        client.performRequest(RequestType.GET, ESEndPoint.ENDPOINT_HEALTH_CHECK);
     }
 
     /**
@@ -126,7 +131,7 @@ public class ElasticSearchPoolFactory implements PooledObjectFactory<TransportCl
      * @throws Exception
      */
     @Override
-    public void passivateObject(PooledObject<TransportClient> pooledObject) throws Exception {
+    public void passivateObject(PooledObject<RestClient> pooledObject) throws Exception {
         // nothing
     }
 }

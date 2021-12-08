@@ -1,7 +1,12 @@
 package com.dtstack.dtcenter.common.loader.es5;
 
-import com.carrotsearch.hppc.cursors.ObjectCursor;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.parser.Feature;
 import com.dtstack.dtcenter.common.loader.common.nosql.AbsNoSqlClient;
+import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
+import com.dtstack.dtcenter.common.loader.es5.consistent.ESEndPoint;
+import com.dtstack.dtcenter.common.loader.es5.consistent.RequestType;
 import com.dtstack.dtcenter.common.loader.es5.pool.ElasticSearchManager;
 import com.dtstack.dtcenter.common.loader.es5.pool.ElasticSearchPool;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
@@ -10,36 +15,32 @@ import com.dtstack.dtcenter.loader.dto.source.ESSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.util.Pair;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
-import org.elasticsearch.action.admin.indices.alias.get.GetAliasesResponse;
-import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest;
-import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.cluster.metadata.AliasMetaData;
-import org.elasticsearch.cluster.metadata.MappingMetaData;
-import org.elasticsearch.common.collect.ImmutableOpenMap;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.common.transport.TransportAddress;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.apache.http.HttpStatus;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.nio.entity.NStringEntity;
+import org.apache.http.util.EntityUtils;
+import org.elasticsearch.client.Response;
+import org.elasticsearch.client.RestClient;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * es5 连接客户端
@@ -53,6 +54,24 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
 
     private static final int MAX_NUM = 10000;
 
+    private static final String POST = "post";
+
+    private static final String PUT = "put";
+
+    private static final String DELETE = "delete";
+
+    private static final String ENDPOINT_UPDATE_FORMAT = "/%s/_update";
+
+    private static final String ENDPOINT_DELETE_FORMAT = "/%s";
+
+    private static final String ENDPOINT_BULK_FORMAT = "/_bulk";
+
+    private static final String ENDPOINT_UPDATE_QUERY_FORMAT = "/%s/_update_by_query";
+
+    private static final String ENDPOINT_DELETE_QUERY_FORMAT = "/%s/_delete_by_query";
+
+    private static final String RESULT_KEY = "result";
+
     private static final ElasticSearchManager ELASTIC_SEARCH_MANAGER = ElasticSearchManager.getInstance();
 
     public static final ThreadLocal<Boolean> IS_OPEN_POOL = new ThreadLocal<>();
@@ -63,10 +82,10 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return false;
         }
-        TransportClient client = null;
+        RestClient client = null;
         try {
             client = getClient(esSourceDTO);
-            client.listedNodes();
+            client.performRequest(RequestType.GET, ESEndPoint.ENDPOINT_HEALTH_CHECK);
             return true;
         } catch (Exception e) {
             throw new DtLoaderException(e.getMessage(), e);
@@ -76,11 +95,11 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
     }
 
     /**
-     * 获取 es 某一索引下所有type
+     * 获取 es 某一索引下所有 type (也就是表)
      *
-     * @param sourceDTO 数据源信息
-     * @param queryDTO  查询信息
-     * @return type 集合
+     * @param sourceDTO 数据源连接信息
+     * @param queryDTO  查询条件
+     * @return 所有的 type
      */
     @Override
     public List<String> getTableList(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
@@ -88,38 +107,42 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return new ArrayList<>();
         }
-        TransportClient client = getClient(esSourceDTO);
+        RestClient client = getClient(esSourceDTO);
         List<String> typeList = Lists.newArrayList();
-        // es索引
+        //es索引
         String index = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : queryDTO.getTableName();
-        // 不指定index抛异常
+        //不指定index抛异常
         if (StringUtils.isBlank(index)) {
             throw new DtLoaderException("The index of es is not specified, and the acquisition fails");
         }
         try {
-            GetMappingsRequest request = new GetMappingsRequest();
-            request.indicesOptions(null);
-            GetMappingsResponse response = client.admin().indices().getMappings(request).get();
-            ImmutableOpenMap<String, MappingMetaData> typeMappings = response.mappings().get(index);
-            for (ObjectCursor<String> typeName : typeMappings.keys()) {
-                typeList.add(typeName.value);
+            JSONObject resultJson = executeAndReturnJson(client, null, RequestType.GET, String.format(ESEndPoint.ENDPOINT_MAPPING_FORMAT, index));
+            if (Objects.nonNull(resultJson)) {
+                for (String key : resultJson.keySet()) {
+                    JSONObject mappings = resultJson.getJSONObject(key).getJSONObject("mappings");
+                    if (Objects.isNull(mappings)) {
+                        continue;
+                    }
+                    typeList.addAll(Lists.newArrayList(mappings.keySet()));
+                }
             }
         } catch (NullPointerException e) {
-            throw new DtLoaderException(String.format("index not exits,%s", e.getMessage()), e);
+            log.error("index not exits", e);
         } catch (Exception e) {
             log.error(String.format("get type exception,%s", e.getMessage()), e);
         } finally {
             closeResource(client, esSourceDTO);
         }
-        return typeList;
+        return SearchUtil.handleSearchAndLimit(typeList, queryDTO);
     }
 
+
     /**
-     * 获取 es 所有索引
+     * 获取 es 所有 index (也就是数据库)
      *
      * @param sourceDTO 数据源连接信息
      * @param queryDTO  查询条件
-     * @return 所有 index
+     * @return 所有的 index
      */
     @Override
     public List<String> getAllDatabases(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
@@ -127,14 +150,17 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return new ArrayList<>();
         }
-        TransportClient client = getClient(esSourceDTO);
+        RestClient client = getClient(esSourceDTO);
         ArrayList<String> dbs = new ArrayList<>();
         try {
-            GetAliasesRequest aliasesRequest = new GetAliasesRequest();
-            GetAliasesResponse aliasesResponse = client.admin().indices().getAliases(aliasesRequest).get();
-            ImmutableOpenMap<String, List<AliasMetaData>> aliases = aliasesResponse.getAliases();
-            for (ObjectCursor<String> key : aliases.keys()) {
-                dbs.add(key.value);
+            JSONArray arrayResult = executeAndReturnArray(client, null, RequestType.GET, ESEndPoint.ENDPOINT_INDEX_GET);
+            if (CollectionUtils.isNotEmpty(arrayResult)) {
+                for (int i = 0; i < arrayResult.size(); i++) {
+                    String index = arrayResult.getJSONObject(i).getString("index");
+                    if (StringUtils.isNotBlank(index)) {
+                        dbs.add(index);
+                    }
+                }
             }
         } catch (Exception e) {
             log.error(String.format("Failed to get es index,%s", e.getMessage()), e);
@@ -145,7 +171,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
     }
 
     /**
-     * es 数据预览，默认100条，最大10000条
+     * es数据预览，默认 100 条，最大 10000 条
      *
      * @param sourceDTO 数据源连接信息
      * @param queryDTO  查询条件
@@ -157,7 +183,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return new ArrayList<>();
         }
-        TransportClient client = getClient(esSourceDTO);
+        RestClient client = getClient(esSourceDTO);
         //索引
         String index = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : queryDTO.getTableName();
         if (StringUtils.isBlank(index)) {
@@ -165,23 +191,26 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         }
         //限制条数，最大10000条
         int previewNum = queryDTO.getPreviewNum() > MAX_NUM ? MAX_NUM : queryDTO.getPreviewNum();
-        //根据index进行查询
-        SearchRequest searchRequest = new SearchRequest(index);
-        SearchSourceBuilder query = new SearchSourceBuilder()
-                .query(QueryBuilders.matchAllQuery())
-                .size(previewNum);
-        SearchRequest source = searchRequest.source(query);
+        JSONObject limitJson = new JSONObject();
+        limitJson.put("size", previewNum);
+
         List<List<Object>> documentList = Lists.newArrayList();
         try {
-            SearchResponse search = client.search(source).get();
-            //结果集
-            SearchHit[] hits = search.getHits().getHits();
-            for (SearchHit hit : hits) {
+            String endPoint;
+            if (StringUtils.isNotBlank(queryDTO.getSchema()) && StringUtils.isNotBlank(queryDTO.getTableName())) {
+                endPoint = String.format(ESEndPoint.ENDPOINT_SEARCH_TYPE_FORMAT, queryDTO.getSchema(), queryDTO.getTableName());
+            } else {
+                endPoint = String.format(ESEndPoint.ENDPOINT_SEARCH_FORMAT, index);
+            }
+            JSONObject jsonResult = executeAndReturnJson(client, buildEntity(limitJson), RequestType.GET, endPoint);
+            // 结果集
+            JSONArray hits = jsonResult.getJSONObject("hits").getJSONArray("hits");
+            for (int i = 0; i < hits.size(); i++) {
+                JSONObject hitJson = hits.getJSONObject(i);
                 //一行数据
                 List<Object> document = Lists.newArrayList();
-                Map<String, Object> sourceAsMap = hit.getSource();
-                sourceAsMap.keySet().forEach(key ->
-                        document.add(new Pair<String, Object>(key, sourceAsMap.get(key))));
+                hitJson.keySet().forEach(key ->
+                        document.add(new Pair<String, Object>(key, hitJson.get(key))));
                 documentList.add(document);
             }
         } catch (Exception e) {
@@ -197,7 +226,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
      *
      * @param sourceDTO 数据源连接信息
      * @param queryDTO  查询条件
-     * @return es 字段集合
+     * @return es 字段信息
      */
     @Override
     public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
@@ -205,7 +234,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
             return new ArrayList<>();
         }
-        TransportClient client = getClient(esSourceDTO);
+        RestClient client = getClient(esSourceDTO);
         //索引
         String index = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : queryDTO.getTableName();
         if (StringUtils.isBlank(index)) {
@@ -213,26 +242,32 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         }
         List<ColumnMetaDTO> columnMetaDTOS = new ArrayList<>();
         try {
-            //根据index进行查询
-            GetMappingsRequest request = new GetMappingsRequest();
-            request.indicesOptions(null);
-            GetMappingsResponse response = client.admin().indices().getMappings(request).get();
-            ImmutableOpenMap<String, MappingMetaData> cursors = response.getMappings().get(index);
-
-            String type = StringUtils.isNotBlank(queryDTO.getTableName()) ? queryDTO.getTableName() : "_doc";
-            MappingMetaData mappingMetaData = cursors.get(type);
-            if (Objects.isNull(mappingMetaData)) {
-                return columnMetaDTOS;
+            String endPoint;
+            if (StringUtils.isNotBlank(queryDTO.getSchema()) && StringUtils.isNotBlank(queryDTO.getTableName())) {
+                endPoint = String.format(ESEndPoint.ENDPOINT_MAPPING_TYPE_FORMAT, queryDTO.getSchema(), queryDTO.getTableName());
+            } else {
+                endPoint = String.format(ESEndPoint.ENDPOINT_MAPPING_FORMAT, index);
             }
-            Map<String, Object> metaDataMap = (Map<String, Object>) mappingMetaData.getSourceAsMap().get("properties");
-            Set<String> metaData = metaDataMap.keySet();
-            for (String meta : metaData) {
-                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
-                columnMetaDTO.setKey(meta);
-                Map<String, Object> map = (Map<String, Object>) metaDataMap.get(meta);
-                String columnType = (String) map.get("type");
-                columnMetaDTO.setType(columnType);
-                columnMetaDTOS.add(columnMetaDTO);
+            JSONObject resultJson = executeAndReturnJson(client, null, RequestType.GET, endPoint);
+            if (Objects.nonNull(resultJson)) {
+                for (String key : resultJson.keySet()) {
+                    JSONObject mappings = resultJson.getJSONObject(key).getJSONObject("mappings");
+                    if (Objects.isNull(mappings)) {
+                        continue;
+                    }
+                    for (String type : mappings.keySet()) {
+                        JSONObject properties = mappings.getJSONObject(type).getJSONObject("properties");
+                        if (Objects.isNull(properties)) {
+                            continue;
+                        }
+                        for (String column : properties.keySet()) {
+                            ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+                            columnMetaDTO.setKey(column);
+                            columnMetaDTO.setType(properties.getJSONObject(column).getString("type"));
+                            columnMetaDTOS.add(columnMetaDTO);
+                        }
+                    }
+                }
             }
         } catch (Exception e) {
             log.error("doc acquisition exception", e);
@@ -242,14 +277,45 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         return columnMetaDTOS;
     }
 
-    private static TransportClient getClient(ESSourceDTO esSourceDTO) {
+    @Override
+    public List<Map<String, Object>> executeQuery(ISourceDTO iSource, SqlQueryDTO queryDTO) {
+        ESSourceDTO esSourceDTO = (ESSourceDTO) iSource;
+        List<Map<String, Object>> list = Lists.newArrayList();
+        HashMap<String, Object> map = Maps.newHashMap();
+        if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
+            return new ArrayList<>();
+        }
+        String dsl = doDealPageSql(queryDTO.getSql());
+        //索引
+        String index = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : queryDTO.getTableName();
+        if (StringUtils.isBlank(index)) {
+            throw new DtLoaderException("The index of es is not specified, and the field information fails to be obtained. Please specify tableName as the index in sqlQueryDTO");
+        }
+        RestClient client = null;
+        JSONObject resultJsonObject;
+        try {
+            client = getClient(esSourceDTO);
+            Response response = client.performRequest(RequestType.GET, String.format(ESEndPoint.ENDPOINT_SEARCH_FORMAT, index));
+            String result = EntityUtils.toString(response.getEntity());
+            resultJsonObject = JSONObject.parseObject(result);
+        } catch (IOException e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        } finally {
+            closeResource(client, esSourceDTO);
+        }
+        map.put(RESULT_KEY, resultJsonObject);
+        list.add(map);
+        return list;
+    }
+
+    private static RestClient getClient(ESSourceDTO esSourceDTO) {
         boolean check = esSourceDTO.getPoolConfig() != null;
         IS_OPEN_POOL.set(check);
         if (!check) {
             return getClient(esSourceDTO.getUrl(), esSourceDTO.getUsername(), esSourceDTO.getPassword());
         }
         ElasticSearchPool elasticSearchPool = ELASTIC_SEARCH_MANAGER.getConnection(esSourceDTO);
-        TransportClient restHighLevelClient = elasticSearchPool.getResource();
+        RestClient restHighLevelClient = elasticSearchPool.getResource();
         if (Objects.isNull(restHighLevelClient)) {
             throw new DtLoaderException("No database connection available");
         }
@@ -258,35 +324,26 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
     }
 
     /**
-     * 根据 es 地址获取客户端
+     * 根据地址、用户名和密码连接 es RestClient
      *
-     * @param address  es 连接地址
+     * @param address  rest 地址
      * @param username 用户名
      * @param password 密码
-     * @return es client
+     * @return es RestClient
      */
-    private static TransportClient getClient(String address, String username, String password) {
+    private static RestClient getClient(String address, String username, String password) {
         log.info("Get ES data source connection, address : {}, userName : {}", address, username);
         List<HttpHost> httpHosts = dealHost(address);
-        TransportAddress[] transportAddresses = httpHosts
-                .stream()
-                .map(host -> {
-                    try {
-                        return new InetSocketTransportAddress(InetAddress.getByName(host.getHostName()), host.getPort());
-                    } catch (UnknownHostException e) {
-                        log.error(e.getMessage(), e);
-                    }
-                    return null;
-                })
-                .filter(Objects::nonNull)
-                .toArray(TransportAddress[]::new);
-        Settings settings = Settings.builder()
-                .put("client.transport.ignore_cluster_name", true)
-                .put("client.transport.sniff", false)
-                .put("client.transport.ping_timeout", "30s")
-                .build();
-        return new PreBuiltTransportClient(settings)
-                .addTransportAddresses(transportAddresses);
+        // 有用户名密码情况
+        if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
+            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(AuthScope.ANY,
+                    new UsernamePasswordCredentials(username, password));
+            return RestClient.builder(httpHosts.toArray(new HttpHost[0]))
+                    .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)).build();
+        }
+        // 无用户名密码
+        return RestClient.builder(httpHosts.toArray(new HttpHost[0])).build();
     }
 
     private static List<HttpHost> dealHost(String address) {
@@ -294,19 +351,19 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
         String[] addr = address.split(",");
         for (String add : addr) {
             String[] pair = add.split(":");
-            httpHostList.add(new HttpHost(pair[0], Integer.parseInt(pair[1]), "http"));
+            httpHostList.add(new HttpHost(pair[0], Integer.valueOf(pair[1]), "http"));
         }
         return httpHostList;
     }
 
-    private void closeResource(TransportClient transportClient, ESSourceDTO esSourceDTO) {
+    private void closeResource(RestClient restClient, ESSourceDTO esSourceDTO) {
         if (BooleanUtils.isFalse(IS_OPEN_POOL.get())) {
             //未开启线程池
             try {
-                if (Objects.nonNull(transportClient)) {
-                    transportClient.close();
+                if (Objects.nonNull(restClient)) {
+                    restClient.close();
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }
             IS_OPEN_POOL.remove();
@@ -314,12 +371,130 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
             //开启连接池
             ElasticSearchPool elasticSearchPool = ELASTIC_SEARCH_MANAGER.getConnection(esSourceDTO);
             try {
-                if (Objects.nonNull(transportClient) && Objects.nonNull(elasticSearchPool)) {
-                    elasticSearchPool.returnResource(transportClient);
+                if (Objects.nonNull(restClient) && Objects.nonNull(elasticSearchPool)) {
+                    elasticSearchPool.returnResource(restClient);
                 }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
         }
+    }
+
+    private String doDealPageSql(String dsl) {
+        if (StringUtils.isNotBlank(dsl)) {
+            // Feature.OrderedField 是为了保证格式化后 json 中的字段顺序不变
+            JSONObject jsonObject = JSONObject.parseObject(dsl, Feature.OrderedField);
+            return JSONObject.toJSONString(jsonObject, true);
+        }
+        return "";
+    }
+
+    /**
+     * 执行增删改等操作
+     *
+     * @param sourceDTO 数据源连接信息
+     * @param queryDTO  查询条件
+     * @return 执行结果
+     */
+    @Override
+    public Boolean executeSqlWithoutResultSet(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        ESSourceDTO esSourceDTO = (ESSourceDTO) sourceDTO;
+        boolean result = false;
+        if (esSourceDTO == null || StringUtils.isBlank(esSourceDTO.getUrl())) {
+            return false;
+        }
+        //索引
+        String index = StringUtils.isNotBlank(queryDTO.getSchema()) ? queryDTO.getSchema() : queryDTO.getTableName();
+
+        RestClient client = null;
+        NStringEntity entity = null;
+        try {
+            client = getClient(esSourceDTO);
+            if (queryDTO.getSql() != null) {
+                entity = new NStringEntity(queryDTO.getSql(), ContentType.APPLICATION_JSON);
+            }
+            Integer esCommandType = queryDTO.getEsCommandType();
+            String httpMethod = POST;
+            String endpoint = index;
+            switch (esCommandType) {
+                case 0:
+                case 1:
+                    // PUT /${index}
+                    httpMethod = PUT;
+                    break;
+                case 2:
+                    // POST /${index}/_update
+                    endpoint = String.format(ENDPOINT_UPDATE_FORMAT, index);
+                    break;
+                case 3:
+                    // DELETE /${index}
+                    httpMethod = DELETE;
+                    log.info("delete es index, index : {}", index);
+                    endpoint = String.format(ENDPOINT_DELETE_FORMAT, index);
+                    break;
+                case 4:
+                    // POST /_bulk
+                    endpoint = ENDPOINT_BULK_FORMAT;
+                    break;
+                case 5:
+                    // POST /${index}/_update_by_query
+                    endpoint = String.format(ENDPOINT_UPDATE_QUERY_FORMAT, index);
+                    break;
+                case 6:
+                    // POST /${index}/_delete_by_query
+                    endpoint = String.format(ENDPOINT_DELETE_QUERY_FORMAT, index);
+                    break;
+                default:
+            }
+            Response response = execute(client, entity, httpMethod, endpoint);
+            if (response != null && (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK
+                    || response.getStatusLine().getStatusCode() == HttpStatus.SC_CREATED)) {
+                result = true;
+            }
+        } catch (IOException e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        } finally {
+            closeResource(client, esSourceDTO);
+            if (entity != null) {
+                entity.close();
+            }
+        }
+        return result;
+    }
+
+    private Response execute(RestClient client, HttpEntity entity, String httpMethod, String endpoint) throws IOException {
+        return client.performRequest(httpMethod, endpoint, Collections.emptyMap(), entity);
+    }
+
+    private JSONObject executeAndReturnJson(RestClient client, HttpEntity entity, String httpMethod, String endpoint) throws IOException {
+        Response response = client.performRequest(httpMethod, endpoint, Collections.emptyMap(), entity);
+        if (Objects.isNull(response)) {
+            return new JSONObject();
+        }
+        String result = EntityUtils.toString(response.getEntity());
+        if (StringUtils.isBlank(result)) {
+            return new JSONObject();
+        }
+        return JSONObject.parseObject(result);
+    }
+
+    private JSONArray executeAndReturnArray(RestClient client, HttpEntity entity, String httpMethod, String endpoint) throws IOException {
+        Response response = client.performRequest(httpMethod, endpoint, Collections.emptyMap(), entity);
+        if (Objects.isNull(response)) {
+            return new JSONArray();
+        }
+        String result = EntityUtils.toString(response.getEntity());
+        if (StringUtils.isBlank(result)) {
+            return new JSONArray();
+        }
+        return JSONArray.parseArray(result);
+    }
+
+    private HttpEntity buildEntity(JSONObject entityJson) {
+        return buildEntity(entityJson.toJSONString());
+    }
+
+    private HttpEntity buildEntity(String entity) {
+        return new NStringEntity(entity, ContentType.APPLICATION_JSON);
     }
 }

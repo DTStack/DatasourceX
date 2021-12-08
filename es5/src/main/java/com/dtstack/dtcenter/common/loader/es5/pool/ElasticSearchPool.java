@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.es5.pool;
 
 import com.dtstack.dtcenter.common.loader.common.Pool;
+import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.transport.TransportClient;
 
 /**
@@ -10,7 +11,7 @@ import org.elasticsearch.client.transport.TransportClient;
  * date：Created in 下午3:04 2021/12/8
  * company: www.dtstack.com
  */
-public class ElasticSearchPool extends Pool<TransportClient> {
+public class ElasticSearchPool extends Pool<RestClient> {
 
     private ElasticSearchPoolConfig config;
 
