@@ -47,7 +47,7 @@ public class EsTest extends BaseTest {
     private static final IClient client = ClientCache.getClient(DataSourceType.ES.getVal());
 
     private static final ESSourceDTO source = ESSourceDTO.builder()
-            .url("172.16.100.186:9200")
+            .url("172.16.23.96:9201")
             //.poolConfig(new PoolConfig())
             .build();
 
