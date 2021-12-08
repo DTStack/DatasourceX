@@ -44,18 +44,18 @@ import java.util.Map;
  */
 public class EsTest extends BaseTest {
 
-    private static final IClient client = ClientCache.getClient(DataSourceType.ES6.getVal());
+    private static final IClient client = ClientCache.getClient(DataSourceType.ES.getVal());
 
     private static final ESSourceDTO source = ESSourceDTO.builder()
             .url("172.16.100.186:9200")
-            .poolConfig(new PoolConfig())
+            //.poolConfig(new PoolConfig())
             .build();
 
     /**
      * 用户名和密码不正确，172.16.100.186:9200 不需要密码
      */
     private static final ESSourceDTO esSource = ESSourceDTO.builder()
-            .url("172.16.100.186:9200")
+            .url("172.16.100.243:9200")
             .password("abc")
             .username("123")
             .build();
@@ -63,10 +63,10 @@ public class EsTest extends BaseTest {
     /**
      * 数据准备
      */
-    @BeforeClass
+    //@BeforeClass
     public static void setUp () {
         String sql = "{\"name\": \"小黄\", \"age\": 18,\"sex\": \"不详\",\"extraAttr_0_5_3\":{\"attributeValue\":\"2020-09-17 23:37:16\"}}";
-        String tableName = "commodity/_doc/3";
+        String tableName = "jnby_tag_0913/_doc/3";
         client.executeSqlWithoutResultSet(source, SqlQueryDTO.builder().sql(sql).tableName(tableName).esCommandType(EsCommandType.INSERT.getType()).build());
     }
 
@@ -86,7 +86,7 @@ public class EsTest extends BaseTest {
 
     @Test
     public void getTableList() {
-        List tableList = client.getTableList(source, SqlQueryDTO.builder().tableName("commodity").build());
+        List tableList = client.getTableList(source, SqlQueryDTO.builder().tableName("zy_1").build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
     }
 
@@ -98,7 +98,7 @@ public class EsTest extends BaseTest {
 
     @Test
     public void getColumnMetaData() {
-        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("commodity").build());
+        List metaData = client.getColumnMetaData(source, SqlQueryDTO.builder().tableName("jnby_tag_0913").build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(metaData));
     }
 

@@ -756,12 +756,14 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
         }
         String defaultSign = fuzzySign + queryDTO.getTableNamePattern() + fuzzySign;
         if (!ReflectUtil.fieldExists(SqlQueryDTO.class, "matchType")
-                || Objects.isNull(queryDTO.getMatchType())
-                || MatchType.ALL.equals(queryDTO.getMatchType())) {
+                || Objects.isNull(queryDTO.getMatchType())) {
             return defaultSign;
         }
+        if (MatchType.ALL.equals(queryDTO.getMatchType())) {
+            return queryDTO.getTableNamePattern();
+        }
         if (MatchType.PREFIX.equals(queryDTO.getMatchType())) {
-            return fuzzySign + queryDTO.getTableNamePattern();
+            return queryDTO.getTableNamePattern() + fuzzySign;
         }
         if (MatchType.SUFFIX.equals(queryDTO.getMatchType())) {
             return fuzzySign + queryDTO.getTableNamePattern();

@@ -44,10 +44,10 @@ public enum DataSourceType {
     SQLSERVER_2017_LATER(32, 5, "SQLServer JDBC", "sqlServer"),
     PostgreSQL(4, 6, "PostgreSQL", "postgresql"),
     DB2(19, 7, "DB2", "db2"),
-    DMDB(35, 8, "DMDB", "dmdb"),
+    DMDB(35, 8, "DMDB For MySQL", "dmdb"),
     RDBMS(5, 9, "RDBMS", "mysql"),
     KINGBASE8(40, 10, "KingbaseES8", "kingbase8"),
-    DMDB_For_Oracle(67, 8, "DMDB", "dmdb"),
+    DMDB_For_Oracle(67, 8, "DMDB For Oracle", "dmdb"),
 
     // Hadoop
     HIVE(7, 20, "Hive2.x", "hive"),
@@ -87,7 +87,7 @@ public enum DataSourceType {
     HBASE2(39, 101, "HBase", "hbase"),
     Phoenix(30, 102, "Phoenix4.x", "phoenix"),
     PHOENIX5(38, 103, "Phoenix5.x", "phoenix5"),
-    ES(11, 104, "ElasticSearch5.x", "es"),
+    ES(11, 104, "ElasticSearch5.x", "es5"),
     ES6(33, 105, "ElasticSearch6.x", "es"),
     ES7(46, 106, "ElasticSearch7.x", "es7"),
     MONGODB(13, 107, "MongoDB", "mongo"),

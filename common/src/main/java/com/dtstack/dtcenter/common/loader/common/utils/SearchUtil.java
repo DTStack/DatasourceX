@@ -48,9 +48,10 @@ public class SearchUtil {
         }
         if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
             if (!ReflectUtil.fieldExists(SqlQueryDTO.class, "matchType")
-                    || Objects.isNull(queryDTO.getMatchType())
-                    || MatchType.ALL.equals(queryDTO.getMatchType())) {
+                    || Objects.isNull(queryDTO.getMatchType())) {
                 result = result.stream().filter(single -> StringUtils.containsIgnoreCase(single, queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
+            } else if (MatchType.ALL.equals(queryDTO.getMatchType())) {
+                result = result.stream().filter(single -> StringUtils.equalsIgnoreCase(single, queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
             } else if (MatchType.PREFIX.equals(queryDTO.getMatchType())) {
                 result = result.stream().filter(single -> StringUtils.startsWithIgnoreCase(single, queryDTO.getTableNamePattern().trim())).collect(Collectors.toList());
             } else if (MatchType.SUFFIX.equals(queryDTO.getMatchType())) {
