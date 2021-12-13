@@ -67,6 +67,7 @@
         <module>tbds_hbase</module>
         <module>tbds_kafka</module>
         <module>tbds_hdfs</module>
+        <module>hive3_cdp</module>
     </modules>
     <packaging>pom</packaging>
 

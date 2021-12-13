@@ -117,6 +117,7 @@ public enum DataSourceType {
     TBDS_HBASE(61, 137, "TBDS_HBASE", "tbds_hbase"),
     TBDS_KAFKA(62, 138, "TBDS_KAFKA", "tbds_kafka"),
     DorisRestful(64, 139, "DorisRestful", "dorisrestful"),
+    HIVE3_CDP(65, 140, "Hive3_CDP", "hive3_cdp"),
     ;
 
     DataSourceType(int val, int order, String name, String pluginName) {
@@ -144,6 +145,7 @@ public enum DataSourceType {
         RDBM_S.add(HIVE.val);
         RDBM_S.add(HIVE1X.val);
         RDBM_S.add(HIVE3X.val);
+        RDBM_S.add(HIVE3_CDP.val);
         RDBM_S.add(Spark.val);
         RDBM_S.add(SparkThrift2_1.val);
         RDBM_S.add(Presto.val);
