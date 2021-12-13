@@ -138,12 +138,13 @@ public abstract class AbsRdbmsClient<T> implements IClient<T> {
      */
     public List<Map<String, Object>> executeQuery(RdbmsSourceDTO rdbmsSourceDTO, SqlQueryDTO queryDTO, Integer clearStatus) {
         try {
+            Boolean setMaxRow = ReflectUtil.fieldExists(SqlQueryDTO.class, "setMaxRow") ? queryDTO.getSetMaxRow() : null;
             // 预编译字段
             if (queryDTO.getPreFields() != null) {
-                return DBUtil.executeQuery(rdbmsSourceDTO.getConnection(), queryDTO.getSql(), queryDTO.getLimit(), queryDTO.getPreFields(), queryDTO.getQueryTimeout(), this::dealResult);
+                return DBUtil.executeQuery(rdbmsSourceDTO.getConnection(), queryDTO.getSql(), queryDTO.getLimit(), queryDTO.getPreFields(), queryDTO.getQueryTimeout(), setMaxRow, this::dealResult);
             }
 
-            return DBUtil.executeQuery(rdbmsSourceDTO.getConnection(), queryDTO.getSql(), queryDTO.getLimit(), queryDTO.getQueryTimeout(), this::dealResult);
+            return DBUtil.executeQuery(rdbmsSourceDTO.getConnection(), queryDTO.getSql(), queryDTO.getLimit(), queryDTO.getQueryTimeout(), setMaxRow, this::dealResult);
         } finally {
             DBUtil.closeDBResources(null, null, DBUtil.clearAfterGetConnection(rdbmsSourceDTO, clearStatus));
         }

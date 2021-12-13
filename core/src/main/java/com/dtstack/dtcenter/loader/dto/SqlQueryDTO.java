@@ -111,6 +111,12 @@ public class SqlQueryDTO {
     private Integer limit;
 
     /**
+     * 是否设置 maxRow，默认 true
+     */
+    @Builder.Default
+    private Boolean setMaxRow = true;
+
+    /**
      * hbase过滤器，用户hbase自定义查询
      */
     private List<Filter> hbaseFilter;
