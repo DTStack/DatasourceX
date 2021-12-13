@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.util.Pair;
-import org.apache.http.HttpStatus;
 
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -37,7 +36,9 @@ public class DorisRestfulClient implements Closeable {
 
     private static final String META_JSON_PATH = "$.data.meta";
 
-    private static final String PREVIEW_SQL = "{stmt: \"select * from %s limit 10000;\"}";
+    private static final Integer MAX_PREVIEW = 10000;
+
+    private static final String PREVIEW_SQL = "{stmt: \"select * from %s limit %s;\"}";
 
     private static final String EXECUTE_SQL = "{\"stmt\": \"%s;\"}";
 
@@ -123,7 +124,8 @@ public class DorisRestfulClient implements Closeable {
 
         sourceDTO.setUrl(sourceDTO.getUrl() + String.format(HttpAPI.QUERY_DATA, cluster, schema));
         HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO);
-        String body = String.format(PREVIEW_SQL, tableName);
+        Integer limit = sqlQueryDTO.getLimit() != null ? sqlQueryDTO.getLimit() : MAX_PREVIEW;
+        String body = String.format(PREVIEW_SQL, tableName, limit);
         Response result = httpClient.post(body, null, null);
         AssertUtils.isTrue(result, 0);
 

@@ -90,6 +90,13 @@ public class DorisRestfulTest extends BaseTest {
     }
 
     @Test
+    public void getPreview_1() {
+        List<List<Object>> tableList = CLIENT.getPreview(SOURCE_DTO, SqlQueryDTO.builder().tableName("LOADER_TEST").limit(0).build());
+        Assert.assertTrue(CollectionUtils.isEmpty(tableList));
+        System.out.println(tableList);
+    }
+
+    @Test
     public void executeQuery() {
         List<Map<String, Object>> tableList = CLIENT.executeQuery(SOURCE_DTO, SqlQueryDTO.builder().sql("select * from LOADER_TEST").build());
         Assert.assertTrue(CollectionUtils.isNotEmpty(tableList));
