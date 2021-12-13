@@ -36,7 +36,7 @@ public class DorisRestfulClient implements Closeable {
 
     private static final String META_JSON_PATH = "$.data.meta";
 
-    private static final Integer MAX_PREVIEW = 10000;
+    private static final Integer PREVIEW_SIZE = 100;
 
     private static final String PREVIEW_SQL = "{stmt: \"select * from %s limit %s;\"}";
 
@@ -124,7 +124,7 @@ public class DorisRestfulClient implements Closeable {
 
         sourceDTO.setUrl(sourceDTO.getUrl() + String.format(HttpAPI.QUERY_DATA, cluster, schema));
         HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO);
-        Integer limit = sqlQueryDTO.getLimit() != null ? sqlQueryDTO.getLimit() : MAX_PREVIEW;
+        Integer limit = sqlQueryDTO.getLimit() != null ? sqlQueryDTO.getLimit() : PREVIEW_SIZE;
         String body = String.format(PREVIEW_SQL, tableName, limit);
         Response result = httpClient.post(body, null, null);
         AssertUtils.isTrue(result, 0);
