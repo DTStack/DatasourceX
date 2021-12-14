@@ -285,7 +285,7 @@ public class EsClient<T> extends AbsNoSqlClient<T> {
                 ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
                 columnMetaDTO.setKey(meta);
                 Map<String, Object> map = (Map<String, Object>) metaDataMap.get(meta);
-                String type = (String) map.get("type");
+                String type = StringUtils.isNotBlank((String) map.get("type")) ? (String) map.get("type") : "object";
                 columnMetaDTO.setType(type);
                 columnMetaDTOS.add(columnMetaDTO);
             }
