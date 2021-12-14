@@ -36,7 +36,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
-import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.IOUtils;
 
@@ -437,13 +436,12 @@ public class HdfsOperator {
             return true;
         }
 
-        Iterator var3 = fileNames.iterator();
-        while (var3.hasNext()) {
-            String fileName = (String) var3.next();
+        for (String fileName : fileNames) {
             Path path = new Path(fileName);
             try {
                 if (fs.exists(path)) {
-                    Trash.moveToAppropriateTrash(fs, path, fs.getConf());
+                    // 改为直接删除, 不再放入回收站
+                    fs.delete(path, true);
                 } else {
                     log.error("HDFS file is not exist {}", path);
                 }
@@ -467,7 +465,8 @@ public class HdfsOperator {
         Path deletePath = new Path(remotePath);
         try {
             if (fs.exists(deletePath)) {
-                return Trash.moveToAppropriateTrash(fs, deletePath, fs.getConf());
+                // 改为直接删除, 不再放入回收站
+                fs.delete(deletePath, true);
             }
         } catch (Exception e) {
             throw new DtLoaderException(String.format("check or delete file exception : %s", e.getMessage()), e);
