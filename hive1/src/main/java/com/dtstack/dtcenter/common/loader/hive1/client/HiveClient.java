@@ -379,7 +379,7 @@ public class HiveClient extends AbsRdbmsClient {
         }
 
         // 校验高可用配置
-        if (StringUtils.isBlank(hive1SourceDTO.getDefaultFS()) || !hive1SourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
+        if (StringUtils.isBlank(hive1SourceDTO.getDefaultFS())) {
             throw new DtLoaderException("defaultFS incorrect format");
         }
         transformDelim(table);

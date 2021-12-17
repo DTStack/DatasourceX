@@ -18,7 +18,6 @@
 
 package com.dtstack.dtcenter.common.loader.hdfs;
 
-import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HdfsOperator;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -35,7 +34,7 @@ public class HdfsConnFactory {
 
     public Boolean testConn(ISourceDTO iSource) {
         HdfsSourceDTO hdfsSourceDTO = (HdfsSourceDTO) iSource;
-        if (StringUtils.isBlank(hdfsSourceDTO.getDefaultFS()) || !hdfsSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
+        if (StringUtils.isBlank(hdfsSourceDTO.getDefaultFS())) {
             throw new DtLoaderException("defaultFS incorrect format");
         }
 

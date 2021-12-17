@@ -439,7 +439,7 @@ public class InceptorClient extends AbsRdbmsClient {
         }
 
         // 校验高可用配置
-        if (StringUtils.isBlank(inceptorSourceDTO.getDefaultFS()) || !inceptorSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
+        if (StringUtils.isBlank(inceptorSourceDTO.getDefaultFS())) {
             throw new DtLoaderException("defaultFS incorrect format");
         }
         Configuration conf = HadoopConfUtil.getHdfsConf(inceptorSourceDTO.getDefaultFS(), inceptorSourceDTO.getConfig(), inceptorSourceDTO.getKerberosConfig());
