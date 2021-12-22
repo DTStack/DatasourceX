@@ -72,6 +72,14 @@ public class RestfulSourceDTO implements ISourceDTO {
      */
     private Map<String, Object> kerberosConfig;
 
+
+    /**
+     * sslClient.xml 的绝对路径
+     *
+     * @return
+     */
+    private String sslClientConf;
+
     @Override
     public Connection getConnection() {
         throw new DtLoaderException("The method is not supported");

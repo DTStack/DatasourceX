@@ -26,7 +26,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.dtstack.dtcenter.common.loader.common.DtClassThreadFactory;
+import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
+import com.dtstack.dtcenter.common.loader.restful.http.ssl.SSLManager;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RestfulSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -50,6 +52,8 @@ import org.apache.http.nio.conn.SchemeIOSessionStrategy;
 import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.apache.http.nio.reactor.ConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
+
+import javax.net.ssl.SSLContext;
 
 @Slf4j
 public class HttpClientFactory {
@@ -85,11 +89,21 @@ public class HttpClientFactory {
         // 创建 ConnectingIOReactor
         ConnectingIOReactor ioReactor = initIOReactorConfig();
 
+        SSLContext sslContext = null;
+
+        if (ReflectUtil.fieldExists(RestfulSourceDTO.class, "sslClientConf")) {
+            sslContext = SSLManager.getSSLContext(restfulSourceDTO.getSslClientConf());
+        }
+
+        SSLIOSessionStrategy sslsf = sslContext == null ?
+                SSLIOSessionStrategy.getDefaultStrategy() :
+                new SSLIOSessionStrategy(sslContext);
+
         // 支持 http、https
         Registry<SchemeIOSessionStrategy> sessionStrategyRegistry =
                 RegistryBuilder.<SchemeIOSessionStrategy>create()
                         .register("http", NoopIOSessionStrategy.INSTANCE)
-                        .register("https", SSLIOSessionStrategy.getDefaultStrategy())
+                        .register("https",sslsf)
                         .build();
         // 创建链接管理器
         PoolingNHttpClientConnectionManager cm = new PoolingNHttpClientConnectionManager(ioReactor, sessionStrategyRegistry);
