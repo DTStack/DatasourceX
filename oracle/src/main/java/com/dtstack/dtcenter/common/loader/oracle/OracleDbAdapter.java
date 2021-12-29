@@ -74,6 +74,8 @@ public class OracleDbAdapter {
                 return JavaType.TYPE_DOUBLE.getFlinkSqlType();
             case Types.REAL:
                 return JavaType.TYPE_FLOAT.getFlinkSqlType();
+            case Types.VARBINARY:
+                return JavaType.TYPE_RAW.getFlinkSqlType();
             default:
                 return NOT_SUPPORT;
         }
@@ -93,7 +95,8 @@ public class OracleDbAdapter {
         TYPE_TIMESTAMP("timestamp"),
         TYPE_DECIMAL("decimal"),
         TYPE_CLOB("clob"),
-        TYPE_NCLOB("nclob");
+        TYPE_NCLOB("nclob"),
+        TYPE_RAW("raw");
 
         private String flinkSqlType;
 
