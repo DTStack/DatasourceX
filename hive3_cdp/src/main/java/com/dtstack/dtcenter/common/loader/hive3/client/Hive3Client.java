@@ -375,7 +375,7 @@ public class Hive3Client extends AbsRdbmsClient {
         }
 
         // 校验高可用配置
-        if (StringUtils.isBlank(hive3CDPSourceDTO.getDefaultFS()) || !hive3CDPSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
+        if (StringUtils.isBlank(hive3CDPSourceDTO.getDefaultFS())) {
             throw new DtLoaderException("defaultFS incorrect format");
         }
         Configuration conf = HadoopConfUtil.getHdfsConf(hive3CDPSourceDTO.getDefaultFS(), hive3CDPSourceDTO.getConfig(), hive3CDPSourceDTO.getKerberosConfig());

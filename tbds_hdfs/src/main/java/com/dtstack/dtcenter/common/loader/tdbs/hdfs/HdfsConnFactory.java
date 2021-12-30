@@ -16,7 +16,7 @@ public class HdfsConnFactory {
 
     public Boolean testConn(ISourceDTO iSource) {
         TbdsHdfsSourceDTO hdfsSourceDTO = (TbdsHdfsSourceDTO) iSource;
-        if (StringUtils.isBlank(hdfsSourceDTO.getDefaultFS()) || !hdfsSourceDTO.getDefaultFS().matches(DtClassConsistent.HadoopConfConsistent.DEFAULT_FS_REGEX)) {
+        if (StringUtils.isBlank(hdfsSourceDTO.getDefaultFS())) {
             throw new DtLoaderException("defaultFS incorrect format");
         }
 
