@@ -52,6 +52,18 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-1.2-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>log4j-core</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <artifactId>log4j-core</artifactId>
+            <groupId>org.apache.logging.log4j</groupId>
+            <version>2.17.1</version>
         </dependency>
     </dependencies>
 
