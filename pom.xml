@@ -69,6 +69,7 @@
         <module>tbds_kafka</module>
         <module>tbds_hdfs</module>
         <module>hive3_cdp</module>
+        <module>sap_hana</module>
     </modules>
     <packaging>pom</packaging>
 

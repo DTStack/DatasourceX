@@ -61,7 +61,9 @@ public enum DataBaseType {
     Presto("presto", "com.facebook.presto.jdbc.PrestoDriver", "select 1111"),
     TRINO("trino", "io.trino.jdbc.TrinoDriver", "select 1111"),
     OceanBase("oceanbase", "com.alipay.oceanbase.jdbc.Driver", "select 1111"),
-    Doris("doris", "com.mysql.jdbc.Driver", "select 1111");
+    Doris("doris", "com.mysql.jdbc.Driver", "select 1111"),
+    sapHana1("sapHana1", "com.sap.db.jdbc.Driver", "select 1111"),
+    sapHana2("sapHana2", "com.sap.db.jdbc.Driver", "select 1111");
 
     private String typeName;
     private String driverClassName;

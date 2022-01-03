@@ -81,6 +81,8 @@ public enum DataSourceType {
     OceanBase(49, 90, "OceanBase", "oceanbase"),
     INCEPTOR(52, 91, "Inceptor", "inceptor"),
     TRINO(59, 92, "Trino", "trino"),
+    SAP_HANA1(76, 93, "SAP HANNA1", "sap_hana"),
+    SAP_HANA2(77, 94, "SAP HANNA2", "sap_hana"),
 
     // NoSQL
     HBASE(8, 100, "HBase", "hbase"),
@@ -167,6 +169,8 @@ public enum DataSourceType {
         RDBM_S.add(KINGBASE8.val);
         RDBM_S.add(TRINO.val);
         RDBM_S.add(DMDB_For_Oracle.val);
+        RDBM_S.add(SAP_HANA1.val);
+        RDBM_S.add(SAP_HANA2.val);
 
         KAFKA_S.add(KAFKA.val);
         KAFKA_S.add(KAFKA_09.val);
