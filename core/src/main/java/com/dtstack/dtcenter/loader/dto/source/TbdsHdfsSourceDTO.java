@@ -2,10 +2,14 @@ package com.dtstack.dtcenter.loader.dto.source;
 
 import com.alibaba.fastjson.JSONObject;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import com.google.common.collect.Maps;
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Map;
 
 @Data
 @ToString
@@ -56,5 +60,29 @@ public class TbdsHdfsSourceDTO extends HdfsSourceDTO {
             configJson.put(TBDS_AUTH, "tbds");
         }
         return configJson.toJSONString();
+    }
+
+    @Override
+    public Map<String, Object> getYarnConf() {
+        Map<String, Object> yarnConf = super.getYarnConf();
+        if (MapUtils.isEmpty(yarnConf)) {
+            yarnConf = Maps.newHashMap();
+        }
+        if (StringUtils.isNotEmpty(tbdsUsername)) {
+            yarnConf.put(TBDS_NAME, tbdsUsername);
+        }
+        if (StringUtils.isNotEmpty(tbdsSecureId)) {
+            yarnConf.put(TBDS_ID, tbdsSecureId);
+        }
+        if (StringUtils.isNotEmpty(tbdsSecureKey)) {
+            yarnConf.put(TBDS_KEY, tbdsSecureKey);
+        }
+
+        if (StringUtils.isNotEmpty(MapUtils.getString(yarnConf, TBDS_NAME)) ||
+                StringUtils.isNotEmpty(MapUtils.getString(yarnConf, TBDS_ID)) ||
+                StringUtils.isNotEmpty(MapUtils.getString(yarnConf, TBDS_KEY))) {
+            yarnConf.put(TBDS_AUTH, "tbds");
+        }
+        return yarnConf;
     }
 }

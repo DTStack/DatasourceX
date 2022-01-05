@@ -30,7 +30,6 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.kerberos.HadoopConfTool;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.requests.MetadataResponse;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
