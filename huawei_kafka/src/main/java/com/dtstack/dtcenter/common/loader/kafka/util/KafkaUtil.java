@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.kafka.util;
 
 import com.dtstack.dtcenter.common.loader.common.utils.TelUtil;
+import com.dtstack.dtcenter.common.loader.hadoop.util.JaasUtil;
 import com.dtstack.dtcenter.common.loader.kafka.KafkaConsistent;
 import com.dtstack.dtcenter.common.loader.kafka.enums.EConsumeType;
 import com.dtstack.dtcenter.loader.dto.KafkaConsumerDTO;
@@ -29,11 +30,13 @@ import org.apache.kafka.common.Node;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.security.JaasUtils;
+import org.apache.zookeeper.server.util.KerberosUtil;
 import scala.collection.JavaConversions;
 import sun.security.krb5.Config;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -102,10 +105,11 @@ public class KafkaUtil {
     /**
      * 从 ZK 中获取所有的 Kafka broker 地址
      *
-     * @param zkUrls zk 地址
+     * @param zkUrls         zk 地址
+     * @param kerberosConfig kerberos 配置
      * @return kafka broker 地址
      */
-    public static String getAllBrokersAddressFromZk(String zkUrls) {
+    public static String getAllBrokersAddressFromZk(String zkUrls, Map<String, Object> kerberosConfig) {
         log.info("Obtain Kafka Broker address through ZK : {}", zkUrls);
         if (StringUtils.isBlank(zkUrls) || !TelUtil.checkTelnetAddr(zkUrls)) {
             throw new DtLoaderException("Please configure the correct zookeeper address");
@@ -114,6 +118,29 @@ public class KafkaUtil {
         ZkUtils zkUtils = null;
         StringBuilder stringBuilder = new StringBuilder();
         try {
+            // 每次都清空 Configuration
+            javax.security.auth.login.Configuration.setConfiguration(null);
+            if (MapUtils.isNotEmpty(kerberosConfig)) {
+                try {
+                    // kafka zk kerberos 需要写 jaas 文件
+                    String jaasConf = JaasUtil.writeJaasConf(kerberosConfig);
+                    // 刷新kerberos认证信息，在设置完java.security.krb5.conf后进行，否则会使用上次的krb5文件进行 refresh 导致认证失败
+                    try {
+                        Config.refresh();
+                    } catch (Exception e) {
+                        log.error("kafka kerberos认证信息刷新失败！", e);
+                    }
+                    System.setProperty("java.security.auth.login.config", jaasConf);
+                    log.info("java.security.auth.login.config : {}", jaasConf);
+                    System.setProperty("javax.security.auth.useSubjectCredsOnly", "true");
+                    String principal = MapUtils.getString(kerberosConfig, HadoopConfTool.PRINCIPAL);
+                    String realm = getDomainRealm(principal);
+                    System.setProperty("zookeeper.server.principal", "zookeeper/hadoop." + realm.toLowerCase());
+                } catch (Exception e) {
+                    throw new DtLoaderException("login kerberos fail.", e);
+                }
+            }
+
             zkUtils = ZkUtils.apply(zkUrls, KafkaConsistent.SESSION_TIME_OUT,
                     KafkaConsistent.CONNECTION_TIME_OUT, JaasUtils.isZkSecurityEnabled());
             List<Broker> brokers = JavaConversions.seqAsJavaList(zkUtils.getAllBrokersInCluster());
@@ -256,7 +283,7 @@ public class KafkaUtil {
      * @return kafka broker 地址
      */
     private static String getKafkaBroker(KafkaSourceDTO sourceDTO) {
-        String brokerUrls = StringUtils.isEmpty(sourceDTO.getBrokerUrls()) ? getAllBrokersAddressFromZk(sourceDTO.getUrl()) : sourceDTO.getBrokerUrls();
+        String brokerUrls = StringUtils.isEmpty(sourceDTO.getBrokerUrls()) ? getAllBrokersAddressFromZk(sourceDTO.getUrl(), sourceDTO.getKerberosConfig()) : sourceDTO.getBrokerUrls();
         if (StringUtils.isBlank(brokerUrls)) {
             throw new DtLoaderException("failed to get broker from zookeeper.");
         }
@@ -659,5 +686,25 @@ public class KafkaUtil {
             destroyProperty();
         }
         return result;
+    }
+
+    public static String getDomainRealm(String shortprinc) throws Exception {
+        String realmString = null;
+
+        try {
+            Class classRef;
+            if (System.getProperty("java.vendor").contains("IBM")) {
+                classRef = Class.forName("com.ibm.security.krb5.PrincipalName");
+            } else {
+                classRef = Class.forName("sun.security.krb5.PrincipalName");
+            }
+
+            int tKrbNtSrvHst = classRef.getField("KRB_NT_SRV_HST").getInt((Object)null);
+            Object principalName = classRef.getConstructor(String.class, Integer.TYPE).newInstance(shortprinc, tKrbNtSrvHst);
+            realmString = (String)classRef.getMethod("getRealmString").invoke(principalName);
+        } catch (RuntimeException var5) {
+        } catch (Exception var6) {
+        }
+        return null != realmString && !realmString.equals("") ? realmString : KerberosUtil.getDefaultRealm();
     }
 }

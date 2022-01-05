@@ -37,7 +37,7 @@ public class Kafka<T> implements IKafka<T> {
         if (StringUtils.isNotBlank(kafkaSourceDTO.getBrokerUrls())) {
             return kafkaSourceDTO.getBrokerUrls();
         }
-        return KafkaUtil.getAllBrokersAddressFromZk(kafkaSourceDTO.getUrl());
+        return KafkaUtil.getAllBrokersAddressFromZk(kafkaSourceDTO.getUrl(), kafkaSourceDTO.getKerberosConfig());
     }
 
     @Override
