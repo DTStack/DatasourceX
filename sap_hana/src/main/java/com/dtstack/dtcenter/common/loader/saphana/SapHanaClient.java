@@ -181,7 +181,7 @@ public class SapHanaClient extends AbsRdbmsClient {
 
         StringBuilder constr = new StringBuilder(String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema));
         if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-            constr.append(String.format(TABLE_SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern())));
+            constr.append(String.format(TABLE_SEARCH_SQL, addFuzzySign(queryDTO)));
         }
 
         if (BooleanUtils.isTrue(queryDTO.getView())) {
@@ -189,7 +189,7 @@ public class SapHanaClient extends AbsRdbmsClient {
                     .append(" UNION ")
                     .append(String.format(SHOW_VIEW_BY_SCHEMA_SQL, schema));
             if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-                constr.append(String.format(VIEW_SEARCH_SQL, addPercentSign(queryDTO.getTableNamePattern())));
+                constr.append(String.format(VIEW_SEARCH_SQL, addFuzzySign(queryDTO)));
             }
         }
 
