@@ -20,6 +20,7 @@ package com.dtstack.dtcenter.common.loader.hive1;
 
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.source.Hive1SourceDTO;
@@ -73,7 +74,9 @@ public class HiveConnFactory extends ConnFactory {
                         Properties properties = DBUtil.stringToProperties(taskParams);
                         // 特殊处理 properties 属性
                         dealProperties(properties);
-                        dealSsl(properties, hive1SourceDTO.getHiveSslConfig());
+                        if (ReflectUtil.fieldExists(Hive1SourceDTO.class, "hiveSslConfig")){
+                            dealSsl(properties, hive1SourceDTO.getHiveSslConfig());
+                        }
                         properties.put(DtClassConsistent.PublicConsistent.USER, hive1SourceDTO.getUsername() == null ? "" : hive1SourceDTO.getUsername());
                         properties.put(DtClassConsistent.PublicConsistent.PASSWORD, hive1SourceDTO.getPassword() == null ? "" : hive1SourceDTO.getPassword());
                         String urlWithoutSchema = HiveDriverUtil.removeSchema(hive1SourceDTO.getUrl());
