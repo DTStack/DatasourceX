@@ -5,10 +5,13 @@ import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.source.Hive3CDPSourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.HiveSslConfig;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.security.PrivilegedAction;
 import java.sql.Connection;
@@ -28,6 +31,12 @@ public class HiveConnFactory extends ConnFactory {
     // Hive 属性前缀
     private static final String HIVE_CONF_PREFIX = "hiveconf:";
 
+    private static final String SSL_FLAG = "ssl";
+
+    private static final String SSL_TRUST_STORE = "sslTrustStore";
+
+    private static final String SSL_STORE_PASSWORD = "trustStorePassword";
+
     public HiveConnFactory() {
         this.driverName = DataBaseType.HIVE3.getDriverClassName();
         this.errorPattern = new HiveErrorPattern();
@@ -45,6 +54,7 @@ public class HiveConnFactory extends ConnFactory {
                         Properties properties = DBUtil.stringToProperties(taskParams);
                         // 特殊处理 properties 属性
                         dealProperties(properties);
+                        dealSsl(properties, hive3CDPSourceDTO.getHiveSslConfig());
                         properties.put(DtClassConsistent.PublicConsistent.USER, hive3CDPSourceDTO.getUsername() == null ? "" : hive3CDPSourceDTO.getUsername());
                         properties.put(DtClassConsistent.PublicConsistent.PASSWORD, hive3CDPSourceDTO.getPassword() == null ? "" : hive3CDPSourceDTO.getPassword());
                         String urlWithoutSchema = HiveDriverUtil.removeSchema(hive3CDPSourceDTO.getUrl());
@@ -92,5 +102,29 @@ public class HiveConnFactory extends ConnFactory {
             properties.put(HIVE_CONF_PREFIX + key, properties.getProperty(key));
             properties.remove(key);
         }
+    }
+
+    /**
+     * 处理hive ssl认证信息
+     *
+     * @param properties
+     * @param sslConfig
+     */
+    private void dealSsl(Properties properties, HiveSslConfig sslConfig) {
+        if (sslConfig == null || !sslConfig.getUseSsl()) {
+            return;
+        }
+
+        if (StringUtils.isBlank(sslConfig.getKeystorePath())) {
+            throw new DtLoaderException("hive ssl认证缺少证书路径");
+        }
+
+        properties.put(SSL_FLAG, BooleanUtils.toStringTrueFalse(true));
+        properties.put(SSL_TRUST_STORE, sslConfig.getKeystorePath());
+        if (StringUtils.isNotBlank(sslConfig.getKeystorePassword())) {
+            properties.put(SSL_STORE_PASSWORD, sslConfig.getKeystorePassword());
+        }
+
+        Thread.currentThread().getContextClassLoader();
     }
 }
