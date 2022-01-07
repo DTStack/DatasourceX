@@ -81,8 +81,8 @@ public enum DataSourceType {
     OceanBase(49, 90, "OceanBase", "oceanbase"),
     INCEPTOR(52, 91, "Inceptor", "inceptor"),
     TRINO(59, 92, "Trino", "trino"),
-    SAP_HANA1(76, 93, "SAP HANNA1", "sap_hana"),
-    SAP_HANA2(77, 94, "SAP HANNA2", "sap_hana"),
+    SAP_HANA1(76, 93, "SAP HANA 1.x", "sap_hana"),
+    SAP_HANA2(77, 94, "SAP HANA 2.x", "sap_hana"),
 
     // NoSQL
     HBASE(8, 100, "HBase", "hbase"),
