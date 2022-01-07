@@ -102,7 +102,7 @@ public class SapHanaClient extends AbsRdbmsClient {
         }
         return result
                 .stream().findAny().map(Map::values).orElse(Collections.emptyList())
-                .stream().findAny().orElse(StringUtils.EMPTY)
+                .stream().filter(Objects::nonNull).findAny().orElse(StringUtils.EMPTY)
                 .toString();
 
     }
