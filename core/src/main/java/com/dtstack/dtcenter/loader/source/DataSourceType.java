@@ -180,6 +180,7 @@ public enum DataSourceType {
         KAFKA_S.add(KAFKA_11.val);
         KAFKA_S.add(KAFKA_2X.val);
         KAFKA_S.add(TBDS_KAFKA.val);
+        KAFKA_S.add(HUAWEI_KAFKA.val);
     }
 
     /**
