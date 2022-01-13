@@ -45,17 +45,29 @@ public class SapHanaClient extends AbsRdbmsClient {
     // 查询字段信息
     private static final String COLUMN_META = " SELECT COLUMN_NAME,DATA_TYPE_NAME,LENGTH,SCALE,COMMENTS FROM SYS.COLUMNS WHERE SCHEMA_NAME = '%s' AND TABLE_NAME = '%s' ";
 
+    // 查询表基本 sql
+    private static final String SHOW_TABLE_BASE = " SELECT TABLE_NAME, TABLE_NAME_UPPER FROM (%s) WHERE 1 = 1 ";
+
+    // 查询视图基本 sql
+    private static final String SHOW_VIEW_BASE = " SELECT VIEW_NAME, VIEW_NAME_UPPER FROM (%s)  WHERE 1 = 1 ";
+
     // 获取指定数据库下的表
-    private static final String SHOW_TABLE_BY_SCHEMA_SQL = " SELECT TABLE_NAME from SYS.TABLES WHERE SCHEMA_NAME = '%s' ";
+    private static final String SHOW_TABLE_BY_SCHEMA_SQL = " SELECT UPPER(TABLE_NAME) AS TABLE_NAME_UPPER, TABLE_NAME, SCHEMA_NAME FROM SYS.TABLES WHERE SCHEMA_NAME = '%s' ";
+
+    // 获取全部表
+    private static final String SHOW_SCHEMA_TABLE_SQL = " SELECT UPPER('\"'||SCHEMA_NAME||'\".\"'||TABLE_NAME||'\"') AS TABLE_NAME_UPPER, '\"'||SCHEMA_NAME||'\".\"'||TABLE_NAME||'\"' AS TABLE_NAME FROM SYS.TABLES ";
+
+    // 获取全部视图
+    private static final String SHOW_SCHEMA_VIEW_SQL = " SELECT UPPER('\"'||SCHEMA_NAME||'\".\"'||VIEW_NAME||'\"') AS VIEW_NAME_UPPER, '\"'||SCHEMA_NAME||'\".\"'||VIEW_NAME||'\"' AS VIEW_NAME FROM SYS.VIEWS ";
 
     // 获取指定数据库下的视图
-    private static final String SHOW_VIEW_BY_SCHEMA_SQL = " SELECT VIEW_NAME from SYS.VIEWS WHERE SCHEMA_NAME = '%s' ";
+    private static final String SHOW_VIEW_BY_SCHEMA_SQL = " SELECT UPPER(VIEW_NAME) AS VIEW_NAME_UPPER, VIEW_NAME, SCHEMA_NAME FROM SYS.VIEWS WHERE SCHEMA_NAME = '%s' ";
 
     // 表名模糊查询
-    private static final String TABLE_SEARCH_SQL = " AND TABLE_NAME LIKE '%s' ";
+    private static final String TABLE_SEARCH_SQL = " AND TABLE_NAME_UPPER LIKE UPPER('%s') ";
 
     // 视图模糊查询
-    private static final String VIEW_SEARCH_SQL = " AND VIEW_NAME LIKE '%s' ";
+    private static final String VIEW_SEARCH_SQL = " AND VIEW_NAME_UPPER LIKE UPPER('%s') ";
 
     // 限制条数语句
     private static final String LIMIT_SQL = " LIMIT %s ";
@@ -176,28 +188,51 @@ public class SapHanaClient extends AbsRdbmsClient {
      */
     @Override
     protected String getTableBySchemaSql(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
-        String schema = getSchema(sourceDTO, queryDTO);
+
+        // 判断 schema 是否存在, 不传 schema 获取所有表
+        String schema = SchemaUtil.getSchema(sourceDTO, queryDTO);
         log.info("current used schema：{}", schema);
 
-        StringBuilder constr = new StringBuilder(String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema));
+        // 最终查询的 sql
+        StringBuilder querySql = new StringBuilder();
+
+        // 条件查询表
+        String showTable;
+        if (StringUtils.isBlank(schema)) {
+            showTable = SHOW_SCHEMA_TABLE_SQL;
+        } else {
+            showTable = String.format(SHOW_TABLE_BY_SCHEMA_SQL, schema);
+        }
+        querySql.append(String.format(SHOW_TABLE_BASE, showTable));
+        // 拼接模糊查询, 忽略大小写
         if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-            constr.append(String.format(TABLE_SEARCH_SQL, addFuzzySign(queryDTO)));
+            querySql.append(String.format(TABLE_SEARCH_SQL, addFuzzySign(queryDTO)));
         }
 
         if (BooleanUtils.isTrue(queryDTO.getView())) {
-            constr
-                    .append(" UNION ")
-                    .append(String.format(SHOW_VIEW_BY_SCHEMA_SQL, schema));
-            if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
-                constr.append(String.format(VIEW_SEARCH_SQL, addFuzzySign(queryDTO)));
+
+            // 拼接 UNION
+            querySql.append(" UNION ");
+
+            // 条件查询视图
+            String showView;
+            if (StringUtils.isBlank(schema)) {
+                showView = SHOW_SCHEMA_VIEW_SQL;
+            } else {
+                showView = String.format(SHOW_VIEW_BY_SCHEMA_SQL, schema);
             }
-        }
+            querySql.append(String.format(SHOW_VIEW_BASE, showView));
 
+            // 拼接模糊查询, 忽略大小写
+            if (StringUtils.isNotBlank(queryDTO.getTableNamePattern())) {
+                querySql.append(String.format(VIEW_SEARCH_SQL, addFuzzySign(queryDTO)));
+            }
+
+        }
         if (Objects.nonNull(queryDTO.getLimit())) {
-            constr.append(String.format(LIMIT_SQL, queryDTO.getLimit()));
+            querySql.append(String.format(LIMIT_SQL, queryDTO.getLimit()));
         }
-
-        return constr.toString();
+        return querySql.toString();
     }
 
     /**
