@@ -47,6 +47,7 @@ import org.apache.kafka.common.Node;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.security.JaasUtils;
+import org.apache.zookeeper.client.ZooKeeperSaslClient;
 import scala.collection.JavaConversions;
 import sun.security.krb5.Config;
 
@@ -333,21 +334,25 @@ public class KafkaUtil {
         kafkaKbrServiceName = kafkaKbrServiceName.split("/")[0];
         String kafkaLoginConf = writeKafkaJaas(sourceDTO.getKerberosConfig());
 
-        // 刷新kerberos认证信息，在设置完java.security.krb5.conf后进行，否则会使用上次的krb5文件进行 refresh 导致认证失败
-        try {
-            Config.refresh();
-            javax.security.auth.login.Configuration.setConfiguration(null);
+            // 刷新kerberos认证信息，在设置完java.security.krb5.conf后进行，否则会使用上次的krb5文件进行 refresh 导致认证失败
+            try {
+                Config.refresh();
+                javax.security.auth.login.Configuration.setConfiguration(null);
+            } catch (Exception e) {
+                log.error("Kafka kerberos authentication information refresh failed!");
+            }
+            // kerberos 相关设置
+            props.put("security.protocol", "SASL_PLAINTEXT");
+            props.put("sasl.mechanism", "GSSAPI");
+            // kafka broker的启动配置
+            props.put("sasl.kerberos.service.name", kafkaKbrServiceName);
+            System.setProperty("java.security.auth.login.config", kafkaLoginConf);
+            System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
+            return props;
         } catch (Exception e) {
-            log.error("Kafka kerberos authentication information refresh failed!");
+            destroyProperty();
+            throw new DtLoaderException("init kafka properties error", e);
         }
-        // kerberos 相关设置
-        props.put("security.protocol", "SASL_PLAINTEXT");
-        props.put("sasl.mechanism", "GSSAPI");
-        // kafka broker的启动配置
-        props.put("sasl.kerberos.service.name", kafkaKbrServiceName);
-        System.setProperty("java.security.auth.login.config", kafkaLoginConf);
-        System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
-        return props;
     }
 
 
