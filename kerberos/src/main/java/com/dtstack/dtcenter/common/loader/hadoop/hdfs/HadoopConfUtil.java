@@ -138,6 +138,10 @@ public class HadoopConfUtil {
             }
         }
 
+        // 禁用缓存
+        conf.setBoolean("fs.hdfs.impl.disable.cache", true);
+        conf.setBoolean("fs.file.impl.disable.cache", true);
+
         return conf;
     }
 
