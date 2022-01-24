@@ -79,4 +79,9 @@ public class RdbmsSourceDTO implements ISourceDTO {
      * 连接池配置信息，如果传入则认为开启连接池
      */
     private PoolConfig poolConfig;
+
+    /**
+     * JDBC 自定义参数, json 格式
+     */
+    private String properties;
 }

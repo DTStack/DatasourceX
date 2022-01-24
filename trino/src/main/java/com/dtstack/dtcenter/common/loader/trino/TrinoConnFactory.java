@@ -1,6 +1,7 @@
 package com.dtstack.dtcenter.common.loader.trino;
 
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
+import com.dtstack.dtcenter.common.loader.common.utils.PropertiesUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.PropertyUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosConfigUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
@@ -76,6 +77,7 @@ public class TrinoConnFactory extends ConnFactory {
             }
             // 处理 kerberos
             buildKerberosConfig(properties, kerberosConfig);
+            PropertiesUtil.convertToProp(trinoSourceDTO, properties);
             // 加锁，防止其他线程正在进行 kerberos 认证
             synchronized (DataSourceType.class) {
                 // 不在 properties 设置，不一致会 SpnegoHandler 报错

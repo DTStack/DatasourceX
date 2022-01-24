@@ -23,6 +23,8 @@ import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
 import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
 import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.PropertiesUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
@@ -34,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -63,7 +66,7 @@ public class ConnFactory {
 
     private AtomicBoolean isFirstLoaded = new AtomicBoolean(true);
 
-    private static final String CP_POOL_KEY = "url:%s,username:%s,password:%s";
+    private static final String CP_POOL_KEY = "url:%s,username:%s,password:%s,properties:%s";
 
     /**
      * 线程池 - 用于部分数据源获取连接超时处理
@@ -159,11 +162,7 @@ public class ConnFactory {
         DriverManager.setLoginTimeout(30);
         String url = dealSourceUrl(rdbmsSourceDTO);
         log.info("datasource connected, url : {}, userName : {}, kerberosConfig : {}", url, rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getKerberosConfig());
-        if (StringUtils.isBlank(rdbmsSourceDTO.getUsername())) {
-            return DriverManager.getConnection(url);
-        }
-
-        return DriverManager.getConnection(url, rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getPassword());
+        return DriverManager.getConnection(url, PropertiesUtil.convertToProp(rdbmsSourceDTO));
     }
 
     /**
@@ -217,6 +216,11 @@ public class ConnFactory {
         hikariData.setMaximumPoolSize(rdbmsSourceDTO.getPoolConfig().getMaximumPoolSize());
         hikariData.setMinimumIdle(rdbmsSourceDTO.getPoolConfig().getMinimumIdle());
         hikariData.setReadOnly(rdbmsSourceDTO.getPoolConfig().getReadOnly());
+
+        Properties properties = PropertiesUtil.convertToProp(rdbmsSourceDTO);
+        for (Object key : properties.keySet()) {
+            hikariData.addDataSourceProperty(key.toString(), properties.get(key));
+        }
         return hikariData;
     }
 
@@ -228,7 +232,8 @@ public class ConnFactory {
      */
     protected String getPrimaryKey(ISourceDTO source) {
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
-        return String.format(CP_POOL_KEY, rdbmsSourceDTO.getUrl(), rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getPassword());
+        String properties = ReflectUtil.fieldExists(RdbmsSourceDTO.class, "properties") ? rdbmsSourceDTO.getProperties() : "";
+        return String.format(CP_POOL_KEY, rdbmsSourceDTO.getUrl(), rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getPassword(), properties);
     }
 
     public Connection setSchema(Connection conn, String schema) {

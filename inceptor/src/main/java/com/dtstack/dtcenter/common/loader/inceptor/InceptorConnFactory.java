@@ -18,6 +18,7 @@
 
 package com.dtstack.dtcenter.common.loader.inceptor;
 
+import com.dtstack.dtcenter.common.loader.common.utils.PropertiesUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -30,6 +31,7 @@ import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 /**
  * inceptor 连接工厂
@@ -55,8 +57,9 @@ public class InceptorConnFactory extends ConnFactory {
                     try {
                         DriverManager.setLoginTimeout(30);
                         String urlWithoutSchema = InceptorDriverUtil.removeSchema(inceptorSourceDTO.getUrl());
-                        return DriverManager.getConnection(urlWithoutSchema, inceptorSourceDTO.getUsername(),
-                                inceptorSourceDTO.getPassword());
+
+                        Properties properties = PropertiesUtil.convertToProp(inceptorSourceDTO);
+                        return DriverManager.getConnection(urlWithoutSchema, properties);
                     } catch (SQLException e) {
                         // 对异常进行统一处理
                         throw new DtLoaderException(errorAdapter.connAdapter(e.getMessage(), errorPattern), e);

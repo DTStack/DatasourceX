@@ -19,6 +19,7 @@
 package com.dtstack.dtcenter.common.loader.spark;
 
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.PropertiesUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.util.KerberosLoginUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
@@ -62,8 +63,8 @@ public class SparkConnFactory extends ConnFactory {
                     try {
                         DriverManager.setLoginTimeout(30);
                         String urlWithoutSchema = SparkThriftDriverUtil.removeSchema(sparkSourceDTO.getUrl());
-                        return DriverManager.getConnection(urlWithoutSchema, sparkSourceDTO.getUsername(),
-                                sparkSourceDTO.getPassword());
+                        Properties properties = PropertiesUtil.convertToProp(sparkSourceDTO);
+                        return DriverManager.getConnection(urlWithoutSchema, properties);
                     } catch (SQLException e) {
                         // 对异常进行统一处理
                         throw new DtLoaderException(errorAdapter.connAdapter(e.getMessage(), errorPattern), e);
