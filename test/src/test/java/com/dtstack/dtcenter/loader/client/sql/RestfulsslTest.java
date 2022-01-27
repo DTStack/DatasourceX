@@ -29,7 +29,15 @@ public class RestfulsslTest extends BaseTest {
     // 构建数据源信息
     private static final RestfulSourceDTO SOURCE_DTO = RestfulSourceDTO.builder()
             //.url("http://kudu1:8088/proxy/application_1639670432612_1380/#/job-manager/log")
-            .url("https://cdp02:8090/proxy/application_1639383661552_0958/#/job-manager/logs")
-            .sslClientConf(RestfulsslTest.class.getResource("/ssl").getPath()+"/ssl-client.xml")
+            .url("https://172.16.89.2:20026/Yarn/NodeManager/23/node/containerlogs/container_e11_1642672613908_0205_01_000001/dtinsight/jobmanager.log/?start=0")
+           // .sslClientConf(RestfulsslTest.class.getResource("/ssl").getPath()+"/ssl-client.xml")
             .build();
+
+
+    @Test
+    public void get() {
+        Response response = RESTFUL_CLIENT.get(SOURCE_DTO, null, null, null);
+        System.out.println(response.toString());
+        Assert.assertNotNull(response.getContent());
+    }
 }

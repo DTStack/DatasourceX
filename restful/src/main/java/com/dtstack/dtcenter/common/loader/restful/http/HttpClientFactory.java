@@ -97,7 +97,7 @@ public class HttpClientFactory {
 
         SSLIOSessionStrategy sslsf = sslContext == null ?
                 SSLIOSessionStrategy.getDefaultStrategy() :
-                new SSLIOSessionStrategy(sslContext);
+                new SSLIOSessionStrategy(sslContext, (hostname, session) -> true);
 
         // 支持 http、https
         Registry<SchemeIOSessionStrategy> sessionStrategyRegistry =

@@ -1,16 +1,20 @@
 package com.dtstack.dtcenter.common.loader.restful.http.ssl;
 
 import com.dtstack.dtcenter.common.loader.common.utils.Xml2JsonUtil;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.security.cert.CertificateException;
 import java.util.Map;
 
 @Slf4j
@@ -52,7 +56,36 @@ public class SSLManager {
 
     public static SSLContext getSSLContext(String sslClientConf) {
         SSLConfig sslConfig = SSLManager.getSSLConfig(sslClientConf);
-        return sslConfig != null ? SSLManager.getSSLContext(sslConfig) : null;
+        return sslConfig != null ? SSLManager.getSSLContext(sslConfig) : createIgnoreVerifySSL();
     }
 
+    public static SSLContext createIgnoreVerifySSL() {
+        // 实现一个X509TrustManager接口，用于绕过验证，不用修改里面的方法
+        X509TrustManager trustManager = new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(
+                    java.security.cert.X509Certificate[] paramArrayOfX509Certificate,
+                    String paramString) throws CertificateException {
+            }
+
+            @Override
+            public void checkServerTrusted(
+                    java.security.cert.X509Certificate[] paramArrayOfX509Certificate,
+                    String paramString) throws CertificateException {
+            }
+
+            @Override
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+        };
+
+        try {
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, new TrustManager[]{trustManager}, null);
+            return sc;
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage());
+        }
+    }
 }
