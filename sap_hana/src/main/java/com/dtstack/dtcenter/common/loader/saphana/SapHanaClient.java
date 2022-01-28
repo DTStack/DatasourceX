@@ -5,7 +5,6 @@ import com.dtstack.dtcenter.common.loader.common.utils.SchemaUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
-import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.SapHana1SourceDTO;
@@ -13,7 +12,6 @@ import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * sap hana 客户端，获取表需要有 SYS schema 的权限
@@ -41,9 +38,6 @@ public class SapHanaClient extends AbsRdbmsClient {
 
     // 查询表注释
     private static final String TABLE_COMMENT = " SELECT COMMENTS FROM SYS.TABLES WHERE SCHEMA_NAME = '%s' AND TABLE_NAME = '%s' LIMIT 1 ";
-
-    // 查询字段信息
-    private static final String COLUMN_META = " SELECT COLUMN_NAME,DATA_TYPE_NAME,LENGTH,SCALE,COMMENTS FROM SYS.COLUMNS WHERE SCHEMA_NAME = '%s' AND TABLE_NAME = '%s' ";
 
     // 查询表基本 sql
     private static final String SHOW_TABLE_BASE = " SELECT TABLE_NAME, TABLE_NAME_UPPER FROM (%s) WHERE 1 = 1 ";
@@ -125,29 +119,6 @@ public class SapHanaClient extends AbsRdbmsClient {
         SapHanaDownloader sapHanaDownloader = new SapHanaDownloader(getCon(sourceDTO), queryDTO.getSql(), sapHanaSourceDTO.getSchema());
         sapHanaDownloader.configure();
         return sapHanaDownloader;
-    }
-
-    @Override
-    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
-        String schema = getSchema(sourceDTO, queryDTO);
-        SqlQueryDTO customQueryDTO = SqlQueryDTO.builder()
-                .sql(String.format(COLUMN_META, schema, queryDTO.getTableName()))
-                .build();
-        List<Map<String, Object>> result = executeQuery(sourceDTO, customQueryDTO);
-        if (CollectionUtils.isEmpty(result)) {
-            return Collections.emptyList();
-        }
-        return result.stream()
-                .map(res -> {
-                    ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
-                    columnMetaDTO.setKey(MapUtils.getString(res, "COLUMN_NAME"));
-                    columnMetaDTO.setType(MapUtils.getString(res, "DATA_TYPE_NAME"));
-                    columnMetaDTO.setComment(MapUtils.getString(res, "COMMENTS"));
-                    columnMetaDTO.setPrecision(MapUtils.getInteger(res, "LENGTH"));
-                    columnMetaDTO.setScale(MapUtils.getInteger(res, "SCALE"));
-                    return columnMetaDTO;
-                })
-                .collect(Collectors.toList());
     }
 
     @Override
