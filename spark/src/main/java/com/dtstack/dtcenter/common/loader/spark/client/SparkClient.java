@@ -380,6 +380,13 @@ public class SparkClient<T> extends AbsRdbmsClient<T> {
             // 分区表
             if (CollectionUtils.isNotEmpty(partitionColumns)) {
                 partitions = TABLE_CLIENT.showPartitions(sparkSourceDTO, queryDTO.getTableName());
+                if (CollectionUtils.isNotEmpty(partitions)) {
+                    // 转化成小写，因为分区字段即使是大写在 hdfs 上仍是小写存在
+                    partitions = partitions.stream()
+                            .filter(StringUtils::isNotEmpty)
+                            .map(String::toLowerCase)
+                            .collect(Collectors.toList());
+                }
             }
         } catch (Exception e) {
             throw new DtLoaderException(String.format("failed to get table detail: %s", e.getMessage()), e);
