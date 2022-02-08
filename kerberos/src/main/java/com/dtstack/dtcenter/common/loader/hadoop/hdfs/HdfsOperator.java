@@ -45,7 +45,6 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -516,33 +515,26 @@ public class HdfsOperator {
     }
 
     /**
-     * 从路径中获取分区信息
+     * 从路径中获取分区字段信息
      *
-     * @param path
-     * @param partitionColumns
-     * @return
+     * @param path             文件路径
+     * @param partitionColumns 所有分区
+     * @return 分区字段信息
      */
     public static List<String> parsePartitionDataFromUrl(String path, List<String> partitionColumns) {
-        Map<String, String> partColDataMap = new HashMap();
-        String[] var3 = path.split("/");
-        int var4 = var3.length;
-
-        for (int var5 = 0; var5 < var4; ++var5) {
-            String part = var3[var5];
+        Map<String, String> partColDataMap = new HashMap<>();
+        String[] split = path.split("/");
+        for (String part : split) {
             if (part.contains("=")) {
                 String[] parts = part.split("=");
                 partColDataMap.put(parts[0], parts[1]);
             }
         }
-
-        List<String> data = new ArrayList();
-        Iterator var9 = partitionColumns.iterator();
-
-        while (var9.hasNext()) {
-            String partitionColumn = (String) var9.next();
-            data.add(partColDataMap.get(partitionColumn));
+        List<String> data = new ArrayList<>();
+        for (String partitionColumn : partitionColumns) {
+            // 转化为小写进行获取
+            data.add(partColDataMap.get(partitionColumn.toLowerCase()));
         }
-
         return data;
     }
 }
