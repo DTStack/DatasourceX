@@ -49,6 +49,7 @@ import org.apache.hadoop.hbase.filter.CompareFilter;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.RegexStringComparator;
+import org.apache.hadoop.hbase.filter.RowFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.Closeable;
@@ -457,14 +458,25 @@ public class HbaseClientSpecial implements IHbase {
             }
             // 获取 common-loader 定义的自定义查询器并转化为 hbase 中的 filter
             com.dtstack.dtcenter.loader.dto.filter.Filter loaderFilter = hbaseQueryDTO.getFilter();
+
+            boolean isAccurateQuery = false;
             if (Objects.nonNull(loaderFilter)) {
                 if (loaderFilter instanceof com.dtstack.dtcenter.loader.dto.filter.FilterList) {
                     com.dtstack.dtcenter.loader.dto.filter.FilterList loaderFilterList = (com.dtstack.dtcenter.loader.dto.filter.FilterList) loaderFilter;
                     FilterList hbaseFilterList = new FilterList(convertOp(loaderFilterList.getOperator()));
                     convertFilter(loaderFilterList, hbaseFilterList);
+                    for (Filter filter : hbaseFilterList.getFilters()) {
+                        if (getAccurateQuery(table, results, filter)) {
+                            isAccurateQuery = true;
+                            break;
+                        }
+                    }
                     scan.setFilter(hbaseFilterList);
                 } else {
                     Filter filter = FilterType.get(loaderFilter);
+                    if (getAccurateQuery(table, results, filter)) {
+                        isAccurateQuery = true;
+                    }
                     if (Objects.nonNull(filter)) {
                         scan.setFilter(filter);
                     }
@@ -485,16 +497,20 @@ public class HbaseClientSpecial implements IHbase {
             if (Objects.nonNull(timestampFilter)) {
                 HbaseClient.fillTimestampFilter(scan, timestampFilter);
             }
-            rs = table.getScanner(scan);
-            for (Result row : rs) {
-                if (CollectionUtils.isEmpty(row.listCells())) {
-                    continue;
-                }
-                results.add(row);
-                if (results.size() >= limit) {
-                    break;
+
+            if (!isAccurateQuery) {
+                rs = table.getScanner(scan);
+                for (Result row : rs) {
+                    if (CollectionUtils.isEmpty(row.listCells())) {
+                        continue;
+                    }
+                    results.add(row);
+                    if (results.size() >= limit) {
+                        break;
+                    }
                 }
             }
+
             if (CollectionUtils.isEmpty(results)) {
                 return executeResult;
             }
@@ -538,6 +554,19 @@ public class HbaseClientSpecial implements IHbase {
             executeResult.add(row);
         }
         return executeResult;
+    }
+
+    private static boolean getAccurateQuery(Table table, List<Result> results, Filter filter) throws IOException {
+        if (filter instanceof RowFilter) {
+            RowFilter rowFilterFilter = (RowFilter) filter;
+            if (rowFilterFilter.getOperator().equals(CompareFilter.CompareOp.EQUAL)) {
+                Get get = new Get(rowFilterFilter.getComparator().getValue());
+                Result r = table.get(get);
+                results.add(r);
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
