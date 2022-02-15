@@ -120,6 +120,9 @@ public class HadoopConfUtil {
             return defaultConfiguration;
         }
 
+        // 去除压缩格式限制
+        log.debug("remove param 'dfs.encrypt.data.transfer.cipher.suites', origin value is {}", hdfsConf.get("dfs.encrypt.data.transfer.cipher.suites"));
+        hdfsConf.remove("dfs.encrypt.data.transfer.cipher.suites");
         if (MapUtils.isNotEmpty(hdfsConf)) {
             for (Map.Entry<String, Object> entry : hdfsConf.entrySet()) {
                 if (entry.getValue() == null) {
