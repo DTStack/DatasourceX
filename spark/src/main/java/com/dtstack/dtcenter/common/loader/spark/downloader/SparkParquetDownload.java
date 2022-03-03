@@ -329,7 +329,7 @@ public class SparkParquetDownload implements IDownloader {
                     break;
             }
         } catch (Exception e) {
-            log.error("{}", e.getMessage(), e);
+            // ignore error, 报错不影响结果返回, 不打印报错日志, 容易磁盘打爆
         }
 
         return String.valueOf(data);
