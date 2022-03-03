@@ -40,21 +40,12 @@ public class DorisRestfulClient implements Closeable {
 
     private static final String PREVIEW_SQL = "{stmt: \"select * from %s limit %s;\"}";
 
-    private static final String EXECUTE_SQL = "{\"stmt\": \"%s;\"}";
-
     @Override
     public void close() {
     }
 
     public Boolean login(DorisRestfulSourceDTO sourceDTO) {
-        sourceDTO.setUrl(sourceDTO.getUrl() + HttpAPI.AUTH);
-        HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO);
-        try {
-            Response result = httpClient.post(null, null, null);
-            AssertUtils.isTrue(result, 200);
-        } catch (Exception e) {
-            throw new DtLoaderException(e.getMessage(), e);
-        }
+        getAllDatabases(sourceDTO);
         return true;
     }
 

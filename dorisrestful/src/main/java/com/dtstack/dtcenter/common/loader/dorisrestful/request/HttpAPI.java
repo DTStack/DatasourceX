@@ -3,11 +3,6 @@ package com.dtstack.dtcenter.common.loader.dorisrestful.request;
 public interface HttpAPI {
 
     /**
-     * 登陆
-     */
-    String AUTH = "/rest/v1/login";
-
-    /**
      * 获取所有的库 cluster
      */
     String ALL_DATABASE = "/api/meta/namespaces/%s/databases";
