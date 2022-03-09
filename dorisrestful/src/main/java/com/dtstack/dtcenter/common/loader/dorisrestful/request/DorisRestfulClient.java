@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.util.Pair;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,20 +59,23 @@ public class DorisRestfulClient implements Closeable {
         AssertUtils.notBlank(tableName, "tableName not null");
 
         sourceDTO.setUrl(sourceDTO.getUrl() + String.format(HttpAPI.COLUMN_METADATA, cluster, schema, tableName));
-        HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO);
-        Response result = httpClient.get(null, null, null);
-        AssertUtils.isTrue(result, 0);
-        JSONArray jsonArray = (JSONArray) JSONPath.eval(JSONObject.parse(result.getContent()), String.format(COLUMN_META_JSON_PATH, tableName));
-        List<ColumnMetaDTO> list = new ArrayList<>();
-        for (Object object : jsonArray) {
-            ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
-            JSONObject obj = (JSONObject) object;
-            columnMetaDTO.setKey(MapUtils.getString(obj, "Field"));
-            columnMetaDTO.setType(MapUtils.getString(obj, "Type"));
-            columnMetaDTO.setComment(MapUtils.getString(obj, "Extra"));
-            list.add(columnMetaDTO);
+        try (HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO)) {
+            Response result = httpClient.get(null, null, null);
+            AssertUtils.isTrue(result, 0);
+            JSONArray jsonArray = (JSONArray) JSONPath.eval(JSONObject.parse(result.getContent()), String.format(COLUMN_META_JSON_PATH, tableName));
+            List<ColumnMetaDTO> list = new ArrayList<>();
+            for (Object object : jsonArray) {
+                ColumnMetaDTO columnMetaDTO = new ColumnMetaDTO();
+                JSONObject obj = (JSONObject) object;
+                columnMetaDTO.setKey(MapUtils.getString(obj, "Field"));
+                columnMetaDTO.setType(MapUtils.getString(obj, "Type"));
+                columnMetaDTO.setComment(MapUtils.getString(obj, "Extra"));
+                list.add(columnMetaDTO);
+            }
+            return list;
+        } catch (IOException e) {
+            throw new DtLoaderException(e.getMessage(), e);
         }
-        return list;
     }
 
     /**
@@ -83,12 +87,15 @@ public class DorisRestfulClient implements Closeable {
     public List<String> getAllDatabases(DorisRestfulSourceDTO sourceDTO) {
         String cluster = StringUtils.isEmpty(sourceDTO.getCluster()) ? DEFAULT_CLUSTER : sourceDTO.getCluster();
         sourceDTO.setUrl(sourceDTO.getUrl() + String.format(HttpAPI.ALL_DATABASE, cluster));
-        HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO);
-        Response result = httpClient.get(null, null, null);
-        AssertUtils.isTrue(result, 0);
-        JSONArray jsonArray = (JSONArray) JSONPath.eval(JSONObject.parse(result.getContent()), RESULT_JSON_PATH);
-        //查询的数据库格式是 cluster:database
-        return jsonArray.stream().map(obj -> ((String) obj).substring(((String) obj).lastIndexOf(":") + 1)).collect(Collectors.toList());
+        try (HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO)) {
+            Response result = httpClient.get(null, null, null);
+            AssertUtils.isTrue(result, 0);
+            JSONArray jsonArray = (JSONArray) JSONPath.eval(JSONObject.parse(result.getContent()), RESULT_JSON_PATH);
+            //查询的数据库格式是 cluster:database
+            return jsonArray.stream().map(obj -> ((String) obj).substring(((String) obj).lastIndexOf(":") + 1)).collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
     }
 
 
@@ -98,11 +105,14 @@ public class DorisRestfulClient implements Closeable {
         AssertUtils.notBlank(schema, "schema not null");
 
         sourceDTO.setUrl(sourceDTO.getUrl() + String.format(HttpAPI.ALL_TABLES, cluster, cluster, schema));
-        HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO);
-        Response result = httpClient.get(null, null, null);
-        AssertUtils.isTrue(result, 0);
-        JSONArray jsonArray = (JSONArray) JSONPath.eval(JSONObject.parse(result.getContent()), RESULT_JSON_PATH);
-        return jsonArray.toJavaList(String.class);
+        try (HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO)) {
+            Response result = httpClient.get(null, null, null);
+            AssertUtils.isTrue(result, 0);
+            JSONArray jsonArray = (JSONArray) JSONPath.eval(JSONObject.parse(result.getContent()), RESULT_JSON_PATH);
+            return jsonArray.toJavaList(String.class);
+        } catch (IOException e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
     }
 
 
@@ -114,25 +124,28 @@ public class DorisRestfulClient implements Closeable {
         AssertUtils.notBlank(tableName, "tableName not null");
 
         sourceDTO.setUrl(sourceDTO.getUrl() + String.format(HttpAPI.QUERY_DATA, cluster, schema));
-        HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO);
-        Integer limit = sqlQueryDTO.getLimit() != null ? sqlQueryDTO.getLimit() : PREVIEW_SIZE;
-        String body = String.format(PREVIEW_SQL, tableName, limit);
-        Response result = httpClient.post(body, null, null);
-        AssertUtils.isTrue(result, 0);
+        try (HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO)) {
+            Integer limit = sqlQueryDTO.getLimit() != null ? sqlQueryDTO.getLimit() : PREVIEW_SIZE;
+            String body = String.format(PREVIEW_SQL, tableName, limit);
+            Response result = httpClient.post(body, null, null);
+            AssertUtils.isTrue(result, 0);
 
-        JSONArray data = (JSONArray) JSONPath.eval(JSONObject.parse(result.getContent()), DATA_JSON_PATH);
-        JSONArray metaObj = (JSONArray) JSONPath.eval(JSONObject.parse(result.getContent()), META_JSON_PATH);
-        List<String> meta = metaObj.stream().map(obj -> ((JSONObject) obj).getString("name")).collect(Collectors.toList());
-        List<List<Object>> resultList = new ArrayList<>();
-        for (int i = 0; i < data.size(); i++) {
-            List<Object> line = new ArrayList<>();
-            JSONArray jsonObject = data.getJSONArray(i);
-            for (int j = 0; j < meta.size(); j++) {
-                line.add(new Pair<String, Object>(meta.get(j), jsonObject.get(j)));
+            JSONArray data = (JSONArray) JSONPath.eval(JSONObject.parse(result.getContent()), DATA_JSON_PATH);
+            JSONArray metaObj = (JSONArray) JSONPath.eval(JSONObject.parse(result.getContent()), META_JSON_PATH);
+            List<String> meta = metaObj.stream().map(obj -> ((JSONObject) obj).getString("name")).collect(Collectors.toList());
+            List<List<Object>> resultList = new ArrayList<>();
+            for (int i = 0; i < data.size(); i++) {
+                List<Object> line = new ArrayList<>();
+                JSONArray jsonObject = data.getJSONArray(i);
+                for (int j = 0; j < meta.size(); j++) {
+                    line.add(new Pair<String, Object>(meta.get(j), jsonObject.get(j)));
+                }
+                resultList.add(line);
             }
-            resultList.add(line);
+            return resultList;
+        } catch (IOException e) {
+            throw new DtLoaderException(e.getMessage(), e);
         }
-        return resultList;
     }
 
 
@@ -143,25 +156,29 @@ public class DorisRestfulClient implements Closeable {
         AssertUtils.notBlank(sqlQueryDTO.getSql(), "sql not null");
 
         sourceDTO.setUrl(sourceDTO.getUrl() + String.format(HttpAPI.QUERY_DATA, cluster, schema));
-        HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO);
-        JSONObject bodyObject = new JSONObject();
-        bodyObject.put("stmt", sqlQueryDTO.getSql());
-        Response result = httpClient.post(bodyObject.toJSONString(), null, null);
-        AssertUtils.isTrue(result, 0);
+        try (HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO)) {
 
-        JSONArray data = (JSONArray) JSONPath.eval(JSONObject.parse(result.getContent()), DATA_JSON_PATH);
-        JSONArray metaObj = (JSONArray) JSONPath.eval(JSONObject.parse(result.getContent()), META_JSON_PATH);
-        List<String> meta = metaObj.stream().map(obj -> ((JSONObject) obj).getString("name")).collect(Collectors.toList());
-        List<Map<String, Object>> resultList = new ArrayList<>();
-        for (int i = 0; i < data.size(); i++) {
-            Map<String, Object> line = new HashMap<>();
-            JSONArray jsonObject = data.getJSONArray(i);
-            for (int j = 0; j < meta.size(); j++) {
-                line.put(meta.get(j), jsonObject.get(j));
+            JSONObject bodyObject = new JSONObject();
+            bodyObject.put("stmt", sqlQueryDTO.getSql());
+            Response result = httpClient.post(bodyObject.toJSONString(), null, null);
+            AssertUtils.isTrue(result, 0);
+
+            JSONArray data = (JSONArray) JSONPath.eval(JSONObject.parse(result.getContent()), DATA_JSON_PATH);
+            JSONArray metaObj = (JSONArray) JSONPath.eval(JSONObject.parse(result.getContent()), META_JSON_PATH);
+            List<String> meta = metaObj.stream().map(obj -> ((JSONObject) obj).getString("name")).collect(Collectors.toList());
+            List<Map<String, Object>> resultList = new ArrayList<>();
+            for (int i = 0; i < data.size(); i++) {
+                Map<String, Object> line = new HashMap<>();
+                JSONArray jsonObject = data.getJSONArray(i);
+                for (int j = 0; j < meta.size(); j++) {
+                    line.put(meta.get(j), jsonObject.get(j));
+                }
+                resultList.add(line);
             }
-            resultList.add(line);
+            return resultList;
+        } catch (IOException e) {
+            throw new DtLoaderException(e.getMessage(), e);
         }
-        return resultList;
     }
 
 
@@ -172,12 +189,16 @@ public class DorisRestfulClient implements Closeable {
         AssertUtils.notBlank(sqlQueryDTO.getSql(), "sql not null");
 
         sourceDTO.setUrl(sourceDTO.getUrl() + String.format(HttpAPI.QUERY_DATA, cluster, schema));
-        HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO);
-        JSONObject bodyObject = new JSONObject();
-        bodyObject.put("stmt", sqlQueryDTO.getSql());
-        Response result = httpClient.post(bodyObject.toJSONString(), null, null);
-        AssertUtils.isTrue(result, 0);
-        return true;
+        try (HttpClient httpClient = HttpClientFactory.createHttpClientAndStart(sourceDTO)) {
+
+            JSONObject bodyObject = new JSONObject();
+            bodyObject.put("stmt", sqlQueryDTO.getSql());
+            Response result = httpClient.post(bodyObject.toJSONString(), null, null);
+            AssertUtils.isTrue(result, 0);
+            return true;
+        } catch (IOException e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }
     }
 
 
