@@ -21,6 +21,7 @@ package com.dtstack.dtcenter.common.loader.oracle;
 import com.dtstack.dtcenter.common.loader.common.utils.CollectionUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.SchemaUtil;
 import com.dtstack.dtcenter.common.loader.rdbms.AbsRdbmsClient;
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
 import com.dtstack.dtcenter.loader.IDownloader;
@@ -32,6 +33,7 @@ import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
 import com.dtstack.dtcenter.loader.enums.ConnectionClearStatus;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import oracle.jdbc.OracleResultSetMetaData;
 import oracle.sql.BLOB;
@@ -47,6 +49,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -213,8 +216,10 @@ public class OracleClient extends AbsRdbmsClient {
         Map<String, String> columnComments = new HashMap<>();
         try {
             statement = sourceDTO.getConnection().createStatement();
+            List<String> tableAndSchema = getTableAndSchema(SchemaUtil.getSchema(sourceDTO, queryDTO), queryDTO.getTableName());
+            String schemaSql = tableAndSchema.size() > 1 ? " and OWNER= '" + tableAndSchema.get(1) + "'" : "";
             String queryColumnCommentSql =
-                    "select * from all_col_comments where Table_Name =" + addSingleQuotes(getTableName(sourceDTO.getSchema(), queryDTO.getTableName()));
+                    "select * from all_col_comments where Table_Name =" + addSingleQuotes(tableAndSchema.get(0)) + schemaSql;
             rs = statement.executeQuery(queryColumnCommentSql);
             while (rs.next()) {
                 String columnName = rs.getString(ORACLE_COLUMN_NAME);
@@ -247,19 +252,17 @@ public class OracleClient extends AbsRdbmsClient {
     }
 
     /**
-     * 获取表名
+     * 获取表名和 schema, 如果只有一个说明只有 tableName, 如果 list 两个值则第一个是 tableName, 第二个是 schema
      *
-     * @param schema
-     * @param tableName
-     * @return
+     * @param schema    schema
+     * @param tableName 表名
+     * @return schema and tableName
      */
-    private String getTableName(String schema, String tableName) {
+    private List<String> getTableAndSchema(String schema, String tableName) {
         String schemaAndTableName = transferSchemaAndTableName(schema, tableName);
-        List<String> splitWithQuotations = splitWithQuotation(schemaAndTableName, "\"");
-        if (splitWithQuotations.size() != 2) {
-            return tableName;
-        }
-        return splitWithQuotations.get(1);
+        List<String> result = splitWithQuotation(schemaAndTableName, "\"");
+        Collections.reverse(result);
+        return result;
     }
 
     /**
