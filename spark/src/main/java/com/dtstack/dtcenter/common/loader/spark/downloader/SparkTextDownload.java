@@ -264,7 +264,7 @@ public class SparkTextDownload implements IDownloader {
     public List<String> readNextWithKerberos(){
         String line = value.toString();
         value.clear();
-        String[] fields = StringUtils.splitPreserveAllTokens(line, fieldDelimiter);
+        String[] fields = line.split(fieldDelimiter, -1);
         List<String> row = Lists.newArrayList(fields);
         if(CollectionUtils.isNotEmpty(partitionColumns)){
             row.addAll(currentPartData);
