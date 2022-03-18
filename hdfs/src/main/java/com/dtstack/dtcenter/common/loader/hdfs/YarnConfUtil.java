@@ -79,6 +79,8 @@ public class YarnConfUtil extends HadoopConfUtil {
      */
     private static void initYarnConfiguration(YarnConfiguration yarnConfiguration, Map<String, Object> map) {
         if (MapUtils.isNotEmpty(map)) {
+            // 去除该参数, 否则下载日志会报错
+            map.remove("dfs.encrypt.data.transfer.cipher.suites");
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 if (entry.getValue() == null) {
                     continue;
