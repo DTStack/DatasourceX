@@ -243,7 +243,7 @@ public class InceptorParquetDownload implements IDownloader {
         ColumnType columnType = ColumnType.fromString(type);
 
         try {
-            if (index == -1) {
+            if (index == -1 || currentLine.getFieldRepetitionCount(index) == 0) {
                 return null;
             }
 
