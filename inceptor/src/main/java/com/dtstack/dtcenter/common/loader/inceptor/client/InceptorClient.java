@@ -128,6 +128,9 @@ public class InceptorClient extends AbsRdbmsClient {
     // metaStore 地址 principal 地址
     private final static String META_STORE_KERBEROS_PRINCIPAL = "hive.metastore.kerberos.principal";
 
+    // 获取正在使用数据库
+    private static final String CURRENT_DB = "select current_database()";
+
     @Override
     public List<String> getTableList(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
         Integer clearStatus = beforeQuery(sourceDTO, queryDTO, false);
@@ -722,4 +725,10 @@ public class InceptorClient extends AbsRdbmsClient {
         }
         return result;
     }
+
+    @Override
+    protected String getCurrentDbSql() {
+        return CURRENT_DB;
+    }
+
 }

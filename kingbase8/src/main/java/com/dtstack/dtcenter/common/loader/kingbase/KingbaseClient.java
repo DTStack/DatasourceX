@@ -77,6 +77,9 @@ public class KingbaseClient extends AbsRdbmsClient {
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select current_database()";
 
+    // 获取正在使用 schema
+    private static final String CURRENT_SCHEMA = "select current_schema()";
+
     private static final String DONT_EXIST = "doesn't exist";
 
     // 根据schema选表表名模糊查询
@@ -255,6 +258,11 @@ public class KingbaseClient extends AbsRdbmsClient {
     @Override
     protected String getCurrentDbSql() {
         return CURRENT_DB;
+    }
+
+    @Override
+    protected String getCurrentSchemaSql() {
+        return CURRENT_SCHEMA;
     }
 
     @Override

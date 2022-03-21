@@ -26,6 +26,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.Database;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
+import com.dtstack.dtcenter.loader.dto.TableInfo;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import lombok.extern.slf4j.Slf4j;
 
@@ -212,6 +213,12 @@ public class DataSourceClientProxy<T> implements IClient<T> {
     @Override
     public Database getDatabase(ISourceDTO sourceDTO, String dbName) {
         return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getDatabase(sourceDTO, dbName),
+                targetClient.getClass().getClassLoader());
+    }
+
+    @Override
+    public TableInfo getTableInfo(ISourceDTO sourceDTO, String tableName) {
+        return ClassLoaderCallBackMethod.callbackAndReset(() -> targetClient.getTableInfo(sourceDTO, tableName),
                 targetClient.getClass().getClassLoader());
     }
 }

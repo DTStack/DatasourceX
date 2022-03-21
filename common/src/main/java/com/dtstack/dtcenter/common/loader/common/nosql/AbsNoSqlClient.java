@@ -25,6 +25,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.Database;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
+import com.dtstack.dtcenter.loader.dto.TableInfo;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 
@@ -173,6 +174,17 @@ public abstract class AbsNoSqlClient<T> implements IClient<T> {
 
     @Override
     public Database getDatabase(ISourceDTO sourceDTO, String dbName) {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
+
+
+    @Override
+    public Integer executeUpdate(ISourceDTO source, SqlQueryDTO queryDTO) {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
+
+    @Override
+    public TableInfo getTableInfo(ISourceDTO sourceDTO, String tableName) {
         throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }
 }

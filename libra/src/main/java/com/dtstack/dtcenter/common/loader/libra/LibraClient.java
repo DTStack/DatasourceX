@@ -47,6 +47,9 @@ public class LibraClient extends AbsRdbmsClient {
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select current_database()";
 
+    // 获取正在使用 schema
+    private static final String CURRENT_SCHEMA = "select current_schema()";
+
     // 获取所有schema
     private static final String DATABASE_QUERY = "select nspname from pg_namespace";
 
@@ -121,6 +124,11 @@ public class LibraClient extends AbsRdbmsClient {
     @Override
     protected String getCurrentDbSql() {
         return CURRENT_DB;
+    }
+
+    @Override
+    protected String getCurrentSchemaSql() {
+        return CURRENT_SCHEMA;
     }
 
     @Override

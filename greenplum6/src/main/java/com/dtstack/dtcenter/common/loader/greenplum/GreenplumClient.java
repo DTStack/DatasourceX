@@ -94,6 +94,9 @@ public class GreenplumClient extends AbsRdbmsClient {
     // 获取正在使用数据库
     private static final String CURRENT_DB = "select current_database()";
 
+    // 获取正在使用 schema
+    private static final String CURRENT_SCHEMA = "select current_schema()";
+
     // 获取当前版本号
     private static final String SHOW_VERSION = "select version()";
 
@@ -242,6 +245,11 @@ public class GreenplumClient extends AbsRdbmsClient {
     @Override
     protected String getCurrentDbSql() {
         return CURRENT_DB;
+    }
+
+    @Override
+    protected String getCurrentSchemaSql() {
+        return CURRENT_SCHEMA;
     }
 
     @Override

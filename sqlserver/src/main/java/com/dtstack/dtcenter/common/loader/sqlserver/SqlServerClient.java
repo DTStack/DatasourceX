@@ -31,6 +31,7 @@ import com.dtstack.dtcenter.loader.dto.source.SqlserverSourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -309,5 +310,10 @@ public class SqlServerClient extends AbsRdbmsClient {
             return typeName.split(" ")[0];
         }
         return typeName;
+    }
+
+    @Override
+    protected Pair<Character, Character> getSpecialSign() {
+        return Pair.of('[', ']');
     }
 }

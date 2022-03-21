@@ -23,6 +23,7 @@ import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.Database;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.Table;
+import com.dtstack.dtcenter.loader.dto.TableInfo;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 
 import java.sql.Connection;
@@ -319,4 +320,13 @@ public interface IClient<T> {
      * @return 数据库详细信息
      */
     Database getDatabase(ISourceDTO sourceDTO, String dbName);
+
+    /**
+     * 获取 table 信息
+     *
+     * @param sourceDTO 数据源信息
+     * @param tableName 表名
+     * @return table 信息
+     */
+    TableInfo getTableInfo(ISourceDTO sourceDTO, String tableName);
 }
