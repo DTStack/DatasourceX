@@ -52,6 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.common.type.HiveDate;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 
@@ -707,5 +708,18 @@ public class InceptorClient extends AbsRdbmsClient {
     @Override
     public String getDescDbSql(String dbName) {
         return String.format(DESC_DB_INFO, dbName);
+    }
+
+    @Override
+    protected Object dealResult(Object result){
+        if(result instanceof HiveDate && result != null){
+            try {
+                HiveDate hiveresult = (HiveDate) result;
+                return hiveresult.toString();
+            } catch (DtLoaderException e) {
+                log.error("Hivedate format transform String exception",e);
+            }
+        }
+        return result;
     }
 }
