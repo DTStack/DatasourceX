@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -687,5 +688,10 @@ public class Hive3Client extends AbsRdbmsClient {
     @Override
     public String getDescDbSql(String dbName) {
         return String.format(DESC_DB_INFO, dbName);
+    }
+
+    @Override
+    protected Pair<Character, Character> getSpecialSign() {
+        return Pair.of('`', '`');
     }
 }
