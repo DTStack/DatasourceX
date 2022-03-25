@@ -203,7 +203,10 @@ public class ConnFactory {
     protected HikariDataSource transHikari(ISourceDTO source) {
         RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
         HikariDataSource hikariData = new HikariDataSource();
-        hikariData.setDriverClassName(driverName);
+
+        // 设置 driverClassName
+        String driverClassName = getDriverClassName(source);
+        hikariData.setDriverClassName(driverClassName);
         hikariData.setUsername(rdbmsSourceDTO.getUsername());
         hikariData.setPassword(rdbmsSourceDTO.getPassword());
         hikariData.setJdbcUrl(rdbmsSourceDTO.getUrl());
@@ -222,6 +225,10 @@ public class ConnFactory {
             hikariData.addDataSourceProperty(key.toString(), properties.get(key));
         }
         return hikariData;
+    }
+
+    protected String getDriverClassName(ISourceDTO source) {
+        return driverName;
     }
 
     /**

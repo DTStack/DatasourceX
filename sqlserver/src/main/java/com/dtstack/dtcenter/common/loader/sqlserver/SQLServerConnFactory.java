@@ -19,8 +19,12 @@
 package com.dtstack.dtcenter.common.loader.sqlserver;
 
 import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataBaseType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @company: www.dtstack.com
@@ -40,5 +44,19 @@ public class SQLServerConnFactory extends ConnFactory {
         driverName = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
         testSql = DataBaseType.SQLServer.getTestSql();
         errorPattern = new SqlServerErrorPattern();
+    }
+
+    @Override
+    protected String getDriverClassName(ISourceDTO source) {
+        RdbmsSourceDTO sqlServerSourceDTO = (RdbmsSourceDTO) source;
+        String url = sqlServerSourceDTO.getUrl();
+        if (StringUtils.isEmpty(url)) {
+            throw new DtLoaderException("url can't be null.");
+        }
+        if (StringUtils.startsWithIgnoreCase(url.trim(), "jdbc:sqlserver")) {
+            return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+        } else {
+            return "net.sourceforge.jtds.jdbc.Driver";
+        }
     }
 }
