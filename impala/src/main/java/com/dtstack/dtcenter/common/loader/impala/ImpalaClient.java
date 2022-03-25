@@ -39,6 +39,7 @@ import com.dtstack.dtcenter.loader.source.DataSourceType;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -401,5 +402,10 @@ public class ImpalaClient extends AbsRdbmsClient {
     @Override
     protected String getVersionSql() {
         return SHOW_VERSION;
+    }
+
+    @Override
+    protected Pair<Character, Character> getSpecialSign() {
+        return Pair.of('`', '`');
     }
 }
