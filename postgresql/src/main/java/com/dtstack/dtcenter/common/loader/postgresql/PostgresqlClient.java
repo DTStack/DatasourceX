@@ -392,7 +392,7 @@ public class PostgresqlClient extends AbsRdbmsClient {
         if (StringUtils.isBlank(schema)) {
             return tableName;
         }
-        return String.format("%s.%s", schema, tableName);
+        return String.format("%s.\"%s\"", schema, tableName);
     }
 
     @Override
