@@ -88,7 +88,24 @@
                     <artifactId>guava</artifactId>
                     <groupId>com.google.guava</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>groovy-all</artifactId>
+                    <groupId>org.codehaus.groovy</groupId>
+                </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <artifactId>groovy-all</artifactId>
+            <groupId>org.codehaus.groovy</groupId>
+            <version>3.0.9</version>
+            <type>pom</type>
+        </dependency>
+
+        <dependency>
+            <artifactId>jackson-databind</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <version>2.13.2.1</version>
         </dependency>
 
         <dependency>
@@ -148,6 +165,10 @@
                     <artifactId>guava</artifactId>
                     <groupId>com.google.guava</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>jackson-mapper-asl</artifactId>
+                    <groupId>org.codehaus.jackson</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -165,6 +186,10 @@
                 <exclusion>
                     <artifactId>guava</artifactId>
                     <groupId>com.google.guava</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-mapper-asl</artifactId>
+                    <groupId>org.codehaus.jackson</groupId>
                 </exclusion>
             </exclusions>
             <groupId>org.apache.hadoop</groupId>

@@ -183,7 +183,18 @@
                     <artifactId>hadoop-auth</artifactId>
                     <groupId>org.apache.hadoop</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>groovy-all</artifactId>
+                    <groupId>org.codehaus.groovy</groupId>
+                </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <artifactId>groovy-all</artifactId>
+            <groupId>org.codehaus.groovy</groupId>
+            <version>3.0.9</version>
+            <type>pom</type>
         </dependency>
 
         <dependency>
@@ -417,7 +428,17 @@
                     <artifactId>jackson-annotations</artifactId>
                     <groupId>com.fasterxml.jackson.core</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>json-smart</artifactId>
+                    <groupId>net.minidev</groupId>
+                </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <artifactId>json-smart</artifactId>
+            <groupId>net.minidev</groupId>
+            <version>2.3.1</version>
         </dependency>
 
         <dependency>

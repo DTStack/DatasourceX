@@ -153,7 +153,17 @@
                     <artifactId>snappy-java</artifactId>
                     <groupId>org.xerial.snappy</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>jackson-mapper-asl</artifactId>
+                    <groupId>org.codehaus.jackson</groupId>
+                </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <artifactId>jackson-databind</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <version>2.13.2.1</version>
         </dependency>
 
         <dependency>
