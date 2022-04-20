@@ -177,12 +177,6 @@ public abstract class AbsNoSqlClient<T> implements IClient<T> {
         throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
     }
 
-
-    @Override
-    public Integer executeUpdate(ISourceDTO source, SqlQueryDTO queryDTO) {
-        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
-    }
-
     @Override
     public TableInfo getTableInfo(ISourceDTO sourceDTO, String tableName) {
         throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
