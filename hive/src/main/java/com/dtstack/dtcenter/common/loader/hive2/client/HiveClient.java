@@ -21,6 +21,7 @@ package com.dtstack.dtcenter.common.loader.hive2.client;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.DelimiterUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.EnvUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
@@ -587,13 +588,13 @@ public class HiveClient extends AbsRdbmsClient {
             }
 
             if (colName.contains("field.delim")) {
-                tableInfo.setDelim(dataTypeOrigin);
+                tableInfo.setDelim(DelimiterUtil.charAtIgnoreEscape(dataTypeOrigin));
                 continue;
             }
 
             if (dataType.contains("field.delim")) {
                 String delimit = MapUtils.getString(row, "comment", "");
-                tableInfo.setDelim(delimit);
+                tableInfo.setDelim(DelimiterUtil.charAtIgnoreEscape(delimit));
                 continue;
             }
 

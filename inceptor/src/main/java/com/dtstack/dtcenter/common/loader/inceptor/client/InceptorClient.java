@@ -21,6 +21,7 @@ package com.dtstack.dtcenter.common.loader.inceptor.client;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.DelimiterUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.EnvUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
@@ -628,7 +629,7 @@ public class InceptorClient extends AbsRdbmsClient {
             }
 
             if (StringUtils.containsIgnoreCase(category, "field.delim")) {
-                tableInfo.setDelim(attribute);
+                tableInfo.setDelim(DelimiterUtil.charAtIgnoreEscape(attribute));
                 continue;
             }
 

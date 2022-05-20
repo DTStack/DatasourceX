@@ -3,6 +3,7 @@ package com.dtstack.dtcenter.common.loader.hive3.client;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.DelimiterUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.TableUtil;
 import com.dtstack.dtcenter.common.loader.hadoop.hdfs.HadoopConfUtil;
@@ -573,13 +574,13 @@ public class Hive3Client extends AbsRdbmsClient {
 
             if (colName.contains("field.delim")) {
                 // trim 之后不会空则取 trim 后的值
-                tableInfo.setDelim(StringUtils.isEmpty(dataType) ? dataTypeOrigin : dataType);
+                tableInfo.setDelim(DelimiterUtil.charAtIgnoreEscape(dataTypeOrigin));
                 continue;
             }
 
             if (dataType.contains("field.delim")) {
                 String delimit = MapUtils.getString(row, "comment", "");
-                tableInfo.setDelim(StringUtils.isEmpty(delimit.trim()) ? delimit : delimit.trim());
+                tableInfo.setDelim(DelimiterUtil.charAtIgnoreEscape(delimit));
                 continue;
             }
 

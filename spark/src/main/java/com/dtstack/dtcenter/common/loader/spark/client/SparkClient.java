@@ -21,6 +21,7 @@ package com.dtstack.dtcenter.common.loader.spark.client;
 import com.dtstack.dtcenter.common.loader.common.DtClassConsistent;
 import com.dtstack.dtcenter.common.loader.common.enums.StoredType;
 import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.DelimiterUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.EnvUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
 import com.dtstack.dtcenter.common.loader.common.utils.SearchUtil;
@@ -605,7 +606,14 @@ public class SparkClient<T> extends AbsRdbmsClient<T> {
             // ThriftServer 2.1.x 分隔符为 key
             if (colName.contains("field.delim")) {
                 // trim 之后不会空则取 trim 后的值
-                tableInfo.setDelim(StringUtils.isEmpty(dataType) ? dataTypeOrigin : dataType);
+                tableInfo.setDelim(DelimiterUtil.charAtIgnoreEscape(dataTypeOrigin));
+                continue;
+            }
+
+            // 兼容一下 hive 的情况
+            if (dataType.contains("field.delim")) {
+                String delimit = MapUtils.getString(row, "comment", "");
+                tableInfo.setDelim(DelimiterUtil.charAtIgnoreEscape(delimit));
                 continue;
             }
 
