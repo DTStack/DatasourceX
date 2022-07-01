@@ -38,7 +38,7 @@ public enum DataSourceType {
     MySQL(1, 0, "MySQL", "mysql5"),
     MySQL8(1001, 1, "MySQL", "mysql5"),
     MySQLPXC(98, 1, "MySQL PXC", "mysql5"),
-    Polardb_For_MySQL(28, 2, "PolarDB for MySQL8", "mysql5"),
+    Polardb_For_MySQL(28, 2, "PolarDB for MySQL8", "mysql8"),
     Oracle(2, 3, "Oracle", "oracle"),
     SQLServer(3, 4, "SQLServer", "sqlServer"),
     SQLSERVER_2017_LATER(32, 5, "SQLServer JDBC", "sqlServer"),
