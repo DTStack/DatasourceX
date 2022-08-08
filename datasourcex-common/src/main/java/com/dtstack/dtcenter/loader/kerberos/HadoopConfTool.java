@@ -1,0 +1,78 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.dtstack.dtcenter.loader.kerberos;
+
+/**
+ * @company: www.dtstack.com
+ * @Author ：Nanqi
+ * @Date ：Created in 20:57 2020/8/27
+ * @Description：Hadoop 配置中心 后期删除
+ */
+@Deprecated
+public class HadoopConfTool {
+    /**
+     * Hadoop 开启 Kerberos 是否需要二次认证
+     */
+    public static final String HADOOP_SECURITY_AUTHORIZATION = "hadoop.security.authorization";
+
+    /**
+     * krb5 系统属性键
+     */
+    public static final String KEY_JAVA_SECURITY_KRB5_CONF = "java.security.krb5.conf";
+
+    /**
+     * principal 键
+     */
+    public static final String PRINCIPAL = "principal";
+
+    /**
+     * Hbase master Principal 键
+     */
+    public static final String HBASE_MASTER_PRINCIPAL = "hbase.master.kerberos.principal";
+
+    /**
+     * Hbase region Principal 键
+     */
+    public static final String HBASE_REGION_PRINCIPAL = "hbase.regionserver.kerberos.principal";
+
+    /**
+     * principal 文件 键
+     */
+    public static final String PRINCIPAL_FILE = "principalFile";
+
+    /**
+     * Kafka kerberos keytab 键
+     */
+    public static final String KAFKA_KERBEROS_KEYTAB = "kafka.kerberos.keytab";
+
+    /**
+     * Kafka Principal 参数，也可选 Principal
+     */
+    public static final String KAFKA_KERBEROS_SERVICE_NAME = "sasl.kerberos.service.name";
+
+    /**
+     * Resource Manager Configs
+     */
+    public static final String RM_PREFIX = "yarn.resourcemanager.";
+
+    /**
+     * MR 任务的 Principal 信息，也可以认为是 Yarn 的 Principal
+     */
+    public static final String RM_PRINCIPAL = RM_PREFIX + "principal";
+}

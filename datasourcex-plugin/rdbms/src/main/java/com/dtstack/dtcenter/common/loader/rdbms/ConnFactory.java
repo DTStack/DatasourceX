@@ -1,0 +1,290 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.dtstack.dtcenter.common.loader.rdbms;
+
+import com.dtstack.dtcenter.common.loader.common.DtClassThreadFactory;
+import com.dtstack.dtcenter.common.loader.common.exception.ErrorCode;
+import com.dtstack.dtcenter.common.loader.common.exception.IErrorPattern;
+import com.dtstack.dtcenter.common.loader.common.service.ErrorAdapterImpl;
+import com.dtstack.dtcenter.common.loader.common.service.IErrorAdapter;
+import com.dtstack.dtcenter.common.loader.common.utils.DBUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.MD5Util;
+import com.dtstack.dtcenter.common.loader.common.utils.PropertiesUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.ReflectUtil;
+import com.dtstack.dtcenter.common.loader.common.utils.SqlFormatUtil;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.dto.source.RdbmsSourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.zaxxer.hikari.HikariDataSource;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+/**
+ * 通用 IClient 客户端接口
+ *
+ * @author ：nanqi
+ * date：Created in 下午3:38 2020/01/17
+ * company: www.dtstack.com
+ */
+@Slf4j
+public class ConnFactory {
+
+    protected String driverName = null;
+
+    // 错误匹配规则类，需要各个数据源去实现该规则接口并在创建连接工厂时初始化该成员变量
+    protected IErrorPattern errorPattern = null;
+
+    // 异常适配器
+    protected final IErrorAdapter errorAdapter = new ErrorAdapterImpl();
+
+    protected String testSql;
+
+    private static final ConcurrentHashMap<String, Object> HIKARI_DATA_SOURCES = new ConcurrentHashMap<>();
+
+    private AtomicBoolean isFirstLoaded = new AtomicBoolean(true);
+
+    private static final String CP_POOL_KEY = "url:%s,username:%s,password:%s,properties:%s";
+
+    /**
+     * 线程池 - 用于部分数据源获取连接超时处理
+     */
+    protected static ExecutorService executor = new ThreadPoolExecutor(5, 10, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(1000), new DtClassThreadFactory("connFactory"));
+
+    protected void init() throws ClassNotFoundException {
+        // 减少加锁开销
+        if (!isFirstLoaded.get()) {
+            return;
+        }
+
+        synchronized (ConnFactory.class) {
+            if (isFirstLoaded.get()) {
+                Class.forName(driverName);
+                isFirstLoaded.set(false);
+            }
+        }
+    }
+
+    /**
+     * 获取连接，对抛出异常进行统一处理，统一入口
+     *
+     * @param sourceDTO 数据源信息
+     * @return jdbc connection
+     * @throws Exception 异常信息
+     */
+    public Connection getConn(ISourceDTO sourceDTO) throws Exception {
+        if (sourceDTO == null) {
+            throw new DtLoaderException("source is null");
+        }
+        try {
+            RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) sourceDTO;
+            boolean isStart = rdbmsSourceDTO.getPoolConfig() != null;
+            Connection connection = isStart && MapUtils.isEmpty(rdbmsSourceDTO.getKerberosConfig()) ?
+                    getCpConn(rdbmsSourceDTO) : getSimpleConn(rdbmsSourceDTO);
+
+            return setSchema(connection, rdbmsSourceDTO.getSchema());
+        } catch (Exception e) {
+            // 对异常进行统一处理
+            throw new DtLoaderException(errorAdapter.connAdapter(e.getMessage(), errorPattern), e);
+        }
+    }
+
+    /**
+     * 从连接池获取连接
+     *
+     * @param source 数据源信息
+     * @return jdbc connection
+     * @throws Exception 异常信息
+     */
+    private Connection getCpConn(ISourceDTO source) throws Exception {
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        String poolKey = getPrimaryKey(rdbmsSourceDTO);
+        log.info("datasource connected(Hikari), url : {}, userName : {}, kerberosConfig : {}", rdbmsSourceDTO.getUrl(), rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getKerberosConfig());
+        HikariDataSource hikariData = (HikariDataSource) HIKARI_DATA_SOURCES.get(poolKey);
+        if (hikariData == null) {
+            synchronized (ConnFactory.class) {
+                hikariData = (HikariDataSource) HIKARI_DATA_SOURCES.get(poolKey);
+                if (hikariData == null) {
+                    hikariData = transHikari(source);
+                    HIKARI_DATA_SOURCES.put(poolKey, hikariData);
+                }
+            }
+        }
+
+        return hikariData.getConnection();
+    }
+
+    /**
+     * 获取普通连接
+     *
+     * @param source 数据源信息
+     * @return jdbc connection
+     * @throws Exception 异常信息
+     */
+    protected Connection getSimpleConn(ISourceDTO source) throws Exception {
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        init();
+        DriverManager.setLoginTimeout(30);
+        log.info("datasource connected, url : {}, userName : {}, kerberosConfig : {}", rdbmsSourceDTO.getUrl(), rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getKerberosConfig());
+        return DriverManager.getConnection(rdbmsSourceDTO.getUrl(), PropertiesUtil.convertToProp(rdbmsSourceDTO));
+    }
+
+    public Boolean testConn(ISourceDTO source) {
+        Connection conn = null;
+        Statement statement = null;
+        try {
+            conn = getConn(source);
+            if (StringUtils.isBlank(testSql)) {
+                conn.isValid(5);
+            } else {
+                statement = conn.createStatement();
+                statement.execute((testSql));
+            }
+            return true;
+        } catch (Exception e) {
+            throw new DtLoaderException(e.getMessage(), e);
+        }finally {
+            DBUtil.closeDBResources(null, statement, conn);
+        }
+    }
+
+    /**
+     * sourceDTO 转化为 HikariDataSource
+     *
+     * @param source 数据源信息
+     * @return HikariDataSource
+     */
+    protected HikariDataSource transHikari(ISourceDTO source) {
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        HikariDataSource hikariData = new HikariDataSource();
+
+        // 设置 driverClassName
+        String driverClassName = getDriverClassName(source);
+        hikariData.setDriverClassName(driverClassName);
+        hikariData.setUsername(rdbmsSourceDTO.getUsername());
+        hikariData.setPassword(rdbmsSourceDTO.getPassword());
+        hikariData.setJdbcUrl(rdbmsSourceDTO.getUrl());
+        hikariData.setConnectionInitSql(testSql);
+
+        hikariData.setConnectionTestQuery(testSql);
+        hikariData.setConnectionTimeout(rdbmsSourceDTO.getPoolConfig().getConnectionTimeout());
+        hikariData.setIdleTimeout(rdbmsSourceDTO.getPoolConfig().getIdleTimeout());
+        hikariData.setMaxLifetime(rdbmsSourceDTO.getPoolConfig().getMaxLifetime());
+        hikariData.setMaximumPoolSize(rdbmsSourceDTO.getPoolConfig().getMaximumPoolSize());
+        hikariData.setMinimumIdle(rdbmsSourceDTO.getPoolConfig().getMinimumIdle());
+        hikariData.setReadOnly(rdbmsSourceDTO.getPoolConfig().getReadOnly());
+
+        // 设置自定义参数
+        Properties properties = PropertiesUtil.convertToProp(rdbmsSourceDTO);
+        for (Object key : properties.keySet()) {
+            hikariData.addDataSourceProperty(key.toString(), properties.get(key));
+        }
+        return hikariData;
+    }
+
+    protected String getDriverClassName(ISourceDTO source) {
+        return driverName;
+    }
+
+    /**
+     * 根据数据源信息获取唯一 key
+     *
+     * @param source 数据源信息
+     * @return 数据源唯一 key
+     */
+    protected String getPrimaryKey(ISourceDTO source) {
+        RdbmsSourceDTO rdbmsSourceDTO = (RdbmsSourceDTO) source;
+        String properties = ReflectUtil.fieldExists(RdbmsSourceDTO.class, "properties") ? rdbmsSourceDTO.getProperties() : "";
+        return MD5Util.getMd5String(String.format(CP_POOL_KEY, rdbmsSourceDTO.getUrl(), rdbmsSourceDTO.getUsername(), rdbmsSourceDTO.getPassword(), properties));
+    }
+
+    /**
+     * 给 connection 设置 schema
+     *
+     * @param conn   jdbc connection
+     * @param schema schema 信息
+     * @return 设置 schema 后的 jdbc connection
+     */
+    public Connection setSchema(Connection conn, String schema) {
+        if (StringUtils.isBlank(schema)) {
+            return conn;
+        }
+        try {
+            conn.setSchema(schema);
+        } catch (Throwable e) {
+            log.warn(String.format("setting schema exception : %s", e.getMessage()), e);
+        }
+        return conn;
+    }
+
+    /**
+     * 多条 sql 拆分
+     *
+     * @param queryDTO 查询条件
+     * @return 拆分后的 sql
+     */
+    protected List<String> buildSqlList(SqlQueryDTO queryDTO) {
+        return SqlFormatUtil.splitIgnoreQuota(queryDTO.getSql(), ';');
+    }
+
+    protected boolean supportProcedure(String sql) {
+        String[] sqls = sql.trim().split("\\s+", 2);
+        if (sqls.length >= 2){
+            return "BEGIN".equalsIgnoreCase(sqls[0]);
+        }
+        return false;
+    }
+
+    protected String getCreateProcHeader(String procName) {
+        throw new DtLoaderException(ErrorCode.NOT_SUPPORT.getDesc());
+    }
+
+    protected String getCreateProcTail(){
+        return "";
+    }
+
+    protected boolean supportTransaction() {
+        return true;
+    }
+
+    protected boolean supportSelectSql() {
+        return false;
+    }
+
+    protected String getCallProc(String procName) {
+        return String.format("call \"%s\"()", procName);
+    }
+
+    protected String getDropProc(String procName) {
+        return String.format("DROP PROCEDURE \"%s\"", procName);
+    }
+}

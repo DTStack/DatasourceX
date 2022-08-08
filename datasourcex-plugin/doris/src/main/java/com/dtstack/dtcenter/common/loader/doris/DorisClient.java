@@ -1,0 +1,126 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.dtstack.dtcenter.common.loader.doris;
+
+import com.dtstack.dtcenter.common.loader.doris.metadata.MetadataDorisCollectManager;
+import com.dtstack.dtcenter.common.loader.mysql5.MysqlClient;
+import com.dtstack.dtcenter.common.loader.rdbms.ConnFactory;
+import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
+import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
+import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.dtstack.dtcenter.loader.metadata.MetaDataCollectManager;
+import com.dtstack.dtcenter.loader.source.DataSourceType;
+import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.util.List;
+
+/**
+ * @author ：qianyi
+ * date：Created in 下午1:46 2021/07/09
+ * company: www.dtstack.com
+ */
+public class DorisClient extends MysqlClient {
+
+    private static final String DONT_EXIST = "doesn't exist";
+
+    /**
+     * 查询的格式: default_cluster:dbName
+     *
+     * @param source
+     * @return
+     */
+    @Override
+    public String getCurrentDatabase(ISourceDTO source) {
+        String currentDb = super.getCurrentDatabase(source);
+        return currentDb.substring(currentDb.lastIndexOf(":") + 1);
+    }
+
+    @Override
+    protected ConnFactory getConnFactory() {
+        return new DorisConnFactory();
+    }
+
+    @Override
+    protected DataSourceType getSourceType() {
+        return DataSourceType.DORIS;
+    }
+
+
+    @Override
+    protected String transferSchemaAndTableName(String schema, String tableName) {
+        if (StringUtils.isBlank(schema)) {
+            return tableName;
+        }
+        return String.format("%s.%s", schema, tableName);
+    }
+
+    @Override
+    protected Pair<Character, Character> getSpecialSign() {
+        return Pair.of('`', '`');
+    }
+
+    @Override
+    public List<ColumnMetaDTO> getColumnMetaData(ISourceDTO sourceDTO, SqlQueryDTO queryDTO) {
+        List<ColumnMetaDTO> columns = Lists.newArrayList();
+
+        try (Connection connection = getCon(sourceDTO, queryDTO);
+             ResultSet rs = connection
+                     .getMetaData()
+                     .getColumns(null, null, queryDTO.getTableName(), null)) {
+
+            while (rs.next()) {
+                ColumnMetaDTO cmDTO = new ColumnMetaDTO();
+                cmDTO.setKey(rs.getString(4));
+                cmDTO.setType(rs.getString(6));
+                // 获取字段精度
+                if (cmDTO.getType().equalsIgnoreCase("decimal")
+                        || cmDTO.getType().equalsIgnoreCase("float")
+                        || cmDTO.getType().equalsIgnoreCase("double")) {
+                    cmDTO.setScale(rs.getInt(7));
+                    cmDTO.setPrecision(rs.getInt(9));
+                }
+                cmDTO.setComment(rs.getString(12));
+                cmDTO.setPart(false);
+                columns.add(cmDTO);
+            }
+        } catch (Exception e) {
+            if (e.getMessage().contains(DONT_EXIST)) {
+                throw new DtLoaderException(String.format(
+                        queryDTO.getTableName() + "table not exist,%s", e.getMessage()), e);
+            } else {
+                throw new DtLoaderException(String.format(
+                        "Failed to get the meta information of the fields of the table: %s. " +
+                                "Please contact the DBA to check the database and table information: %s",
+                        queryDTO.getTableName(), e.getMessage()), e);
+            }
+        }
+
+        return columns;
+    }
+
+    @Override
+    public MetaDataCollectManager getMetadataCollectManager(ISourceDTO sourceDTO) {
+        return new MetadataDorisCollectManager(sourceDTO);
+    }
+}

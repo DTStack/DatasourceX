@@ -1,0 +1,116 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.dtstack.dtcenter.common.loader.hdfs3.reader;
+
+import com.dtstack.dtcenter.loader.dto.HdfsQueryDTO;
+import com.dtstack.dtcenter.loader.exception.DtLoaderException;
+import com.google.common.collect.Lists;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+/**
+ * text reader
+ *
+ * @author luming
+ * @date 2022/3/16
+ */
+public class HdfsTextReader extends AbsReader {
+    @Override
+    protected List<String> parseFile(Path path,
+                                     FileSystem fs,
+                                     Configuration configuration,
+                                     HdfsQueryDTO query) throws IOException {
+        //如果前面的文件已经找到指定行列的数据，则后续的文件不再进行读取
+        if (isFound) {
+            return Lists.newArrayList();
+        }
+
+        try (FSDataInputStream is = fs.open(path);
+             BufferedReader d = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            Integer colIndex = query.getColIndex();
+            Integer rowIndex = query.getRowIndex();
+            Integer limit = query.getLimit();
+            String lineStr;
+            List<String> values = Lists.newArrayList();
+
+            //目前只支持指定行列或只指定列
+            while ((lineStr = d.readLine()) != null) {
+                //读取行数超出limit限制抛出异常
+                if (limit != null && currentLine >= limit) {
+                    throw new DtLoaderException(
+                            "The actual number of data rows exceeds the limit ：" + limit);
+                }
+
+                if (rowIndex != null) {
+                    if (currentLine == rowIndex) {
+                        String[] colValue = lineStr.split(query.getSeparator());
+                        if (colIndex >= colValue.length) {
+                            throw new DtLoaderException(
+                                    String.format("max columns : %s, colIndex : %s", colValue.length, colIndex));
+                        }
+                        values.add(colValue[colIndex]);
+                        isFound = true;
+                        return values;
+                    }
+                } else {
+                    String[] colValue = lineStr.split(query.getSeparator());
+                    if (colIndex >= colValue.length) {
+                        throw new DtLoaderException(
+                                String.format("max columns : %s, colIndex : %s", colValue.length, colIndex));
+                    }
+                    values.add(colValue[colIndex]);
+                }
+                currentLine++;
+            }
+            return values;
+        }
+    }
+
+
+    @Override
+    public String readText(Configuration configuration, String hdfsPath) {
+        StringBuilder sb = new StringBuilder();
+
+        try (FileSystem fs = FileSystem.get(configuration)) {
+            FileStatus fstat = fs.getFileStatus(new Path(hdfsPath));
+            if (fstat.isFile()) {
+                try (FSDataInputStream is = fs.open(new Path(hdfsPath));
+                     BufferedReader d = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = d.readLine()) != null) {
+                        sb.append(line);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DtLoaderException("read text error: ", e);
+        }
+
+        return sb.toString();
+    }
+}

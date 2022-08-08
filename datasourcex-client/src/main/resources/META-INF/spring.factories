@@ -1,0 +1,4 @@
+# auto configure
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.dtstack.dtcenter.loader.AutoConfig,\
+com.dtstack.dtcenter.loader.config.ClientComponentScan

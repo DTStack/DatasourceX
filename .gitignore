@@ -1,0 +1,17 @@
+.classpath
+.project
+.idea
+dependency-reduced-pom.xml
+pom-xml-flattened
+.settings/
+target/
+pluginLibs
+
+lib/*
+run/*
+out/*
+*.iml
+.DS_Store
+logs
+remote
+datasourcex-plugin/pluginLibs
