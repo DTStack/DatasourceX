@@ -21,9 +21,7 @@ package com.dtstack.dtcenter.loader.client;
 import com.dtstack.dtcenter.loader.dto.JobParam;
 import com.dtstack.dtcenter.loader.dto.JobResult;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
-import com.dtstack.rpc.annotation.RpcNodeSign;
-import com.dtstack.rpc.annotation.RpcService;
-import com.dtstack.rpc.enums.RpcRemoteType;
+
 
 /**
  * 任务相关接口类
@@ -31,7 +29,7 @@ import com.dtstack.rpc.enums.RpcRemoteType;
  * @author luming
  * @date 2022/2/25
  */
-@RpcService(rpcRemoteType = RpcRemoteType.DATASOURCEX_CLIENT)
+
 public interface IJob {
     /**
      * 提交job
@@ -40,7 +38,7 @@ public interface IJob {
      * @param jobParam 任务相关参数
      * @return job创建后生成的唯一id
      */
-    JobResult submitJob(@RpcNodeSign("tenantId") ISourceDTO source, JobParam jobParam);
+    JobResult submitJob(ISourceDTO source, JobParam jobParam);
     /**
      * 取消job
      *
@@ -48,7 +46,7 @@ public interface IJob {
      * @param jobParam 任务相关参数
      * @return 成功取消返回jobId
      */
-    JobResult cancelJob(@RpcNodeSign("tenantId") ISourceDTO source, JobParam jobParam);
+    JobResult cancelJob(ISourceDTO source, JobParam jobParam);
     /**
      * 获取job当前状态
      *
@@ -56,7 +54,7 @@ public interface IJob {
      * @param jobParam 任务相关参数
      * @return 状态信息
      */
-    String getJobStatus(@RpcNodeSign("tenantId") ISourceDTO source, JobParam jobParam);
+    String getJobStatus(ISourceDTO source, JobParam jobParam);
     /**
      * 获取任务日志
      *
@@ -64,7 +62,7 @@ public interface IJob {
      * @param jobParam 任务相关参数
      * @return 日志
      */
-    String getJobLog(@RpcNodeSign("tenantId") ISourceDTO source, JobParam jobParam);
+    String getJobLog(ISourceDTO source, JobParam jobParam);
     /**
      *
      *
@@ -72,5 +70,5 @@ public interface IJob {
      * @param jobParam 任务相关参数
      * @return
      */
-    Boolean judgeSlots(@RpcNodeSign("tenantId") ISourceDTO source, JobParam jobParam);
+    Boolean judgeSlots(ISourceDTO source, JobParam jobParam);
 }

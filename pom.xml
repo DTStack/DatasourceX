@@ -14,7 +14,6 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
 
-        <dtstack.rpc.version>5.1.2-SNAPSHOT</dtstack.rpc.version>
         <maven.flatten.version>1.2.5</maven.flatten.version>
         <revision>5.2.1-SNAPSHOT</revision>
         <aggregate.report.dir>test/target/site/jacoco/jacoco.xml</aggregate.report.dir>
@@ -24,7 +23,7 @@
         <module>datasourcex-client</module>
         <module>datasourcex-common</module>
         <module>datasourcex-plugin</module>
-        <module>datasourcex-server</module>
+<!--        <module>datasourcex-server</module>-->
     </modules>
 
     <dependencyManagement>
@@ -35,19 +34,6 @@
                 <artifactId>slf4j-api</artifactId>
                 <version>1.7.21</version>
                 <scope>provided</scope>
-            </dependency>
-
-            <!-- 远程实调用模块 -->
-            <dependency>
-                <groupId>com.dtstack.engine</groupId>
-                <artifactId>dt-insight-rpc</artifactId>
-                <version>${dtstack.rpc.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.alibaba</groupId>
-                        <artifactId>fastjson</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <!-- common模块 -->

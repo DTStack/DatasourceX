@@ -20,9 +20,7 @@ package com.dtstack.dtcenter.loader.client;
 
 import com.dtstack.dtcenter.loader.dto.restful.Response;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
-import com.dtstack.rpc.annotation.RpcNodeSign;
-import com.dtstack.rpc.annotation.RpcService;
-import com.dtstack.rpc.enums.RpcRemoteType;
+
 
 import java.io.File;
 import java.util.Map;
@@ -34,7 +32,7 @@ import java.util.Map;
  * date：Created in 上午10:06 2021/8/9
  * company: www.dtstack.com
  */
-@RpcService(rpcRemoteType = RpcRemoteType.DATASOURCEX_CLIENT)
+
 public interface IRestful {
 
     /**
@@ -46,7 +44,7 @@ public interface IRestful {
      * @param headers header 信息
      * @return 相应
      */
-    Response get(@RpcNodeSign("tenantId") ISourceDTO source, Map<String, String> params, Map<String, String> cookies, Map<String, String> headers);
+    Response get(ISourceDTO source, Map<String, String> params, Map<String, String> cookies, Map<String, String> headers);
 
     /**
      * post 请求
@@ -57,7 +55,7 @@ public interface IRestful {
      * @param headers  header 信息
      * @return 相应
      */
-    Response post(@RpcNodeSign("tenantId") ISourceDTO source, String bodyData, Map<String, String> cookies, Map<String, String> headers);
+    Response post(ISourceDTO source, String bodyData, Map<String, String> cookies, Map<String, String> headers);
 
     /**
      * delete 请求
@@ -68,7 +66,7 @@ public interface IRestful {
      * @param headers  header 信息
      * @return 相应
      */
-    Response delete(@RpcNodeSign("tenantId") ISourceDTO source, String bodyData, Map<String, String> cookies, Map<String, String> headers);
+    Response delete(ISourceDTO source, String bodyData, Map<String, String> cookies, Map<String, String> headers);
 
     /**
      * put 请求
@@ -79,7 +77,7 @@ public interface IRestful {
      * @param headers  header 信息
      * @return 相应
      */
-    Response put(@RpcNodeSign("tenantId") ISourceDTO source, String bodyData, Map<String, String> cookies, Map<String, String> headers);
+    Response put(ISourceDTO source, String bodyData, Map<String, String> cookies, Map<String, String> headers);
 
     /**
      * put Multipart
@@ -91,6 +89,6 @@ public interface IRestful {
      * @param files   文件信息
      * @return 相应
      */
-    Response postMultipart(@RpcNodeSign("tenantId") ISourceDTO source, Map<String, String> params, Map<String, String> cookies, Map<String, String> headers, Map<String, File> files);
+    Response postMultipart(ISourceDTO source, Map<String, String> params, Map<String, String> cookies, Map<String, String> headers, Map<String, File> files);
 
 }

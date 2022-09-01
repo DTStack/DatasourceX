@@ -18,7 +18,7 @@
 
 package com.dtstack.dtcenter.common.loader.common.downloader;
 
-import com.dtstack.rpc.download.IDownloader;
+import com.dtstack.dtcenter.loader.client.IDownloader;
 
 /**
  * @author ：wangchuan

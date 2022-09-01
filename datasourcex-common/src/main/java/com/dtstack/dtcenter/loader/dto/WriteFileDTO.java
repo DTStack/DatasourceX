@@ -19,7 +19,6 @@
 package com.dtstack.dtcenter.loader.dto;
 
 import com.dtstack.dtcenter.loader.enums.ImportDataMatchType;
-import com.dtstack.rpc.annotation.FileUpload;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -40,7 +39,7 @@ public class WriteFileDTO {
     /**
      * 需要读取的本地文件路径
      */
-    @FileUpload
+    
     private String localPath;
     /**
      * 要导入的字段集合

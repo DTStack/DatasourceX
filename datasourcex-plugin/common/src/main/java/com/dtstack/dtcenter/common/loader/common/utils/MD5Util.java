@@ -19,7 +19,6 @@
 package com.dtstack.dtcenter.common.loader.common.utils;
 
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.rpc.util.HexUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

@@ -26,12 +26,6 @@ import com.dtstack.dtcenter.loader.dto.HdfsWriterDTO;
 import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
-import com.dtstack.rpc.annotation.FileDownload;
-import com.dtstack.rpc.annotation.FileUpload;
-import com.dtstack.rpc.annotation.RpcNodeSign;
-import com.dtstack.rpc.annotation.RpcService;
-import com.dtstack.rpc.download.IDownloader;
-import com.dtstack.rpc.enums.RpcRemoteType;
 
 import java.util.List;
 import java.util.Map;
@@ -43,7 +37,7 @@ import java.util.Map;
  * date：Created in 下午3:38 2021/12/17
  * company: www.dtstack.com
  */
-@RpcService(rpcRemoteType = RpcRemoteType.DATASOURCEX_CLIENT)
+
 public interface IHdfsFile {
 
     /**
@@ -53,7 +47,7 @@ public interface IHdfsFile {
      * @param remotePath hdfs 路径
      * @return 路径对应信息
      */
-    FileStatus getStatus(@RpcNodeSign("tenantId") ISourceDTO source, String remotePath);
+    FileStatus getStatus(ISourceDTO source, String remotePath);
 
     /**
      * 获取 yarn 日志下载器
@@ -62,7 +56,7 @@ public interface IHdfsFile {
      * @param queryDTO 构造信息
      * @return yarn 日志下载器
      */
-    IDownloader getLogDownloader(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    IDownloader getLogDownloader(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取 taskManager 列表
@@ -72,7 +66,7 @@ public interface IHdfsFile {
      * @param appId      yarn application id
      * @return yarn 日志下载器
      */
-    List<String> getTaskManagerList(@RpcNodeSign("tenantId") ISourceDTO source, String submitUser, String appId);
+    List<String> getTaskManagerList(ISourceDTO source, String submitUser, String appId);
 
     /**
      * 获取 hdfs 文件下载器
@@ -81,7 +75,7 @@ public interface IHdfsFile {
      * @param path   hdfs 文件路径
      * @return 文件下载器
      */
-    IDownloader getFileDownloader(@RpcNodeSign("tenantId") ISourceDTO source, String path);
+    IDownloader getFileDownloader(ISourceDTO source, String path);
 
     /**
      * 从 hdfs 上下载文件到本地
@@ -91,7 +85,7 @@ public interface IHdfsFile {
      * @param localDir   本地文件夹
      * @return 是否成功
      */
-    boolean downloadFileFromHdfs(@RpcNodeSign("tenantId") ISourceDTO source, String remotePath, @FileDownload String localDir);
+    boolean downloadFileFromHdfs(ISourceDTO source, String remotePath, String localDir);
 
     /**
      * 上传本地文件到 hdfs
@@ -101,7 +95,7 @@ public interface IHdfsFile {
      * @param remotePath    hdfs 远程路径
      * @return 是否上传成功
      */
-    boolean uploadLocalFileToHdfs(@RpcNodeSign("tenantId") ISourceDTO source, @FileUpload String localFilePath, String remotePath);
+    boolean uploadLocalFileToHdfs(ISourceDTO source,  String localFilePath, String remotePath);
 
     /**
      * 上传字节数组到 hdfs
@@ -111,7 +105,7 @@ public interface IHdfsFile {
      * @param remotePath 目标路径
      * @return 是否上传成功
      */
-    boolean uploadInputStreamToHdfs(@RpcNodeSign("tenantId") ISourceDTO source, byte[] bytes, String remotePath);
+    boolean uploadInputStreamToHdfs(ISourceDTO source, byte[] bytes, String remotePath);
 
     /**
      * 上传字符串作为文件到 hdfs, 返回文件 hdfs 路径
@@ -121,7 +115,7 @@ public interface IHdfsFile {
      * @param remotePath 目标路径
      * @return hdfs 文件路径
      */
-    String uploadStringToHdfs(@RpcNodeSign("tenantId") ISourceDTO source, String str, String remotePath);
+    String uploadStringToHdfs(ISourceDTO source, String str, String remotePath);
 
     /**
      * 创建 HDFS 路径
@@ -131,7 +125,7 @@ public interface IHdfsFile {
      * @param permission 路径权限
      * @return 是否创建成功
      */
-    boolean createDir(@RpcNodeSign("tenantId") ISourceDTO source, String remotePath, Short permission);
+    boolean createDir(ISourceDTO source, String remotePath, Short permission);
 
     /**
      * 路径文件是否存在
@@ -140,7 +134,7 @@ public interface IHdfsFile {
      * @param remotePath hdfs 目标路径
      * @return 是否存在
      */
-    boolean isFileExist(@RpcNodeSign("tenantId") ISourceDTO source, String remotePath);
+    boolean isFileExist(ISourceDTO source, String remotePath);
 
     /**
      * 检测文件是否存在并删除
@@ -149,7 +143,7 @@ public interface IHdfsFile {
      * @param remotePath hdfs 目标路径
      * @return 是否删除成功
      */
-    boolean checkAndDelete(@RpcNodeSign("tenantId") ISourceDTO source, String remotePath);
+    boolean checkAndDelete(ISourceDTO source, String remotePath);
 
     /**
      * 直接删除 hdfs 目标路径文件
@@ -159,7 +153,7 @@ public interface IHdfsFile {
      * @param recursive  是否递归删除
      * @return 删除结果
      */
-    boolean delete(@RpcNodeSign("tenantId") ISourceDTO source, String remotePath, boolean recursive);
+    boolean delete(ISourceDTO source, String remotePath, boolean recursive);
 
     /**
      * 获取路径文件大小
@@ -168,7 +162,7 @@ public interface IHdfsFile {
      * @param remotePath hdfs 目标路径
      * @return 文件大小
      */
-    long getDirSize(@RpcNodeSign("tenantId") ISourceDTO source, String remotePath);
+    long getDirSize(ISourceDTO source, String remotePath);
 
     /**
      * 删除 hdfs 文件
@@ -177,7 +171,7 @@ public interface IHdfsFile {
      * @param fileNames hdfs 文件路径集合
      * @return 是否删除成功
      */
-    boolean deleteFiles(@RpcNodeSign("tenantId") ISourceDTO source, List<String> fileNames);
+    boolean deleteFiles(ISourceDTO source, List<String> fileNames);
 
     /**
      * hdfs 路径目录是否存在
@@ -186,7 +180,7 @@ public interface IHdfsFile {
      * @param remotePath 目标文件夹路径
      * @return 是否存在
      */
-    boolean isDirExist(@RpcNodeSign("tenantId") ISourceDTO source, String remotePath);
+    boolean isDirExist(ISourceDTO source, String remotePath);
 
     /**
      * 设置 hdfs 路径权限
@@ -196,7 +190,7 @@ public interface IHdfsFile {
      * @param mode       权限
      * @return 是否执行成功
      */
-    boolean setPermission(@RpcNodeSign("tenantId") ISourceDTO source, String remotePath, String mode);
+    boolean setPermission(ISourceDTO source, String remotePath, String mode);
 
     /**
      * hdfs 内文件重命名
@@ -206,7 +200,7 @@ public interface IHdfsFile {
      * @param dist   hdfs 目标路径
      * @return 是否执行成功
      */
-    boolean rename(@RpcNodeSign("tenantId") ISourceDTO source, String src, String dist);
+    boolean rename(ISourceDTO source, String src, String dist);
 
     /**
      * hdfs 内复制文件
@@ -217,7 +211,7 @@ public interface IHdfsFile {
      * @param isOverwrite 是否覆盖
      * @return 是否执行成功
      */
-    boolean copyFile(@RpcNodeSign("tenantId") ISourceDTO source, String src, String dist, boolean isOverwrite);
+    boolean copyFile(ISourceDTO source, String src, String dist, boolean isOverwrite);
 
     /**
      * hdfs 内复制文件夹
@@ -226,7 +220,7 @@ public interface IHdfsFile {
      * @param src    hdfs 原文件夹路径
      * @param dist   hdfs 目标文件夹路径
      */
-    boolean copyDirector(@RpcNodeSign("tenantId") ISourceDTO source, String src, String dist);
+    boolean copyDirector(ISourceDTO source, String src, String dist);
 
     /**
      * 合并小文件
@@ -239,7 +233,7 @@ public interface IHdfsFile {
      * @param needCombineFileSizeLimit 小文件的最大值，超过此阈值的小文件不会合并
      * @return 是否合并成功
      */
-    boolean fileMerge(@RpcNodeSign("tenantId") ISourceDTO source, String src, String mergePath, FileFormat fileFormat, Long maxCombinedFileSize, Long needCombineFileSizeLimit);
+    boolean fileMerge(ISourceDTO source, String src, String mergePath, FileFormat fileFormat, Long maxCombinedFileSize, Long needCombineFileSizeLimit);
 
     /**
      * 获取目录或者文件的属性, 非递归
@@ -248,7 +242,7 @@ public interface IHdfsFile {
      * @param remotePath hdfs 上路径
      * @return 文件夹下文件属性
      */
-    List<FileStatus> listStatus(@RpcNodeSign("tenantId") ISourceDTO source, String remotePath);
+    List<FileStatus> listStatus(ISourceDTO source, String remotePath);
 
     /**
      * 获取目录下所有文件路径, 递归获取
@@ -257,7 +251,7 @@ public interface IHdfsFile {
      * @param remotePath hdfs 上文件路径
      * @return 当前目录下所有的文件路径
      */
-    List<String> listAllFilePath(@RpcNodeSign("tenantId") ISourceDTO source, String remotePath);
+    List<String> listAllFilePath(ISourceDTO source, String remotePath);
 
     /**
      * 获取目录下所有文件的属性集
@@ -267,7 +261,7 @@ public interface IHdfsFile {
      * @param isIterate  是否递归
      * @return 文件信息
      */
-    List<FileStatus> listAllFiles(@RpcNodeSign("tenantId") ISourceDTO source, String remotePath, boolean isIterate);
+    List<FileStatus> listAllFiles(ISourceDTO source, String remotePath, boolean isIterate);
 
     /**
      * 从hdfs copy文件到本地
@@ -277,7 +271,7 @@ public interface IHdfsFile {
      * @param dstPath 下载到本地的文件夹路径
      * @return 是否执行成功
      */
-    boolean copyToLocal(@RpcNodeSign("tenantId") ISourceDTO source, String srcPath, @FileDownload String dstPath);
+    boolean copyToLocal(ISourceDTO source, String srcPath, String dstPath);
 
     /**
      * 从本地 copy 到 hdfs, 执行成功后会删除本地文件
@@ -288,7 +282,7 @@ public interface IHdfsFile {
      * @param overwrite 是否覆盖文件呢
      * @return 是否执行成功
      */
-    boolean copyFromLocal(@RpcNodeSign("tenantId") ISourceDTO source, @FileUpload String srcPath, String dstPath, boolean overwrite);
+    boolean copyFromLocal(ISourceDTO source,  String srcPath, String dstPath, boolean overwrite);
 
     /**
      * 根据文件格式获取对应的下载器
@@ -299,7 +293,7 @@ public interface IHdfsFile {
      * @param fileFormat     存储格式
      * @return 表数据下载器
      */
-    IDownloader getDownloaderByFormat(@RpcNodeSign("tenantId") ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat);
+    IDownloader getDownloaderByFormat(ISourceDTO source, String tableLocation, List<String> columnNames, String fieldDelimiter, String fileFormat);
 
     /**
      * 根据文件格式获取对应的downlaoder
@@ -314,7 +308,7 @@ public interface IHdfsFile {
      * @param fileFormat      存储类型
      * @return 数据下载器
      */
-    IDownloader getDownloaderByFormatWithType(@RpcNodeSign("tenantId") ISourceDTO source, String tableLocation,
+    IDownloader getDownloaderByFormatWithType(ISourceDTO source, String tableLocation,
                                               List<ColumnMetaDTO> allColumns, List<String> filterColumns, Map<String, String> filterPartition,
                                               List<String> partitions, String fieldDelimiter, String fileFormat);
 
@@ -332,7 +326,7 @@ public interface IHdfsFile {
      * @param isTransTable    是否是事务表
      * @return 数据下载器
      */
-    IDownloader getDownloaderByFormatWithType(@RpcNodeSign("tenantId") ISourceDTO source, String tableLocation,
+    IDownloader getDownloaderByFormatWithType(ISourceDTO source, String tableLocation,
                                               List<ColumnMetaDTO> allColumns, List<String> filterColumns, Map<String, String> filterPartition,
                                               List<String> partitions, String fieldDelimiter, String fileFormat, Boolean isTransTable);
 
@@ -344,7 +338,7 @@ public interface IHdfsFile {
      * @param fileFormat 存储格式
      * @return 字段信息集合
      */
-    List<ColumnMetaDTO> getColumnList(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat);
+    List<ColumnMetaDTO> getColumnList(ISourceDTO source, SqlQueryDTO queryDTO, String fileFormat);
 
     /**
      * 按位置写入
@@ -353,7 +347,7 @@ public interface IHdfsFile {
      * @param hdfsWriterDTO 写入配置信息
      * @return 写入数据条数
      */
-    int writeByPos(@RpcNodeSign("tenantId") ISourceDTO source, HdfsWriterDTO hdfsWriterDTO);
+    int writeByPos(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO);
 
     /**
      * 按名称匹配写入
@@ -362,7 +356,7 @@ public interface IHdfsFile {
      * @param hdfsWriterDTO 写入配置信息
      * @return 写入数据条数
      */
-    int writeByName(@RpcNodeSign("tenantId") ISourceDTO source, HdfsWriterDTO hdfsWriterDTO);
+    int writeByName(ISourceDTO source, HdfsWriterDTO hdfsWriterDTO);
 
     /**
      * 批量统计文件夹内容摘要，包括文件的数量，文件夹的数量，文件变动时间，以及这个文件夹的占用存储等内容
@@ -371,7 +365,7 @@ public interface IHdfsFile {
      * @param hdfsDirPaths hdfs上文件路径集合
      * @return 文件摘要信息
      */
-    List<HDFSContentSummary> getContentSummary(@RpcNodeSign("tenantId") ISourceDTO source, List<String> hdfsDirPaths);
+    List<HDFSContentSummary> getContentSummary(ISourceDTO source, List<String> hdfsDirPaths);
 
     /**
      * 统计文件夹内容摘要，包括文件的数量，文件夹的数量，文件变动时间，以及这个文件夹的占用存储等内容
@@ -380,7 +374,7 @@ public interface IHdfsFile {
      * @param hdfsDirPath hdfs上文件路径
      * @return 文件摘要信息
      */
-    HDFSContentSummary getContentSummary(@RpcNodeSign("tenantId") ISourceDTO source, String hdfsDirPath);
+    HDFSContentSummary getContentSummary(ISourceDTO source, String hdfsDirPath);
 
     /**
      * 读取hdfs数据，执行脚本任务时（shell,python等）
@@ -388,7 +382,7 @@ public interface IHdfsFile {
      * @param hdfsPath hdfs文件路径，绝对路径
      * @return
      */
-    String getHdfsWithScript(@RpcNodeSign("tenantId") ISourceDTO source, String hdfsPath);
+    String getHdfsWithScript(ISourceDTO source, String hdfsPath);
 
     /**
      * 读取hdfs数据，执行job任务时（hive,spark等）
@@ -396,5 +390,5 @@ public interface IHdfsFile {
      * @param hdfsQueryDTO 查询对象
      * @return 文件内数据, key:hdfsPath , value:数据
      */
-    List<String> getHdfsWithJob(@RpcNodeSign("tenantId") ISourceDTO source, HdfsQueryDTO hdfsQueryDTO);
+    List<String> getHdfsWithJob(ISourceDTO source, HdfsQueryDTO hdfsQueryDTO);
 }

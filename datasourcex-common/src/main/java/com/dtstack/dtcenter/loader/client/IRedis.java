@@ -20,9 +20,7 @@ package com.dtstack.dtcenter.loader.client;
 
 import com.dtstack.dtcenter.loader.dto.RedisQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
-import com.dtstack.rpc.annotation.RpcNodeSign;
-import com.dtstack.rpc.annotation.RpcService;
-import com.dtstack.rpc.enums.RpcRemoteType;
+
 
 import java.util.List;
 import java.util.Map;
@@ -34,7 +32,7 @@ import java.util.Map;
  * date：Created in 上午10:06 2021/8/16
  * company: www.dtstack.com
  */
-@RpcService(rpcRemoteType = RpcRemoteType.DATASOURCEX_CLIENT)
+
 public interface IRedis {
     /**
      * redis 自定义查询
@@ -43,7 +41,7 @@ public interface IRedis {
      * @param queryDTO sql 执行条件
      * @return sql 执行结果
      */
-    Map<String, Object> executeQuery(@RpcNodeSign("tenantId") ISourceDTO source, RedisQueryDTO queryDTO);
+    Map<String, Object> executeQuery(ISourceDTO source, RedisQueryDTO queryDTO);
 
     /**
      * 预览 redis key值
@@ -52,5 +50,5 @@ public interface IRedis {
      * @param queryDTO 查询条件
      * @return key值
      */
-    List<String> preViewKey(@RpcNodeSign("tenantId") ISourceDTO source, RedisQueryDTO queryDTO);
+    List<String> preViewKey(ISourceDTO source, RedisQueryDTO queryDTO);
 }

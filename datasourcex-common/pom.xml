@@ -18,12 +18,6 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
-        <!-- 远程实调用模块 -->
-        <dependency>
-            <groupId>com.dtstack.engine</groupId>
-            <artifactId>dt-insight-rpc</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
