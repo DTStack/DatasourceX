@@ -19,11 +19,9 @@
 package com.dtstack.dtcenter.loader.client;
 
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
-import com.dtstack.rpc.annotation.FileDownload;
-import com.dtstack.rpc.annotation.FileUpload;
-import com.dtstack.rpc.annotation.RpcNodeSign;
-import com.dtstack.rpc.annotation.RpcService;
-import com.dtstack.rpc.enums.RpcRemoteType;
+
+
+
 
 import java.io.IOException;
 import java.util.List;
@@ -36,7 +34,7 @@ import java.util.Map;
  * date：Created in 下午8:19 2022/2/23
  * company: www.dtstack.com
  */
-@RpcService(rpcRemoteType = RpcRemoteType.DATASOURCEX_CLIENT)
+
 public interface IKerberos {
 
     /**
@@ -48,7 +46,7 @@ public interface IKerberos {
      * @return 处理后的 kerberos 配置信息
      * @throws IOException 文件 io 异常
      */
-    Map<String, Object> parseKerberosFromUpload(@RpcNodeSign("tenantId") ISourceDTO sourceDTO, @FileUpload String zipLocation, @FileDownload String localKerberosPath) throws IOException;
+    Map<String, Object> parseKerberosFromUpload(ISourceDTO sourceDTO,  String zipLocation, String localKerberosPath) throws IOException;
 
     /**
      * 从 JDBC URL 中获取 principal
@@ -57,7 +55,7 @@ public interface IKerberos {
      * @param url       jdbc url
      * @return principal
      */
-    String getPrincipals(@RpcNodeSign("tenantId") ISourceDTO sourceDTO, String url);
+    String getPrincipals(ISourceDTO sourceDTO, String url);
 
     /**
      * 从 Kerberos 配置文件中获取 Principal
@@ -66,7 +64,7 @@ public interface IKerberos {
      * @param kerberosConfig kerberos 配置
      * @return 所有的 principal 账号
      */
-    List<String> getPrincipals(@RpcNodeSign("tenantId") ISourceDTO sourceDTO, Map<String, Object> kerberosConfig);
+    List<String> getPrincipals(ISourceDTO sourceDTO, Map<String, Object> kerberosConfig);
 
     /**
      * 从本地文件夹路径解析出 kerberos 配置, 返回的是 server 的绝对路径, 直接将返回值放入其他方法的 kerberosConfig 即可
@@ -74,7 +72,7 @@ public interface IKerberos {
      * @param kerberosDir 本地 kerberos 文件夹绝对路径
      * @return kerberos 配置
      */
-    Map<String, Object> parseKerberosFromLocalDir(@RpcNodeSign("tenantId") ISourceDTO sourceDTO, @FileUpload String kerberosDir);
+    Map<String, Object> parseKerberosFromLocalDir(ISourceDTO sourceDTO,  String kerberosDir);
 
     /**
      * 校验 kerberos 认证是否通过
@@ -82,5 +80,5 @@ public interface IKerberos {
      * @param kerberosConfig principalFile、java.security.krb5.conf 路径需要是本地绝对路径
      * @return 认证是否通过
      */
-    Boolean authTest(@RpcNodeSign("tenantId") ISourceDTO sourceDTO, Map<String, Object> kerberosConfig);
+    Boolean authTest(ISourceDTO sourceDTO, Map<String, Object> kerberosConfig);
 }

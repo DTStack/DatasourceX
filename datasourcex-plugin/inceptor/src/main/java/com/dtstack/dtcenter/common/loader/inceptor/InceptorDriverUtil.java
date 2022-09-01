@@ -20,7 +20,7 @@ package com.dtstack.dtcenter.common.loader.inceptor;
 
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.jdbc.HiveDriver;
 
 import java.sql.Connection;

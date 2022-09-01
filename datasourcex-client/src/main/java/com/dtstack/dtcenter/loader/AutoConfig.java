@@ -19,9 +19,7 @@
 package com.dtstack.dtcenter.loader;
 
 import com.dtstack.dtcenter.loader.client.ClientCache;
-import com.dtstack.dtcenter.loader.config.TransManagerImpl;
 import com.dtstack.dtcenter.loader.utils.AssertUtils;
-import com.dtstack.rpc.manager.TransManagerFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -55,8 +53,8 @@ public class AutoConfig implements ApplicationContextAware {
             AutoConfig.ENVIRONMENT = environment;
         }
 
-        // 设置上传下载 manager
-        TransManagerFactory.setExecutorManager(TransManagerImpl.getInstance());
+       /* // 设置上传下载 manager
+        TransManagerFactory.setExecutorManager(TransManagerImpl.getInstance());*/
     }
 
     /**

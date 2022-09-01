@@ -26,10 +26,6 @@ import com.dtstack.dtcenter.loader.dto.TableInfo;
 import com.dtstack.dtcenter.loader.dto.WriteFileDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.metadata.MetaDataCollectManager;
-import com.dtstack.rpc.annotation.RpcNodeSign;
-import com.dtstack.rpc.annotation.RpcService;
-import com.dtstack.rpc.download.IDownloader;
-import com.dtstack.rpc.enums.RpcRemoteType;
 
 import java.util.List;
 import java.util.Map;
@@ -41,7 +37,7 @@ import java.util.Map;
  * date：Created in 下午3:38 2021/12/17
  * company: www.dtstack.com
  */
-@RpcService(rpcRemoteType = RpcRemoteType.DATASOURCEX_CLIENT)
+
 public interface IClient {
 
     /**
@@ -50,7 +46,7 @@ public interface IClient {
      * @param source 数据源信息
      * @return 是否连通
      */
-    Boolean testCon(@RpcNodeSign("tenantId") ISourceDTO source);
+    Boolean testCon(ISourceDTO source);
 
     /**
      * 执行 sql
@@ -60,7 +56,7 @@ public interface IClient {
      * @param queryDTO sql 执行条件
      * @return sql 执行结果
      */
-    List<Map<String, Object>> executeQuery(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    List<Map<String, Object>> executeQuery(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 执行查询,engine plugin迁移至此
@@ -69,7 +65,7 @@ public interface IClient {
      * @param queryDTO 必填项 sql
      * @return 执行结果
      */
-    Boolean executeBatchQuery(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    Boolean executeBatchQuery(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 多条 sql 一起执行, 返回多结果集
@@ -79,7 +75,7 @@ public interface IClient {
      * @param queryDTO 执行条件
      * @return 结果集
      */
-    Map<String, List<Map<String, Object>>> executeMultiQuery(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    Map<String, List<Map<String, Object>>> executeMultiQuery(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 执行 dml
@@ -88,7 +84,7 @@ public interface IClient {
      * @param queryDTO 执行条件
      * @return 修改条数
      */
-    Integer executeUpdate(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    Integer executeUpdate(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 执行 sql，无需结果集
@@ -98,7 +94,7 @@ public interface IClient {
      * @param queryDTO 执行条件
      * @return 是否执行成功
      */
-    Boolean executeSqlWithoutResultSet(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    Boolean executeSqlWithoutResultSet(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取全部表或者指定 schema 下的表
@@ -109,7 +105,7 @@ public interface IClient {
      * @param queryDTO 查询条件
      * @return 表集合
      */
-    List<String> getTableList(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    List<String> getTableList(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取全部表或者指定 schema 下的表
@@ -120,7 +116,7 @@ public interface IClient {
      * @param queryDTO 查询条件
      * @return 表集合
      */
-    List<String> getTableListBySchema(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    List<String> getTableListBySchema(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 返回字段 Java 类的标准名称, 字段名若不填则默认全部
@@ -131,7 +127,7 @@ public interface IClient {
      * @param queryDTO 必填项 表名
      * @return java 类标准名称集合
      */
-    List<String> getColumnClassInfo(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    List<String> getColumnClassInfo(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取表字段属性, 字段名若不填则默认全部
@@ -143,7 +139,7 @@ public interface IClient {
      * @param queryDTO 必填项 表名
      * @return java 类标准名称集合
      */
-    List<ColumnMetaDTO> getColumnMetaData(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    List<ColumnMetaDTO> getColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 根据自定义查询 sql 获取结果字段属性
@@ -154,7 +150,7 @@ public interface IClient {
      * @param queryDTO 查询条件
      * @return 结果字段属性
      */
-    List<ColumnMetaDTO> getColumnMetaDataWithSql(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    List<ColumnMetaDTO> getColumnMetaDataWithSql(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取 flinkSql 需要的字段名称(做了部分转换, 为实时计算中特殊使用)
@@ -165,7 +161,7 @@ public interface IClient {
      * @param queryDTO 查询条件
      * @return b表字段属性
      */
-    List<ColumnMetaDTO> getFlinkColumnMetaData(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    List<ColumnMetaDTO> getFlinkColumnMetaData(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取 flinkSql 需要的字段名称(做了部分转换, 为实时计算中特殊使用)
@@ -176,7 +172,7 @@ public interface IClient {
      * @param queryDTO 查询条件
      * @return 结果字段属性
      */
-    String getTableMetaComment(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    String getTableMetaComment(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取预览数据
@@ -185,7 +181,7 @@ public interface IClient {
      * @param queryDTO 预览条件
      * @return 预览数据
      */
-    List<List<Object>> getPreview(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    List<List<Object>> getPreview(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取对应的downloader
@@ -195,7 +191,7 @@ public interface IClient {
      * @return 数据下载 downloader
      * @throws Exception
      */
-    IDownloader getDownloader(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
+    IDownloader getDownloader(ISourceDTO source, SqlQueryDTO queryDTO) throws Exception;
 
     /**
      * 根据执行 sql 下载数据
@@ -206,7 +202,7 @@ public interface IClient {
      * @return 数据下载 downloader
      * @throws Exception 异常
      */
-    IDownloader getDownloader(@RpcNodeSign("tenantId") ISourceDTO source, String sql, Integer pageSize) throws Exception;
+    IDownloader getDownloader(ISourceDTO source, String sql, Integer pageSize) throws Exception;
 
     /**
      * 获取所有的 DB
@@ -215,7 +211,7 @@ public interface IClient {
      * @param queryDTO 查询信息
      * @return 所有的DB
      */
-    List<String> getAllDatabases(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    List<String> getAllDatabases(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取所有的db，此方法目的为获取所有的 database，为了解决一些遗留问题。例如 oracle 12 后支持 cdb
@@ -227,7 +223,7 @@ public interface IClient {
      * @return db 列表
      * @see IClient#getAllDatabases 该方法对于有 database 概念的数据源返回的是 database，否则返回 schema
      */
-    List<String> getRootDatabases(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    List<String> getRootDatabases(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取建表语句
@@ -236,7 +232,7 @@ public interface IClient {
      * @param queryDTO 查询信息
      * @return 建表sql
      */
-    String getCreateTableSql(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    String getCreateTableSql(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取分区字段
@@ -245,7 +241,7 @@ public interface IClient {
      * @param queryDTO 查询信息
      * @return 分区字段
      */
-    List<ColumnMetaDTO> getPartitionColumn(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    List<ColumnMetaDTO> getPartitionColumn(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取表信息
@@ -254,7 +250,7 @@ public interface IClient {
      * @param queryDTO 查询信息
      * @return 表信息
      */
-    Table getTable(@RpcNodeSign("tenantId") ISourceDTO source, SqlQueryDTO queryDTO);
+    Table getTable(ISourceDTO source, SqlQueryDTO queryDTO);
 
     /**
      * 获取当前使用的数据库
@@ -262,7 +258,7 @@ public interface IClient {
      * @param source 数据源信息
      * @return 当前使用的数据库
      */
-    String getCurrentDatabase(@RpcNodeSign("tenantId") ISourceDTO source);
+    String getCurrentDatabase(ISourceDTO source);
 
     /**
      * 创建数据库
@@ -272,7 +268,7 @@ public interface IClient {
      * @param comment 库注释信息
      * @return 创建结果
      */
-    Boolean createDatabase(@RpcNodeSign("tenantId") ISourceDTO source, String dbName, String comment);
+    Boolean createDatabase(ISourceDTO source, String dbName, String comment);
 
     /**
      * 判断数据库是否存在
@@ -281,7 +277,7 @@ public interface IClient {
      * @param dbName 数据库名称
      * @return 判断结果
      */
-    Boolean isDatabaseExists(@RpcNodeSign("tenantId") ISourceDTO source, String dbName);
+    Boolean isDatabaseExists(ISourceDTO source, String dbName);
 
     /**
      * 判断该数据库中是否存在该表
@@ -291,7 +287,7 @@ public interface IClient {
      * @param dbName    库名
      * @return 判断结果
      */
-    Boolean isTableExistsInDatabase(@RpcNodeSign("tenantId") ISourceDTO source, String tableName, String dbName);
+    Boolean isTableExistsInDatabase(ISourceDTO source, String tableName, String dbName);
 
     /**
      * 获取数据源/数据库目录列表，目前presto使用，后续pgSql等可以实现该方法用于获取所有库
@@ -299,7 +295,7 @@ public interface IClient {
      * @param source 数据源信息
      * @return 数据源目录
      */
-    List<String> getCatalogs(@RpcNodeSign("tenantId") ISourceDTO source);
+    List<String> getCatalogs(ISourceDTO source);
 
     /**
      * 获取当前数据源的版本
@@ -307,7 +303,7 @@ public interface IClient {
      * @param source 数据源信息
      * @return 数据源版本
      */
-    String getVersion(@RpcNodeSign("tenantId") ISourceDTO source);
+    String getVersion(ISourceDTO source);
 
     /**
      * 列出指定路径下的文件
@@ -320,7 +316,7 @@ public interface IClient {
      * @param regexStr   正则匹配
      * @return 文件集合
      */
-    List<String> listFileNames(@RpcNodeSign("tenantId") ISourceDTO sourceDTO, String path, Boolean includeDir, Boolean recursive, Integer maxNum, String regexStr);
+    List<String> listFileNames(ISourceDTO sourceDTO, String path, Boolean includeDir, Boolean recursive, Integer maxNum, String regexStr);
 
     /**
      * 获取数据库信息
@@ -329,7 +325,7 @@ public interface IClient {
      * @param dbName    数据库名称
      * @return 数据库详细信息
      */
-    Database getDatabase(@RpcNodeSign("tenantId") ISourceDTO sourceDTO, String dbName);
+    Database getDatabase(ISourceDTO sourceDTO, String dbName);
 
     /**
      * 读取本地文件并批量写入数据库
@@ -338,7 +334,7 @@ public interface IClient {
      * @param writeFileDTO 写入条件参数
      * @return 是否写入成功
      */
-    Boolean writeByFile(@RpcNodeSign("tenantId") ISourceDTO sourceDTO, WriteFileDTO writeFileDTO);
+    Boolean writeByFile(ISourceDTO sourceDTO, WriteFileDTO writeFileDTO);
 
     /**
      * 获取 table 信息
@@ -347,7 +343,7 @@ public interface IClient {
      * @param tableName 表名
      * @return table 信息
      */
-    TableInfo getTableInfo(@RpcNodeSign("tenantId") ISourceDTO sourceDTO, String tableName);
+    TableInfo getTableInfo(ISourceDTO sourceDTO, String tableName);
 
     /**
      * 获取元数据采集器, 不对外进行暴露, 仅支持 shell-agent 调用
@@ -355,5 +351,5 @@ public interface IClient {
      * @param sourceDTO                数据源信息
      * @return 是否采集成功
      */
-    MetaDataCollectManager getMetadataCollectManager(@RpcNodeSign("tenantId") ISourceDTO sourceDTO);
+    MetaDataCollectManager getMetadataCollectManager(ISourceDTO sourceDTO);
 }

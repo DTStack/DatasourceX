@@ -23,9 +23,7 @@ import com.dtstack.dtcenter.loader.dto.tsdb.QueryResult;
 import com.dtstack.dtcenter.loader.dto.tsdb.Suggest;
 import com.dtstack.dtcenter.loader.dto.tsdb.TsdbPoint;
 import com.dtstack.dtcenter.loader.dto.tsdb.TsdbQuery;
-import com.dtstack.rpc.annotation.RpcNodeSign;
-import com.dtstack.rpc.annotation.RpcService;
-import com.dtstack.rpc.enums.RpcRemoteType;
+
 
 import java.util.Collection;
 import java.util.List;
@@ -38,7 +36,7 @@ import java.util.Map;
  * date：Created in 上午10:06 2021/6/23
  * company: www.dtstack.com
  */
-@RpcService(rpcRemoteType = RpcRemoteType.DATASOURCEX_CLIENT)
+
 public interface ITsdb {
 
     /**
@@ -48,7 +46,7 @@ public interface ITsdb {
      * @param points 插入点位
      * @return Result 返回结果
      */
-    Boolean putSync(@RpcNodeSign("tenantId") ISourceDTO source, Collection<TsdbPoint> points);
+    Boolean putSync(ISourceDTO source, Collection<TsdbPoint> points);
 
     /**
      * 查询
@@ -57,7 +55,7 @@ public interface ITsdb {
      * @param query  查询条件
      * @return result 查询结果
      */
-    List<QueryResult> query(@RpcNodeSign("tenantId") ISourceDTO source, TsdbQuery query);
+    List<QueryResult> query(ISourceDTO source, TsdbQuery query);
 
     /**
      * 根据 metric 、开始时间、结束时间删除数据
@@ -68,7 +66,7 @@ public interface ITsdb {
      * @param endTime   结束时间
      * @return 数据删除是否成功
      */
-    Boolean deleteData(@RpcNodeSign("tenantId") ISourceDTO source, String metric, long startTime, long endTime);
+    Boolean deleteData(ISourceDTO source, String metric, long startTime, long endTime);
 
     /**
      * 根据 metric 、tags、开始时间、结束时间删除数据
@@ -80,7 +78,7 @@ public interface ITsdb {
      * @param endTime   结束时间
      * @return 数据删除是否成功
      */
-    Boolean deleteData(@RpcNodeSign("tenantId") ISourceDTO source, String metric, Map<String, String> tags, long startTime, long endTime);
+    Boolean deleteData(ISourceDTO source, String metric, Map<String, String> tags, long startTime, long endTime);
 
     /**
      * 根据 metric 、字段、开始时间、结束时间删除数据
@@ -92,7 +90,7 @@ public interface ITsdb {
      * @param endTime   结束时间
      * @return 数据删除是否成功
      */
-    Boolean deleteData(@RpcNodeSign("tenantId") ISourceDTO source, String metric, List<String> fields, long startTime, long endTime);
+    Boolean deleteData(ISourceDTO source, String metric, List<String> fields, long startTime, long endTime);
 
     /**
      * 根据 metric 、tags、字段、开始时间、结束时间删除数据
@@ -105,7 +103,7 @@ public interface ITsdb {
      * @param endTime   结束时间
      * @return 数据删除是否成功
      */
-    Boolean deleteData(@RpcNodeSign("tenantId") ISourceDTO source, String metric, Map<String, String> tags, List<String> fields, long startTime, long endTime);
+    Boolean deleteData(ISourceDTO source, String metric, Map<String, String> tags, List<String> fields, long startTime, long endTime);
 
     /**
      * 根据 metric 、tags删除数据
@@ -115,7 +113,7 @@ public interface ITsdb {
      * @param tags   tags 集合
      * @return 数据删除是否成功
      */
-    Boolean deleteMeta(@RpcNodeSign("tenantId") ISourceDTO source, String metric, Map<String, String> tags);
+    Boolean deleteMeta(ISourceDTO source, String metric, Map<String, String> tags);
 
     /**
      * 根据 metric 、tags、fields删除数据
@@ -126,7 +124,7 @@ public interface ITsdb {
      * @param fields fields 集合
      * @return 数据删除是否成功
      */
-    Boolean deleteMeta(@RpcNodeSign("tenantId") ISourceDTO source, String metric, Map<String, String> tags, List<String> fields);
+    Boolean deleteMeta(ISourceDTO source, String metric, Map<String, String> tags, List<String> fields);
 
     /**
      * 根据 metric 、tags 删除数据
@@ -138,7 +136,7 @@ public interface ITsdb {
      * @param recursive  递归删除
      * @return 数据删除是否成功
      */
-    Boolean deleteMeta(@RpcNodeSign("tenantId") ISourceDTO source, String metric, Map<String, String> tags, boolean deleteData, boolean recursive);
+    Boolean deleteMeta(ISourceDTO source, String metric, Map<String, String> tags, boolean deleteData, boolean recursive);
 
     /**
      * 根据 metric 、tags 删除数据
@@ -151,7 +149,7 @@ public interface ITsdb {
      * @param recursive  递归删除
      * @return 数据删除是否成功
      */
-    Boolean deleteMeta(@RpcNodeSign("tenantId") ISourceDTO source, String metric, List<String> fields, Map<String, String> tags, boolean deleteData, boolean recursive);
+    Boolean deleteMeta(ISourceDTO source, String metric, List<String> fields, Map<String, String> tags, boolean deleteData, boolean recursive);
 
     /**
      * suggest method
@@ -162,7 +160,7 @@ public interface ITsdb {
      * @param max    最大返回条数
      * @return result 返回结果
      */
-    List<String> suggest(@RpcNodeSign("tenantId") ISourceDTO source, Suggest type, String prefix, int max);
+    List<String> suggest(ISourceDTO source, Suggest type, String prefix, int max);
 
     /**
      * suggest method
@@ -174,7 +172,7 @@ public interface ITsdb {
      * @param max    最大返回条数
      * @return result 返回结果
      */
-    List<String> suggest(@RpcNodeSign("tenantId") ISourceDTO source, Suggest type, String metric, String prefix, int max);
+    List<String> suggest(ISourceDTO source, Suggest type, String metric, String prefix, int max);
 
     /**
      * 获取版本号
@@ -182,7 +180,7 @@ public interface ITsdb {
      * @param source 数据源信息
      * @return 版本号
      */
-    String version(@RpcNodeSign("tenantId") ISourceDTO source);
+    String version(ISourceDTO source);
 
     /**
      * 获取详细版本信息
@@ -190,5 +188,5 @@ public interface ITsdb {
      * @param source 数据源信息
      * @return 详细版本信息
      */
-    Map<String, String> getVersionInfo(@RpcNodeSign("tenantId") ISourceDTO source);
+    Map<String, String> getVersionInfo(ISourceDTO source);
 }

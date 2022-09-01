@@ -32,7 +32,7 @@ import com.dtstack.dtcenter.loader.dto.metadata.entity.rdb.MetadataRdbEntity;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.Phoenix5SourceDTO;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.sql.ResultSet;

@@ -32,7 +32,7 @@ import com.dtstack.dtcenter.loader.dto.metadata.entity.tidb.TidbPartitionEntity;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

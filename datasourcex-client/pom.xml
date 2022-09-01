@@ -19,12 +19,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- 远程实调用模块 -->
-        <dependency>
-            <groupId>com.dtstack.engine</groupId>
-            <artifactId>dt-insight-rpc</artifactId>
-        </dependency>
-
         <!-- common模块 -->
         <dependency>
             <groupId>com.dtstack.datasourcex</groupId>

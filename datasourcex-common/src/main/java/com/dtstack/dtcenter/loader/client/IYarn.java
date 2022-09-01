@@ -23,9 +23,7 @@ import com.dtstack.dtcenter.loader.dto.yarn.YarnApplicationInfoDTO;
 import com.dtstack.dtcenter.loader.dto.yarn.YarnApplicationStatus;
 import com.dtstack.dtcenter.loader.dto.yarn.YarnResourceDTO;
 import com.dtstack.dtcenter.loader.dto.yarn.YarnResourceDescriptionDTO;
-import com.dtstack.rpc.annotation.RpcNodeSign;
-import com.dtstack.rpc.annotation.RpcService;
-import com.dtstack.rpc.enums.RpcRemoteType;
+
 
 import java.util.List;
 
@@ -36,7 +34,7 @@ import java.util.List;
  * date：Created in 下午1:50 2022/3/15
  * company: www.dtstack.com
  */
-@RpcService(rpcRemoteType = RpcRemoteType.DATASOURCEX_CLIENT)
+
 public interface IYarn {
 
     /**
@@ -48,7 +46,7 @@ public interface IYarn {
      * @param taskName      任务名称, 只会查询以 _taskName 结尾的 application
      * @return yarn app list
      */
-    List<YarnApplicationInfoDTO> listApplication(@RpcNodeSign("tenantId") ISourceDTO source, YarnApplicationStatus status,
+    List<YarnApplicationInfoDTO> listApplication(ISourceDTO source, YarnApplicationStatus status,
                                                  String taskName, String applicationId);
 
     /**
@@ -57,7 +55,7 @@ public interface IYarn {
      * @param source 数据源信息
      * @return yarn 资源信息
      */
-    YarnResourceDTO getYarnResource(@RpcNodeSign("tenantId") ISourceDTO source);
+    YarnResourceDTO getYarnResource(ISourceDTO source);
 
     /**
      * 获取 yarn 资源队列信息
@@ -65,5 +63,5 @@ public interface IYarn {
      * @param source 数据源信息
      * @return yarn 资源队列信息
      */
-    YarnResourceDescriptionDTO getYarnResourceDescription(@RpcNodeSign("tenantId") ISourceDTO source);
+    YarnResourceDescriptionDTO getYarnResourceDescription(ISourceDTO source);
 }

@@ -28,7 +28,7 @@ import com.dtstack.dtcenter.loader.dto.WriteFileDTO;
 import com.dtstack.dtcenter.loader.dto.TableInfo;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.metadata.MetaDataCollectManager;
-import com.dtstack.rpc.download.IDownloader;
+import com.dtstack.dtcenter.loader.client.IDownloader;
 import com.dtstack.dtcenter.loader.callback.ClassLoaderCallBackMethod;
 import lombok.extern.slf4j.Slf4j;
 

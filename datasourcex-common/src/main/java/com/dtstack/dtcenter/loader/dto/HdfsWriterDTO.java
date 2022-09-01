@@ -18,7 +18,7 @@
 
 package com.dtstack.dtcenter.loader.dto;
 
-import com.dtstack.rpc.annotation.FileUpload;
+
 import lombok.Data;
 
 import java.util.List;
@@ -40,7 +40,7 @@ public class HdfsWriterDTO {
 
     private String toLineDelimiter;
 
-    @FileUpload
+    
     private String fromFileName;
 
     private String oriCharSet;

@@ -39,7 +39,7 @@ import com.dtstack.dtcenter.common.loader.hdfs3.reader.ReaderFactory;
 import com.dtstack.dtcenter.common.loader.hdfs3.util.StringUtil;
 import com.dtstack.dtcenter.loader.dto.HdfsQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.HdfsSourceDTO;
-import com.dtstack.rpc.download.IDownloader;
+import com.dtstack.dtcenter.loader.client.IDownloader;
 import com.dtstack.dtcenter.loader.client.IHdfsFile;
 import com.dtstack.dtcenter.loader.dto.ColumnMetaDTO;
 import com.dtstack.dtcenter.loader.dto.FileStatus;

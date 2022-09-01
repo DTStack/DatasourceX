@@ -21,9 +21,7 @@ package com.dtstack.dtcenter.loader.client;
 import com.dtstack.dtcenter.loader.dto.KubernetesQueryDTO;
 import com.dtstack.dtcenter.loader.dto.KubernetesResourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
-import com.dtstack.rpc.annotation.RpcNodeSign;
-import com.dtstack.rpc.annotation.RpcService;
-import com.dtstack.rpc.enums.RpcRemoteType;
+
 
 /**
  * k8s client
@@ -32,7 +30,7 @@ import com.dtstack.rpc.enums.RpcRemoteType;
  * date：Created in 下午1:50 2022/3/15
  * company: www.dtstack.com
  */
-@RpcService(rpcRemoteType = RpcRemoteType.DATASOURCEX_CLIENT)
+
 public interface IKubernetes {
 
     /**
@@ -41,5 +39,5 @@ public interface IKubernetes {
      * @param source        数据源信息
      * @return k8s resource
      */
-    KubernetesResourceDTO getResource(@RpcNodeSign("tenantId") ISourceDTO source, KubernetesQueryDTO kubernetesQueryDTO);
+    KubernetesResourceDTO getResource(ISourceDTO source, KubernetesQueryDTO kubernetesQueryDTO);
 }

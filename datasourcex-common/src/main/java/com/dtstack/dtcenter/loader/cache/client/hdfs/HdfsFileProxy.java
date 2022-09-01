@@ -30,7 +30,7 @@ import com.dtstack.dtcenter.loader.dto.SqlQueryDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.enums.FileFormat;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
-import com.dtstack.rpc.download.IDownloader;
+import com.dtstack.dtcenter.loader.client.IDownloader;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;

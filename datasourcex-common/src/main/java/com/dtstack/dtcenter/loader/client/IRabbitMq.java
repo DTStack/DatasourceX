@@ -19,9 +19,7 @@
 package com.dtstack.dtcenter.loader.client;
 
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
-import com.dtstack.rpc.annotation.RpcNodeSign;
-import com.dtstack.rpc.annotation.RpcService;
-import com.dtstack.rpc.enums.RpcRemoteType;
+
 
 import java.util.List;
 
@@ -29,7 +27,7 @@ import java.util.List;
  * @author leon
  * @date 2022-06-20 15:15
  **/
-@RpcService(rpcRemoteType = RpcRemoteType.DATASOURCEX_CLIENT)
+
 public interface IRabbitMq {
 
     /**
@@ -38,7 +36,7 @@ public interface IRabbitMq {
      * @param source   数据源信息
      * @return 预览数据
      */
-    List<List<Object>> getPreview(@RpcNodeSign("tenantId") ISourceDTO source);
+    List<List<Object>> getPreview(ISourceDTO source);
 
 
     /**
@@ -47,7 +45,7 @@ public interface IRabbitMq {
      * @param source 数据源信息
      * @return virtualHosts
      */
-    List<String> getVirtualHosts(@RpcNodeSign("tenantId") ISourceDTO source);
+    List<String> getVirtualHosts(ISourceDTO source);
 
     /**
      * 获取所有 RabbitMqSourceDTO#virtualHost 下所有队列
@@ -56,6 +54,6 @@ public interface IRabbitMq {
      * @param source 数据源信息
      * @return 队列
      */
-    List<String> getQueues(@RpcNodeSign("tenantId") ISourceDTO source);
+    List<String> getQueues(ISourceDTO source);
 
 }

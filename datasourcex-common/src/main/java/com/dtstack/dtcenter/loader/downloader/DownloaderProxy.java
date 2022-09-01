@@ -18,7 +18,7 @@
 
 package com.dtstack.dtcenter.loader.downloader;
 
-import com.dtstack.rpc.download.IDownloader;
+import com.dtstack.dtcenter.loader.client.IDownloader;
 import com.dtstack.dtcenter.loader.callback.ClassLoaderCallBackMethod;
 
 import java.util.List;

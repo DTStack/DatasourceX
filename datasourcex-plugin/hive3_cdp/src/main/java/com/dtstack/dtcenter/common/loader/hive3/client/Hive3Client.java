@@ -42,7 +42,7 @@ import com.dtstack.dtcenter.loader.dto.source.Hive3CDPSourceDTO;
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
 import com.dtstack.dtcenter.loader.exception.DtLoaderException;
 import com.dtstack.dtcenter.loader.source.DataSourceType;
-import com.dtstack.rpc.download.IDownloader;
+import com.dtstack.dtcenter.loader.client.IDownloader;
 import com.google.common.collect.Lists;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;

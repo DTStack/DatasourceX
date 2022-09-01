@@ -19,9 +19,7 @@
 package com.dtstack.dtcenter.loader.client;
 
 import com.dtstack.dtcenter.loader.dto.source.ISourceDTO;
-import com.dtstack.rpc.annotation.RpcNodeSign;
-import com.dtstack.rpc.annotation.RpcService;
-import com.dtstack.rpc.enums.RpcRemoteType;
+
 
 import java.util.List;
 
@@ -29,7 +27,7 @@ import java.util.List;
  * @author leon
  * @date 2022-06-20 15:15
  **/
-@RpcService(rpcRemoteType = RpcRemoteType.DATASOURCEX_CLIENT)
+
 public interface IRocketMq {
 
     /**
@@ -38,7 +36,7 @@ public interface IRocketMq {
      * @param source 数据源信息
      * @return Topic
      */
-    List<String> getTopicList(@RpcNodeSign("tenantId") ISourceDTO source);
+    List<String> getTopicList(ISourceDTO source);
 
 
     /**
@@ -48,7 +46,7 @@ public interface IRocketMq {
      * @param containSystemTopic 是否包含 system topic
      * @return Topic
      */
-    List<String> getTopicList(@RpcNodeSign("tenantId") ISourceDTO source, Boolean containSystemTopic );
+    List<String> getTopicList(ISourceDTO source, Boolean containSystemTopic );
 
 
     /**
@@ -58,6 +56,6 @@ public interface IRocketMq {
      * @param prevMode 预览模式
      * @return 预览数据
      */
-    List<List<Object>> getPreview(@RpcNodeSign("tenantId") ISourceDTO source, String prevMode);
+    List<List<Object>> getPreview(ISourceDTO source, String prevMode);
 
 }

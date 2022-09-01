@@ -18,7 +18,7 @@
 
 package com.dtstack.dtcenter.common.loader.hdfs.fileMerge;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author jiangbo
